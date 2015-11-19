@@ -1,13 +1,17 @@
-package kkpartition;
+package kkpartition.examples;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kkpartition.examples.HandshakeP;
-import kkpartition.examples.HotelP;
-import kkpartition.examples.RingP;
+import kkpartition.MProblem;
+import kkpartition.PProblem;
+import kkpartition.ParallelSolver;
+import kkpartition.PartitionModel;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.IncrementalSolver;
@@ -23,17 +27,25 @@ public final class RunTests {
 	
 	final static Map<Integer,List<PProblem>> stats = new HashMap<Integer,List<PProblem>> ();
 	
-	static List<PProblem> solutions = null;
+	static PProblem solution = null;
 
 	static boolean glucose, minisat, plingling;
 	static boolean batch, sequential, parallel, hybrid, incremental;
 	static int tries;
 	
+	static private StringBuilder log = new StringBuilder();
+	
+	static private PrintWriter writer;
+
 	/**
+	 * @throws UnsupportedEncodingException 
+	 * @throws FileNotFoundException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
 		List<String> opts = Arrays.asList(args);
 
+		writer = new PrintWriter("log.txt", "UTF-8");
+		
 		tries = Integer.valueOf(args[0]);
 		
 		glucose = opts.contains("-gl");
@@ -81,38 +93,38 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					go_batch(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}
 			if (sequential)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setPs(1);
-					psolver.setIt(false);
-					solutions = psolver.solve(b1, b2, f1, f2);
+					psolver.setThreads(1);
+					psolver.setHybrid(false);
+					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}
 			if (parallel)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setPs(4);
-					psolver.setIt(false);
-					solutions = psolver.solve(b1, b2, f1, f2);
+					psolver.setThreads(4);
+					psolver.setHybrid(false);
+					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}	
 			if (hybrid)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setPs(3);
-					psolver.setIt(true);
-					solutions = psolver.solve(b1, b2, f1, f2);
+					psolver.setThreads(3);
+					psolver.setHybrid(true);
+					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}	
 		}
 		
@@ -124,46 +136,46 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					go_incremental(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}
 			if (batch)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
 					go_batch(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}
 			if (sequential)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setPs(1);
-					psolver.setIt(false);
-					solutions = psolver.solve(b1, b2, f1, f2);
+					psolver.setThreads(1);
+					psolver.setHybrid(false);
+					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}
 			if (parallel)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setPs(4);
-					psolver.setIt(false);
-					solutions = psolver.solve(b1, b2, f1, f2);
+					psolver.setThreads(4);
+					psolver.setHybrid(false);
+					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}	
 			if (hybrid)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setPs(3);
-					psolver.setIt(true);
-					solutions = psolver.solve(b1, b2, f1, f2);
+					psolver.setThreads(3);
+					psolver.setHybrid(true);
+					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
-					System.out.print((t2-t1));
-					System.out.print("\t");
+					log.append((t2-t1));
+					log.append("\t");
 				}	
 		}
 		
@@ -175,17 +187,26 @@ public final class RunTests {
 				long t1 = System.currentTimeMillis();
 				go_batch(b1, b2, f1, f2);
 				long t2 = System.currentTimeMillis();
-				System.out.print((t2-t1));
-				System.out.print("\t");
+				log.append((t2-t1));
+				log.append("\t");
 			}
 		}
 		
-		System.out.print(solutions.get(0).sat()?"S":"U");
-		System.out.print("\t");
-		System.out.print(getConfigNum(psolver));
-		System.out.print("\t");
-		System.out.print(getGenTime(psolver));
-		System.out.print("\t");
+		log.append(solution.sat()?"S":"U");
+		log.append("\t");
+		log.append(getConfigNum(psolver));
+		log.append("\t");
+		log.append(getGenTime(psolver));
+		log.append("\t");
+		
+		flush();
+	}
+
+	private static void flush() {
+		System.out.print(log.toString());
+		writer.print(log.toString());
+		writer.flush();
+		log = new StringBuilder();
 	}
 
 	private static long getGenTime(ParallelSolver psolver2) {
@@ -246,122 +267,122 @@ public final class RunTests {
 	 */
 	private static void runRing() {
 		
-		System.out.print("FC10\n");
-		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+		log.append("FC10\n");
+		for (int i = 1; i <= 3; i ++) {
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,false,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("FL10\n");
+		log.append("FL10\n");
 		for (int i = 1; i <= 7; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,true,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("FS10\n");
+		log.append("FS10\n");
 		for (int i = 1; i <= 8; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,false,true,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("VC10\n");
+		log.append("VC10\n");
 		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,false,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("VL10\n");
+		log.append("VL10\n");
 		for (int i = 1; i <= 6; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,true,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("VS10\n");
+		log.append("VS10\n");
 		for (int i = 1; i <= 7; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,false,true,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("FC20\n");
+		log.append("FC20\n");
 		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,false,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("FL20\n");
+		log.append("FL20\n");
 		for (int i = 5; i <= 5; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,true,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("FS20\n");
+		log.append("FS20\n");
 		for (int i = 1; i <= 8; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,false,true,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 		
-		System.out.print("VC20\n");
+		log.append("VC20\n");
 		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,false,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs(); 
 		
-		System.out.print("VL20\n");
+		log.append("VL20\n");
 		for (int i = 1; i <= 6; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,true,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("VS20\n");
+		log.append("VS20\n");
 		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,false,true,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
 //		printConfigs();
 	}
@@ -370,44 +391,44 @@ public final class RunTests {
 	 * Tests the performance of all variants of the Hotel example.
 	 */
 	private static void runHotel() {
-		System.out.print("Intervenes10\n"); 
+		log.append("Intervenes10\n"); 
 		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,10,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("NoIntervenes10\n"); 
+		log.append("NoIntervenes10\n"); 
 		for (int i = 1; i <= 6; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,10,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 		
-		System.out.print("Intervenes20\n"); 
+		log.append("Intervenes20\n"); 
 		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,20,false}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("NoIntervenes20\n"); 
+		log.append("NoIntervenes20\n"); 
 		for (int i = 1; i <= 10; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,20,true}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 	}
 	
@@ -416,44 +437,44 @@ public final class RunTests {
 	 */
 	private static void runHandshake() {
 		
-		System.out.print("FI\n"); 
+		log.append("FI\n"); 
 		for (int i = 3; i <= 14; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{false,true,i}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 		
-		System.out.print("VI\n"); 
+		log.append("VI\n"); 
 		for (int i = 3; i <= 14; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{true,true,i}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("FT\n"); 
+		log.append("FT\n"); 
 		for (int i = 3; i <= 14; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{false,false,i}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
-		System.out.print("VT\n"); 
+		log.append("VT\n"); 
 		for (int i = 3; i <= 14; i ++) {
-			System.out.print(i+"\t");
+			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{true,false,i}),20);
-			System.out.print("\n");
-			stats.put(i, solutions);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
 		}
-		System.out.print("\n");
+		log.append("\n");
 //		printConfigs();
 
 	}

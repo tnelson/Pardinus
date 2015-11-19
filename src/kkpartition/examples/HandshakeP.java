@@ -217,4 +217,12 @@ public class HandshakeP implements PartitionModel {
 		return (persons / 2) - 1;
 	}
 
+	public String toString() {
+		StringBuilder sb = new StringBuilder("Handshake");
+		sb.append(var?"V":"F");
+		sb.append(counter?"I":"T");
+		sb.append("-");
+		sb.append(persons);		
+		return sb.toString();
+	}
 }

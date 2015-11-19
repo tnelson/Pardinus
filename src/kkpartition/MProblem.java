@@ -1,14 +1,10 @@
 package kkpartition;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;

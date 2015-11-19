@@ -2,10 +2,8 @@ package kkpartition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,11 +32,11 @@ public class PProblemManager extends Thread {
 	ExecutorService executor;
 
 	private final AtomicInteger running = new AtomicInteger(0);
-	private boolean it;
+	private boolean hybrid;
 	private boolean batch = false;
 
 	public PProblemManager(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n, boolean it) {
-		this.it = it;
+		this.hybrid = it;
 		this.formula1 = f1;
 		this.formula2 = f2;
 		this.bound1 = b1;
@@ -81,7 +79,7 @@ public class PProblemManager extends Thread {
 	}
 
 	public void run() {
-		if(it) {
+		if(hybrid) {
 			PProblem ppr = new PProblem(this, new ArrayList<Bounds>(Arrays.asList(merge(bound1, bound2))));
 			ppr.setPriority(MAX_PRIORITY);
 			executor.execute(ppr);
