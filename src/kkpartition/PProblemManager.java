@@ -52,6 +52,7 @@ public class PProblemManager extends Thread {
 	public void end(PProblem sol) {
 		try {
 //			System.out.println(sol);
+			running.decrementAndGet();
 			solutions.add(sol);
 			if (sol.sat()) solution_queue.put(sol);
 			if (!(sol instanceof MProblem)) {
@@ -62,7 +63,7 @@ public class PProblemManager extends Thread {
 				// tests if there are no more running processes and if the executor is shutdown
 				// if so throws poison
 				if (executor.isShutdown()) 
-					if (running.decrementAndGet() == 0) 
+					if (running.get() == 0) 
 						shutdown();
 					else if (running.get() == 1 && batch) 
 						shutdown();
@@ -120,6 +121,13 @@ public class PProblemManager extends Thread {
 			}
 		}
 		executor.shutdown();
+//		if (running.get() == 0)
+//			try {
+//				solution_queue.put(PProblem.DONE);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 	}
 
 	/**

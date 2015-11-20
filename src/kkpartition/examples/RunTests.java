@@ -61,10 +61,12 @@ public final class RunTests {
 		boolean ring = opts.contains("--ring");
 		boolean handshake = opts.contains("--handshake");
 		boolean hotel = opts.contains("--hotel");
+		boolean file = opts.contains("--file");
 
 		if (ring) runRing();
 		if (handshake) runHandshake();
 		if (hotel) runHotel();
+		if (file) runFileSystem();
 	}
 
 	/**
@@ -99,8 +101,8 @@ public final class RunTests {
 			if (sequential)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setThreads(1);
-					psolver.setHybrid(false);
+					psolver.options().setThreads(1);
+					psolver.options().setHybrid(false);
 					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
@@ -109,8 +111,8 @@ public final class RunTests {
 			if (parallel)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setThreads(4);
-					psolver.setHybrid(false);
+					psolver.options().setThreads(4);
+					psolver.options().setHybrid(false);
 					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
@@ -119,8 +121,8 @@ public final class RunTests {
 			if (hybrid)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setThreads(3);
-					psolver.setHybrid(true);
+					psolver.options().setThreads(3);
+					psolver.options().setHybrid(true);
 					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
@@ -147,36 +149,41 @@ public final class RunTests {
 					log.append((t2-t1));
 					log.append("\t");
 				}
+			flush();
 			if (sequential)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setThreads(1);
-					psolver.setHybrid(false);
+					psolver.options().setThreads(1);
+					psolver.options().setHybrid(false);
 					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
 					log.append("\t");
 				}
+			flush();
 			if (parallel)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setThreads(4);
-					psolver.setHybrid(false);
+					psolver.options().setThreads(4);
+					psolver.options().setHybrid(false);
 					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
 					log.append("\t");
+					flush();
 				}	
+			flush();
 			if (hybrid)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					psolver.setThreads(3);
-					psolver.setHybrid(true);
+					psolver.options().setThreads(3);
+					psolver.options().setHybrid(true);
 					solution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
 					log.append("\t");
 				}	
+			flush();
 		}
 		
 		// run under plingeling in batch
@@ -479,5 +486,28 @@ public final class RunTests {
 
 	}
 
+	private static void runFileSystem() {
+		log.append("Buggy\n"); 
+		for (int i = 2; i <= 10; i ++) {
+			log.append(i+"\t");
+			run_tests(new FilesystemP(new Object[]{i,true}),20);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
+		}
+		log.append("\n");
+//		printConfigs();
+
+		log.append("Correct\n"); 
+		for (int i = 1; i <= 10; i ++) {
+			log.append(i+"\t");
+			run_tests(new FilesystemP(new Object[]{i,false}),20);
+			log.append("\n");
+			stats.put(i, psolver.manager().solutions());
+		}
+		log.append("\n");
+//		printConfigs();
+		
+	}
+	
 
 }

@@ -1,7 +1,13 @@
 package kkpartition;
 
 import kodkod.ast.Formula;
+import kodkod.engine.AbortedException;
+import kodkod.engine.KodkodSolver;
+import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Options;
+import kodkod.engine.fol2sat.HigherOrderDeclException;
+import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.instance.Bounds;
 
 public class ParallelSolver {
@@ -9,15 +15,20 @@ public class ParallelSolver {
 	// the solver used in the parallelization
 	final private Solver solver;
 
-	// the number of parallel processes
-	private int threads = 4;
-	// whether it will run in hybrid mode
-	private boolean hybrid = true;
-
 	// this solver's problem manager
 	private PProblemManager manager;
+
+	private ParallelOptions options;
 	
 	public ParallelSolver(Solver solver) {
+		options = new ParallelOptions();
+		this.solver = solver;
+		if (!solver.options().solver().incremental())
+			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
+	}
+
+	public ParallelSolver(Solver solver, ParallelOptions opt) {
+		options = opt;
 		this.solver = solver;
 		if (!solver.options().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
@@ -32,7 +43,7 @@ public class ParallelSolver {
 	 * @return a SAT solution or DONE
 	 */
 	public PProblem solve(Bounds b1, Bounds b2, Formula f1, Formula f2) {
-		manager = new PProblemManager(f1,f2,b1,b2,solver,threads,hybrid);
+		manager = new PProblemManager(f1,f2,b1,b2,solver,options.threads(),options.isHybrid());
 		manager.start();
 		PProblem sol = manager.waitUntil();
 		manager.terminate();
@@ -40,27 +51,19 @@ public class ParallelSolver {
 		}
 
 	/**
-	 * Sets the number of threads that will be launched in parallel.
-	 * @param threads
-	 */
-	public void setThreads(int threads) {
-		this.threads = threads;
-	}
-
-	/**
-	 * Sets whether to run in hybrid model.
-	 * @param threads
-	 */
-	public void setHybrid(boolean hybrid) {
-		this.hybrid = hybrid;
-	}
-
-	/**
 	 * Returns the problem manager for this solver.
 	 * @return
 	 */
 	public PProblemManager manager() {
 		return manager;
+	}
+
+	public ParallelOptions options() {
+		return options;
+	}
+
+	public void free() {
+		// TODO Auto-generated method stub		
 	}
 
 }
