@@ -27,7 +27,8 @@ public final class RunTests {
 	
 	final static Map<Integer,List<PProblem>> stats = new HashMap<Integer,List<PProblem>> ();
 	
-	static PProblem solution = null;
+	static PProblem psolution = null;
+	static Solution solution = null;
 
 	static boolean glucose, minisat, plingling;
 	static boolean batch, sequential, parallel, hybrid, incremental;
@@ -58,6 +59,33 @@ public final class RunTests {
 		hybrid = opts.contains("-h");
 		incremental = opts.contains("-i");
 
+		String tries_tabs = "";
+		for (int i = 0; i < tries; i++)
+			tries_tabs = tries_tabs+"\t";
+		
+		log.append("n\t");
+		if (minisat && incremental) log.append("M.I"+tries_tabs);
+		if (minisat && batch) log.append("M.B"+tries_tabs);
+		if (minisat && sequential) log.append("M.S"+tries_tabs);
+		if (minisat && parallel) log.append("M.P"+tries_tabs);
+		if (minisat && hybrid) log.append("M.H"+tries_tabs);
+
+		if (glucose && incremental) log.append("G.I"+tries_tabs);
+		if (glucose && batch) log.append("G.B"+tries_tabs);
+		if (glucose && sequential) log.append("G.S"+tries_tabs);
+		if (glucose && parallel) log.append("G.P"+tries_tabs);
+		if (glucose && hybrid) log.append("G.H"+tries_tabs);
+
+		if (plingling && batch) log.append("P.B"+tries_tabs);
+
+		log.append("SAT\t");
+		if (sequential || parallel || hybrid) {
+			if (sequential || parallel) log.append("C.#\t");
+			if (hybrid) log.append("C.H\t");
+			log.append("C.t");
+		}	
+		log.append("\n");
+
 		boolean ring = opts.contains("--ring");
 		boolean handshake = opts.contains("--handshake");
 		boolean hotel = opts.contains("--hotel");
@@ -83,6 +111,9 @@ public final class RunTests {
 		solver.options().setBitwidth(model.getBitwidth());
 		solver.options().setSymmetryBreaking(sym);
 
+		int cn = 0;
+		int ch = 0;
+		
 		// warm up
 //		for (int i = 0; i<30; i++)
 //			solver.solve(f1, b1);
@@ -93,7 +124,7 @@ public final class RunTests {
 			if (batch)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					go_batch(b1, b2, f1, f2);
+					solution = go_batch(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
 					log.append("\t");
@@ -103,8 +134,9 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					psolver.options().setThreads(1);
 					psolver.options().setHybrid(false);
-					solution = psolver.solve(b1, b2, f1, f2);
+					psolution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
+					cn = getConfigNum(psolver);
 					log.append((t2-t1));
 					log.append("\t");
 				}
@@ -113,8 +145,9 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					psolver.options().setThreads(4);
 					psolver.options().setHybrid(false);
-					solution = psolver.solve(b1, b2, f1, f2);
+					psolution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
+					cn = getConfigNum(psolver);
 					log.append((t2-t1));
 					log.append("\t");
 				}	
@@ -123,8 +156,9 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					psolver.options().setThreads(3);
 					psolver.options().setHybrid(true);
-					solution = psolver.solve(b1, b2, f1, f2);
+					psolution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
+					ch = getConfigNum(psolver);
 					log.append((t2-t1));
 					log.append("\t");
 				}	
@@ -136,7 +170,7 @@ public final class RunTests {
 			if (incremental)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					go_incremental(b1, b2, f1, f2);
+					solution = go_incremental(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
 					log.append("\t");
@@ -144,7 +178,7 @@ public final class RunTests {
 			if (batch)
 				for (int i = 0; i < tries; i++) {
 					long t1 = System.currentTimeMillis();
-					go_batch(b1, b2, f1, f2);
+					solution = go_batch(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
 					log.append((t2-t1));
 					log.append("\t");
@@ -155,8 +189,9 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					psolver.options().setThreads(1);
 					psolver.options().setHybrid(false);
-					solution = psolver.solve(b1, b2, f1, f2);
+					psolution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
+					cn = getConfigNum(psolver);
 					log.append((t2-t1));
 					log.append("\t");
 				}
@@ -166,8 +201,9 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					psolver.options().setThreads(4);
 					psolver.options().setHybrid(false);
-					solution = psolver.solve(b1, b2, f1, f2);
+					psolution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
+					cn = getConfigNum(psolver);
 					log.append((t2-t1));
 					log.append("\t");
 					flush();
@@ -178,8 +214,9 @@ public final class RunTests {
 					long t1 = System.currentTimeMillis();
 					psolver.options().setThreads(3);
 					psolver.options().setHybrid(true);
-					solution = psolver.solve(b1, b2, f1, f2);
+					psolution = psolver.solve(b1, b2, f1, f2);
 					long t2 = System.currentTimeMillis();
+					ch = getConfigNum(psolver);
 					log.append((t2-t1));
 					log.append("\t");
 				}	
@@ -192,19 +229,28 @@ public final class RunTests {
 			if (batch)
 			for (int i = 0; i < tries; i++) {
 				long t1 = System.currentTimeMillis();
-				go_batch(b1, b2, f1, f2);
+				solution = go_batch(b1, b2, f1, f2);
 				long t2 = System.currentTimeMillis();
 				log.append((t2-t1));
 				log.append("\t");
 			}
 		}
 		
-		log.append(solution.sat()?"S":"U");
-		log.append("\t");
-		log.append(getConfigNum(psolver));
-		log.append("\t");
-		log.append(getGenTime(psolver));
-		log.append("\t");
+		if (sequential || parallel || hybrid) {
+			log.append(psolution.sat()?"S":"U");
+			log.append("\t");
+			if (sequential || parallel) {
+				log.append(cn);
+				log.append("\t");
+			}
+			if (hybrid) {
+				log.append(ch);
+				log.append("\t");
+			}
+			log.append(getGenTime(psolver));
+		} else {
+			log.append(solution.sat()?"S":"U");
+		}
 		
 		flush();
 	}
@@ -275,11 +321,11 @@ public final class RunTests {
 	private static void runRing() {
 		
 		log.append("FC10\n");
-		for (int i = 1; i <= 3; i ++) {
+		for (int i = 1; i <= 10; i ++) {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,false,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -289,7 +335,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,true,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -299,7 +345,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,false,true,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -309,7 +355,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,false,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -319,7 +365,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,true,true,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -329,7 +375,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,10,false,true,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -339,7 +385,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,false,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -349,7 +395,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,true,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -359,7 +405,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,false,true,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -369,7 +415,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,false,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs(); 
@@ -379,7 +425,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,true,true,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -389,7 +435,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new RingP(new Object[]{i,20,false,true,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 //		printConfigs();
 	}
@@ -403,7 +449,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,10,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -413,7 +459,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,10,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -423,7 +469,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,20,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -433,7 +479,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HotelP(new Object[]{i,20,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -449,7 +495,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{false,true,i}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -459,7 +505,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{true,true,i}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -469,7 +515,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{false,false,i}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -479,7 +525,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new HandshakeP(new Object[]{true,false,i}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -492,7 +538,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new FilesystemP(new Object[]{i,true}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
@@ -502,7 +548,7 @@ public final class RunTests {
 			log.append(i+"\t");
 			run_tests(new FilesystemP(new Object[]{i,false}),20);
 			log.append("\n");
-			stats.put(i, psolver.manager().solutions());
+			if (parallel || sequential || hybrid) stats.put(i, psolver.manager().solutions());
 		}
 		log.append("\n");
 //		printConfigs();
