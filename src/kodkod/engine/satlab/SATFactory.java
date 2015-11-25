@@ -188,6 +188,15 @@ public abstract class SATFactory {
 	
 	}
 	
+	public static final SATFactory syrup() {
+		
+		final String executable = findStaticLibrary("glucose-syrup");
+		return externalFactory(executable==null ? "glucose-syrup" : executable, 
+				null);
+	
+	}
+	
+	
 	/**
 	 * Searches the {@code java.library.path} for an executable with the given name. Returns a fully 
 	 * qualified path to the first found executable.  Otherwise returns null.

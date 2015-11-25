@@ -8,6 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
@@ -54,7 +55,8 @@ public class PProblemManager extends Thread {
 //			System.out.println(sol);
 			running.decrementAndGet();
 			solutions.add(sol);
-			if (sol.sat()) solution_queue.put(sol);
+			if (sol.sat()) 
+				solution_queue.put(sol);
 			if (!(sol instanceof MProblem)) {
 				batch = false;
 				shutdown();
@@ -62,21 +64,25 @@ public class PProblemManager extends Thread {
 			else {
 				// tests if there are no more running processes and if the executor is shutdown
 				// if so throws poison
-				if (executor.isShutdown()) 
+				if (executor.isShutdown()) {
 					if (running.get() == 0) 
 						shutdown();
 					else if (running.get() == 1 && batch) 
 						shutdown();
+				}
+				else if (sol.sat()) shutdown(); 
+
 			}
 		} catch (InterruptedException e) { 
-			// will be interrupted by the executor when the manager is terminated
+			e.printStackTrace();
 		}
 	}
 	
 	private void shutdown() throws InterruptedException {
 		 solution_queue.put(PProblem.DONE);
 		 running.set(0);
-		 executor.shutdownNow();
+		 if (!executor.isTerminated()) 
+			 executor.shutdownNow();
 	}
 
 	public void run() {
@@ -96,6 +102,7 @@ public class PProblemManager extends Thread {
 				List<Solution> current_configs = new ArrayList<Solution>();
 				while (configs.hasNext() && current_configs.size() < 1) {
 					Solution config = configs.next();
+//					System.out.println(config.instance());
 					if (config.sat()) {
 						current_configs.add(config);
 					} else {
@@ -121,13 +128,6 @@ public class PProblemManager extends Thread {
 			}
 		}
 		executor.shutdown();
-//		if (running.get() == 0)
-//			try {
-//				solution_queue.put(PProblem.DONE);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
 	}
 
 	/**
@@ -144,8 +144,8 @@ public class PProblemManager extends Thread {
 		return sol;
 	}
 
-	public void terminate () {
-		executor.shutdownNow();
+	public void terminate () throws InterruptedException {
+//		executor.awaitTermination(1000, TimeUnit.SECONDS);
 	}
 
 	private static Bounds merge(Bounds b1, Bounds b2) {

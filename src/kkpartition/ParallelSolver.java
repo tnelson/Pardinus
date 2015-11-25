@@ -1,17 +1,26 @@
 package kkpartition;
 
 import kodkod.ast.Formula;
-import kodkod.engine.AbortedException;
-import kodkod.engine.KodkodSolver;
-import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.Options;
-import kodkod.engine.fol2sat.HigherOrderDeclException;
-import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.instance.Bounds;
 
 public class ParallelSolver {
 
+	public enum Modes {
+		BATCH, 
+		SEQUENTIAL,
+		PARALLEL,
+		HYBRID,
+		INCREMENTAL;
+	}
+	
+	public enum Solvers {
+		GLUCOSE,
+		MINISAT,
+		SYRUP,
+		PLINGELING;
+	}
+	
 	// the solver used in the parallelization
 	final private Solver solver;
 
@@ -46,7 +55,12 @@ public class ParallelSolver {
 		manager = new PProblemManager(f1,f2,b1,b2,solver,options.threads(),options.isHybrid());
 		manager.start();
 		PProblem sol = manager.waitUntil();
-		manager.terminate();
+		try {
+			manager.terminate();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return sol;
 		}
 
@@ -66,4 +80,5 @@ public class ParallelSolver {
 		// TODO Auto-generated method stub		
 	}
 
+	
 }

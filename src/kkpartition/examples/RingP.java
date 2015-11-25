@@ -66,13 +66,26 @@ import kodkod.instance.Universe;
  * @author Emina Torlak
  */
 public final class RingP implements PartitionModel {
-	
+
+	public enum Variant1 {
+		BADLIVENESS,
+		GOODLIVENESS,
+		GOODSAFETY;
+	}
+
+	public enum Variant2 {
+		STATIC,
+		VARIABLE;
+	}
+
 	// model parameters
 	// number of processes and time instants
 	private final int n_ps, n_ts;
 	// whether to check liveness property or safety, to enforce loopless 
 	// paths and assume variable processes
-	private final boolean liveness, force_loops, variable_ps;
+	private final Variant1 variant;
+	private final Variant2 variable; 
+	
 
 	// partition 1 relations
 	private Relation pfirst, plast, pord, Process, succ, id, Id;
@@ -85,12 +98,11 @@ public final class RingP implements PartitionModel {
 	/**
 	 * Constructs an instance of the RingElection example.
 	 */
-	public RingP(Object[] args) {
-		this.n_ps = (int) args[0];
-		this.n_ts = (int) args[1];
-		this.liveness = (boolean) args[2];
-		this.force_loops = (boolean) args[3];
-		this.variable_ps = (boolean) args[4];
+	public RingP(String[] args) {
+		this.n_ps = Integer.valueOf(args[0]);
+		this.n_ts = Integer.valueOf(args[1]);
+		this.variant = RingP.Variant1.valueOf(args[2]);
+		this.variable = RingP.Variant2.valueOf(args[3]);
 		
 		Process = Relation.unary("Process");
 		Time = Relation.unary("Time");
@@ -115,7 +127,7 @@ public final class RingP implements PartitionModel {
 			atoms.add("Time"+i);
 
 		// if variable processes, must consider Ids as a workaround to totalorder
-		if (variable_ps) {
+		if (variable == Variant2.VARIABLE) {
 			id = Relation.binary("id");
 			Id = Relation.unary("Id");
 			for(int i = 0; i < n_ps; i++) 
@@ -138,7 +150,7 @@ public final class RingP implements PartitionModel {
 		final Formula ordTime = tord.totalOrder(Time, tfirst, tlast);
 		final Formula electedDomRange = elected.in(Process.product(Time));
 		final Formula sendDomRange;
-		if (variable_ps) sendDomRange = toSend.in(Process.product(Id).product(Time));
+		if (variable == Variant2.VARIABLE) sendDomRange = toSend.in(Process.product(Id).product(Time));
 		else sendDomRange = toSend.in(Process.product(Process).product(Time));
 		return Formula.and(ordTime, electedDomRange, sendDomRange);
 	}
@@ -150,7 +162,7 @@ public final class RingP implements PartitionModel {
 	public Formula init(Expression t) {
 		final Variable p = Variable.unary("p");
 		final Formula f;
-		if (variable_ps) f = p.join(toSend).join(t).eq(p.join(id)).forAll(p.oneOf(Process));
+		if (variable == Variant2.VARIABLE) f = p.join(toSend).join(t).eq(p.join(id)).forAll(p.oneOf(Process));
 		else f = p.join(toSend).join(t).eq(p).forAll(p.oneOf(Process));
 		return f;
 	}
@@ -172,7 +184,7 @@ public final class RingP implements PartitionModel {
 		final Variable idv = Variable.unary("id");
 		final Expression prevs;
 		
-		if (variable_ps)
+		if (variable == Variant2.VARIABLE)
 			prevs = (p.join(succ).join(id)).join((pord.transpose()).closure());
 		else
 			prevs = (p.join(succ)).join((pord.transpose()).closure());
@@ -224,7 +236,7 @@ public final class RingP implements PartitionModel {
 		final Variable p = Variable.unary("p");
 		final Formula c;
 		
-		if (variable_ps)
+		if (variable == Variant2.VARIABLE)
 			c = (p.join(id)).in(p.join(toSend).join(t).difference(p.join(toSend).join(t.join(tord.transpose()))));
 		else
 			c = p.in(p.join(toSend).join(t).difference(p.join(toSend).join(t.join(tord.transpose()))));
@@ -322,7 +334,7 @@ public final class RingP implements PartitionModel {
 		b.bound(Process, pb);
 		b.bound(succ, pb.product(pb));
 		
-		if (variable_ps) {
+		if (variable == Variant2.VARIABLE) {
 			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id"+ (n_ps-1)));
 			b.bound(Id, ib);
 			b.bound(id, pb.product(ib));
@@ -345,7 +357,7 @@ public final class RingP implements PartitionModel {
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+ (n_ps-1)));
 		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+(n_ts-1)));
 		
-		if (variable_ps) {
+		if (variable == Variant2.VARIABLE) {
 			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id"+ (n_ps-1)));
 			b.bound(toSend, pb.product(ib).product(tb));
 		}
@@ -374,7 +386,7 @@ public final class RingP implements PartitionModel {
 	 */
 	public Formula partition1() {
 		final Formula ordProcess;
-		if (variable_ps) {
+		if (variable == Variant2.VARIABLE) {
 			final Formula f0 = id.function(Process, Id);
 			final Formula f1 = Process.some();
 			final Variable p1 = Variable.unary("p");
@@ -393,8 +405,8 @@ public final class RingP implements PartitionModel {
 
 	
 	public Formula partition2() {
-		if (liveness)
-			if (force_loops) return checkAtLeastOneElectedLoop();
+		if (!(variant == Variant1.GOODSAFETY))
+			if (variant == Variant1.GOODLIVENESS) return checkAtLeastOneElectedLoop();
 			else return checkAtLeastOneElected();
 		else return checkAtMostOneElected();
 	}

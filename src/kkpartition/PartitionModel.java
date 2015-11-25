@@ -19,8 +19,8 @@ public interface PartitionModel {
 	public Bounds bounds2();
 
 	/**
-	 * Formula for the first partition.
- 	 * @requires partition1().relations() in bounds1().relations()
+	 * Formula for the first partition. Formula must refer to every relation in bounds1().
+ 	 * @requires partition1().relations() = bounds1().relations()
 	 * @return
 	 */
 	public Formula partition1();

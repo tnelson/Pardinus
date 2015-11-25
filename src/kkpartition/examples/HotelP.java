@@ -38,17 +38,23 @@ import kodkod.instance.Universe;
 public final class HotelP implements PartitionModel {
 
 	final private int n, t;
-	final private boolean ni;
+	final private Variant variant;
 
 	private final Relation time_init, time_end, time_loop, time_next, time_next_, time;
 	private final Relation key, key_first, key_last, key_next;
 	private final Relation room, guest, lastkey, current, occupant, gkeys, rkeys;
 	private final Universe u;
 
-	public HotelP(Object[] args) {
-		this.n = (int) args[0];
-		this.t = (int) args[1];
-		this.ni = (boolean) args[2];
+	public enum Variant {
+		INTERVENES,
+		NOINTERVENES;
+	}
+	
+	
+	public HotelP(String[] args) {
+		this.n = Integer.valueOf(args[0]);
+		this.t = Integer.valueOf(args[1]);
+		this.variant = Variant.valueOf(args[2]);
 		
 		time_init = Relation.unary("Time/init");
 		time_end = Relation.unary("Time/end");
@@ -146,7 +152,7 @@ public final class HotelP implements PartitionModel {
 	@Override
 	public Formula partition2() {
 		Formula f2 = Formula.compose(FormulaOperator.AND, decls2(), init(), next(), noBadEntries().not());
-		if (ni) f2 = f2.and(noIntervenes());
+		if (variant == Variant.NOINTERVENES) f2 = f2.and(noIntervenes());
 		return f2;
 	}
 

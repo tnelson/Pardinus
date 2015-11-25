@@ -81,8 +81,4 @@ public class MProblem extends PProblem {
 		return "M: "+ configSize() + "\t" + getConfigTime() + "\t" + getSolution().outcome() + "\t" + getSolveTime();
 	}
 	
-	public void interrupt() {
-		
-	}
-
 }

@@ -21,9 +21,20 @@ public class HandshakeP implements PartitionModel {
 	final private Relation Person, Hilary, Jocelyn, shaken, spouse;
 	final private Universe u;
 	final private int persons;
-	final private boolean var, counter;
+	final private Variant2 var;
+	final private Variant1 counter;
 
-	public HandshakeP(Object[] args) {
+	public enum Variant2 {
+		STATIC,
+		VARIABLE;
+	}
+
+	public enum Variant1 {
+		COUNTER,
+		THEOREM;
+	}
+	
+	public HandshakeP(String[] args) {
 		Person = Relation.unary("Person");
 		Hilary = Relation.unary("Hilary");
 		Jocelyn = Relation.unary("Jocelyn");
@@ -32,11 +43,11 @@ public class HandshakeP implements PartitionModel {
 
 		hypo = Relation.unary("hypothesis");
 		
-		var = (boolean) args[0];
-		counter = (boolean) args[1];
-		persons = (int) args[2];
+		persons = Integer.valueOf(args[0]);
+		counter = HandshakeP.Variant1.valueOf(args[1]);
+		var = HandshakeP.Variant2.valueOf(args[2]);
 
-		final List<Object> atoms = new ArrayList<Object>((!counter && var)?2*persons-1:persons);
+		final List<Object> atoms = new ArrayList<Object>((counter == Variant1.THEOREM && var == Variant2.VARIABLE)?2*persons-1:persons);
 		atoms.add("Hilary");
 		atoms.add("Jocelyn");
 		for (int i = 3; i <= persons; i++) {
@@ -44,8 +55,8 @@ public class HandshakeP implements PartitionModel {
 		}
 		
 		// if proving theorem with variable persons, integers must be added to the universe
-		if(!counter)
-			if (var)
+		if(counter == Variant1.THEOREM)
+			if (var == Variant2.VARIABLE)
 				for (int i = 0; i <= maxInt(); i++)
 					atoms.add(Integer.valueOf(i));
 			else
@@ -99,9 +110,9 @@ public class HandshakeP implements PartitionModel {
 
 		// if trying to prove theorem, define the integer value of the hypothesis
 		// if variable, value must be defined at runtime; otherwise it can be calculated statically
-		if (!counter) {
+		if (counter == Variant1.THEOREM) {
 			final IntExpression nn;
-			if(var) 
+			if(var == Variant2.VARIABLE) 
 				nn = ((Person.difference(Hilary)).difference(Jocelyn)).count().divide(IntConstant.constant(2));
 			else 
 				nn = IntConstant.constant(hypo());
@@ -146,7 +157,7 @@ public class HandshakeP implements PartitionModel {
 		final Formula f4 = f.forAll(p1.oneOf(e).and(q1.oneOf(e)));
 
 		// if trying to prove theorem, add it to the formula
-		final Formula f5 = counter?f4:(f4.implies((Hilary.join(shaken).count()).toExpression().eq(hypo))).not();
+		final Formula f5 = counter == Variant1.COUNTER?f4:(f4.implies((Hilary.join(shaken).count()).toExpression().eq(hypo))).not();
 		
 		return f0.and(f1).and(f2).and(f5);
 	}
@@ -163,7 +174,7 @@ public class HandshakeP implements PartitionModel {
 		final TupleSet pb = f.range(f.tuple("Hilary"), f.tuple("Person"+persons));
 
 		// if variable, do not bound exactly
-		if (var) b.bound(Person, pb);
+		if (var == Variant2.VARIABLE) b.bound(Person, pb);
 		else b.boundExactly(Person, pb);
 		
 		b.boundExactly(Hilary, f.setOf("Hilary"));
@@ -172,9 +183,9 @@ public class HandshakeP implements PartitionModel {
 
 		// if proving theorem, define the bounds of the hypothesis
 		// if variable, integers are part of the universe, must also be bound
-		if (!counter) {
+		if (counter == Variant1.THEOREM) {
 			final TupleSet ab;
-			if (var) {
+			if (var == Variant2.VARIABLE) {
 				for (int i = 0; i <= maxInt(); i++)
 					b.boundExactly(i, f.setOf(i));
 				ab = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(maxInt())));
@@ -219,8 +230,8 @@ public class HandshakeP implements PartitionModel {
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Handshake");
-		sb.append(var?"V":"F");
-		sb.append(counter?"I":"T");
+		sb.append(var == Variant2.VARIABLE?"V":"F");
+		sb.append(counter == Variant1.COUNTER?"I":"T");
 		sb.append("-");
 		sb.append(persons);		
 		return sb.toString();
