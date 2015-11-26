@@ -6,20 +6,7 @@ import kodkod.instance.Bounds;
 
 public class ParallelSolver {
 
-	public enum Modes {
-		BATCH, 
-		SEQUENTIAL,
-		PARALLEL,
-		HYBRID,
-		INCREMENTAL;
-	}
 	
-	public enum Solvers {
-		GLUCOSE,
-		MINISAT,
-		SYRUP,
-		PLINGELING;
-	}
 	
 	// the solver used in the parallelization
 	final private Solver solver;
