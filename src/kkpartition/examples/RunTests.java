@@ -16,19 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kkpartition.MProblem;
 import kkpartition.PProblem;
+import kkpartition.ParallelOptions.Modes;
+import kkpartition.ParallelOptions.Solvers;
 import kkpartition.ParallelSolver;
-import kkpartition.ParallelSolver.Modes;
-import kkpartition.ParallelSolver.Solvers;
-import kkpartition.PartitionModel;
-import kodkod.ast.Formula;
-import kodkod.ast.Relation;
-import kodkod.engine.IncrementalSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.satlab.SATFactory;
-import kodkod.instance.Bounds;
 
 public final class RunTests {
 
@@ -40,8 +33,6 @@ public final class RunTests {
 	static PProblem psolution = null;
 	static Solution solution = null;
 
-	static boolean glucose, minisat, plingling, syrup;
-	static boolean batch, sequential, parallel, hybrid, incremental;
 	static int tries, threads = 4;
 
 	static private StringBuilder log = new StringBuilder();
@@ -49,6 +40,9 @@ public final class RunTests {
 
 	static private PrintWriter writer;
 	private static boolean ring, hotel, file, handshake;
+	
+	private static List<Modes> modes = new ArrayList<Modes>();
+	private static List<Solvers> solvers = new ArrayList<Solvers>();
 
 	/**
 	 * @throws IOException 
@@ -61,16 +55,16 @@ public final class RunTests {
 
 		tries = Integer.valueOf(args[0]);
 
-		glucose = opts.contains("-gl");
-		minisat = opts.contains("-ms");
-		plingling = opts.contains("-pl");
-		syrup = opts.contains("-sy");
+		if(opts.contains("-ms")) solvers.add(Solvers.MINISAT);
+		if(opts.contains("-gl")) solvers.add(Solvers.GLUCOSE);
+		if(opts.contains("-sy")) solvers.add(Solvers.SYRUP);
+		if(opts.contains("-pl")) solvers.add(Solvers.PLINGELING);
 
-		batch = opts.contains("-b");
-		sequential = opts.contains("-s");
-		parallel = opts.contains("-p");
-		hybrid = opts.contains("-h");
-		incremental = opts.contains("-i");
+		if(opts.contains("-b")) modes.add(Modes.BATCH);
+		if(opts.contains("-s")) modes.add(Modes.SEQUENTIAL);
+		if(opts.contains("-p")) modes.add(Modes.PARALLEL);
+		if(opts.contains("-h")) modes.add(Modes.HYBRID);
+		if(opts.contains("-i")) modes.add(Modes.INCREMENTAL);
 
 		ring = opts.contains("--ring");
 		handshake = opts.contains("--handshake");
@@ -100,227 +94,71 @@ public final class RunTests {
 		log.append("\n");
 
 		log.append("Solvers: ");
-		if (minisat) log.append("Minisat ");
-		if (glucose) log.append("Glucose ");
-		if (syrup) log.append("Syrup ");
-		if (plingling) log.append("Plingeling ");
+		log.append(solvers);
 		log.append("\n");
 
 		log.append("Modes: ");
-		if (batch) log.append("Batch ");
-		if (sequential) log.append("Sequential ");
-		if (parallel) log.append("Parallel ");
-		if (hybrid) log.append("Hybrid ");
-		if (incremental) log.append("Incremental ");
+		log.append(modes);
 		log.append("\n");
 
 		log.append("Tries: ");
 		log.append(tries);
 		log.append("\n");
+		
 		log.append("Threads: ");
 		log.append(threads);
 		log.append("\n");
 
 		header.append("n\t");
-		for (int i = 0; i < tries; i++)
-			if (minisat && batch) header.append("M.B\tSat\t");
-		for (int i = 0; i < tries; i++)
-			if (minisat && sequential) header.append("M.S\tSat\tC.#\tC.t\t");
-		for (int i = 0; i < tries; i++)
-			if (minisat && parallel) header.append("M.P\tSat\tC.#\tC.t\t");
-		for (int i = 0; i < tries; i++)
-			if (minisat && hybrid) header.append("M.H\tSat\tC.#\tC.t\t");
-		for (int i = 0; i < tries; i++)
-			if (minisat && incremental) header.append("M.I\tSat\t");
+		if (solvers.contains(Solvers.MINISAT)) {
+			if (modes.contains(Modes.BATCH))
+				for (int i = 0; i < tries; i++)
+					header.append("M.B\tSat\t");
+			if (modes.contains(Modes.SEQUENTIAL))
+				for (int i = 0; i < tries; i++)
+					header.append("M.S\tSat\tC.#\tC.t\t");
+			if (modes.contains(Modes.PARALLEL))
+				for (int i = 0; i < tries; i++)
+					header.append("M.P\tSat\tC.#\tC.t\t");
+			if (modes.contains(Modes.HYBRID))
+				for (int i = 0; i < tries; i++)
+					header.append("M.H\tSat\tC.#\tC.t\t");
+			if (modes.contains(Modes.INCREMENTAL))
+				for (int i = 0; i < tries; i++)
+					header.append("M.I\tSat\t");
+		}
+		
+		if (solvers.contains(Solvers.GLUCOSE)) {
+			if (modes.contains(Modes.BATCH))
+				for (int i = 0; i < tries; i++)
+					header.append("G.B\tSat\t");
+			if (modes.contains(Modes.SEQUENTIAL))
+				for (int i = 0; i < tries; i++)
+					header.append("G.S\tSat\tC.#\tC.t\t");
+			if (modes.contains(Modes.PARALLEL))
+				for (int i = 0; i < tries; i++)
+					header.append("G.P\tSat\tC.#\tC.t\t");
+			if (modes.contains(Modes.HYBRID))
+				for (int i = 0; i < tries; i++)
+					header.append("G.H\tSat\tC.#\tC.t\t");
+			if (modes.contains(Modes.INCREMENTAL))
+				for (int i = 0; i < tries; i++)
+					header.append("G.I\tSat\t");
+		}
 
-		for (int i = 0; i < tries; i++)
-			if (glucose && batch) header.append("G.B\tSat\t");
-		for (int i = 0; i < tries; i++)
-			if (glucose && sequential) header.append("G.S\tSat\tC.#\tC.t\t");
-		for (int i = 0; i < tries; i++)
-			if (glucose && parallel) header.append("G.P\tSat\tC.#\tC.t\t");
-		for (int i = 0; i < tries; i++)
-			if (glucose && hybrid) header.append("G.H\tSat\tC.#\tC.t\t");
-		for (int i = 0; i < tries; i++)
-			if (glucose && incremental) header.append("G.I\tSat\t");
+		if (solvers.contains(Solvers.SYRUP)) {
+			if (modes.contains(Modes.BATCH))
+				for (int i = 0; i < tries; i++)
+					header.append("S.B\tSat\t");
+		}
 
-		for (int i = 0; i < tries; i++)
-			if (syrup && batch) header.append("S.B\tSat\t");
-		for (int i = 0; i < tries; i++)
-			if (plingling && batch) header.append("P.B\tSat\t");
+		if (solvers.contains(Solvers.PLINGELING)) {
+			if (modes.contains(Modes.BATCH))
+				for (int i = 0; i < tries; i++)
+					header.append("P.B\tSat\t");
+		}
 
 		header.append("\n");
-	}
-
-	/**
-	 * Given a partitioned model, runs the model under all considered parameters.
-	 * @param model
-	 * @param sym
-	 */
-	private static void run_tests(PartitionModel model, int sym) {
-		final Bounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
-		final Formula f1 = model.partition1();
-		final Formula f2 = model.partition2();
-
-		solver.options().setBitwidth(model.getBitwidth());
-		solver.options().setSymmetryBreaking(sym);
-
-		int cn = 0;
-		int ch = 0;
-
-		// warm up
-		//		for (int i = 0; i<30; i++)
-		//			solver.solve(f1, b1);
-
-		// run under MiniSat in batch, sequential and parallel mode
-		if (minisat) {
-			solver.options().setSolver(SATFactory.MiniSat);
-			if (batch)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					solution = go_batch(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					log.append((t2-t1));
-					log.append("\t");
-				}
-			if (sequential)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					psolver.options().setThreads(1);
-					psolver.options().setHybrid(false);
-					psolution = psolver.solve(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					cn = getConfigNum(psolver);
-					log.append((t2-t1));
-					log.append("\t");
-				}
-			if (parallel)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					psolver.options().setThreads(threads);
-					psolver.options().setHybrid(false);
-					psolution = psolver.solve(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					cn = getConfigNum(psolver);
-					log.append((t2-t1));
-					log.append("\t");
-				}	
-			if (hybrid)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					psolver.options().setThreads(threads);
-					psolver.options().setHybrid(true);
-					psolution = psolver.solve(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					ch = getConfigNum(psolver);
-					log.append((t2-t1));
-					log.append("\t");
-				}	
-		}
-
-		// run under Glucose in batch, sequential and parallel mode
-		if (glucose) {
-			solver.options().setSolver(SATFactory.Glucose);
-			if (incremental)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					solution = go_incremental(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					log.append((t2-t1));
-					log.append("\t");
-				}
-			if (batch)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					solution = go_batch(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					log.append((t2-t1));
-					log.append("\t");
-				}
-			flush();
-			if (sequential)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					psolver.options().setThreads(1);
-					psolver.options().setHybrid(false);
-					psolution = psolver.solve(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					cn = getConfigNum(psolver);
-					log.append((t2-t1));
-					log.append("\t");
-				}
-			flush();
-			if (parallel)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					psolver.options().setThreads(threads);
-					psolver.options().setHybrid(false);
-					psolution = psolver.solve(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					cn = getConfigNum(psolver);
-					log.append((t2-t1));
-					log.append("\t");
-					flush();
-				}	
-			flush();
-			if (hybrid)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					psolver.options().setThreads(threads);
-					psolver.options().setHybrid(true);
-					psolution = psolver.solve(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					ch = getConfigNum(psolver);
-					log.append((t2-t1));
-					log.append("\t");
-				}	
-			flush();
-		}
-
-		// run under plingeling in batch
-		if (syrup) {
-			solver.options().setSolver(SATFactory.syrup());
-			if (batch)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					solution = go_batch(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					log.append((t2-t1));
-					log.append("\t");
-				}
-		}
-
-		// run under plingeling in batch
-		if (plingling) {
-			solver.options().setSolver(SATFactory.plingeling());
-			if (batch)
-				for (int i = 0; i < tries; i++) {
-					long t1 = System.currentTimeMillis();
-					solution = go_batch(b1, b2, f1, f2);
-					long t2 = System.currentTimeMillis();
-					log.append((t2-t1));
-					log.append("\t");
-				}
-		}
-
-		if (sequential || parallel || hybrid) {
-			log.append(psolution.sat()?"S":"U");
-			log.append("\t");
-			if (sequential || parallel) {
-				log.append(cn);
-				log.append("\t");
-			}
-			if (hybrid) {
-				log.append(ch);
-				log.append("\t");
-			}
-			log.append(getGenTime(psolver));
-		} else {
-			log.append(solution.sat()?"S":"U");
-		}
-
-		flush();
 	}
 
 	private static void flush() {
@@ -330,65 +168,12 @@ public final class RunTests {
 		log = new StringBuilder();
 	}
 
-	private static long getGenTime(ParallelSolver psolver2) {
-		long counter = 0;
-		for (PProblem p : psolver2.manager().solutions())
-			if (p instanceof MProblem) counter = counter + ((MProblem) p).getConfigTime();
-		return counter;
-	}
-
-	private static int getConfigNum(ParallelSolver psolver2) {
-		int counter = psolver2.manager().solutions().size();
-		if (!(psolver2.manager().solutions().get(psolver2.manager().solutions().size()-1) instanceof MProblem))
-			counter = -counter;
-		return counter;
-	}
-
-	/**
-	 * Solves the problem under standard Kodkod (i.e., batch mode).
-	 * @param b1
-	 * @param b2
-	 * @param f1
-	 * @param f2
-	 * @return 
-	 */
-	private static Solution go_batch(Bounds b1, Bounds b2, Formula f1, Formula f2) {
-		Bounds b3 = b1.clone();
-		for (Relation r : b2.relations()) {
-			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
-		}
-		return solver.solve(f1.and(f2), b3);
-	}
-
-	private static Solution go_incremental(Bounds b1, Bounds b2, Formula f1, Formula f2) {
-		IncrementalSolver isolver = IncrementalSolver.solver(solver.options());
-
-		Bounds b3 = b1.clone();
-		for (Relation r : b2.relations()) {
-			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
-		}
-		isolver.solve(f1,b3);
-		b3.relations().clear();
-		return isolver.solve(f2,b3);
-
-		//		isolver.solve(f1,b1);
-		//		return isolver.solve(f2,b2);
-	}
-
-	private static void printConfigs() {
-		for (Integer i : stats.keySet()) {
-			for (PProblem p : stats.get(i))
-				System.out.println(p.toString());
-			System.out.println();
-		}		
-	}
-
 	/**
 	 * Runs a model instance instance for the specified number of times.
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	private static void runModelInstance(String model, String[] model_args) throws IOException, InterruptedException {
+	private static int runModelInstance(String model, String[] model_args) throws IOException, InterruptedException {
 		String javaHome = System.getProperty("java.home");
 		String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
 		String classpath = System.getProperty("java.class.path");
@@ -400,6 +185,8 @@ public final class RunTests {
 		String[] args = Arrays.copyOf(cmd_args, cmd_args.length + model_args.length);
 		System.arraycopy(model_args, 0, args, cmd_args.length, model_args.length);
 
+		int exitVal = -1;
+		
 		for (int k = 0; k < tries; k++) {
 			Process p = Runtime.getRuntime().exec(args);
 
@@ -409,8 +196,11 @@ public final class RunTests {
 			String line = null;
 			while ( (line = br.readLine()) != null)
 				System.out.println(line);
-			int exitVal = p.waitFor();
+			exitVal = p.waitFor();
+			System.out.print("OK\t\t");
 		}
+		
+		return exitVal;
 	}
 
 	/**
@@ -422,57 +212,38 @@ public final class RunTests {
 		String[] args = new String[model_args.length+2];
 		System.arraycopy(model_args, 0, args, 2, model_args.length);
 
-		if (minisat) {
+		if (solvers.contains(Solvers.MINISAT)) {
 			args[1] = Solvers.MINISAT.name();
-			for (Modes m : getModes()) {
+			for (Modes m : modes) {
 				args[0] = m.name();
 				runModelInstance(model,args);
 			}
 		}
 
-		if (glucose) {
+		if (solvers.contains(Solvers.GLUCOSE)) {
 			args[1] = Solvers.GLUCOSE.name();
-			for (Modes m : getModes()) {
+			for (Modes m : modes) {
 				args[0] = m.name();
 				runModelInstance(model,args);
 			}
 		}
 
-		if (syrup) {
-			if (getModes().contains(Modes.BATCH)) {
+		if (solvers.contains(Solvers.SYRUP)) {
+			if (modes.contains(Modes.BATCH)) {
 				args[0] = Modes.BATCH.name();
 				args[1] = Solvers.SYRUP.name();
 				runModelInstance(model,args);
 			}
 		}
 
-		if (plingling) {
-			if (getModes().contains(Modes.BATCH)) {
+		if (solvers.contains(Solvers.PLINGELING)) {
+			if (modes.contains(Modes.BATCH)) {
 				args[0] = Modes.BATCH.name();
 				args[1] = Solvers.PLINGELING.name();
 				runModelInstance(model,args);
 			}
 		}
 
-	}
-
-	private static List<Modes> getModes() {
-		List<Modes> modes = new ArrayList<Modes>();
-		if (batch) modes.add(Modes.BATCH);
-		if (sequential) modes.add(Modes.SEQUENTIAL);
-		if (parallel) modes.add(Modes.PARALLEL);
-		if (hybrid) modes.add(Modes.HYBRID);
-		if (incremental) modes.add(Modes.INCREMENTAL);
-		return modes;
-	}
-
-	private static List<Solvers> getSolvers() {
-		List<Solvers> solvers = new ArrayList<Solvers>();
-		if (minisat) solvers.add(Solvers.MINISAT);
-		if (glucose) solvers.add(Solvers.GLUCOSE);
-		if (syrup) solvers.add(Solvers.SYRUP);
-		if (plingling) solvers.add(Solvers.PLINGELING);
-		return solvers;
 	}
 
 	/**

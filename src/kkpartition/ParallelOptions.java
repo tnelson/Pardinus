@@ -8,7 +8,21 @@ public class ParallelOptions {
 	// whether it will run in hybrid mode
 	private boolean hybrid = true;
 
-
+	public enum Modes {
+		BATCH, 
+		SEQUENTIAL,
+		PARALLEL,
+		HYBRID,
+		INCREMENTAL;
+	}
+	
+	public enum Solvers {
+		GLUCOSE,
+		MINISAT,
+		SYRUP,
+		PLINGELING;
+	}
+	
 	public ParallelOptions () {
 	
 	}

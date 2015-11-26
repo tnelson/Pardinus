@@ -9,8 +9,8 @@ import java.util.Arrays;
 import kkpartition.MProblem;
 import kkpartition.PProblem;
 import kkpartition.ParallelSolver;
-import kkpartition.ParallelSolver.Modes;
-import kkpartition.ParallelSolver.Solvers;
+import kkpartition.ParallelOptions.Modes;
+import kkpartition.ParallelOptions.Solvers;
 import kkpartition.PartitionModel;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -163,6 +163,7 @@ public final class RunTestModel {
 		log = new StringBuilder();
 	}
 
+	// wrong: should only count the translation time once!
 	private static long getGenTime(ParallelSolver psolver2) {
 		long counter = 0;
 		for (PProblem p : psolver2.manager().solutions())

@@ -35,14 +35,14 @@ public class PProblem extends Thread {
 	}
 
 	public void run() {
-		System.out.println("started: "+Thread.currentThread().getId());
+//		System.out.println("started: "+Thread.currentThread().getId());
 		while (!bounds.isEmpty() && (solution == null || !solution.sat())) {
 			solution = solver.solve(formula,bounds.remove(0));
 		}
 		solver.free();
-		System.out.println("ended1: "+Thread.currentThread().getId()+", "+Thread.currentThread().isInterrupted());
+//		System.out.println("ended1: "+Thread.currentThread().getId()+", "+Thread.currentThread().isInterrupted());
 		if (!Thread.currentThread().isInterrupted()) manager.end(this);
-		System.out.println("ended2: "+Thread.currentThread().getId());
+//		System.out.println("ended2: "+Thread.currentThread().getId());
 	}
 
 	public boolean sat() {
