@@ -68,7 +68,8 @@ public final class RunTestModel {
 
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
-		run_tests();
+//		for (int i = 0; i< 200; i++)
+			run_tests();
 
 		// guarantees that every running thread is terminated.
 		System.exit(0);
@@ -147,12 +148,14 @@ public final class RunTestModel {
 			log.append("\t");
 			log.append(getConfigNum(psolver));
 			log.append("\t");
-			log.append(getGenTime(psolver));
+//			log.append(getGenTime(psolver));
+//			log.append(psolution.getSolution().instance());
+
 		} else {
 			log.append(solution.sat() ? "S" : "U");
+//			log.append(solution.instance());
 		}
 		log.append("\t");
-
 		flush();
 	}
 

@@ -1,4 +1,3 @@
-
 package kkpartition.examples;
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class HandshakeP implements PartitionModel {
+public class NBishopsP implements PartitionModel {
 
 	final private Relation hypo;
 	final private Relation Person, Hilary, Jocelyn, shaken, spouse;
@@ -35,7 +34,7 @@ public class HandshakeP implements PartitionModel {
 		THEOREM;
 	}
 	
-	public HandshakeP(String[] args) {
+	public NBishopsP(String[] args) {
 		Person = Relation.unary("Person");
 		Hilary = Relation.unary("Hilary");
 		Jocelyn = Relation.unary("Jocelyn");
@@ -45,8 +44,8 @@ public class HandshakeP implements PartitionModel {
 		hypo = Relation.unary("hypothesis");
 		
 		persons = Integer.valueOf(args[0]);
-		counter = HandshakeP.Variant1.valueOf(args[1]);
-		var = HandshakeP.Variant2.valueOf(args[2]);
+		counter = NBishopsP.Variant1.valueOf(args[1]);
+		var = NBishopsP.Variant2.valueOf(args[2]);
 
 		final List<Object> atoms = new ArrayList<Object>((counter == Variant1.THEOREM && var == Variant2.VARIABLE)?2*persons-1:persons);
 		atoms.add("Hilary");
