@@ -79,9 +79,9 @@ public final class RunTests {
 		printHeader();
 		flush();
 
-		if (ring) runRing();
 		if (handshake) runHandshake();
 		if (hotel) runHotel();
+        if (ring) runRing();
 		if (file) runFileSystem();
 		if (span) runSpanTree();
 		if (dijkstra) runDijkstra();
@@ -271,7 +271,7 @@ public final class RunTests {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 6; i ++)  {
+				for (int i = 1; i <= 8; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -286,7 +286,7 @@ public final class RunTests {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 6; i ++)  {
+				for (int i = 1; i <= 7; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -417,7 +417,7 @@ public final class RunTests {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 6; i ++)  {
+			for (int i = 1; i <= 5; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
@@ -434,7 +434,7 @@ public final class RunTests {
 			log.append(v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 3; i <= 16; i ++)  {
+			for (int i = 3; i <= 14; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name()});
 				log.append("\n"); flush();
