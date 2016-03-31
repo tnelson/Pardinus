@@ -14,7 +14,7 @@ public class MProblem extends PProblem {
 
 	final public List<Solution> config;
 
-	public MProblem(List<Solution> cfg, PProblemManager manager) {
+	public MProblem(List<Solution> cfg, ProblemManager manager) {
 		super(manager, configBounds(manager, cfg));
 		this.config = cfg;
 	}
@@ -26,13 +26,13 @@ public class MProblem extends PProblem {
 	 * @param s
 	 * @return
 	 */
-	private static List<Bounds> configBounds(PProblemManager manager, List<Solution> ss) {
+	private static List<Bounds> configBounds(ProblemManager manager, List<Solution> ss) {
 		List<Bounds> res = new ArrayList<Bounds>();
 		
 		for (Solution s : ss) {
-		Bounds b3 = manager.bound2.clone();
+		Bounds b3 = manager.bounds2().clone();
 
-		for (Relation e : manager.bound1.upperBounds().keySet()) {
+		for (Relation e : manager.bounds1().upperBounds().keySet()) {
 			if (getTupleConfiguration(e.name(), s.instance()) != null) {
 				b3.boundExactly(e, getTupleConfiguration(e.name(), s.instance()));
 			}
@@ -54,14 +54,6 @@ public class MProblem extends PProblem {
 		}
 		return null;
 	}
-
-	public long getConfigTime() {
-		if (config == null) return -1;
-		long c = 0;
-		for (Solution s : config)
-			c = c+s.stats().solvingTime()+s.stats().translationTime(); 
-		return c;
-	}
 	
 	/**
 	 * Calculates the size of the configuration (number of tuples in the relations).
@@ -78,7 +70,7 @@ public class MProblem extends PProblem {
 	public String toString() {
 		if (config==null) return "M: POISON";
 		if (getSolution()==null) return "M: UNSOLVED";
-		return "M: "+ configSize() + "\t" + getConfigTime() + "\t" + getSolution().outcome() + "\t" + getSolveTime();
+		return "M: "+ configSize() +  "\t" + getSolution().outcome() + "\t" + getSolveTime();
 	}
 	
 }

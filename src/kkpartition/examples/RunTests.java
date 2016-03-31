@@ -39,8 +39,8 @@ public final class RunTests {
 	static private StringBuilder header = new StringBuilder();
 
 	static private PrintWriter writer;
-	private static boolean ring, hotel, file, handshake;
-	
+	private static boolean ring, hotel, file, handshake, span, dijkstra, diffeg, netconfig, redblack;
+
 	private static List<Modes> modes = new ArrayList<Modes>();
 	private static List<Solvers> solvers = new ArrayList<Solvers>();
 
@@ -70,14 +70,24 @@ public final class RunTests {
 		handshake = opts.contains("--handshake");
 		hotel = opts.contains("--hotel");
 		file = opts.contains("--file");
+		span = opts.contains("--span");
+		dijkstra = opts.contains("--dijkstra");
+		diffeg = opts.contains("--diffeg");
+		netconfig = opts.contains("--netconfig");
+		redblack = opts.contains("--redblack");
 
 		printHeader();
 		flush();
 
 		if (handshake) runHandshake();
 		if (hotel) runHotel();
-        if (ring) runRing();
+		if (ring) runRing();
 		if (file) runFileSystem();
+		if (span) runSpanTree();
+		if (dijkstra) runDijkstra();
+		if (diffeg) runDiffEg();
+		if (netconfig) runNetconfig();
+		if (redblack) runRedBlack();
 
 	}
 
@@ -104,7 +114,7 @@ public final class RunTests {
 		log.append("Tries: ");
 		log.append(tries);
 		log.append("\n");
-		
+
 		log.append("Threads: ");
 		log.append(threads);
 		log.append("\n");
@@ -127,7 +137,7 @@ public final class RunTests {
 				for (int i = 0; i < tries; i++)
 					header.append("M.I\tSat\t");
 		}
-		
+
 		if (solvers.contains(Solvers.GLUCOSE)) {
 			if (modes.contains(Modes.BATCH))
 				for (int i = 0; i < tries; i++)
@@ -186,7 +196,7 @@ public final class RunTests {
 		System.arraycopy(model_args, 0, args, cmd_args.length, model_args.length);
 
 		int exitVal = -1;
-		
+
 		for (int k = 0; k < tries; k++) {
 			Process p = Runtime.getRuntime().exec(args);
 
@@ -199,7 +209,7 @@ public final class RunTests {
 			exitVal = p.waitFor();
 			System.out.print("OK\t\t");
 		}
-		
+
 		return exitVal;
 	}
 
@@ -306,7 +316,6 @@ public final class RunTests {
 	 * @throws InterruptedException 
 	 */
 	private static void runHandshake() throws IOException, InterruptedException {
-
 		String model = HandshakeP.class.getCanonicalName();
 
 		for (HandshakeP.Variant2 s : HandshakeP.Variant2.values())
@@ -322,6 +331,94 @@ public final class RunTests {
 				log.append("\n");
 			}
 	}
+
+	private static void runRedBlack() throws IOException, InterruptedException {
+
+		String model = RedBlackTreeP.class.getCanonicalName();
+
+		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) 
+			for (RedBlackTreeP.Variant2 s : RedBlackTreeP.Variant2.values()) {
+				log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
+				log.append(header);
+				flush();
+				for (int i = 2; i <= 11; i ++)  {
+					log.append(i+"\t"); flush();
+					runModes(model, new String[]{i+"", v.name(), s.name()});
+					log.append("\n"); flush();
+				}
+				log.append("\n");
+			}
+	}
+
+	private static void runSpanTree() throws IOException, InterruptedException {
+
+		String model = SpanP.class.getCanonicalName();
+		int t = 8;
+		log.append("Span"+t+"\n"); 
+		log.append(header);
+		flush();
+		for (int i = 10; i <= 14; i ++)  {
+			log.append(i+"\t"); flush();
+			runModes(model, new String[]{i+"", t+""});
+			log.append("\n"); flush();
+		}
+		log.append("\n");
+
+		t = 12;
+		log.append("Span"+t+"\n"); 
+		log.append(header);
+		flush();
+		for (int i = 2; i <= 14; i ++)  {
+			log.append(i+"\t"); flush();
+			runModes(model, new String[]{i+"", t+""});
+			log.append("\n"); flush();
+		}
+		log.append("\n");
+}
+
+	private static void runDijkstra() throws IOException, InterruptedException {
+
+		String model = DijkstraP.class.getCanonicalName();
+		int t = 20;
+		log.append("Dijkstra"+t+"\n"); 
+		log.append(header);
+		flush();
+		for (int i = 5; i <= 20; i ++)  {
+			log.append(i+"\t"); flush();
+			runModes(model, new String[]{i+"", i+"", t+""});
+			log.append("\n"); flush();
+		}
+		log.append("\n");
+	}
+
+	private static void runDiffEg() throws IOException, InterruptedException {
+
+		String model = DiffEgP.class.getCanonicalName();
+		log.append("DiffEg"+"\n"); 
+		log.append(header);
+		flush();
+		for (int i = 30; i <= 40; i ++)  {
+			log.append(i+"\t"); flush();
+			runModes(model, new String[]{i+""});
+			log.append("\n"); flush();
+		}
+		log.append("\n");
+	}
+
+	private static void runNetconfig() throws IOException, InterruptedException {
+
+		String model = NetconfigP.class.getCanonicalName();
+		log.append("Netconfig"+"\n"); 
+		log.append(header);
+		flush();
+		for (int i = 3; i <= 20; i ++)  {
+			log.append(i+"\t"); flush();
+			runModes(model, new String[]{i+"",1+"",i+"",20+""});
+			log.append("\n"); flush();
+		}
+		log.append("\n");
+	}
+
 
 	/**
 	 * Tests the performance of all variants of the Hotel example.

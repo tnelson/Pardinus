@@ -49,10 +49,11 @@ public final class RunTestModel {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
+	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException,
 	IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException,
-	ClassNotFoundException {
+	ClassNotFoundException, InterruptedException {
 
 		// the arguments for the partition model
 		String[] model_args = Arrays.copyOfRange(args, 3, args.length);
@@ -68,7 +69,8 @@ public final class RunTestModel {
 
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
-		run_tests();
+//		for (int i = 0; i< 200; i++)
+			run_tests();
 
 		// guarantees that every running thread is terminated.
 		System.exit(0);
@@ -79,8 +81,9 @@ public final class RunTestModel {
 	 * 
 	 * @param model
 	 * @param sym
+	 * @throws InterruptedException 
 	 */
-	private static void run_tests() {
+	private static void run_tests() throws InterruptedException {
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -112,47 +115,84 @@ public final class RunTestModel {
 
 		long t1 = System.currentTimeMillis();
 
+		psolver.options().setMode(selected_mode);
 		switch (selected_mode) {
 		case BATCH:
 			solution = go_batch(b1, b2, f1, f2);
 			break;
 		case SEQUENTIAL:
 			psolver.options().setThreads(1);
-			psolver.options().setHybrid(false);
 			psolution = psolver.solve(b1, b2, f1, f2);
 			break;
 		case PARALLEL:
 			psolver.options().setThreads(threads);
-			psolver.options().setHybrid(false);
 			psolution = psolver.solve(b1, b2, f1, f2);
 			break;
 		case HYBRID:
 			psolver.options().setThreads(threads);
-			psolver.options().setHybrid(true);
 			psolution = psolver.solve(b1, b2, f1, f2);
 			break;
 		case INCREMENTAL:
 			solution = go_incremental(b1, b2, f1, f2);
+			break;
+		case STATS:
+			psolver.options().setThreads(threads);
+			psolution = psolver.solve(b1, b2, f1, f2);
 			break;
 		default:
 			break;
 		}
 
 		long t2 = System.currentTimeMillis();
-		log.append((t2 - t1));
-		log.append("\t");
 
+		
 		if (selected_mode == Modes.SEQUENTIAL || selected_mode == Modes.PARALLEL || selected_mode == Modes.HYBRID) {
+			log.append((t2 - t1));
+			log.append("\t");
 			log.append(psolution.sat() ? "S" : "U");
 			log.append("\t");
 			log.append(getConfigNum(psolver));
 			log.append("\t");
-			log.append(getGenTime(psolver));
-		} else {
+//			log.append(getGenTime(psolver));
+//			log.append(psolution.getSolution().instance());
+		}
+		else if (selected_mode == Modes.STATS) {
+			int tt = psolver.manager().solutions().size();
+			log.append(tt);
+			log.append("\t");
+			log.append(psolver.manager().getSats());
+			log.append("\t");
+			log.append(tt-psolver.manager().getSats());
+			log.append("\t");
+			if (tt != 0)
+				log.append(((psolver.manager().getSats() * 100) / (long) tt));
+			else 
+				log.append("0");
+			log.append("\t");
+			log.append(psolver.manager().getConfigStats().primaryVariables());
+			log.append("\t");
+			log.append(psolver.manager().getConfigStats().clauses());
+			log.append("\t");
+			log.append(psolver.manager().getVars());
+			log.append("\t");
+			log.append(psolver.manager().getClauses());
+			log.append("\t");
+			log.append(psolver.manager().getConfigTimes());
+			log.append("\t");
+//			solution = go_batch(b1, b2, f1, f2);
+//			log.append(solution.stats().primaryVariables());
+//			log.append("\t");
+//			log.append(solution.stats().clauses());
+//			log.append("\t");
+
+		}
+		else {
+			log.append((t2 - t1));
+			log.append("\t");
 			log.append(solution.sat() ? "S" : "U");
+//			log.append(solution);
 		}
 		log.append("\t");
-
 		flush();
 	}
 
@@ -161,15 +201,6 @@ public final class RunTestModel {
 		writer.print(log.toString());
 		writer.flush();
 		log = new StringBuilder();
-	}
-
-	// wrong: should only count the translation time once!
-	private static long getGenTime(ParallelSolver psolver2) {
-		long counter = 0;
-		for (PProblem p : psolver2.manager().solutions())
-			if (p instanceof MProblem)
-				counter = counter + ((MProblem) p).getConfigTime();
-		return counter;
 	}
 
 	private static int getConfigNum(ParallelSolver psolver2) {
