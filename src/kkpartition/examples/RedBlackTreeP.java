@@ -7,6 +7,7 @@ import java.util.List;
 import kkpartition.PartitionModel;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
+import kodkod.ast.IntConstant;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.instance.Bounds;
@@ -20,6 +21,20 @@ public class RedBlackTreeP implements PartitionModel {
 	final int n;
 	final private Universe u;
 
+	final private Variant1 v1;
+	final private Variant2 v2;
+	
+	public enum Variant2 {
+		V1,
+		V2;
+	}
+
+	public enum Variant1 {
+		COUNTER,
+		THEOREM;
+	}
+
+	
 	public RedBlackTreeP(String[] args) {
 		Node = Relation.unary("Node");
 		Black = Relation.unary("Black");
@@ -33,6 +48,8 @@ public class RedBlackTreeP implements PartitionModel {
 		Num = Relation.unary("Num");
 		
 		n = Integer.valueOf(args[0]);
+		v1 = RedBlackTreeP.Variant1.valueOf(args[1]);
+		v2 = RedBlackTreeP.Variant2.valueOf(args[2]);
 		
 		final List<Object> atoms = new ArrayList<Object>(n+2);
 
@@ -51,7 +68,15 @@ public class RedBlackTreeP implements PartitionModel {
 		Formula f2 = Root.one();
 		Formula f3 = left.partialFunction(Node, Node);
 		Formula f4 = right.partialFunction(Node, Node);
-		return Formula.and(f1,f2,f3,f4);
+		
+		Formula f5 = key.function(Node, Num);
+		Variable i = Variable.unary("i");
+		Formula f6 = key.join(i).lone().forAll(i.oneOf(Num));
+		
+		if (v2 == Variant2.V2)
+			return Formula.and(f1,f2,f3,f4);
+		else
+			return Formula.and(f1,f2,f3,f4,f5,f6,ordered());
 	}
 	
 	private Formula ordered() {
@@ -86,9 +111,11 @@ public class RedBlackTreeP implements PartitionModel {
 		Formula f5 = key.function(Node, Num);
 		Variable i = Variable.unary("i");
 		Formula f6 = key.join(i).lone().forAll(i.oneOf(Num));
-
 		
-		return Formula.and(f1,f2,f5,f6);
+		if (v2 == Variant2.V2)
+			return Formula.and(f1,f2,f5,f6,ordered());
+		else
+			return Formula.and(f1,f2);
 	}
 	
 	private Formula color() {
@@ -100,7 +127,9 @@ public class RedBlackTreeP implements PartitionModel {
 		Expression e22 = (n.join(right).join(children)).difference(color.join(Red));
 		Formula a2 = e21.count().eq(e22.count());
 		Formula f2 = (a1.and(a2)).forAll(n.oneOf(Node));
-		return f1.and(f2);		
+		if (v1 == Variant1.THEOREM)
+			return f1.and(f2).and(theorem().not());		
+		else return f1.and(f2);
 	}
 	
 	private Formula parent() {
@@ -110,9 +139,15 @@ public class RedBlackTreeP implements PartitionModel {
 	}
 	
 	public Formula partition2() {
-		return decls2().and(color()).and(ordered());
+		return decls2().and(color());
 	}
-
+	
+	private Formula theorem() {
+		Variable n = Variable.unary("n");
+		Expression e1 = n.join(left).count().minus(n.join(right).count()).toExpression();
+		Formula f1 = e1.in(IntConstant.constant(0).toExpression().union(IntConstant.constant(-1).toExpression()).union(IntConstant.constant(1).toExpression()));
+		return f1.forAll(n.oneOf(Node));
+	}
 
 	public Bounds bounds1() {
 		final TupleFactory f = u.factory();
@@ -126,6 +161,9 @@ public class RedBlackTreeP implements PartitionModel {
 		b.bound(left, nb.product(nb));
 		b.bound(right, nb.product(nb));
 		b.boundExactly(Num, kb);
+
+		if (v2 == Variant2.V1)
+			b.bound(key, nb.product(kb));
 
 		for (int i = 0; i < n; i++)
 			b.boundExactly(i, f.setOf(Integer.valueOf(i)));
@@ -141,7 +179,8 @@ public class RedBlackTreeP implements PartitionModel {
 		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
 		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
 
-		b.bound(key, nb.product(kb));
+		if (v2 == Variant2.V2)
+			b.bound(key, nb.product(kb));
 
 		b.boundExactly(Black, f.setOf("Black"));
 		b.boundExactly(Red, f.setOf("Red"));

@@ -124,7 +124,7 @@ public final class FilesystemP implements PartitionModel {
 		return variant==Variant.SAT?checkNoDirAliasesBuggy():checkNoDirAliasesCorrect();
 	}
 
-	public final Formula decls1() {
+	private final Formula decls1() {
 		// File and Dir partition object
 		final Formula f0 = Obj.eq(File.union(Dir)).and(File.intersection(Dir).no());
 		// Root and Cur are in Dir and do not intersect
@@ -150,7 +150,7 @@ public final class FilesystemP implements PartitionModel {
 
 	}
 
-	public final Formula decls2() {
+	private final Formula decls2() {
 		final Formula f2 = entries.in(Dir.product(DirEntry));
 		final Formula f5 = contents.function(DirEntry, Obj);
 		return f2.and(f5);
@@ -160,7 +160,7 @@ public final class FilesystemP implements PartitionModel {
 	 * Returns all facts in the model.
 	 * @return the facts.
 	 */
-	public final Formula facts() {
+	private final Formula facts() {
 		// sig File extends Object {} { some d: Dir | this in d.entries.contents }
 		final Variable file = Variable.unary("this");
 		final Variable d = Variable.unary("d");
@@ -197,7 +197,7 @@ public final class FilesystemP implements PartitionModel {
 	}
 
 	
-	public final Formula oneParentBuggy() { 
+	private final Formula oneParentBuggy() { 
 		//		fact OneParent {
 		//	    // all directories besides root xhave one parent
 		//	    all d: Dir - Root | one d.parent
@@ -205,7 +205,7 @@ public final class FilesystemP implements PartitionModel {
 		return Formula.TRUE;
 	}
 
-	public final Formula oneParentCorrect() { 
+	private final Formula oneParentCorrect() { 
 		//		fact OneParent {
 		//	    // all directories besides root xhave one parent
 		//	    all d: Dir - Root | one d.parent
@@ -220,7 +220,7 @@ public final class FilesystemP implements PartitionModel {
 	 * Returns the no aliases assertion.
 	 * @return the no aliases assertion.
 	 */
-	public final Formula noDirAliases() { 
+	private final Formula noDirAliases() { 
 		//all o: Dir | lone o.~contents
 		final Variable o = Variable.unary("o");
 		return o.join(contents.transpose()).lone().forAll(o.oneOf(Dir));
@@ -230,7 +230,7 @@ public final class FilesystemP implements PartitionModel {
 	 * Returns the formula that 'checks' the noDirAliases assertion.
 	 * @return decls() and facts() and noDirAliases().not()
 	 */
-	public final Formula checkNoDirAliasesCorrect() { 
+	private final Formula checkNoDirAliasesCorrect() { 
 		return decls2().and(facts()).and(oneParentCorrect()).and(noDirAliases().not());
 	}
 
@@ -238,7 +238,7 @@ public final class FilesystemP implements PartitionModel {
 	 * Returns the formula that 'checks' the noDirAliases assertion.
 	 * @return decls() and facts() and noDirAliases().not()
 	 */
-	public final Formula checkNoDirAliasesBuggy() { 
+	private final Formula checkNoDirAliasesBuggy() { 
 		return decls2().and(facts()).and(oneParentBuggy()).and(noDirAliases().not());
 	}
 
