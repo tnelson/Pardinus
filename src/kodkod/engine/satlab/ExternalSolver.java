@@ -221,9 +221,13 @@ final class ExternalSolver implements SATSolver {
 				new Thread(drain(p.getErrorStream())).start();
 				out = outputReader(p);
 				String line = null;
+				System.out.println(out);
+				System.out.println("("+out.read()+")");
 				while((line = out.readLine()) != null) {
+					System.out.println("2.0");
 					String[] tokens = line.split("\\s");
 					int tlength = tokens.length;
+					System.out.println("2.1");
 					if (tlength>0) {
 						if (tokens[0].compareToIgnoreCase("s")==0) {
 							if (tlength==2) {
@@ -247,6 +251,8 @@ final class ExternalSolver implements SATSolver {
 						} // not a solution line or a variable line, so ignore it.
 					}
 				}
+				System.out.println(3);
+
 				if (sat==null) {
 					throw new SATAbortedException("Invalid " + executable + " output: no line specifying the outcome.");
 				}
@@ -255,6 +261,8 @@ final class ExternalSolver implements SATSolver {
 			} catch (NumberFormatException e) {
 				throw new SATAbortedException("Invalid "+ executable +" output: encountered a non-integer variable token.", e);
 			} finally {
+				System.out.println(4);
+
 				close(cnf);
 				close(out);
 			}

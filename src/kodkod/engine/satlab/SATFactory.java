@@ -192,7 +192,7 @@ public abstract class SATFactory {
 		
 		final String executable = findStaticLibrary("glucose-syrup");
 		return externalFactory(executable==null ? "glucose-syrup" : executable, 
-				null);
+				null, "-verb=0");
 	
 	}
 	
