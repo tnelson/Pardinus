@@ -39,7 +39,7 @@ public final class RunTests {
 	static private StringBuilder header = new StringBuilder();
 
 	static private PrintWriter writer;
-	private static boolean ring, hotel, file, handshake, span, dijkstra, diffeg, netconfig, redblack;
+	private static boolean ring, hotel, file, handshake, span, dijkstra, diffeg, netconfig, redblack, dining, peaceable, jobs, lift;
 
 	private static List<Modes> modes = new ArrayList<Modes>();
 	private static List<Solvers> solvers = new ArrayList<Solvers>();
@@ -66,29 +66,79 @@ public final class RunTests {
 		if(opts.contains("-h")) modes.add(Modes.HYBRID);
 		if(opts.contains("-i")) modes.add(Modes.INCREMENTAL);
 
-		ring = opts.contains("--ring");
-		handshake = opts.contains("--handshake");
-		hotel = opts.contains("--hotel");
-		file = opts.contains("--file");
-		span = opts.contains("--span");
-		dijkstra = opts.contains("--dijkstra");
-		diffeg = opts.contains("--diffeg");
-		netconfig = opts.contains("--netconfig");
-		redblack = opts.contains("--redblack");
 
+		if (opts.contains("--all")) {
+			diffeg = true;
+			dijkstra = true;
+			dining = true;
+			file = true;
+			handshake = true;
+			hotel = true;
+			jobs = true;
+			lift = true;
+			peaceable = true;
+			redblack = true;
+			netconfig = true;
+			ring = true;
+			span = true;
+		} else {
+			diffeg = opts.contains("--diffeg");
+			dijkstra = opts.contains("--dijkstra");
+			dining = opts.contains("--dining");
+			file = opts.contains("--file");
+			handshake = opts.contains("--handshake");
+			hotel = opts.contains("--hotel");
+			jobs = opts.contains("--jobs");
+			lift = opts.contains("--lift");
+			peaceable = opts.contains("--peaceable");
+			redblack = opts.contains("--redblack");
+			netconfig = opts.contains("--netconfig");
+			ring = opts.contains("--ring");
+			span = opts.contains("--span");
+		}
+		
 		printHeader();
 		flush();
 
+		if (diffeg) runDiffEg();
+		if (dijkstra) runDijkstra();
+		if (dining) runDining();
+		if (file) runFileSystem();
 		if (handshake) runHandshake();
 		if (hotel) runHotel();
+        if (jobs) runJobs();
+        if (lift) runLift();
+        if (peaceable) runPeaceable();
+        if (redblack) runRedBlack();
+        if (netconfig) runNetconfig();
 		if (ring) runRing();
-		if (file) runFileSystem();
 		if (span) runSpanTree();
-		if (dijkstra) runDijkstra();
-		if (diffeg) runDiffEg();
-		if (netconfig) runNetconfig();
-		if (redblack) runRedBlack();
 
+	}
+
+	private static void runPeaceable() throws IOException, InterruptedException {
+		String model = PeaceableP.class.getCanonicalName();
+		log.append("Peaceable Queens\n"); 
+		log.append(header);
+		flush();
+		for (int i = 6; i <= 10; i ++)  {
+			for (int j = 6; j <= 10; j ++)  {
+				log.append(i+" "+j+"\t"); flush();
+				runModes(model, new String[]{i+"",j+""});
+				log.append("\n"); flush();
+			}		
+		}
+		log.append("\n");		
+	}
+
+	private static void runLift() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private static void runJobs() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	private static void printHeader() {
@@ -183,7 +233,7 @@ public final class RunTests {
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	private static int runModelInstance(String model, String[] model_args) throws IOException, InterruptedException {
+	private static int runModelInstance(String model, String[] model_args, int tries) throws IOException, InterruptedException {
 		String javaHome = System.getProperty("java.home");
 		String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
 		String classpath = System.getProperty("java.class.path");
@@ -222,11 +272,17 @@ public final class RunTests {
 		String[] args = new String[model_args.length+2];
 		System.arraycopy(model_args, 0, args, 2, model_args.length);
 
+		if (modes.contains(Modes.STATS)) {
+			args[0] = Modes.STATS.name();
+			args[1] = Solvers.GLUCOSE.name();
+			runModelInstance(model,args,1);
+		}
+		
 		if (solvers.contains(Solvers.MINISAT)) {
 			args[1] = Solvers.MINISAT.name();
 			for (Modes m : modes) {
 				args[0] = m.name();
-				runModelInstance(model,args);
+				runModelInstance(model,args,tries);
 			}
 		}
 
@@ -234,7 +290,7 @@ public final class RunTests {
 			args[1] = Solvers.GLUCOSE.name();
 			for (Modes m : modes) {
 				args[0] = m.name();
-				runModelInstance(model,args);
+				runModelInstance(model,args,tries);
 			}
 		}
 
@@ -242,7 +298,7 @@ public final class RunTests {
 			if (modes.contains(Modes.BATCH)) {
 				args[0] = Modes.BATCH.name();
 				args[1] = Solvers.SYRUP.name();
-				runModelInstance(model,args);
+				runModelInstance(model,args,tries);
 			}
 		}
 
@@ -250,7 +306,7 @@ public final class RunTests {
 			if (modes.contains(Modes.BATCH)) {
 				args[0] = Modes.BATCH.name();
 				args[1] = Solvers.PLINGELING.name();
-				runModelInstance(model,args);
+				runModelInstance(model,args,tries);
 			}
 		}
 
@@ -264,29 +320,30 @@ public final class RunTests {
 	private static void runRing() throws IOException, InterruptedException {
 		String model = RingP.class.getCanonicalName();
 
-		int t = 10;
+//		int t = 10;
+//
+//		for (RingP.Variant2 s : RingP.Variant2.values())
+//			for (RingP.Variant1 v : RingP.Variant1.values()) {
+//				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
+//				log.append(header);
+//				flush();
+//				for (int i = 1; i <= 8; i ++)  {
+//					log.append(i+"\t"); flush();
+//					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
+//					log.append("\n"); flush();
+//				}
+//				log.append("\n");
+//			}
 
-		for (RingP.Variant2 s : RingP.Variant2.values())
+		int t = 20;
+
+		RingP.Variant2 s = RingP.Variant2.VARIABLE;
+//		for (RingP.Variant2 s : RingP.Variant2.values())
 			for (RingP.Variant1 v : RingP.Variant1.values()) {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
 				for (int i = 1; i <= 8; i ++)  {
-					log.append(i+"\t"); flush();
-					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
-					log.append("\n"); flush();
-				}
-				log.append("\n");
-			}
-
-		t = 20;
-
-		for (RingP.Variant2 s : RingP.Variant2.values())
-			for (RingP.Variant1 v : RingP.Variant1.values()) {
-				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
-				log.append(header);
-				flush();
-				for (int i = 1; i <= 7; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -304,12 +361,13 @@ public final class RunTests {
 	private static void runHandshake() throws IOException, InterruptedException {
 		String model = HandshakeP.class.getCanonicalName();
 
-		for (HandshakeP.Variant2 s : HandshakeP.Variant2.values())
+		HandshakeP.Variant2 s = HandshakeP.Variant2.STATIC;
+//		for (HandshakeP.Variant2 s : HandshakeP.Variant2.values())
 			for (HandshakeP.Variant1 v : HandshakeP.Variant1.values()) {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 14; i ++)  {
+				for (int i = 3; i <= 16; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -322,60 +380,81 @@ public final class RunTests {
 
 		String model = RedBlackTreeP.class.getCanonicalName();
 
-		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) 
-			for (RedBlackTreeP.Variant2 s : RedBlackTreeP.Variant2.values()) {
-				log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
-				log.append(header);
-				flush();
-				for (int i = 2; i <= 11; i ++)  {
-					log.append(i+"\t"); flush();
-					runModes(model, new String[]{i+"", v.name(), s.name()});
-					log.append("\n"); flush();
-				}
-				log.append("\n");
+		RedBlackTreeP.Variant2 s = RedBlackTreeP.Variant2.V1;
+		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
+			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 1; i <= 12; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", v.name(), s.name()});
+				log.append("\n"); flush();
 			}
+			log.append("\n");
+		}
 	}
 
 	private static void runSpanTree() throws IOException, InterruptedException {
 
 		String model = SpanP.class.getCanonicalName();
-		int t = 8;
-		log.append("Span"+t+"\n"); 
-		log.append(header);
-		flush();
-		for (int i = 10; i <= 14; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+"", t+""});
-			log.append("\n"); flush();
+		int t = 10;
+		for (SpanP.Variant v : SpanP.Variant.values()) {
+//			SpanP.Variant v = SpanP.Variant.V1;
+			log.append("Span"+t+" "+v.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 2; i <= 16; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", t+"",v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
 		}
-		log.append("\n");
 
-		t = 12;
-		log.append("Span"+t+"\n"); 
-		log.append(header);
-		flush();
-		for (int i = 2; i <= 14; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+"", t+""});
-			log.append("\n"); flush();
-		}
-		log.append("\n");
-}
+//		t = 12;
+//		for (SpanP.Variant v : SpanP.Variant.values()) {
+//			log.append("Span"+t+" "+v.name()+"\n"); 
+//			log.append(header);
+//			flush();
+//			for (int i = 2; i <= 20; i ++)  {
+//				log.append(i+"\t"); flush();
+//				runModes(model, new String[]{i+"", t+"",v.name()});
+//				log.append("\n"); flush();
+//			}
+//			log.append("\n");
+//		}
+	}
 
 	private static void runDijkstra() throws IOException, InterruptedException {
 
 		String model = DijkstraP.class.getCanonicalName();
-		int t = 20;
-		log.append("Dijkstra"+t+"\n"); 
+		int t = 15;
+		for (DijkstraP.Variant v : DijkstraP.Variant.values()) {
+			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 2; i <= 16; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
+		}
+	}
+	
+	private static void runDining() throws IOException, InterruptedException {
+		String model = DiningP.class.getCanonicalName();
+		log.append("Dining"+"\n"); 
 		log.append(header);
 		flush();
-		for (int i = 5; i <= 20; i ++)  {
+		for (int i = 2; i <= 20; i ++)  {
 			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+"", i+"", t+""});
+			runModes(model, new String[]{i+"",20+""});
 			log.append("\n"); flush();
 		}
-		log.append("\n");
+		log.append("\n");		
 	}
+
 
 	private static void runDiffEg() throws IOException, InterruptedException {
 
@@ -412,27 +491,27 @@ public final class RunTests {
 	private static void runHotel() throws IOException, InterruptedException {
 		String model = HotelP.class.getCanonicalName();
 
-		int t = 10;
+//		int t = 10;
+//
+//		for (HotelP.Variant v : HotelP.Variant.values()) {
+//			log.append(v.name()+" "+t+"\n"); 
+//			log.append(header);
+//			flush();
+//			for (int i = 1; i <= 6; i ++)  {
+//				log.append(i+"\t"); flush();
+//				runModes(model, new String[]{i+"", t+"", v.name()});
+//				log.append("\n"); flush();
+//			}
+//			log.append("\n");
+//		}
+
+		int t = 20;
 
 		for (HotelP.Variant v : HotelP.Variant.values()) {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 6; i ++)  {
-				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", t+"", v.name()});
-				log.append("\n"); flush();
-			}
-			log.append("\n");
-		}
-
-		t = 20;
-
-		for (HotelP.Variant v : HotelP.Variant.values()) {
-			log.append(v.name()+" "+t+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 1; i <= 5; i ++)  {
+			for (int i = 1; i <= 7; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();

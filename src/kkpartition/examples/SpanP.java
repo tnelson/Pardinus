@@ -25,17 +25,13 @@ public class SpanP implements PartitionModel {
 	final private Relation Root,Process_rem,Level,State,adjacent;
 	final private Relation runs,level,parent,level_first,level_next,state_first,state_next,level_last,state_last;
 	private int n_ps, n_ts;
+	private Variant var;
 
 
-
-	public enum Variant2 {
-		STATIC,
-		VARIABLE;
-	}
-
-	public enum Variant1 {
-		COUNTER,
-		THEOREM;
+	public enum Variant {
+		V1,
+		V2,
+		V3;
 	}
 
 	public SpanP(String[] args) {
@@ -57,8 +53,7 @@ public class SpanP implements PartitionModel {
 
 		n_ps = Integer.valueOf(args[0]);
 		n_ts = Integer.valueOf(args[1]);
-//		counter = SpanP.Variant1.valueOf(args[1]);
-//		var = SpanP.Variant2.valueOf(args[2]);
+		var = Variant.valueOf(args[2]);
 
 		final List<Object> atoms = new ArrayList<Object>(2*n_ps+n_ts);
 		
@@ -210,7 +205,15 @@ public class SpanP implements PartitionModel {
 		Formula x160=x164.forAll(x162.oneOf(x121));
 		Formula legaltrans = x160.and(x155);
 		
-		return Formula.compose(FormulaOperator.AND, decls, transifpossible, legaltrans, traceWithoutLoop());
+		Formula res = Formula.compose(FormulaOperator.AND, decls, transifpossible, legaltrans);
+		
+		if (var == Variant.V1)
+			return res.and(successfulRun());
+		else if (var == Variant.V2)
+			return res.and(traceWithoutLoop());
+		else
+			return res.and(badLivenessTrace());
+		
 	}
 
 	private Formula equivStates(Expression s, Expression s1) {

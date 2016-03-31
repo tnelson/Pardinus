@@ -197,20 +197,37 @@ public final class RunConfigStats {
 		log.append("\n");
 	}
 
+
 	private static void runDijkstra() throws IOException, InterruptedException {
-	
+
 		String model = DijkstraP.class.getCanonicalName();
-		int t = 20;
-		log.append("Dijkstra "+t+"\n"); 
-		log.append(header);
-		flush();
-		for (int i = 2; i <= 14; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+"", i+"", t+""});
-			log.append("\n"); flush();
-		}
-		log.append("\n");
+		int t = 15;
+		DijkstraP.Variant v = DijkstraP.Variant.values()[0];
+//		for (DijkstraP.Variant v : DijkstraP.Variant.values()) {
+			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 12; i <= 12; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
+//		}
+			v = DijkstraP.Variant.values()[1];
+
+			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 2; i <= 12; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
 	}
+	
+
 
 	private static void runDining() throws IOException, InterruptedException {
 		String model = DiningP.class.getCanonicalName();
@@ -354,19 +371,23 @@ public final class RunConfigStats {
 	}
 
 	private static void runRedBlack() throws IOException, InterruptedException {
-	
-		String model = RedBlackTreeP.class.getCanonicalName();
-		log.append("Red Black Tree\n"); 
-		log.append(header);
-		flush();
-		for (int i = 2; i <= 12; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+""});
-			log.append("\n"); flush();
-		}
-		log.append("\n");
-	}
 
+		String model = RedBlackTreeP.class.getCanonicalName();
+
+		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) 
+			for (RedBlackTreeP.Variant2 s : RedBlackTreeP.Variant2.values()) {
+				log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
+				log.append(header);
+				flush();
+				for (int i = 2; i <= 11; i ++)  {
+					log.append(i+"\t"); flush();
+					runModes(model, new String[]{i+"", v.name(), s.name()});
+					log.append("\n"); flush();
+				}
+				log.append("\n");
+			}
+	}
+	
 	/**
 	 * Tests the performance of all variants of the Ring example.
 	 * @throws IOException 
@@ -408,18 +429,33 @@ public final class RunConfigStats {
 	}
 
 	private static void runSpanTree() throws IOException, InterruptedException {
-	
+
 		String model = SpanP.class.getCanonicalName();
-		int t = 10;
-		log.append("Span"+t+"\n"); 
-		log.append(header);
-		flush();
-		for (int i = 2; i <= 10; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+"", t+""});
-			log.append("\n"); flush();
+		int t = 8;
+		for (SpanP.Variant v : SpanP.Variant.values()) {
+			log.append("Span"+t+" "+v.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 2; i <= 14; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", t+"",v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
 		}
-		log.append("\n");
+
+		t = 12;
+		for (SpanP.Variant v : SpanP.Variant.values()) {
+			log.append("Span"+t+" "+v.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 2; i <= 14; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", t+"",v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
+		}
 	}
 
 }

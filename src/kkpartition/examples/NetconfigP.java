@@ -44,7 +44,7 @@ public class NetconfigP implements PartitionModel {
 		siteNum = Integer.valueOf(args[0]);
 		hqNum = Integer.valueOf(args[1]);
 		routerNum = Integer.valueOf(args[2]);
-		timeLength = Integer.valueOf(args[0]);
+		timeLength = Integer.valueOf(args[3]);
 
 		assert siteNum > 0 && hqNum > 0 && hqNum <= siteNum && routerNum > 0 && timeLength > 0;
 		final List<String> atoms = new ArrayList<String>(siteNum+routerNum+timeLength);

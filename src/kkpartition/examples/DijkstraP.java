@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kkpartition.PartitionModel;
+import kkpartition.examples.SpanP.Variant;
 import kodkod.ast.Decls;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
@@ -22,6 +23,12 @@ public class DijkstraP implements PartitionModel {
 	private final Universe u;
 	
 	private int states, processes, mutexes;
+	private Variant var;
+
+	public enum Variant {
+		SAT,
+		UNSAT;
+	}
 	
 	/**
 	 * Creates an instance of Dijkstra example.
@@ -42,6 +49,7 @@ public class DijkstraP implements PartitionModel {
 		processes = Integer.valueOf(args[0]);
 		mutexes = Integer.valueOf(args[1]);
 		states = Integer.valueOf(args[2]);
+		var = Variant.valueOf(args[3]);
 
 		
 		final List<String> atoms = new ArrayList<String>(states + processes + mutexes);
@@ -342,8 +350,8 @@ public class DijkstraP implements PartitionModel {
 
 	@Override
 	public Formula partition2() {
-//		return showDijkstra();
-		return checkDijkstraPreventsDeadlocks();
+		if (var == Variant.SAT) return showDijkstra();
+		else return checkDijkstraPreventsDeadlocks();
 	}
 
 	@Override
