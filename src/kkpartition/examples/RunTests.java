@@ -255,13 +255,13 @@ public final class RunTests {
 		String model = RingP.class.getCanonicalName();
 
 		int t = 10;
-
-		for (RingP.Variant2 s : RingP.Variant2.values())
-			for (RingP.Variant1 v : RingP.Variant1.values()) {
+        RingP.Variant1 v = RingP.Variant1.BADLIVENESS;
+        for (RingP.Variant2 s : RingP.Variant2.values()) {
+//			for (RingP.Variant1 v : RingP.Variant1.values()) {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 8; i ++)  {
+				for (int i = 1; i <= 10; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -271,18 +271,32 @@ public final class RunTests {
 
 		t = 20;
 
-		for (RingP.Variant2 s : RingP.Variant2.values())
-			for (RingP.Variant1 v : RingP.Variant1.values()) {
+//		for (RingP.Variant2 s : RingP.Variant2.values())
+        RingP.Variant2 s = RingP.Variant2.STATIC;
+		//	for (RingP.Variant1 v : RingP.Variant1.values()) {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 7; i ++)  {
+				for (int i = 1; i <= 10; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
 				log.append("\n");
-			}
+			//}
+        
+        s = RingP.Variant2.VARIABLE;
+       // for (RingP.Variant1 v : RingP.Variant1.values()) {
+            log.append(v.name()+" "+s.name()+" "+t+"\n");
+            log.append(header);
+            flush();
+            for (int i = 1; i <= 10; i ++)  {
+                log.append(i+"\t"); flush();
+                runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
+                log.append("\n"); flush();
+            }
+            log.append("\n");
+     //   }
 
 	}
 
@@ -300,7 +314,7 @@ public final class RunTests {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 14; i ++)  {
+				for (int i = 3; i <= 12; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -316,32 +330,33 @@ public final class RunTests {
 		String model = HotelP.class.getCanonicalName();
 
 		int t = 10;
-
-		for (HotelP.Variant v : HotelP.Variant.values()) {
+ 
+        HotelP.Variant v = HotelP.Variant.INTERVENES;
+//		for (HotelP.Variant v : HotelP.Variant.values()) {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 6; i ++)  {
+			for (int i = 1; i <= 10; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
+//		}
 
 		t = 20;
 
-		for (HotelP.Variant v : HotelP.Variant.values()) {
+//		for (HotelP.Variant v : HotelP.Variant.values()) {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 5; i ++)  {
+			for (int i = 1; i <= 10; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
+//		}
 	}
 
 
@@ -352,7 +367,7 @@ public final class RunTests {
 			log.append(v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 3; i <= 14; i ++)  {
+			for (int i = 3; i <= 16; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name()});
 				log.append("\n"); flush();
