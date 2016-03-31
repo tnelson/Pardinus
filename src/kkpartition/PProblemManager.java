@@ -11,20 +11,23 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.apple.jobjc.Utils.Threads;
+
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.Statistics;
 import kodkod.instance.Bounds;
 
 /**
  */
-public class PProblemManager extends Thread {
+public class PProblemManager extends ProblemManager {
 
-	public final Bounds bound1, bound2;
-	public final Solver solver;
-	public final Formula formula1;
-	public final Formula formula2;
+	private final Bounds bound1, bound2;
+	private final Solver solver;
+	private final Formula formula1;
+	private final Formula formula2;
 
 	private final List<PProblem> solutions = new ArrayList<PProblem>();
 	private final List<PProblem> problem_queue = new ArrayList<PProblem>();
@@ -46,10 +49,10 @@ public class PProblemManager extends Thread {
 		this.executor = Executors.newFixedThreadPool(n);
 	}
 
-	/**
-	 * Called by a problem when finished solving.
-	 * @param sol
+	/* (non-Javadoc)
+	 * @see kkpartition.ProblemManager#end(kkpartition.PProblem)
 	 */
+	@Override
 	public void end(PProblem sol) {
 		try {
 //			System.out.println(sol);
@@ -79,12 +82,17 @@ public class PProblemManager extends Thread {
 	}
 	
 	private void shutdown() throws InterruptedException {
-		 solution_queue.put(PProblem.DONE);
+		if (!Thread.currentThread().isInterrupted())
+			solution_queue.put(PProblem.DONE);
 		 running.set(0);
 		 if (!executor.isTerminated()) 
 			 executor.shutdownNow();
 	}
 
+	/* (non-Javadoc)
+	 * @see kkpartition.ProblemManager#run()
+	 */
+	@Override
 	public void run() {
 		if(hybrid) {
 			PProblem ppr = new PProblem(this, new ArrayList<Bounds>(Arrays.asList(merge(bound1, bound2))));
@@ -130,22 +138,22 @@ public class PProblemManager extends Thread {
 		executor.shutdown();
 	}
 
-	/**
-	 * Waits until there is a solution available.
-	 * @return
+	/* (non-Javadoc)
+	 * @see kkpartition.ProblemManager#waitUntil()
 	 */
-	public PProblem waitUntil() {
+	@Override
+	public PProblem waitUntil() throws InterruptedException {
 		PProblem sol = null;
-		try {
-			sol = solution_queue.take();
-		} catch (InterruptedException e) { 
-			e.printStackTrace(); 
-		}
+		sol = solution_queue.take();
 		return sol;
 	}
 
+	/* (non-Javadoc)
+	 * @see kkpartition.ProblemManager#terminate()
+	 */
+	@Override
 	public void terminate () throws InterruptedException {
-//		executor.awaitTermination(1000, TimeUnit.SECONDS);
+//		executor.awaitTermination(100000, TimeUnit.SECONDS);
 	}
 
 	private static Bounds merge(Bounds b1, Bounds b2) {
@@ -156,7 +164,65 @@ public class PProblemManager extends Thread {
 		return b3;
 	}
 	
+	/* (non-Javadoc)
+	 * @see kkpartition.ProblemManager#solutions()
+	 */
+	@Override
 	public List<PProblem> solutions() {
 		return solutions;
+	}
+
+	@Override
+	public Bounds bounds1() {
+		return bound1;
+	}
+
+	@Override
+	public Bounds bounds2() {
+		return bound2;
+	}
+
+	@Override
+	public Formula formula1() {
+		return formula1;
+	}
+
+	@Override
+	public Formula formula2() {
+		return formula2;
+	}
+
+	@Override
+	public Solver solver() {
+		return solver;
+	}
+
+	@Override
+	public int getSats() {
+		return solution_queue.size();
+	}
+
+	@Override
+	public long getConfigTimes() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Statistics getConfigStats() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getVars() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getClauses() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

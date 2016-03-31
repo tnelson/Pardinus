@@ -5,15 +5,17 @@ import kodkod.engine.config.Options;
 public class ParallelOptions {
 	// the number of parallel processes
 	private int threads = 4;
-	// whether it will run in hybrid mode
-	private boolean hybrid = true;
+
+	private Modes mode = Modes.PARALLEL;
+
 
 	public enum Modes {
 		BATCH, 
 		SEQUENTIAL,
 		PARALLEL,
 		HYBRID,
-		INCREMENTAL;
+		INCREMENTAL,
+		STATS;
 	}
 	
 	public enum Solvers {
@@ -38,17 +40,13 @@ public class ParallelOptions {
 	public int threads() {
 		return threads;
 	}
-	
-	/**
-	 * Sets whether to run in hybrid model.
-	 * @param threads
-	 */
-	public void setHybrid(boolean hybrid) {
-		this.hybrid = hybrid;
+
+	public Modes getMode() {
+		return mode;
 	}
 
-	public boolean isHybrid() {
-		return hybrid;
+	public void setMode(Modes mode) {
+		this.mode = mode;
 	}
 	
 	

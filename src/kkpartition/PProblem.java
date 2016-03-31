@@ -19,13 +19,13 @@ public class PProblem extends Thread {
 	private Solution solution;
 	final public List<Bounds> bounds;
 	final public Formula formula;
-	final public PProblemManager manager;
+	final public ProblemManager manager;
 
-	public PProblem(PProblemManager manager, List<Bounds> bnds) {
+	public PProblem(ProblemManager manager, List<Bounds> bnds) {
 		this.manager = manager;
 		if (this.manager != null) {
-			solver = new Solver(manager.solver.options());
-			this.formula = this.manager.formula1.and(this.manager.formula2);
+			solver = new Solver(manager.solver().options());
+			this.formula = this.manager.formula1().and(this.manager.formula2());
 			this.bounds = bnds;
 		} else {
 			this.solver = null;
