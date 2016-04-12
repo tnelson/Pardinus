@@ -1512,3 +1512,164 @@ n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 5	3327	U	58		683	U	-6		
 6	28996	U	457		1049	U	-8		
 7	
+------
+2016-04-12_10-39-34
+Examples: Hotel Handshake 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 5
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	42	U	0		43	U	-1		
+4	56	S	1		48	S	-1		
+5	53	U	0		53	U	0		
+6	70	S	1		67	S	-1		
+7	61	U	0		69	U	0		
+8	91	S	1		101	S	1		
+9	75	U	0		83	U	0		
+10	117	S	1		130	S	1		
+11	85	U	0		103	U	0		
+12	702	S	1		723	S	1		
+13	104	U	0		115	U	0		
+14	786	S	1		819	S	1		
+15	116	U	0		129	U	0		
+
+THEOREM STATIC
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	41	U	0		44	U	-1		
+4	58	U	1		50	U	-1		
+5	51	U	0		54	U	0		
+6	73	U	1		74	U	-1		
+7	62	U	0		70	U	0		
+8	121	U	1		133	U	1		
+9	78	U	0		84	U	0		
+10	500	U	1		533	U	1		
+11	86	U	0		100	U	0		
+12	13618	U	1		5995	U	-1		
+13	102	U	0		123	U	0		
+14	
+------
+2016-04-12_10-56-36
+Examples: Hotel RingLeader 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 5
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	105	S	3		106	S	3		
+3	141	S	3		135	S	3		
+4	196	S	3		165	S	3		
+5	284	S	3		228	S	3		
+6	316	S	3		346	S	3		
+7	437	S	3		370	S	3		
+8	467	S	3		482	S	3		
+9	590	S	3		646	S	3		
+10	662	S	3		663	S	3		
+11	818	S	3		724	S	3		
+12	1024	S	3		866	S	3		
+13	1186	S	3		1004	S	3		
+14	1309	S	3		1123	S	3		
+15	1352	S	3		1436	S	3		
+16	1727	S	3		1560	S	3		
+
+Dijkstra15 UNSAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	103	U	3		105	U	3		
+3	159	U	4		156	U	4		
+4	217	U	5		207	U	5		
+5	317	U	6		323	U	-6		
+6	486	U	7		511	U	-6		
+7	758	U	8		826	U	-6		
+8	1161	U	9		1182	U	-8		
+9	1773	U	10		1537	U	-8		
+10	2793	U	11		2220	U	-9		
+11	3381	U	12		2750	U	-10		
+12	4129	U	13		3302	U	-10		
+13	4885	U	14		4158	U	-12		
+14	5577	U	15		5189	U	-12		
+15	7360	U	16		5886	U	-12		
+16	8920	U	17		7583	U	-13		
+
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		41	S	-1		
+2	49	S	2		46	S	-1		
+3	62	S	5		57	S	-1		
+4	74	S	4		67	S	-1		
+5	118	S	24		87	S	-1		
+6	151	S	5		141	S	-1		
+7	489	S	395		204	S	-1		
+8	617	S	365		627	S	366		
+9	445	S	109		505	S	109		
+10	3452	S	1869		3875	S	1868		
+11	3937	S	1652		4576	S	1649		
+12	765	S	32		865	S	32		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	41	U	1		35	U	-1		
+2	47	U	2		40	U	-1		
+3	61	U	4		52	U	-1		
+4	86	U	14		63	U	-1		
+5	135	U	42		89	U	-1		
+6	248	U	132		98	U	-1		
+7	528	U	429		106	U	-1		
+8	1650	U	1430		128	U	-1		
+9	6223	U	4860		1292	U	-601		
+10	24471	U	16794		1279	U	-401		
+11	98253	U	58776		2109	U	-601		
+12	507620	U	207965		13826	U	5748		
+
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	65	U	1		62	U	-1		
+2	102	U	3		104	U	3		
+3	171	U	8		172	U	8		
+4	479	U	24		717	U	24		
+5	5437	U	89		6444	U	89		
+
+GOODLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	68	U	1		64	U	-1		
+2	107	U	3		103	U	3		
+3	186	U	8		192	U	8		
+4	524	U	24		723	U	24		
+5	5791	U	89		6694	U	89		
+
+GOODSAFETY VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	61	U	1		56	U	-1		
+2	97	U	3		100	U	3		
+3	178	U	8		171	U	8		
+4	443	U	24		534	U	24		
+5	2124	U	89		2604	U	89		
+
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	72	U	1		70	U	1		
+3	107	U	3		105	U	3		
+4	217	U	11		149	U	-5		
+5	1018	U	58		277	U	-5		
+6	13076	U	457		1052	U	-17		
+7	677268	U	5777		9379	U	-65		
+8	475	S	1		435	S	1		
+9	658	S	1		695	S	1		
+10	888	S	1		856	S	1		
+11	1053	S	1		1098	S	1		
+12	1366	S	1		1203	S	1		
+13	1707	S	1		1551	S	1		
+14	1999	S	1		1776	S	1		
+15	2362	S	1		2288	S	1		
+16	3065	S	1		2876	S	1		
+
+Span9 V2
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	106	U	1		116	U	1		
+3	168	U	3		169	U	3		
+4	442	U	11		277	U	-5		
+5	3029	U	58		706	U	-8		
+6	28052	U	457		1260	U	-10		
+7	798541	U	5777		4729	U	-29		
+8	
