@@ -1673,3 +1673,143 @@ n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 6	28052	U	457		1260	U	-10		
 7	798541	U	5777		4729	U	-29		
 8	
+------
+2016-04-12_13-08-18
+Examples: Hotel RingLeader 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 5
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	107	S	3		104	S	-3		
+3	140	S	3		141	S	3		
+4	205	S	3		203	S	3		
+5	287	S	3		287	S	3		
+6	492	S	3		598	S	3		
+7	535	S	3		642	S	3		
+8	688	S	3		690	S	3		
+9	1064	S	3		822	S	3		
+10	1014	S	3		1179	S	3		
+11	1097	S	3		1302	S	3		
+12	1323	S	3		1416	S	3		
+13	1523	S	3		1438	S	3		
+14	1842	S	3		1737	S	3		
+15	2384	S	3		2128	S	3		
+16	2605	S	3		2362	S	3		
+
+Dijkstra15 UNSAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	103	U	3		102	U	3		
+3	150	U	4		156	U	4		
+4	233	U	5		219	U	5		
+5	314	U	6		425	U	6		
+6	582	U	7		666	U	-7		
+7	915	U	8		1159	U	8		
+8	1379	U	9		1522	U	9		
+9	1663	U	10		1875	U	-10		
+10	2479	U	11		2798	U	-11		
+11	3270	U	12		3191	U	12		
+12	4367	U	13		4016	U	-12		
+13	5202	U	14		5368	U	14		
+14	6646	U	15		6647	U	-15		
+15	7577	U	16		8294	U	-14		
+16	9479	U	17		9068	U	-16		
+
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		42	S	-1		
+2	49	S	2		47	S	-1		
+3	59	S	5		54	S	-1		
+4	76	S	7		66	S	-1		
+5	111	S	24		86	S	-1		
+6	156	S	4		142	S	-1		
+7	494	S	394		214	S	-1		
+8	572	S	365		633	S	367		
+9	463	S	107		475	S	116		
+10	3891	S	1868		4020	S	1869		
+11	4005	S	1657		4716	S	1651		
+12	768	S	36		884	S	35		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	41	U	1		35	U	-1		
+2	48	U	2		39	U	-1		
+3	60	U	5		51	U	-1		
+4	83	U	14		61	U	-1		
+5	127	U	42		81	U	-1		
+6	269	U	132		93	U	-1		
+7	533	U	429		107	U	-1		
+8	1698	U	1430		126	U	-1		
+9	6490	U	4856		1276	U	-601		
+10	24884	U	16792		1290	U	-400		
+11	101205	U	58765		2160	U	-600		
+12	518771	U	207971		14130	U	-5799		
+
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	65	U	1		61	U	-1		
+2	103	U	3		98	U	3		
+3	325	U	7		174	U	8		
+4	781	U	24		598	U	24		
+5	5461	U	89		5897	U	89		
+
+GOODLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	67	U	1		64	U	-1		
+2	107	U	3		113	U	3		
+3	332	U	8		294	U	8		
+4	787	U	24		592	U	24		
+5	5962	U	89		6389	U	89		
+
+GOODSAFETY VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	59	U	1		56	U	-1		
+2	100	U	3		99	U	3		
+3	258	U	8		260	U	8		
+4	578	U	24		557	U	24		
+5	2321	U	89		2481	U	89		
+
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	74	U	1		69	U	-1		
+3	106	U	3		102	U	3		
+4	290	U	11		231	U	-8		
+5	1052	U	58		395	U	-8		
+6	13633	U	457		1635	U	-32		
+7	748145	U	5777		16415	U	-82		
+8	679	S	1		578	S	1		
+9	1054	S	1		849	S	1		
+10	1119	S	1		1143	S	1		
+11	1539	S	1		1462	S	1		
+12	1751	S	1		1754	S	1		
+13	2219	S	1		2439	S	1		
+14	2530	S	1		2591	S	1		
+15	3498	S	1		3161	S	1		
+16	3900	S	1		4164	S	1		
+
+Span9 V2
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	104	U	1		110	U	1		
+3	170	U	3		174	U	3		
+4	670	U	11		373	U	-8		
+5	3236	U	58		1115	U	-17		
+6	28737	U	457		1797	U	-15		
+7	843552	U	5775		7884	U	-42		
+8	
+------
+2016-04-12_17-23-20
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	272	U	305	U	2		392	U	2		
+2	355	U	807	U	9		658	U	-3		
+3	554	S	776	S	4		727	S	3		
+4	1881	S	936	S	3		852	S	3		
+5	4955	S	1141	S	3		1196	S	3		
+6	13062	S	1669	S	3		1705	S	3		
+7	
