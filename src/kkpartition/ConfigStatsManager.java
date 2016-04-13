@@ -90,7 +90,7 @@ public class ConfigStatsManager extends ProblemManager {
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) { 
 				PProblem problem = problem_queue.remove(/*0*/problem_queue.size() - 1);
-				executor.execute(problem);
+//				executor.execute(problem);
 				running.incrementAndGet();
 			}
 		}
@@ -104,7 +104,7 @@ public class ConfigStatsManager extends ProblemManager {
 	 */
 	public PProblem waitUntil() throws InterruptedException {
 		PProblem sol = null;
-		executor.awaitTermination(1, TimeUnit.HOURS);
+		executor.awaitTermination(10, TimeUnit.HOURS);
 		return sol;
 	}
 

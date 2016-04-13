@@ -131,9 +131,19 @@ public final class RunTests {
 		log.append("\n");		
 	}
 
-	private static void runLift() {
-		// TODO Auto-generated method stub
-		
+	private static void runLift() throws IOException, InterruptedException {
+		String model = LiftP.class.getCanonicalName();
+		log.append("LiftSPL\n"); 
+		log.append(header);
+		flush();
+		for (int i = 2; i <= 8; i ++)  {
+			for (int j = 8; j <= 20; j ++)  {
+				log.append(i+" "+j+"\t"); flush();
+				runModes(model, new String[]{i+"",j+""});
+				log.append("\n"); flush();
+			}		
+		}
+		log.append("\n");				
 	}
 
 	private static void runJobs() {
@@ -269,8 +279,9 @@ public final class RunTests {
 	 * @throws InterruptedException 
 	 */
 	private static void runModes(String model, String[] model_args) throws IOException, InterruptedException {
-		String[] args = new String[model_args.length+2];
-		System.arraycopy(model_args, 0, args, 2, model_args.length);
+		String[] args = new String[model_args.length+3];
+		System.arraycopy(model_args, 0, args, 3, model_args.length);
+		args[2] = threads+"";
 
 		if (modes.contains(Modes.STATS)) {
 			args[0] = Modes.STATS.name();
@@ -511,7 +522,7 @@ public final class RunTests {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 7; i ++)  {
+			for (int i = 1; i <= 10; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();

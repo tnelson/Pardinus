@@ -8,6 +8,7 @@ import kkpartition.PartitionModel;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.IntConstant;
+import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.instance.Bounds;
@@ -143,10 +144,18 @@ public class RedBlackTreeP implements PartitionModel {
 	}
 	
 	private Formula theorem() {
-		Variable n = Variable.unary("n");
-		Expression e1 = n.join(left).count().minus(n.join(right).count()).toExpression();
+		
+		Variable n1 = Variable.unary("n1");
+		Variable n2 = Variable.unary("n2");
+		Variable x = Variable.unary("x");
+		Expression set = (x.join(left).no().or(x.join(right).no())).comprehension(x.oneOf(Node));
+		IntExpression h1 = n1.join((left.union(right)).transpose().closure()).count();
+		IntExpression h2 = n2.join((left.union(right)).transpose().closure()).count();
+		
+		Expression e1 = h1.minus(h2).toExpression();
+		
 		Formula f1 = e1.in(IntConstant.constant(0).toExpression().union(IntConstant.constant(-1).toExpression()).union(IntConstant.constant(1).toExpression()));
-		return f1.forAll(n.oneOf(Node));
+		return f1.forAll(n1.oneOf(set).and(n2.oneOf(set)));
 	}
 
 	public Bounds bounds1() {

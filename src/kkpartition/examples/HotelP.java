@@ -120,11 +120,14 @@ public final class HotelP implements PartitionModel {
 		Formula x28 = key_next.totalOrder(key,key_first,key_last); 
 
 		Variable v2=Variable.unary("v5");
-		Formula x41=((rkeys.join(v2)).one()).forAll(v2.oneOf(key)); // all k : Key | lone rkeys.k
+		Formula x41=((rkeys.join(v2)).one()).forAll(v2.oneOf(key)); // all k : Key | one rkeys.k
+
+		Variable v3=Variable.unary("v5");
+		Formula x42=((v3.join(rkeys)).some()).forAll(v3.oneOf(room)); // all r : Room | some r.rkeys
 
 		Formula x99 = guest.eq(guest);
 		
-		Formula x12=Formula.compose(FormulaOperator.AND, x13, x28, x41,x99);
+		Formula x12=Formula.compose(FormulaOperator.AND, x13, x28, x41,x99, x42);
 		return x12;
 	}
 

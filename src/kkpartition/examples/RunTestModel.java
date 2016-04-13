@@ -28,7 +28,7 @@ public final class RunTestModel {
 	static PProblem psolution = null;
 	static Solution solution = null;
 
-	static int threads = 4, sym = 20;
+	static int threads, sym = 20;
 	static Solvers selected_solver;
 	static Modes selected_mode;
 
@@ -56,7 +56,7 @@ public final class RunTestModel {
 	ClassNotFoundException, InterruptedException {
 
 		// the arguments for the partition model
-		String[] model_args = Arrays.copyOfRange(args, 3, args.length);
+		String[] model_args = Arrays.copyOfRange(args, 4, args.length);
 
 		// dynamically create a partition model from the specified class
 		model = (PartitionModel) Class.forName(args[0]).getConstructor(String[].class)
@@ -67,6 +67,8 @@ public final class RunTestModel {
 		// the chosen solver
 		selected_solver = Solvers.valueOf(args[2]);
 
+		threads = Integer.valueOf(args[3]);
+		
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
 //		for (int i = 0; i< 200; i++)

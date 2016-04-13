@@ -229,9 +229,9 @@ public final class LiftP implements PartitionModel {
 		Formula f14 = l_normal.eq(l_normal);
 		Formula f15 = l_third.eq(l_third);
 		
-		Formula f16 = product.eq(f_overload);
+		Formula f16 = product.eq(f_idle);
 		
-		return Formula.compose(FormulaOperator.AND, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15);
+		return Formula.compose(FormulaOperator.AND, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15/*, f16*/);
 	}
 
 	@Override

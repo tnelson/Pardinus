@@ -202,30 +202,19 @@ public final class RunConfigStats {
 
 		String model = DijkstraP.class.getCanonicalName();
 		int t = 15;
-		DijkstraP.Variant v = DijkstraP.Variant.values()[0];
-//		for (DijkstraP.Variant v : DijkstraP.Variant.values()) {
+		for (DijkstraP.Variant v : DijkstraP.Variant.values()) {
 			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 12; i <= 12; i ++)  {
+			for (int i = 2; i <= 16; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-//		}
-			v = DijkstraP.Variant.values()[1];
-
-			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 2; i <= 12; i ++)  {
-				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
-				log.append("\n"); flush();
-			}
-			log.append("\n");
+		}
 	}
+	
 	
 
 
@@ -287,18 +276,18 @@ public final class RunConfigStats {
 		String model = HotelP.class.getCanonicalName();
 	
 		int t = 10;
-	
-		for (HotelP.Variant v : HotelP.Variant.values()) {
-			log.append("Hotel "+v.name()+" "+t+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 1; i <= 5; i ++)  {
-				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", t+"", v.name()});
-				log.append("\n"); flush();
-			}
-			log.append("\n");
-		}
+//	
+//		for (HotelP.Variant v : HotelP.Variant.values()) {
+//			log.append("Hotel "+v.name()+" "+t+"\n"); 
+//			log.append(header);
+//			flush();
+//			for (int i = 1; i <= 6; i ++)  {
+//				log.append(i+"\t"); flush();
+//				runModes(model, new String[]{i+"", t+"", v.name()});
+//				log.append("\n"); flush();
+//			}
+//			log.append("\n");
+//		}
 	
 		t = 20;
 	
@@ -306,7 +295,7 @@ public final class RunConfigStats {
 			log.append("Hotel "+v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 5; i ++)  {
+			for (int i = 1; i <= 6; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
@@ -374,12 +363,14 @@ public final class RunConfigStats {
 
 		String model = RedBlackTreeP.class.getCanonicalName();
 
-		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) 
-			for (RedBlackTreeP.Variant2 s : RedBlackTreeP.Variant2.values()) {
+		RedBlackTreeP.Variant2 s = RedBlackTreeP.Variant2.V1;
+
+		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
+//			for (RedBlackTreeP.Variant2 s : RedBlackTreeP.Variant2.values()) {
 				log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 2; i <= 11; i ++)  {
+				for (int i = 1; i <= 12; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();

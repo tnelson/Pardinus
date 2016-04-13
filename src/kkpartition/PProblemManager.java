@@ -57,7 +57,7 @@ public class PProblemManager extends ProblemManager {
 		try {
 //			System.out.println(sol);
 			running.decrementAndGet();
-			solutions.add(sol);
+			solutions.add(sol); // should be atomic or solutions are lost
 			if (sol.sat()) 
 				solution_queue.put(sol);
 			if (!(sol instanceof MProblem)) {
