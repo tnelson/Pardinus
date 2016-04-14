@@ -15,7 +15,7 @@ public class MProblem extends PProblem {
 	final public List<Solution> config;
 
 	public MProblem(List<Solution> cfg, ProblemManager manager) {
-		super(manager, configBounds(manager, cfg));
+		super(manager, manager.formula2(), configBounds(manager, cfg));
 		this.config = cfg;
 	}
 	
