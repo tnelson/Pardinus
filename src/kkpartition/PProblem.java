@@ -13,7 +13,7 @@ import kodkod.instance.TupleSet;
 
 public class PProblem extends Thread {
 
-	public static PProblem DONE = new PProblem(null, null);
+	public static PProblem DONE = new PProblem(null, null, null);
 	final private Solver solver;
 	
 	private Solution solution;
@@ -21,12 +21,12 @@ public class PProblem extends Thread {
 	final public Formula formula;
 	final public ProblemManager manager;
 
-	public PProblem(ProblemManager manager, List<Bounds> bnds) {
+	public PProblem(ProblemManager manager, Formula formula, List<Bounds> bnds) {
 		this.manager = manager;
 		if (this.manager != null) {
-			solver = new Solver(manager.solver().options());
-			this.formula = this.manager.formula1().and(this.manager.formula2());
+			solver = new Solver(this.manager.solver().options());
 			this.bounds = bnds;
+			this.formula = formula;
 		} else {
 			this.solver = null;
 			this.formula = null;

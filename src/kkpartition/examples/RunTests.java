@@ -161,6 +161,9 @@ public final class RunTests {
 		if (ring) log.append("RingLeader ");
 		if (handshake) log.append("Handshake ");
 		if (file) log.append("FileSystem ");
+		if (span) log.append("SpanTree ");
+		if (redblack) log.append("RedBlackTree ");
+		if (dijkstra) log.append("Dijkstra ");
 		log.append("\n");
 
 		log.append("Solvers: ");
@@ -354,7 +357,7 @@ public final class RunTests {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 8; i ++)  {
+				for (int i = 1; i <= 6; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -378,7 +381,7 @@ public final class RunTests {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 16; i ++)  {
+				for (int i = 3; i <= 18; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -396,7 +399,7 @@ public final class RunTests {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 12; i ++)  {
+			for (int i = 1; i <= 13; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -409,18 +412,29 @@ public final class RunTests {
 
 		String model = SpanP.class.getCanonicalName();
 		int t = 10;
-		for (SpanP.Variant v : SpanP.Variant.values()) {
-//			SpanP.Variant v = SpanP.Variant.V1;
+//		for (SpanP.Variant v : SpanP.Variant.values()) {
+			SpanP.Variant v = SpanP.Variant.V1;
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 16; i ++)  {
+			for (int i = 2; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
+			
+			v = SpanP.Variant.V2;
+			log.append("Span"+t+" "+v.name()+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 2; i <= 18; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", t+"",v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
+//		}
 
 //		t = 12;
 //		for (SpanP.Variant v : SpanP.Variant.values()) {
@@ -444,7 +458,7 @@ public final class RunTests {
 			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 16; i ++)  {
+			for (int i = 2; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -522,7 +536,7 @@ public final class RunTests {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 10; i ++)  {
+			for (int i = 1; i <= 8; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();

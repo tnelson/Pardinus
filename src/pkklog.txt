@@ -1679,7 +1679,7 @@ Examples: Hotel RingLeader
 Solvers: [GLUCOSE]
 Modes: [PARALLEL, HYBRID]
 Tries: 1
-Threads: 5
+Threads: 8
 Dijkstra15 SAT
 n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
 2	107	S	3		104	S	-3		

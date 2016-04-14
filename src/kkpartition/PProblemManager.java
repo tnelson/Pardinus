@@ -95,7 +95,7 @@ public class PProblemManager extends ProblemManager {
 	@Override
 	public void run() {
 		if(hybrid) {
-			PProblem ppr = new PProblem(this, new ArrayList<Bounds>(Arrays.asList(merge(bound1, bound2))));
+			PProblem ppr = new PProblem(this, formula1.and(formula2), new ArrayList<Bounds>(Arrays.asList(merge(bound1, bound2))));
 			ppr.setPriority(MAX_PRIORITY);
 			executor.execute(ppr);
 			running.incrementAndGet();
