@@ -2018,3 +2018,118 @@ n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 4	657	U	24		625	U	24		890	U	24		932	U	24		
 5	6359	U	89		6336	U	89		9090	U	89		9028	U	89		
 6	269870	U	415		269749	U	415		
+------
+2016-04-14_11-47-37
+Examples: Hotel RingLeader SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	93	S	
+------
+2016-04-14_11-47-46
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	91	S	
+------
+2016-04-14_11-48-01
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	94	S	
+------
+2016-04-14_11-48-13
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	95	S	
+------
+2016-04-14_11-49-59
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	95	S	
+------
+2016-04-14_11-53-57
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	91	S	105	S	3		110	S	-3		154	S	
+3	124	S	138	S	3		135	S	3		209	S	
+4	170	S	189	S	3		181	S	3		264	S	
+5	249	S	237	S	3		210	S	3		339	S	
+6	394	S	292	S	3		279	S	3		500	S	
+7	711	S	363	S	3		334	S	3		642	S	
+8	676	S	424	S	3		416	S	3		816	S	
+9	1468	S	525	S	3		490	S	3		1038	S	
+10	1291	S	657	S	3		596	S	3		1630	S	
+11	2025	S	780	S	3		724	S	3		1868	S	
+12	1355	S	873	S	3		713	S	3		2427	S	
+13	2179	S	959	S	3		859	S	3		2699	S	
+14	3029	S	1128	S	3		1125	S	3		3579	S	
+15	2244	S	1247	S	3		1152	S	3		3901	S	
+16	5378	S	1698	S	3		1334	S	3		4413	S	
+17	5277	S	1646	S	3		1568	S	3		5728	S	
+18	9496	S	1928	S	3		1767	S	3		7038	S	
+
+Dijkstra15 UNSAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	92	U	102	U	3		102	U	3		149	U	
+3	130	U	148	U	4		149	U	4		194	U	
+4	160	U	223	U	5		228	U	-5		236	U	
+5	240	U	365	U	6		360	U	-5		312	U	
+6	302	U	590	U	7		502	U	-6		387	U	
+7	393	U	911	U	8		715	U	-7		493	U	
+8	534	U	1225	U	9		997	U	-7		635	U	
+9	736	U	1988	U	10		1573	U	-8		846	U	
+10	979	U	2381	U	11		1935	U	-8		1104	U	
+11	1367	U	2856	U	12		2428	U	-9		1324	U	
+12	1668	U	3768	U	13		3053	U	-9		1862	U	
+13	2049	U	4730	U	14		3567	U	-10		2165	U	
+14	2563	U	5420	U	15		4492	U	-11		2569	U	
+15	2954	U	7615	U	16		4796	U	-11		3072	U	
+16	3614	U	8347	U	17		6012	U	-11		3717	U	
+17	4574	U	11506	U	18		7615	U	-12		4285	U	
+18	5563	U	13682	U	19		8320	U	-12		5007	U	
+
+COUNTER STATIC
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+3	43	U	42	U	0		44	U	-1		94	U	
+4	50	S	54	S	1		49	S	-1		103	S	
+5	58	U	51	U	0		53	U	0		110	U	
+6	67	S	68	S	1		67	S	-1		123	S	
+7	71	U	62	U	0		70	U	0		134	U	
+8	128	S	88	S	1		98	S	1		145	S	
+9	90	U	75	U	0		84	U	0		156	U	
+10	656	S	115	S	1		133	S	1		366	S	
+11	135	U	87	U	0		103	U	0		191	U	
+12	4741	S	698	S	1		717	S	1		1582	S	
+13	327	U	102	U	0		117	U	0		247	U	
+14	81034	S	790	S	1		841	S	1		53998	S	
+15	2017	U	117	U	0		133	U	0		905	U	
+16	1477543	S	9692	S	1		9909	S	1		838655	S	
+17	40753	U	133	U	0		156	U	0		31653	U	
+18	
