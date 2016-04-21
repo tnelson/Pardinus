@@ -41,7 +41,7 @@ import kodkod.util.ints.Ints;
  * @specfield coreGranularity: [0..3] // unsat core granularity, default is 0 (only top-level conjuncts are considered)
  * @author Emina Torlak
  */
-public final class Options implements Cloneable {
+public class Options implements Cloneable { //@nmm: removed final
 	private Reporter reporter = new AbstractReporter(){};
 	private SATFactory solver = SATFactory.DefaultSAT4J;
 	private int symmetryBreaking = 20;

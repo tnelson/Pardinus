@@ -52,7 +52,7 @@ public class RedBlackTreeP implements PartitionModel {
 		v1 = RedBlackTreeP.Variant1.valueOf(args[1]);
 		v2 = RedBlackTreeP.Variant2.valueOf(args[2]);
 		
-		final List<Object> atoms = new ArrayList<Object>(n+2);
+		final List<Object> atoms = new ArrayList<Object>(2*n+2);
 
 		for (int i = 0; i < n; i++) 
 			atoms.add("Node" + i);

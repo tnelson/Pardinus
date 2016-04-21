@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import kkpartition.MProblem;
 import kkpartition.PProblem;
-import kkpartition.ParallelSolver;
-import kkpartition.ParallelOptions.Modes;
-import kkpartition.ParallelOptions.Solvers;
+import kkpartition.DecomposedSolver;
+import kkpartition.DecomposedOptions.Modes;
+import kkpartition.examples.RunTests.Solvers;
 import kkpartition.PartitionModel;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -23,10 +24,11 @@ import kodkod.instance.Bounds;
 public final class RunTestModel {
 
 	final static Solver solver = new Solver();
-	final static ParallelSolver psolver = new ParallelSolver(solver);
+	final static DecomposedSolver psolver = new DecomposedSolver(solver);
 
 	static PProblem psolution = null;
 	static Solution solution = null;
+	static Iterator<Solution> solutions = null;
 
 	static int threads, sym = 20;
 	static Solvers selected_solver;
@@ -147,6 +149,15 @@ public final class RunTestModel {
 
 		long t2 = System.currentTimeMillis();
 
+//		solution = solutions.next();
+		
+//		for (int i = 0; i<10; i++)
+//			solutions.next();
+		
+//		long t3 = System.currentTimeMillis();
+//		
+//		log.append((t3 - t2));
+//		log.append("\t");
 		
 		if (selected_mode == Modes.SEQUENTIAL || selected_mode == Modes.PARALLEL || selected_mode == Modes.HYBRID) {
 			log.append((t2 - t1));
@@ -205,7 +216,7 @@ public final class RunTestModel {
 		log = new StringBuilder();
 	}
 
-	private static int getConfigNum(ParallelSolver psolver2) {
+	private static int getConfigNum(DecomposedSolver psolver2) {
 		int counter = psolver2.manager().solutions().size();
 		if (counter != 0)
 			if (!(psolver2.manager().solutions().get(psolver2.manager().solutions().size() - 1) instanceof MProblem))

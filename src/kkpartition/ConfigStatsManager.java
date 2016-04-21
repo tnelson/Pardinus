@@ -90,7 +90,7 @@ public class ConfigStatsManager extends ProblemManager {
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) { 
 				PProblem problem = problem_queue.remove(/*0*/problem_queue.size() - 1);
-//				executor.execute(problem);
+				executor.execute(problem);
 				running.incrementAndGet();
 			}
 		}

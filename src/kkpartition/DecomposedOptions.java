@@ -2,12 +2,11 @@ package kkpartition;
 
 import kodkod.engine.config.Options;
 
-public class ParallelOptions {
+public class DecomposedOptions extends Options {
 	// the number of parallel processes
 	private int threads = 4;
 
 	private Modes mode = Modes.PARALLEL;
-
 
 	public enum Modes {
 		BATCH, 
@@ -17,16 +16,9 @@ public class ParallelOptions {
 		INCREMENTAL,
 		STATS;
 	}
-	
-	public enum Solvers {
-		GLUCOSE,
-		MINISAT,
-		SYRUP,
-		PLINGELING;
-	}
-	
-	public ParallelOptions () {
-	
+
+	public DecomposedOptions () {
+		super();
 	}
 
 	/**

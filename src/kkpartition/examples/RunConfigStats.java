@@ -16,16 +16,16 @@ import java.util.List;
 import java.util.Map;
 
 import kkpartition.PProblem;
-import kkpartition.ParallelOptions.Modes;
-import kkpartition.ParallelOptions.Solvers;
-import kkpartition.ParallelSolver;
+import kkpartition.DecomposedOptions.Modes;
+import kkpartition.examples.RunTests.Solvers;
+import kkpartition.DecomposedSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 
 public final class RunConfigStats {
 
 	final static Solver solver = new Solver();
-	final static ParallelSolver psolver = new ParallelSolver(solver);
+	final static DecomposedSolver psolver = new DecomposedSolver(solver);
 
 	final static Map<Integer,List<PProblem>> stats = new HashMap<Integer,List<PProblem>> ();
 

@@ -17,16 +17,15 @@ import java.util.List;
 import java.util.Map;
 
 import kkpartition.PProblem;
-import kkpartition.ParallelOptions.Modes;
-import kkpartition.ParallelOptions.Solvers;
-import kkpartition.ParallelSolver;
+import kkpartition.DecomposedOptions.Modes;
+import kkpartition.DecomposedSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 
 public final class RunTests {
 
 	final static Solver solver = new Solver();
-	final static ParallelSolver psolver = new ParallelSolver(solver);
+	final static DecomposedSolver psolver = new DecomposedSolver(solver);
 
 	final static Map<Integer,List<PProblem>> stats = new HashMap<Integer,List<PProblem>> ();
 
@@ -39,7 +38,7 @@ public final class RunTests {
 	static private StringBuilder header = new StringBuilder();
 
 	static private PrintWriter writer;
-	private static boolean ring, hotel, file, handshake, span, dijkstra, diffeg, netconfig, redblack, dining, peaceable, jobs, lift;
+	private static boolean ring, hotel, file, handshake, span, dijkstra, diffeg, netconfig, redblack, dining, peaceable, jobs, lift, avl;
 
 	private static List<Modes> modes = new ArrayList<Modes>();
 	private static List<Solvers> solvers = new ArrayList<Solvers>();
@@ -78,6 +77,7 @@ public final class RunTests {
 			lift = true;
 			peaceable = true;
 			redblack = true;
+			avl = true;
 			netconfig = true;
 			ring = true;
 			span = true;
@@ -92,6 +92,7 @@ public final class RunTests {
 			lift = opts.contains("--lift");
 			peaceable = opts.contains("--peaceable");
 			redblack = opts.contains("--redblack");
+			avl = opts.contains("--avl");
 			netconfig = opts.contains("--netconfig");
 			ring = opts.contains("--ring");
 			span = opts.contains("--span");
@@ -110,6 +111,7 @@ public final class RunTests {
         if (lift) runLift();
         if (peaceable) runPeaceable();
         if (redblack) runRedBlack();
+        if (avl) runAVL();
         if (netconfig) runNetconfig();
 		if (ring) runRing();
 		if (span) runSpanTree();
@@ -163,6 +165,7 @@ public final class RunTests {
 		if (file) log.append("FileSystem ");
 		if (span) log.append("SpanTree ");
 		if (redblack) log.append("RedBlackTree ");
+		if (avl) log.append("AVLTree ");
 		if (dijkstra) log.append("Dijkstra ");
 		log.append("\n");
 
@@ -357,7 +360,7 @@ public final class RunTests {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 6; i ++)  {
+				for (int i = 1; i <= 8; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -381,7 +384,7 @@ public final class RunTests {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 18; i ++)  {
+				for (int i = 3; i <= 15; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -406,6 +409,23 @@ public final class RunTests {
 			}
 			log.append("\n");
 		}
+	}
+	
+
+	private static void runAVL() throws IOException, InterruptedException {
+
+		String model = AVLTreeP.class.getCanonicalName();
+
+		
+		log.append("AVL Tree \n"); 
+		log.append(header);
+		flush();
+		for (int i = 1; i <= 20; i ++)  {
+			log.append(i+"\t"); flush();
+			runModes(model, new String[]{i+""});
+			log.append("\n"); flush();
+		}
+		log.append("\n");
 	}
 
 	private static void runSpanTree() throws IOException, InterruptedException {
@@ -458,7 +478,7 @@ public final class RunTests {
 			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 18; i ++)  {
+			for (int i = 1; i <= 30; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -561,5 +581,14 @@ public final class RunTests {
 			log.append("\n");
 		}
 	}
+	
+	
+	public enum Solvers {
+		GLUCOSE,
+		MINISAT,
+		SYRUP,
+		PLINGELING;
+	}
+	
 
 }

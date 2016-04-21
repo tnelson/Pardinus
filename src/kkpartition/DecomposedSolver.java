@@ -1,11 +1,11 @@
 package kkpartition;
 
-import kkpartition.ParallelOptions.Modes;
+import kkpartition.DecomposedOptions.Modes;
 import kodkod.ast.Formula;
 import kodkod.engine.Solver;
 import kodkod.instance.Bounds;
 
-public class ParallelSolver {
+public class DecomposedSolver {
 
 	// the solver used in the parallelization
 	final private Solver solver;
@@ -13,16 +13,16 @@ public class ParallelSolver {
 	// this solver's problem manager
 	private ProblemManager manager;
 
-	private ParallelOptions options;
+	private DecomposedOptions options;
 
-	public ParallelSolver(Solver solver) {
-		options = new ParallelOptions();
+	public DecomposedSolver(Solver solver) {
+		options = new DecomposedOptions();
 		this.solver = solver;
 		if (!solver.options().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 	}
 
-	public ParallelSolver(Solver solver, ParallelOptions opt) {
+	public DecomposedSolver(Solver solver, DecomposedOptions opt) {
 		options = opt;
 		this.solver = solver;
 		if (!solver.options().solver().incremental())
@@ -64,7 +64,7 @@ public class ParallelSolver {
 		return manager;
 	}
 
-	public ParallelOptions options() {
+	public DecomposedOptions options() {
 		return options;
 	}
 

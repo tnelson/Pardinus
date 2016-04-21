@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.apple.jobjc.Utils.Threads;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -130,7 +128,8 @@ public class PProblemManager extends ProblemManager {
 				}
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) { 
-				PProblem problem = problem_queue.remove(0/*problem_queue.size() - 1*/);
+				PProblem problem = problem_queue.remove(new Random().nextInt(problem_queue.size()));
+//				PProblem problem = problem_queue.remove(0/*problem_queue.size() - 1*/);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}
