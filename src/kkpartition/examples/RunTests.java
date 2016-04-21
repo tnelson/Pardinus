@@ -359,8 +359,8 @@ public final class RunTests {
 
 		RingP.Variant2 s = RingP.Variant2.VARIABLE;
 //		for (RingP.Variant2 s : RingP.Variant2.values())
-//			for (RingP.Variant1 v : RingP.Variant1.values()) {
-				RingP.Variant1 v = RingP.Variant1.BADLIVENESS;
+			for (RingP.Variant1 v : RingP.Variant1.values()) {
+//				RingP.Variant1 v = RingP.Variant1.BADLIVENESS;
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
@@ -370,7 +370,7 @@ public final class RunTests {
 					log.append("\n"); flush();
 				}
 				log.append("\n");
-//			}
+			}
 
 	}
 
@@ -384,18 +384,18 @@ public final class RunTests {
 
 		HandshakeP.Variant2 s = HandshakeP.Variant2.STATIC;
 //		for (HandshakeP.Variant2 s : HandshakeP.Variant2.values())
-//			for (HandshakeP.Variant1 v : HandshakeP.Variant1.values()) {
-				HandshakeP.Variant1 v = HandshakeP.Variant1.COUNTER;
+			for (HandshakeP.Variant1 v : HandshakeP.Variant1.values()) {
+//				HandshakeP.Variant1 v = HandshakeP.Variant1.COUNTER;
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 20; i ++)  {
+				for (int i = 3; i <= 16; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
 				log.append("\n");
-//			}
+			}
 	}
 
 	private static void runRedBlack() throws IOException, InterruptedException {
@@ -403,18 +403,18 @@ public final class RunTests {
 		String model = RedBlackTreeP.class.getCanonicalName();
 
 		RedBlackTreeP.Variant2 s = RedBlackTreeP.Variant2.V1;
-//		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
-		RedBlackTreeP.Variant1 v = RedBlackTreeP.Variant1.COUNTER;
+		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
+//		RedBlackTreeP.Variant1 v = RedBlackTreeP.Variant1.COUNTER;
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 15; i ++)  {
+			for (int i = 1; i <= 13; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-//		}
+		}
 	}
 	
 
@@ -546,8 +546,8 @@ public final class RunTests {
 
 		int t = 20;
 
-//		for (HotelP.Variant v : HotelP.Variant.values()) {
-			HotelP.Variant v = HotelP.Variant.INTERVENES;
+		for (HotelP.Variant v : HotelP.Variant.values()) {
+//			HotelP.Variant v = HotelP.Variant.INTERVENES;
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
@@ -557,7 +557,7 @@ public final class RunTests {
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-//		}
+		}
 	}
 
 
