@@ -11,8 +11,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.apple.jobjc.Utils.Threads;
-
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.Solution;

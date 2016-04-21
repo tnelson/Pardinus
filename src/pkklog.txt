@@ -2749,3 +2749,53 @@ n	G.H	Sat	C.#	C.t
 18	5147	S	1		
 19	176	U	0		
 20	
+------
+2016-04-21_19-21-52
+Examples: Hotel RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.H	Sat	C.#	C.t	
+1	362	U	2		
+2	641	U	-6		
+3	763	S	3		
+4	928	S	3		
+5	1136	S	3		
+6	1329	S	3		
+7	1920	S	3		
+8	2539	S	3		
+9	2783	S	3		
+10	3222	S	3		
+
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+1	42	S	-1		
+2	46	S	-1		
+3	56	S	-1		
+4	66	S	-1		
+5	85	S	-1		
+6	141	S	-1		
+7	212	S	-1		
+8	585	S	366		
+9	477	S	109		
+10	3730	S	1867		
+11	4199	S	1647		
+12	831	S	31		
+13	14117	S	5153		
+14	
+------
+2016-04-21_19-24-17
+Examples: RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.H	Sat	C.#	C.t	
+1	63	U	-1		
+2	104	U	3		
+3	197	U	8		
+4	761	U	24		
+5	
