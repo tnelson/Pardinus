@@ -291,17 +291,18 @@ public final class RunConfigStats {
 	
 		t = 20;
 	
-		for (HotelP.Variant v : HotelP.Variant.values()) {
+//		for (HotelP.Variant v : HotelP.Variant.values()) {
+			HotelP.Variant v = HotelP.Variant.INTERVENES;
 			log.append("Hotel "+v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 6; i ++)  {
+			for (int i = 1; i <= 8; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
+//		}
 	}
 
 	private static void runJobs() throws IOException, InterruptedException {

@@ -128,8 +128,8 @@ public class PProblemManager extends ProblemManager {
 				}
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) { 
-				PProblem problem = problem_queue.remove(new Random().nextInt(problem_queue.size()));
-//				PProblem problem = problem_queue.remove(0/*problem_queue.size() - 1*/);
+//				PProblem problem = problem_queue.remove(new Random().nextInt(problem_queue.size()));
+				PProblem problem = problem_queue.remove(problem_queue.size() - 1);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}

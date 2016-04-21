@@ -59,6 +59,7 @@ public final class RunTests {
 		if(opts.contains("-sy")) solvers.add(Solvers.SYRUP);
 		if(opts.contains("-pl")) solvers.add(Solvers.PLINGELING);
 
+		if(opts.contains("-t")) modes.add(Modes.STATS);
 		if(opts.contains("-b")) modes.add(Modes.BATCH);
 		if(opts.contains("-s")) modes.add(Modes.SEQUENTIAL);
 		if(opts.contains("-p")) modes.add(Modes.PARALLEL);
@@ -292,7 +293,9 @@ public final class RunTests {
 		if (modes.contains(Modes.STATS)) {
 			args[0] = Modes.STATS.name();
 			args[1] = Solvers.GLUCOSE.name();
+			args[2] = "1";
 			runModelInstance(model,args,1);
+			return ;
 		}
 		
 		if (solvers.contains(Solvers.MINISAT)) {
@@ -356,7 +359,8 @@ public final class RunTests {
 
 		RingP.Variant2 s = RingP.Variant2.VARIABLE;
 //		for (RingP.Variant2 s : RingP.Variant2.values())
-			for (RingP.Variant1 v : RingP.Variant1.values()) {
+//			for (RingP.Variant1 v : RingP.Variant1.values()) {
+				RingP.Variant1 v = RingP.Variant1.BADLIVENESS;
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
@@ -366,7 +370,7 @@ public final class RunTests {
 					log.append("\n"); flush();
 				}
 				log.append("\n");
-			}
+//			}
 
 	}
 
@@ -380,17 +384,18 @@ public final class RunTests {
 
 		HandshakeP.Variant2 s = HandshakeP.Variant2.STATIC;
 //		for (HandshakeP.Variant2 s : HandshakeP.Variant2.values())
-			for (HandshakeP.Variant1 v : HandshakeP.Variant1.values()) {
+//			for (HandshakeP.Variant1 v : HandshakeP.Variant1.values()) {
+				HandshakeP.Variant1 v = HandshakeP.Variant1.COUNTER;
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 15; i ++)  {
+				for (int i = 3; i <= 20; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
 				log.append("\n");
-			}
+//			}
 	}
 
 	private static void runRedBlack() throws IOException, InterruptedException {
@@ -398,17 +403,18 @@ public final class RunTests {
 		String model = RedBlackTreeP.class.getCanonicalName();
 
 		RedBlackTreeP.Variant2 s = RedBlackTreeP.Variant2.V1;
-		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
+//		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
+		RedBlackTreeP.Variant1 v = RedBlackTreeP.Variant1.COUNTER;
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 13; i ++)  {
+			for (int i = 1; i <= 15; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
+//		}
 	}
 	
 
@@ -431,13 +437,13 @@ public final class RunTests {
 	private static void runSpanTree() throws IOException, InterruptedException {
 
 		String model = SpanP.class.getCanonicalName();
-		int t = 10;
+		int t = 9;
 //		for (SpanP.Variant v : SpanP.Variant.values()) {
 			SpanP.Variant v = SpanP.Variant.V1;
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 18; i ++)  {
+			for (int i = 2; i <= 20; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -448,7 +454,7 @@ public final class RunTests {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 18; i ++)  {
+			for (int i = 2; i <= 20; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -478,7 +484,7 @@ public final class RunTests {
 			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 30; i ++)  {
+			for (int i = 1; i <= 35; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -552,7 +558,8 @@ public final class RunTests {
 
 		int t = 20;
 
-		for (HotelP.Variant v : HotelP.Variant.values()) {
+//		for (HotelP.Variant v : HotelP.Variant.values()) {
+			HotelP.Variant v = HotelP.Variant.INTERVENES;
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
@@ -562,7 +569,7 @@ public final class RunTests {
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
+//		}
 	}
 
 
