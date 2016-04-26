@@ -3266,3 +3266,90 @@ n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 5	6132	U	89		5886	U	89		7355	U	89		7246	U	89		
 6	234773	U	415		236436	U	415		316514	U	415		316358	U	415		
 7	
+------
+2016-04-26_10-19-40
+Examples: Hotel RingLeader RedBlackTree 
+Solvers: [PLINGELING]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	P.B	Sat	P.B	Sat	
+1	435	U	429	U	
+2	602	U	624	U	
+3	
+------
+2016-04-26_10-34-54
+Examples: Hotel RingLeader RedBlackTree 
+Solvers: [PLINGELING]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	P.B	Sat	P.B	Sat	
+1	442	U	427	U	
+2	620	U	618	U	
+3	
+------
+2016-04-26_10-35-16
+Examples: RingLeader RedBlackTree 
+Solvers: [PLINGELING]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+Red Black Tree COUNTER V1
+n	P.B	Sat	P.B	Sat	
+1	101	S	101	S	
+2	108	S	109	S	
+3	123	S	123	S	
+4	159	S	147	S	
+5	177	S	177	S	
+6	328	S	327	S	
+7	686	S	688	S	
+8	1041	S	1043	S	
+
+Red Black Tree THEOREM V1
+n	P.B	Sat	P.B	Sat	
+1	96	U	96	U	
+2	106	U	101	U	
+3	121	U	121	U	
+4	143	U	141	U	
+5	181	U	180	U	
+6	543	U	547	U	
+7	986	U	989	U	
+8	3198	U	3195	U	
+
+BADLIVENESS VARIABLE 20
+n	P.B	Sat	P.B	Sat	
+1	125	U	125	U	
+2	213	U	208	U	
+3	565	U	570	U	
+4	18099	U	18120	U	
+5	
+------
+2016-04-26_10-36-22
+Examples: RingLeader RedBlackTree 
+Solvers: [SYRUP, PLINGELING]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+Red Black Tree COUNTER V1
+n	S.B	Sat	S.B	Sat	P.B	Sat	P.B	Sat	
+1	89	S	89	S	101	S	102	S	
+2	95	S	99	S	112	S	107	S	
+3	107	S	109	S	123	S	124	S	
+4	122	S	122	S	146	S	146	S	
+5	139	S	140	S	177	S	175	S	
+6	166	S	166	S	
+------
+2016-04-26_10-36-32
+Examples: Hotel RingLeader RedBlackTree 
+Solvers: [SYRUP, PLINGELING]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	S.B	Sat	S.B	Sat	P.B	Sat	P.B	Sat	
+1	342	U	333	U	467	U	428	U	
+2	552	U	558	U	623	U	614	U	
+3	750	S	733	S	
