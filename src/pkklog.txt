@@ -3823,3 +3823,38 @@ n	G.H	Sat	C.#	C.t
 8	1369	U	-1000		
 9	6888	U	4860		
 10	26156	U	16793		
+
+------
+2016-04-26_19-51-17
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	S.B	Sat	
+1	279	U	383	U	-2		345	U	
+2	349	U	633	U	-6		544	U	
+3	610	S	742	S	3		747	S	
+4	815	S	874	S	3		1085	S	
+5	
+------
+2016-04-26_19-51-36
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	282	U	314	U	2		375	U	-2		351	U	
+2	355	U	719	U	6		660	U	-4		549	U	
+3	604	S	719	S	3		766	S	3		738	S	
+4	846	S	868	S	3		922	S	3		1410	S	
+5	3979	S	1136	S	3		1169	S	3		2077	S	
+6	9814	S	1273	S	3		1344	S	3		9014	S	
+7	44739	S	2048	S	3		1886	S	3		27896	S	
+8	66541	S	2380	S	3		2610	S	3		38371	S	
+9	217664	S	2889	S	3		2684	S	3		84132	S	
+10	227435	S	3213	S	3		3355	S	3		429425	S	
+11	
