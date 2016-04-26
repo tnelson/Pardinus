@@ -3674,3 +3674,152 @@ Threads: 4
 INTERVENES 20
 n	S.B	Sat	P.B	Sat	
 4	1144	S	
+------
+2016-04-26_19-09-47
+Examples: Hotel RingLeader Handshake SpanTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+35	91159	S	6915	S	3		6665	S	3		
+36	108098	S	7704	S	3		7591	S	3		
+37	120023	S	8198	S	3		7958	S	3		
+38	75351	S	8880	S	3		8540	S	3		
+39	126736	S	10251	S	3		9728	S	3		
+40	137424	S	10134	S	3		9935	S	3		
+41	
+------
+2016-04-26_19-28-00
+Examples: Hotel 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+9	
+------
+2016-04-26_19-28-21
+Examples: Hotel 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	268	U	312	U	2		376	U	2		345	U	
+2	346	U	736	U	6		642	U	-6		553	U	
+3	639	S	741	S	3		748	S	3		734	S	
+4	823	S	857	S	3		911	S	3		1171	S	
+5	3945	S	1135	S	3		1159	S	3		2955	S	
+6	10238	S	1336	S	3		1432	S	3		2942	S	
+7	45466	S	1971	S	3		1859	S	3		8059	S	
+8	66149	S	2488	S	3		2417	S	3		32533	S	
+9	219747	S	3326	S	3		2926	S	3		19892	S	
+10	
+------
+2016-04-26_19-38-30
+Examples: Hotel 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+NOINTERVENES 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	320	U	354	U	2		422	U	2		391	U	
+2	475	U	913	U	6		834	U	-5		669	U	
+3	937	U	2614	U	20		1876	U	-7		1126	U	
+4	6291	U	11949	U	75		11428	U	-60		4350	U	
+5	68323	U	97598	U	312		129238	U	-312		29598	U	
+6	
+------
+2016-04-26_19-45-00
+Examples: RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	39	S	43	S	1		43	S	-1		92	S	
+2	45	S	49	S	2		47	S	-1		97	S	
+3	56	S	61	S	5		56	S	-1		108	S	
+4	64	S	71	S	1		66	S	-1		125	S	
+5	76	S	109	S	24		88	S	-1		143	S	
+6	130	S	150	S	4		141	S	-1		242	S	
+7	195	S	421	S	395		222	S	-1		196	S	
+8	740	S	510	S	365		616	S	366		239	S	
+9	1571	S	408	S	111		473	S	110		512	S	
+10	47807	S	3169	S	1868		3579	S	1871		2314	S	
+11	
+------
+2016-04-26_19-47-25
+Examples: RedBlackTree 
+Solvers: [SYRUP]
+Modes: [BATCH, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	S.B	Sat	
+1	91	S	
+2	97	S	
+3	108	S	
+4	121	S	
+5	138	S	
+6	174	S	
+7	203	S	
+8	329	S	
+9	459	S	
+10	10092	S	
+11	56491	S	
+12	9450	S	
+
+Red Black Tree THEOREM V1
+n	S.B	Sat	
+1	88	U	
+2	93	U	
+3	109	U	
+4	122	U	
+5	144	U	
+6	171	U	
+7	278	U	
+8	543	U	
+9	2799	U	
+10	32935	U	
+
+------
+2016-04-26_19-49-37
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+1	41	S	-1		
+2	47	S	-1		
+3	56	S	-1		
+4	68	S	-1		
+5	84	S	-1		
+6	145	S	-1		
+7	213	S	-1		
+8	601	S	368		
+9	469	S	111		
+10	3755	S	1868		
+11	4409	S	1648		
+12	891	S	31		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	
+1	35	U	-1		
+2	39	U	-1		
+3	53	U	-1		
+4	66	U	-1		
+5	94	U	-1		
+6	123	U	-1		
+7	467	U	-248		
+8	1369	U	-1000		
+9	6888	U	4860		
+10	26156	U	16793		
