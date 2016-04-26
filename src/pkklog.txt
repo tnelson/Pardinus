@@ -3527,3 +3527,33 @@ n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 12	744	S	30		861	S	31		
 13	12037	S	5153		14128	S	5148		
 14	
+------
+2016-04-26_14-36-06
+Examples: RingLeader 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+GOODLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+7	
+------
+2016-04-26_17-29-55
+Examples: RingLeader Handshake SpanTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+35	90998	S	7269	S	3		6586	S	3		
+36	109413	S	7793	S	3		7499	S	3		
+37	120388	S	8178	S	3		7811	S	3		
+38	76146	S	8592	S	3		8236	S	3		
+39	125385	S	9768	S	3		9593	S	3		
+40	140312	S	10094	S	3		9897	S	3		
+
+Dijkstra15 UNSAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+35	56096	U	295860	U	36		87684	U	-17		
+36	67287	U	
