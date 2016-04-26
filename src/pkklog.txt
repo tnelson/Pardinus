@@ -3353,3 +3353,177 @@ n	S.B	Sat	S.B	Sat	P.B	Sat	P.B	Sat
 1	342	U	333	U	467	U	428	U	
 2	552	U	558	U	623	U	614	U	
 3	750	S	733	S	
+------
+2016-04-26_10-37-42
+Examples: RingLeader RedBlackTree 
+Solvers: [SYRUP, PLINGELING]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+Red Black Tree COUNTER V1
+n	S.B	Sat	S.B	Sat	P.B	Sat	P.B	Sat	
+1	91	S	90	S	100	S	101	S	
+2	98	S	97	S	109	S	108	S	
+3	110	S	107	S	125	S	122	S	
+4	120	S	122	S	148	S	146	S	
+5	139	S	140	S	175	S	177	S	
+6	177	S	170	S	330	S	333	S	
+7	199	S	196	S	684	S	686	S	
+8	364	S	345	S	1033	S	1044	S	
+
+Red Black Tree THEOREM V1
+n	S.B	Sat	S.B	Sat	P.B	Sat	P.B	Sat	
+1	86	U	87	U	96	U	96	U	
+2	91	U	91	U	101	U	101	U	
+3	108	U	109	U	121	U	122	U	
+4	122	U	123	U	142	U	142	U	
+5	143	U	142	U	181	U	181	U	
+6	173	U	173	U	537	U	536	U	
+7	257	U	253	U	988	U	991	U	
+8	460	U	447	U	3215	U	3201	U	
+
+BADLIVENESS VARIABLE 20
+n	S.B	Sat	S.B	Sat	P.B	Sat	P.B	Sat	
+1	115	U	113	U	126	U	126	U	
+2	180	U	176	U	210	U	211	U	
+3	257	U	259	U	564	U	568	U	
+4	2920	U	2923	U	18161	U	17881	U	
+5	1726650	U	
+------
+2016-04-26_11-15-46
+Examples: RingLeader RedBlackTree 
+Solvers: [PLINGELING]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	P.B	Sat	
+1	103	S	
+2	108	S	
+3	124	S	
+4	147	S	
+5	176	S	
+6	324	S	
+7	683	S	
+8	1045	S	
+9	3134	S	
+10	4241	S	
+
+Red Black Tree THEOREM V1
+n	P.B	Sat	
+1	96	U	
+2	101	U	
+3	122	U	
+4	145	U	
+5	182	U	
+6	539	U	
+7	988	U	
+8	3203	U	
+9	12891	U	
+10	21788	U	
+
+BADLIVENESS VARIABLE 20
+n	P.B	Sat	
+1	124	U	
+2	209	U	
+3	567	U	
+4	17901	U	
+5	
+------
+2016-04-26_12-10-31
+Examples: RingLeader RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		43	S	-1		
+2	48	S	2		46	S	-1		
+3	60	S	5		56	S	-1		
+4	72	S	2		69	S	-1		
+5	108	S	23		88	S	-1		
+6	157	S	4		147	S	-1		
+7	435	S	396		224	S	-1		
+8	
+------
+2016-04-26_12-10-38
+Examples: RingLeader RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		43	S	-1		
+2	49	S	2		48	S	-1		
+3	61	S	5		56	S	-1		
+4	72	S	2		68	S	-1		
+5	
+------
+2016-04-26_12-11-05
+Examples: RingLeader Handshake RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	41	U	0		45	U	-1		
+4	55	S	1		51	S	-1		
+5	54	U	0		53	U	0		
+6	70	S	1		68	S	-1		
+7	62	U	0		75	U	0		
+8	88	S	1		92	S	1		
+9	75	U	0		84	U	0		
+10	117	S	1		123	S	1		
+11	86	U	0		98	U	0		
+12	703	S	1		704	S	1		
+13	100	U	0		115	U	0		
+14	806	S	1		792	S	1		
+15	121	U	0		140	U	0		
+16	9666	S	1		10039	S	1		
+17	134	U	0		144	U	0		
+18	4651	S	1		4945	S	1		
+19	152	U	0		180	U	0		
+20	609166	S	1		744691	S	1		
+
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		42	S	-1		
+2	49	S	2		48	S	-1		
+3	61	S	5		56	S	-1		
+4	70	S	3		68	S	-1		
+5	108	S	22		85	S	-1		
+6	149	S	4		145	S	-1		
+7	430	S	394		215	S	-1		
+8	513	S	366		590	S	366		
+9	422	S	110		477	S	110		
+10	3160	S	1868		3708	S	1868		
+11	3762	S	1652		4229	S	1649		
+12	744	S	32		857	S	32		
+13	12051	S	5148		14248	S	5150		
+14	
+------
+2016-04-26_12-54-13
+Examples: RingLeader RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		43	S	-1		
+2	48	S	1		47	S	-1		
+3	60	S	5		55	S	-1		
+4	71	S	3		67	S	-1		
+5	106	S	23		86	S	-1		
+6	153	S	4		142	S	-1		
+7	424	S	394		218	S	-4		
+8	518	S	368		574	S	366		
+9	420	S	110		478	S	110		
+10	3147	S	1869		3708	S	1869		
+11	3842	S	1651		4392	S	1651		
+12	744	S	30		861	S	31		
+13	12037	S	5153		14128	S	5148		
+14	
