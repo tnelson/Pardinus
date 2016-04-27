@@ -3870,3 +3870,78 @@ n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat
 6	234179	U	1091459	U	1421		459863	U	-395		106802	U	
 7	776357	U	12076359	U	7016		1451449	U	-588		207495	U	
 8	2005508	U	
+------
+2016-04-27_08-24-50
+Examples: RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	39	S	44	S	1		44	S	-1		94	S	
+2	45	S	48	S	2		48	S	-1		98	S	
+3	55	S	63	S	5		56	S	-1		108	S	
+4	65	S	72	S	1		68	S	-1		124	S	
+5	75	S	108	S	21		87	S	-1		139	S	
+6	130	S	150	S	4		144	S	-1		176	S	
+7	193	S	419	S	396		226	S	-1		236	S	
+8	699	S	505	S	366		585	S	366		308	S	
+9	1566	S	413	S	111		469	S	111		866	S	
+10	46887	S	3105	S	1870		3643	S	1870		3562	S	
+11	389840	S	3768	S	1651		4310	S	1651		55258	S	
+12	3939338	S	745	S	32		863	S	33		12728	S	
+13	
+------
+2016-04-27_09-43-18
+Examples: RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	39	S	42	S	1		44	S	-1		
+------
+2016-04-27_09-43-31
+Examples: RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	38	S	42	S	1		42	S	-1		91	S	
+2	45	S	49	S	2		48	S	-1		99	S	
+
+Red Black Tree THEOREM V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	37	U	42	U	1		35	U	-1		88	U	
+2	42	U	48	U	2		40	U	-1		94	U	
+3	55	U	61	U	5		52	U	-1		112	U	
+4	67	U	83	U	14		63	U	-1		125	U	
+5	87	U	134	U	42		96	U	-1		146	U	
+6	137	U	283	U	131		123	U	-1		174	U	
+7	360	U	495	U	429		477	U	-271		291	U	
+8	940	U	1643	U	1430		1447	U	-1001		550	U	
+9	7302	U	6199	U	4859		7147	U	4862		2755	U	
+10	77896	U	23264	U	16787		26882	U	16792		32615	U	
+
+Dijkstra15 SAT
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+35	
+------
+2016-04-27_09-47-08
+Examples: RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	39	S	43	S	1		43	S	-1		91	S	
+2	46	S	49	S	2		64	S	-1		100	S	
+
+Red Black Tree THEOREM V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+11	
