@@ -4180,3 +4180,13 @@ n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 BADLIVENESS VARIABLE 20
 n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
 11	
+------
+2016-04-27_15-52-46
+Examples: RingLeader Handshake SpanTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+11	2426	S	
