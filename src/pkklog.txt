@@ -4068,3 +4068,18 @@ n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.
 29	34352	U	112880	U	30		49641	U	-17		31150	U	110594	U	30		45769	U	-16		24153	U	
 30	38074	U	136013	U	31		57572	U	-17		32068	U	127967	U	31		45885	U	-15		27472	U	
 31	42192	U	
+------
+2016-04-27_11-29-17
+Examples: RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	40	S	42	S	1		43	S	-1		92	S	
+2	46	S	50	S	2		48	S	-1		104	S	
+
+Red Black Tree THEOREM V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+11	850736	U	96483	U	58774		114261	U	58775		470205	U	
