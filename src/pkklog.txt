@@ -4142,3 +4142,41 @@ n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat
 10	77957	U	23350	U	16788		26426	U	16793		30468	U	
 11	808224	U	95418	U	58775		113977	U	58780		433058	U	
 12	
+------
+2016-04-27_15-33-31
+Examples: RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		42	S	-1		
+2	48	S	2		47	S	-1		
+3	61	S	5		56	S	-1		
+4	72	S	1		69	S	-1		
+5	107	S	22		86	S	-1		
+6	150	S	4		145	S	-1		
+7	430	S	395		206	S	-1		
+8	514	S	367		603	S	368		
+9	428	S	110		463	S	110		
+10	
+------
+2016-04-27_15-33-46
+Examples: RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	42	S	1		42	S	-1		
+2	48	S	2		48	S	-1		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+12	496672	U	207994		619037	U	207998		
+
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+11	
