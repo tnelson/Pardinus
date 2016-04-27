@@ -4190,3 +4190,37 @@ Threads: 4
 BADLIVENESS VARIABLE 20
 n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
 11	2426	S	
+------
+2016-04-27_15-53-23
+Examples: RingLeader Handshake SpanTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Span9 V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+20	
+------
+2016-04-27_15-53-35
+Examples: RingLeader Handshake SpanTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+19	2731653	U	152	U	0		178	U	0		1207553	U	
+
+Span9 V1
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+20	5867	S	6064	S	1		5991	S	1		5099	S	
+21	4325	S	10901	S	1		7586	S	-1		5614	S	
+22	5522	S	7938	S	1		8192	S	1		6514	S	
+23	10278	S	9428	S	1		13741	S	1		8082	S	
+24	12798	S	12425	S	1		14412	S	1		8888	S	
+25	14473	S	15406	S	1		15254	S	1		9706	S	
+
+Span9 V2
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+20	41807	S	10229	S	1		10615	S	1		21249	S	
+21	22440	S	
