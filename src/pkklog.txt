@@ -4252,3 +4252,170 @@ Threads: 4
 GOODLIVENESS VARIABLE 20
 n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	
 5	
+------
+2016-04-27_17-48-44
+Examples: RedBlackTree 
+Solvers: [SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	S.B	Sat	
+1	92	S	
+2	97	S	
+
+Red Black Tree THEOREM V1
+n	S.B	Sat	
+12	
+------
+2016-04-27_18-59-39
+Examples: RingLeader Handshake SpanTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+19	
+------
+2016-04-27_19-00-34
+Examples: Hotel RingLeader Handshake SpanTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+10	
+------
+2016-04-27_19-02-22
+Examples: Hotel RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 6
+INTERVENES 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	288	U	307	U	2		368	U	2		349	U	
+2	365	U	672	U	6		721	U	6		569	U	
+3	615	S	
+------
+2016-04-27_19-02-32
+Examples: Hotel RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 6
+INTERVENES 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	306	U	2		368	U	-2		
+2	610	U	6		749	U	-6		
+3	867	S	3		905	S	3		
+4	1084	S	3		1169	S	3		
+5	1658	S	3		1589	S	3		
+6	1954	S	3		1877	S	3		
+7	2562	S	3		2310	S	3		
+8	3226	S	3		3439	S	3		
+9	4391	S	3		3869	S	3		
+10	4750	S	3		4438	S	3		
+
+NOINTERVENES 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	381	U	2		442	U	-2		
+2	1091	U	6		1046	U	-6		
+3	2508	U	20		2362	U	-13		
+4	11642	U	75		13612	U	75		
+5	96831	U	312		119498	U	312		
+6	
+------
+2016-04-27_19-07-42
+Examples: RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 6
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	S	1		43	S	-1		
+2	49	S	2		48	S	-1		
+3	61	S	5		55	S	-1		
+4	73	S	3		68	S	-1		
+5	105	S	24		85	S	-1		
+6	153	S	3		144	S	-1		
+7	419	S	394		206	S	-1		
+8	
+------
+2016-04-27_19-07-49
+Examples: RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 6
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	42	S	1		44	S	-1		
+2	49	S	2		46	S	-1		
+3	60	S	5		56	S	-1		
+4	73	S	4		69	S	-1		
+5	104	S	21		92	S	-1		
+6	150	S	6		166	S	-1		
+7	441	S	396		219	S	-1		
+8	501	S	366		559	S	363		
+9	401	S	109		440	S	111		
+10	3207	S	1870		3781	S	1869		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	43	U	1		35	U	-1		
+2	47	U	2		41	U	-1		
+3	58	U	5		52	U	-1		
+4	82	U	14		66	U	-1		
+5	123	U	42		88	U	-1		
+6	237	U	132		126	U	-1		
+7	481	U	429		472	U	290		
+8	1638	U	1430		1404	U	-1000		
+
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+20	3383	S	3		3132	S	3		
+21	4459	S	3		3729	S	3		
+22	4375	S	3		3709	S	3		
+23	4446	S	3		4210	S	3		
+24	5185	S	3		4604	S	3		
+25	5089	S	3		5090	S	3		
+26	5473	S	3		4852	S	3		
+27	5984	S	3		5655	S	3		
+28	6097	S	3		6072	S	3		
+29	6443	S	3		6391	S	3		
+30	8019	S	3		6829	S	3		
+
+Dijkstra15 UNSAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+20	21285	U	21		19633	U	-17		
+21	25427	U	22		20289	U	-17		
+22	30685	U	23		21687	U	-17		
+23	40521	U	24		28951	U	-18		
+24	44682	U	25		33110	U	-18		
+25	54725	U	26		41311	U	-20		
+26	
+------
+2016-04-27_19-17-02
+Examples: RingLeader 
+Solvers: [MINISAT]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 6
+GOODLIVENESS VARIABLE 20
+n	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	
+5	16903	U	89		17663	U	89		
+
+------
+2016-04-27_19-18-53
+Examples: RingLeader 
+Solvers: [MINISAT]
+Modes: [PARALLEL, HYBRID]
+Tries: 2
+Threads: 4
+GOODLIVENESS VARIABLE 20
+n	M.P	Sat	C.#	C.t	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	M.H	Sat	C.#	C.t	
+5	16085	U	89		16312	U	89		17476	U	89		17467	U	89		
