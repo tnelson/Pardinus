@@ -4223,4 +4223,32 @@ n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat
 Span9 V2
 n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
 20	41807	S	10229	S	1		10615	S	1		21249	S	
-21	22440	S	
+21	22440	S	11649	S	1		11393	S	1		34033	S	
+22	57301	S	13634	S	1		16461	S	1		47999	S	
+23	38951	S	15002	S	1		15437	S	1		20381	S	
+
+BADLIVENESS VARIABLE 20
+n	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+11	2426	S	61390	S	67		4676	S	-22		2730	S	
+12	3314	S	19391	S	33		5546	S	-19		3997	S	
+
+------
+2016-04-27_17-37-28
+Examples: RingLeader 
+Solvers: [MINISAT]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	
+11	
+------
+2016-04-27_17-37-36
+Examples: RingLeader 
+Solvers: [MINISAT]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+GOODLIVENESS VARIABLE 20
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	
+5	
