@@ -1,4 +1,4 @@
-package kkpartition;
+package kodkod.pardinus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,8 +41,10 @@ public class PProblemManager extends ProblemManager {
 		this.hybrid = it;
 		this.formula1 = f1;
 		this.formula2 = f2;
-		this.bound1 = b1;
-		this.bound2 = b2;
+		this.bound1 = b1; 
+		this.bound2 = b2; 
+//		this.bound1 = merge(b1, b2);
+//		this.bound2 = new Bounds(b2.universe());
 		this.solver = solver;
 		this.executor = Executors.newFixedThreadPool(n);
 	}

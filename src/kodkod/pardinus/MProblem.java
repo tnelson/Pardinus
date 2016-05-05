@@ -1,4 +1,4 @@
-package kkpartition;
+package kodkod.pardinus;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,9 +1,9 @@
-package kkpartition;
+package kodkod.pardinus;
 
-import kkpartition.DecomposedOptions.Modes;
 import kodkod.ast.Formula;
 import kodkod.engine.Solver;
 import kodkod.instance.Bounds;
+import kodkod.pardinus.DecomposedOptions.Modes;
 
 public class DecomposedSolver {
 

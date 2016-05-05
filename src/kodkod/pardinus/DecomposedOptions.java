@@ -1,4 +1,4 @@
-package kkpartition;
+package kodkod.pardinus;
 
 import kodkod.engine.config.Options;
 
