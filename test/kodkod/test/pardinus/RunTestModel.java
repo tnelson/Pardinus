@@ -1,4 +1,4 @@
-package kodkod.examples.pardinus;
+package kodkod.test.pardinus;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,20 +13,20 @@ import kodkod.engine.IncrementalSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.satlab.SATFactory;
-import kodkod.examples.pardinus.RunTests.Solvers;
 import kodkod.instance.Bounds;
-import kodkod.pardinus.DecomposedSolver;
-import kodkod.pardinus.MProblem;
-import kodkod.pardinus.PProblem;
+import kodkod.pardinus.DSolver;
+import kodkod.pardinus.IProblem;
+import kodkod.pardinus.DSolution;
 import kodkod.pardinus.PartitionModel;
-import kodkod.pardinus.DecomposedOptions.Modes;
+import kodkod.pardinus.DOptions.Modes;
+import kodkod.test.pardinus.RunTests.Solvers;
 
 public final class RunTestModel {
 
 	final static Solver solver = new Solver();
-	final static DecomposedSolver psolver = new DecomposedSolver(solver);
+	final static DSolver psolver = new DSolver(solver);
 
-	static PProblem psolution = null;
+	static DSolution psolution = null;
 	static Solution solution = null;
 	static Iterator<Solution> solutions = null;
 
@@ -216,10 +216,10 @@ public final class RunTestModel {
 		log = new StringBuilder();
 	}
 
-	private static int getConfigNum(DecomposedSolver psolver2) {
+	private static int getConfigNum(DSolver psolver2) {
 		int counter = psolver2.manager().solutions().size();
 		if (counter != 0)
-			if (!(psolver2.manager().solutions().get(psolver2.manager().solutions().size() - 1) instanceof MProblem))
+			if (!(psolver2.manager().solutions().get(psolver2.manager().solutions().size() - 1) instanceof IProblem))
 				counter = -counter;
 		return counter;
 	}

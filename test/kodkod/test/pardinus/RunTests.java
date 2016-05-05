@@ -1,4 +1,4 @@
-package kodkod.examples.pardinus;
+package kodkod.test.pardinus;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,18 +18,33 @@ import java.util.Map;
 
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.pardinus.DecomposedSolver;
-import kodkod.pardinus.PProblem;
-import kodkod.pardinus.DecomposedOptions.Modes;
+import kodkod.examples.pardinus.DiffEgP;
+import kodkod.examples.pardinus.DijkstraP;
+import kodkod.examples.pardinus.DiningP;
+import kodkod.examples.pardinus.FilesystemP;
+import kodkod.examples.pardinus.HandshakeP;
+import kodkod.examples.pardinus.HotelP;
+import kodkod.examples.pardinus.LiftP;
+import kodkod.examples.pardinus.NetconfigP;
+import kodkod.examples.pardinus.PeaceableP;
+import kodkod.examples.pardinus.RedBlackTreeP;
+import kodkod.examples.pardinus.RingP;
+import kodkod.examples.pardinus.SpanP;
+import kodkod.examples.pardinus.FilesystemP.Variant;
+import kodkod.examples.pardinus.HandshakeP.Variant2;
+import kodkod.examples.pardinus.RedBlackTreeP.Variant1;
+import kodkod.pardinus.DSolver;
+import kodkod.pardinus.DSolution;
+import kodkod.pardinus.DOptions.Modes;
 
 public final class RunTests {
 
 	final static Solver solver = new Solver();
-	final static DecomposedSolver psolver = new DecomposedSolver(solver);
+	final static DSolver psolver = new DSolver(solver);
 
-	final static Map<Integer,List<PProblem>> stats = new HashMap<Integer,List<PProblem>> ();
+	final static Map<Integer,List<DSolution>> stats = new HashMap<Integer,List<DSolution>> ();
 
-	static PProblem psolution = null;
+	static DSolution psolution = null;
 	static Solution solution = null;
 
 	static int tries, threads = 4;
