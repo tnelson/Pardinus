@@ -1,27 +1,28 @@
 package kodkod.pardinus;
 
 import java.util.List;
-import java.util.Set;
 
 import kodkod.ast.Formula;
-import kodkod.ast.Relation;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.instance.Bounds;
-import kodkod.instance.Instance;
-import kodkod.instance.TupleSet;
 
-public class PProblem extends Thread {
+/**
+ * A decomposed model finding problem.
+ * @author nmm
+ *
+ */
+public class DSolution extends Thread {
 
-	public static PProblem DONE = new PProblem(null, null, null);
+	public static DSolution DONE = new DSolution(null, null, null);
 	final private Solver solver;
 	
 	private Solution solution;
 	final public List<Bounds> bounds;
 	final public Formula formula;
-	final public ProblemManager manager;
+	final public DProblemManager manager;
 
-	public PProblem(ProblemManager manager, Formula formula, List<Bounds> bnds) {
+	public DSolution(DProblemManager manager, Formula formula, List<Bounds> bnds) {
 		this.manager = manager;
 		if (this.manager != null) {
 			solver = new Solver(this.manager.solver().options());

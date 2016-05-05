@@ -2,7 +2,7 @@ package kodkod.pardinus;
 
 import kodkod.engine.config.Options;
 
-public class DecomposedOptions extends Options {
+public class DOptions extends Options {
 	// the number of parallel processes
 	private int threads = 4;
 
@@ -17,7 +17,7 @@ public class DecomposedOptions extends Options {
 		STATS;
 	}
 
-	public DecomposedOptions () {
+	public DOptions () {
 		super();
 	}
 

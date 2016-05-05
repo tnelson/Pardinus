@@ -1,18 +1,14 @@
 package kodkod.pardinus;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
-import kodkod.ast.Relation;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.Statistics;
@@ -20,7 +16,7 @@ import kodkod.instance.Bounds;
 
 /**
  */
-public class ConfigStatsManager extends ProblemManager {
+public class ConfigStatsManager extends DProblemManager {
 
 	private final Bounds bound1, bound2;
 	private final Solver solver;
@@ -33,8 +29,8 @@ public class ConfigStatsManager extends ProblemManager {
 	private AtomicInteger clauses = new AtomicInteger(0);
 
 	
-	private final List<PProblem> solutions = new ArrayList<PProblem>();
-	private final List<PProblem> problem_queue = new ArrayList<PProblem>();
+	private final List<DSolution> solutions = new ArrayList<DSolution>();
+	private final List<DSolution> problem_queue = new ArrayList<DSolution>();
 	// replace by new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue) to manage LIFO
 	ExecutorService executor;
 
@@ -53,7 +49,7 @@ public class ConfigStatsManager extends ProblemManager {
 	 * Called by a problem when finished solving.
 	 * @param sol
 	 */
-	public void end(PProblem sol) {
+	public void end(DSolution sol) {
 		if (sol.sat()) sats.incrementAndGet();
 		vars.addAndGet(sol.getSolution().stats().primaryVariables());
 		clauses.addAndGet(sol.getSolution().stats().clauses());
@@ -81,13 +77,13 @@ public class ConfigStatsManager extends ProblemManager {
 						current_configs.add(config);
 				}
 				if(!current_configs.isEmpty()) {
-					PProblem problem = new MProblem (current_configs, this);
+					DSolution problem = new IProblem (current_configs, this);
 					problem.setPriority(MIN_PRIORITY);
 					problem_queue.add(problem);
 				}
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) { 
-				PProblem problem = problem_queue.remove(/*0*/problem_queue.size() - 1);
+				DSolution problem = problem_queue.remove(/*0*/problem_queue.size() - 1);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}
@@ -100,8 +96,8 @@ public class ConfigStatsManager extends ProblemManager {
 	 * @return
 	 * @throws InterruptedException 
 	 */
-	public PProblem waitUntil() throws InterruptedException {
-		PProblem sol = null;
+	public DSolution waitUntil() throws InterruptedException {
+		DSolution sol = null;
 		executor.awaitTermination(10, TimeUnit.HOURS);
 		return sol;
 	}
@@ -110,7 +106,7 @@ public class ConfigStatsManager extends ProblemManager {
 //		executor.awaitTermination(1000, TimeUnit.SECONDS);
 	}
 	
-	public List<PProblem> solutions() {
+	public List<DSolution> solutions() {
 		return solutions;
 	}
 	

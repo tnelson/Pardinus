@@ -1,10 +1,31 @@
+/* 
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package kodkod.pardinus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,17 +40,18 @@ import kodkod.engine.Statistics;
 import kodkod.instance.Bounds;
 
 /**
+ * 
  */
-public class PProblemManager extends ProblemManager {
+public class DProblemManagerImpl extends DProblemManager {
 
 	private final Bounds bound1, bound2;
 	private final Solver solver;
 	private final Formula formula1;
 	private final Formula formula2;
 
-	private final List<PProblem> solutions = new ArrayList<PProblem>();
-	private final List<PProblem> problem_queue = new ArrayList<PProblem>();
-	private final BlockingQueue<PProblem> solution_queue = new LinkedBlockingQueue<PProblem>(10);
+	private final List<DSolution> solutions = new ArrayList<DSolution>();
+	private final List<DSolution> problem_queue = new ArrayList<DSolution>();
+	private final BlockingQueue<DSolution> solution_queue = new LinkedBlockingQueue<DSolution>(10);
 	// replace by new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue) to manage LIFO
 	ExecutorService executor;
 
@@ -37,14 +59,12 @@ public class PProblemManager extends ProblemManager {
 	private boolean hybrid;
 	private boolean batch = false;
 
-	public PProblemManager(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n, boolean it) {
+	public DProblemManagerImpl(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n, boolean it) {
 		this.hybrid = it;
 		this.formula1 = f1;
 		this.formula2 = f2;
 		this.bound1 = b1; 
 		this.bound2 = b2; 
-//		this.bound1 = merge(b1, b2);
-//		this.bound2 = new Bounds(b2.universe());
 		this.solver = solver;
 		this.executor = Executors.newFixedThreadPool(n);
 	}
@@ -53,14 +73,14 @@ public class PProblemManager extends ProblemManager {
 	 * @see kkpartition.ProblemManager#end(kkpartition.PProblem)
 	 */
 	@Override
-	public void end(PProblem sol) {
+	public void end(DSolution sol) {
 		try {
 //			System.out.println(sol);
 			running.decrementAndGet();
 			solutions.add(sol); // should be atomic or solutions are lost
 			if (sol.sat()) 
 				solution_queue.put(sol);
-			if (!(sol instanceof MProblem)) {
+			if (!(sol instanceof IProblem)) {
 				batch = false;
 				shutdown();
 			}
@@ -83,7 +103,7 @@ public class PProblemManager extends ProblemManager {
 	
 	private void shutdown() throws InterruptedException {
 		if (!Thread.currentThread().isInterrupted())
-			solution_queue.put(PProblem.DONE);
+			solution_queue.put(DSolution.DONE);
 		 running.set(0);
 		 if (!executor.isTerminated()) 
 			 executor.shutdownNow();
@@ -95,7 +115,7 @@ public class PProblemManager extends ProblemManager {
 	@Override
 	public void run() {
 		if(hybrid) {
-			PProblem ppr = new PProblem(this, formula1.and(formula2), new ArrayList<Bounds>(Arrays.asList(merge(bound1, bound2))));
+			DSolution ppr = new DSolution(this, formula1.and(formula2), new ArrayList<Bounds>(Arrays.asList(merge(bound1, bound2))));
 			ppr.setPriority(MAX_PRIORITY);
 			executor.execute(ppr);
 			running.incrementAndGet();
@@ -118,20 +138,20 @@ public class PProblemManager extends ProblemManager {
 						// but if all configs are UNSAT, no process will ever end
 						if (first)
 							try {
-								solution_queue.put(PProblem.DONE);
+								solution_queue.put(DSolution.DONE);
 							} catch (InterruptedException e) { e.printStackTrace(); }
 					}
 					first = false;
 				}
 				if(!current_configs.isEmpty()) {
-					PProblem problem = new MProblem (current_configs, this);
+					DSolution problem = new IProblem (current_configs, this);
 					problem.setPriority(MIN_PRIORITY);
 					problem_queue.add(problem);
 				}
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) { 
 //				PProblem problem = problem_queue.remove(new Random().nextInt(problem_queue.size()));
-				PProblem problem = problem_queue.remove(0/*problem_queue.size() - 1*/);
+				DSolution problem = problem_queue.remove(0/*problem_queue.size() - 1*/);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}
@@ -143,8 +163,8 @@ public class PProblemManager extends ProblemManager {
 	 * @see kkpartition.ProblemManager#waitUntil()
 	 */
 	@Override
-	public PProblem waitUntil() throws InterruptedException {
-		PProblem sol = null;
+	public DSolution waitUntil() throws InterruptedException {
+		DSolution sol = null;
 		sol = solution_queue.take();
 		return sol;
 	}
@@ -169,7 +189,7 @@ public class PProblemManager extends ProblemManager {
 	 * @see kkpartition.ProblemManager#solutions()
 	 */
 	@Override
-	public List<PProblem> solutions() {
+	public List<DSolution> solutions() {
 		return solutions;
 	}
 

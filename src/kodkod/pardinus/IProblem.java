@@ -9,12 +9,11 @@ import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 
-public class MProblem extends PProblem {
-
+public class IProblem extends DSolution {
 
 	final public List<Solution> config;
 
-	public MProblem(List<Solution> cfg, ProblemManager manager) {
+	public IProblem(List<Solution> cfg, DProblemManager manager) {
 		super(manager, manager.formula2(), configBounds(manager, cfg));
 		this.config = cfg;
 	}
@@ -26,7 +25,7 @@ public class MProblem extends PProblem {
 	 * @param s
 	 * @return
 	 */
-	private static List<Bounds> configBounds(ProblemManager manager, List<Solution> ss) {
+	private static List<Bounds> configBounds(DProblemManager manager, List<Solution> ss) {
 		List<Bounds> res = new ArrayList<Bounds>();
 		
 		for (Solution s : ss) {
