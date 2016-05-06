@@ -1,7 +1,5 @@
 package kodkod.pardinus;
 
-import java.util.List;
-
 import kodkod.ast.Formula;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
@@ -18,14 +16,14 @@ public class DSolution extends Thread {
 	final private Solver solver;
 	
 	private Solution solution;
-	final public List<Bounds> bounds;
+	final public Bounds bounds;
 	final public Formula formula;
-	final public DProblemManager manager;
+	final public DProblemExecutor executor;
 
-	public DSolution(DProblemManager manager, Formula formula, List<Bounds> bnds) {
-		this.manager = manager;
-		if (this.manager != null) {
-			solver = new Solver(this.manager.solver().options());
+	public DSolution(DProblemExecutor manager, Formula formula, Bounds bnds) {
+		this.executor = manager;
+		if (this.executor != null) {
+			solver = new Solver(this.executor.solver.options());
 			this.bounds = bnds;
 			this.formula = formula;
 		} else {
@@ -37,12 +35,10 @@ public class DSolution extends Thread {
 
 	public void run() {
 //		System.out.println("started: "+Thread.currentThread().getId());
-		while (!bounds.isEmpty() && (solution == null || !solution.sat())) {
-			solution = solver.solve(formula,bounds.remove(0));
-		}
+		solution = solver.solve(formula,bounds);
 		solver.free();
 //		System.out.println("ended1: "+Thread.currentThread().getId()+", "+Thread.currentThread().isInterrupted());
-		if (!Thread.currentThread().isInterrupted()) manager.end(this);
+		if (!Thread.currentThread().isInterrupted()) executor.end(this);
 //		System.out.println("ended2: "+Thread.currentThread().getId());
 	}
 

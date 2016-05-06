@@ -21,6 +21,10 @@ public class DOptions extends Options {
 		super();
 	}
 
+	public DOptions (Options options) {
+		super(options);
+	}
+	
 	/**
 	 * Sets the number of threads that will be launched in parallel.
 	 * @param threads

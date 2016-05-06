@@ -39,81 +39,103 @@ import kodkod.pardinus.DOptions.Modes;
  * solvers} that are deployed in parallel. The solver returns a
  * {@link kodkod.pardinus.DSolution decomposed solution} that can be iterated.
  * 
- * @author nmm
+ * @author nmm, ejp
  *
  */
 public class DSolver {
 
 	/** the regular Kodkod solver used in the parallelization */
-	final private Solver solver;
+	final public Solver solver;
 
 	/** a manager for the decomposed solving process */
-	private DProblemManager manager;
+	private DProblemExecutor executor;
 
 	/** the decomposed problem options */
-	private DOptions options;
+	final public DOptions options;
 
+	/**
+	 * Constructs a new decomposed solver built over a standard Kodkod
+	 * {@link kodkod.engine.Solver solver}. The solving
+	 * {@link kodkod.engine.config.Options options} are retrieved from the
+	 * regular solver.
+	 * 
+	 * @param solver
+	 *            the regular solver over which the decomposed solver is built.
+	 * @throws IllegalArgumentException
+	 *             if the solver is not incremental.
+	 */
 	public DSolver(Solver solver) {
-		this.options = new DOptions();
-		this.solver = solver;
-		if (!solver.options().solver().incremental())
+		if (solver.options().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
-	}
-
-	public DSolver(Solver solver, DOptions opt) {
-		this.options = opt;
+		this.options = new DOptions(solver.options());
 		this.solver = solver;
-		if (!solver.options().solver().incremental())
-			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 	}
 
 	/**
-	 * Solves a partitioned problem in parallel.
+	 * Constructs a new decomposed solver built over a standard Kodkod
+	 * {@link kodkod.engine.Solver solver} given defined decomposed solving
+	 * options.
+	 * 
+	 * @param solver
+	 *            the regular solver over which the decomposed solver is built.
+	 * @param opt
+	 *            the options for the decomposed solver.
+	 * @throws IllegalArgumentException
+	 *             if the solver is not incremental.
+	 */
+	public DSolver(Solver solver, DOptions opt) {
+		if (solver.options().solver().incremental())
+			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
+		this.options = opt;
+		this.solver = solver;
+	}
+
+	/**
+	 * Solves a decomposed model finding problem, comprised by a pair of
+	 * {@link kodkod.ast.Formula formulas} and a pair of
+	 * {@link kodkod.instance.Bounds bounds}. Essentially launches an
+	 * {@link kodkod.pardinus.DProblemExecutor executor} to handle the
+	 * decomposed problem in parallel, given the defined
+	 * {@link kodkod.pardinus.DOptions options}.
 	 * 
 	 * @param b1
-	 *            partition 1 bounds
+	 *            the partial problem bounds.
 	 * @param b2
-	 *            partition 2 bounds
+	 *            the remainder problem bounds.
 	 * @param f1
-	 *            partition 1 formula
+	 *            the partial problem formula.
 	 * @param f2
-	 *            partition 2 formula
-	 * @return a SAT solution or DONE
+	 *            the remainder problem formula.
+	 * @requires f1 to be defined over b1 and f2 over b2.
+	 * @return a decomposed solution.
 	 * @throws InterruptedException
+	 *             if the solving process is interrupted.
 	 */
 	public DSolution solve(Bounds b1, Bounds b2, Formula f1, Formula f2) throws InterruptedException {
 		if (options.getMode() == Modes.STATS)
-			manager = new ConfigStatsManager(f1, f2, b1, b2, solver, options.threads());
+			executor = new StatsExecutor(f1, f2, b1, b2, solver, options.threads());
 		else if (options.getMode() == Modes.HYBRID)
-			manager = new DProblemManagerImpl(f1, f2, b1, b2, solver, options.threads(), true);
+			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver, options.threads(), true);
 		else
-			manager = new DProblemManagerImpl(f1, f2, b1, b2, solver, options.threads(), false);
-		manager.start();
-		DSolution sol = manager.waitUntil();
-		try {
-			manager.terminate();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver, options.threads(), false);
+		executor.start();
+		DSolution sol = executor.waitUntil();
+		executor.terminate();
 		return sol;
 	}
 
 	/**
-	 * Returns the problem manager for this solver.
+	 * Retrieves the decomposed problem executor that handled the decomposed problem.
 	 * 
-	 * @return
+	 * @return the decomposed problem executor that solved the problem.
 	 */
-	public DProblemManager manager() {
-		return manager;
+	public DProblemExecutor executor() {
+		return executor;
 	}
 
-	public DOptions options() {
-		return options;
-	}
-
-	public void free() {
-		// TODO Auto-generated method stub
-	}
+	/**
+	 * Releases the resources, if any.
+	 */
+	public void free() {}
 
 }

@@ -1,7 +1,5 @@
 package kodkod.pardinus;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import kodkod.ast.Relation;
 import kodkod.engine.Solution;
@@ -11,10 +9,10 @@ import kodkod.instance.TupleSet;
 
 public class IProblem extends DSolution {
 
-	final public List<Solution> config;
+	final public Solution config;
 
-	public IProblem(List<Solution> cfg, DProblemManager manager) {
-		super(manager, manager.formula2(), configBounds(manager, cfg));
+	public IProblem(Solution cfg, DProblemExecutor manager) {
+		super(manager, manager.formula2, configBounds(manager, cfg));
 		this.config = cfg;
 	}
 	
@@ -25,13 +23,11 @@ public class IProblem extends DSolution {
 	 * @param s
 	 * @return
 	 */
-	private static List<Bounds> configBounds(DProblemManager manager, List<Solution> ss) {
-		List<Bounds> res = new ArrayList<Bounds>();
+	private static Bounds configBounds(DProblemExecutor manager, Solution s) {
 		
-		for (Solution s : ss) {
-		Bounds b3 = manager.bounds2().clone();
+		Bounds b3 = manager.bounds2.clone();
 
-		for (Relation e : manager.bounds1().upperBounds().keySet()) {
+		for (Relation e : manager.bounds1.upperBounds().keySet()) {
 			if (getTupleConfiguration(e.name(), s.instance()) != null) {
 				b3.boundExactly(e, getTupleConfiguration(e.name(), s.instance()));
 			}
@@ -40,9 +36,7 @@ public class IProblem extends DSolution {
 		for (Integer i : s.instance().ints().toArray())
 			b3.boundExactly(i, b3.universe().factory().setOf(i));
 
-		res.add(b3);
-		}
-		return res;
+		return b3;
 	}
 
 	private static TupleSet getTupleConfiguration(String name, Instance s) {
@@ -60,8 +54,7 @@ public class IProblem extends DSolution {
 	 */
 	private int configSize() {
 		int c = 0;
-		for (Solution s : config)
-			for (TupleSet x : s.instance().relationTuples().values())
+			for (TupleSet x : config.instance().relationTuples().values())
 				c = c + x.size();
 		return c;
 	}
