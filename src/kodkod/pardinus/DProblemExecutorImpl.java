@@ -66,7 +66,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 * @see kodkod.pardinus.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
 	public DProblemExecutorImpl(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n, boolean it) {
-		super(f1, f2, b1, b2, solver, n);
+		super(new DMonitorImpl(), f1, f2, b1, b2, solver, n);
 		this.hybrid = it;
 	}
 
@@ -78,6 +78,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 */
 	@Override
 	public void end(DSolution sol) {
+		monitor.newSolution(sol);
 		try {
 			running.decrementAndGet();
 			if (sol.sat())
@@ -144,11 +145,11 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			// collects a batch of configurations
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();
+				monitor.newConfig(config);
 
 				if (config.unsat()) {
 					// when there is no configuration no solver will ever
-					// callback
-					// so it must be terminated here
+					// callback so it must be terminated here
 					if (first)
 						try {
 							shutdown();
@@ -166,15 +167,13 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			}
 			// launches a batch of integrated problems
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
-				DSolution problem = problem_queue.remove(0/*
-														 * problem_queue.size()
-														 * - 1
-														 */);
+				DSolution problem = problem_queue.remove(0/*problem_queue.size()-1*/);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}
 		}
 		executor.shutdown();
+		monitor.finishedLaunching();
 	}
 
 	/**
@@ -186,6 +185,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	public DSolution waitUntil() throws InterruptedException {
 		DSolution sol = null;
 		sol = solution_queue.take();
+		monitor.done(false);
 		return sol;
 	}
 

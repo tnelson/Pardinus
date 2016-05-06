@@ -42,7 +42,6 @@ import kodkod.instance.Bounds;
  */
 public class StatsExecutor extends DProblemExecutor {
 
-	private final DReporter reporter = new DReporter();
 
 	/** the queue of solvers to be launched */
 	private final List<DSolution> problem_queue = new ArrayList<DSolution>();
@@ -56,7 +55,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 * @see kodkod.pardinus.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
 	public StatsExecutor(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n) {
-		super(f1, f2, b1, b2, solver, n);
+		super(new DMonitorImpl(), f1, f2, b1, b2, solver, n);
 	}
 
 	/**
@@ -67,7 +66,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 */
 	@Override
 	public void end(DSolution sol) {
-		reporter.newSolution(sol);
+		monitor.newSolution(sol);
 		running.decrementAndGet();
 	}
 
@@ -84,7 +83,7 @@ public class StatsExecutor extends DProblemExecutor {
 		while (configs.hasNext() && !executor.isShutdown()) {
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();
-				reporter.newConfig(config);
+				monitor.newConfig(config);
 				if (config.sat()) {
 					DSolution problem = new IProblem(config, this);
 					problem.setPriority(MIN_PRIORITY);
@@ -98,6 +97,7 @@ public class StatsExecutor extends DProblemExecutor {
 			}
 		}
 		executor.shutdown();
+		monitor.finishedLaunching();
 	}
 
 	/**
@@ -106,7 +106,8 @@ public class StatsExecutor extends DProblemExecutor {
 	 * @see kodkod.pardinus.DProblemExecutor#waitUntil()
 	 */
 	public DSolution waitUntil() throws InterruptedException {
-		executor.awaitTermination(3, TimeUnit.HOURS);
+		boolean timeout = executor.awaitTermination(3, TimeUnit.HOURS);
+		monitor.done(timeout);
 		return null;
 	}
 

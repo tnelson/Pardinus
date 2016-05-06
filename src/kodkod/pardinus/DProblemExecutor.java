@@ -54,7 +54,10 @@ abstract public class DProblemExecutor extends Thread {
 	 * TODO: replace by new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue) to manage LIFO
 	 */
 	protected final ExecutorService executor;
-	
+
+	/** a reporter that monitors the solving process */
+	protected final DMonitor monitor;
+
 	/**
 	 * Constructs an effective decomposed problem executor for a decomposed model finding problem
 	 * and the number of desired parallel solvers.
@@ -66,13 +69,14 @@ abstract public class DProblemExecutor extends Thread {
 	 * @param solver the solver that will solve the integrated problems.
 	 * @param n the number of parallel solver threads.
 	 */
-	public DProblemExecutor(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n) {
+	public DProblemExecutor(DMonitor rep, Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n) {
 		this.formula1 = f1;
 		this.formula2 = f2;
 		this.bounds1 = b1; 
 		this.bounds2 = b2; 
 		this.solver = solver;
 		this.executor = Executors.newFixedThreadPool(n);
+		this.monitor = rep;
 	}
 	
 	/**
@@ -99,11 +103,12 @@ abstract public class DProblemExecutor extends Thread {
 	 * 
 	 * @throws InterruptedException if interrupted while waiting.
 	 */
-	public boolean terminate() throws InterruptedException {
+	public void terminate() throws InterruptedException {
 		if (!executor.isShutdown())
 			executor.shutdownNow();
-		if (!executor.isTerminated())
-			return executor.awaitTermination(1, TimeUnit.HOURS);
-		return true;
+		if (!executor.isTerminated()) {
+			boolean timeout = executor.awaitTermination(1, TimeUnit.HOURS);
+			monitor.terminated(timeout);
+		}
 	}
 }
