@@ -20,24 +20,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.pardinus;
+package kodkod.pardinus.decomp;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.Solver;
 import kodkod.instance.Bounds;
-import kodkod.pardinus.DOptions.Modes;
+import kodkod.pardinus.decomp.DOptions.Modes;
 
 /**
  * A computational engine for solving relational satisfiability problems. Such a
  * problem is described by a pair {@link kodkod.ast.Formula formulas} in first
  * order relational logic; a pair of finite {@link kodkod.instance.Bounds
  * bounds} on the value of each {@link Relation relation} constrained by the
- * respective formulas; and a set of {@link kodkod.pardinus.DOptions options}
+ * respective formulas; and a set of {@link kodkod.pardinus.decomp.DOptions options}
  * built over regular Kodkod {@link kodkod.engine.config.Options options}. The
  * decomposed solve relies on regular Kodkod {@link kodkod.engine.Solver
  * solvers} that are deployed in parallel. The solver returns a
- * {@link kodkod.pardinus.DSolution decomposed solution} that can be iterated.
+ * {@link kodkod.pardinus.decomp.DSolution decomposed solution} that can be iterated.
  * 
  * @author nmm, ejp
  *
@@ -94,9 +94,9 @@ public class DSolver {
 	 * Solves a decomposed model finding problem, comprised by a pair of
 	 * {@link kodkod.ast.Formula formulas} and a pair of
 	 * {@link kodkod.instance.Bounds bounds}. Essentially launches an
-	 * {@link kodkod.pardinus.DProblemExecutor executor} to handle the
+	 * {@link kodkod.pardinus.decomp.DProblemExecutor executor} to handle the
 	 * decomposed problem in parallel, given the defined
-	 * {@link kodkod.pardinus.DOptions options}.
+	 * {@link kodkod.pardinus.decomp.DOptions options}.
 	 * 
 	 * @param b1
 	 *            the partial problem bounds.

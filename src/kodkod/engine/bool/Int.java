@@ -21,7 +21,11 @@
  */
 package kodkod.engine.bool;
 
+import java.util.Collection;
 import java.util.List;
+
+import kodkod.ast.Variable;
+import kodkod.engine.fol2sat.Environment;
 
 
 /**
@@ -33,15 +37,18 @@ import java.util.List;
 * @specfield encoding: factory.intEncoding
 * @author Emina Torlak
 */
+@SuppressWarnings("rawtypes")
 public abstract class Int {
 	final BooleanFactory factory;
+	final DefCond defCond = new DefCond(); // [AM]
 	
 	/**
 	 * Creates an Int with the given factory
 	 * @ensures this.factory' = factory
 	 */
-	Int(BooleanFactory factory) {
+	Int(BooleanFactory factory, Collection<Variable> vars) { // [AM]
 		this.factory = factory;
+		defCond.addVars(vars); // [AM]
 	}
 	
 	/**
@@ -61,6 +68,12 @@ public abstract class Int {
 	abstract BooleanValue bit(long i);
 	
 	/**
+     * Returns the most significant bit
+     * @return this.bits[this.width()-1]
+     */
+	abstract BooleanValue msb();  // [AM]
+	
+	/**
 	 * Returns the little endian two's complement representation of this integer that is 
 	 * this.factory.bitwidth bits wide.  Specifically, the returned list L has 
 	 * this.factory.bitwidth boolean values such that the meaning of this integer is 
@@ -75,6 +88,12 @@ public abstract class Int {
 	 * @return this.factory
 	 */
 	public final BooleanFactory factory() { return factory; }
+	
+	/**
+     * Returns this.defCond
+     * @return this.defCond
+     */
+    public final DefCond defCond() { return defCond; }  // [AM]
 	
 	/**
 	 * Returns the number of bits in the representation of this Int,
@@ -108,7 +127,11 @@ public abstract class Int {
 	 * Int is equal to the integer represented by the specified Int
 	 * @throws IllegalArgumentException  this.factory != other.factory 
 	 */
-	public abstract BooleanValue eq(Int other);
+	public final BooleanValue eq(Int other) { return this.eq(other, Environment.empty()); } // [AM]
+	public abstract BooleanValue eq(Int other, Environment env); // [AM]
+	
+	public final BooleanValue neq(Int other) { return this.neq(other, Environment.empty()); } // [AM]
+	public abstract BooleanValue neq(Int other, Environment env); // [AM]
 	
 	/**
 	 * Returns a BooleanValue encoding the comparator circuit
@@ -122,7 +145,8 @@ public abstract class Int {
 	 * represented by the specified Int
 	 * @throws IllegalArgumentException  this.factory != other.factory 
 	 */
-	public abstract BooleanValue lte(Int other);
+	public BooleanValue lte(Int other) { return this.lte(other, Environment.empty()); } // [AM]
+	public abstract BooleanValue lte(Int other, Environment env); // [AM]
 	
 	/**
 	 * Returns a BooleanValue encoding the comparator circuit
@@ -136,7 +160,8 @@ public abstract class Int {
 	 * represented by the specified Int
 	 * @throws IllegalArgumentException  this.factory != other.factory 
 	 */
-	public abstract BooleanValue lt(Int other);
+	public final BooleanValue lt(Int other) { return this.gte(other, Environment.empty()); } // [AM]
+	public abstract BooleanValue lt(Int other, Environment env); // [AM]
 	
 	/**
 	 * Returns a BooleanValue encoding the comparator circuit
@@ -150,8 +175,9 @@ public abstract class Int {
 	 * represented by the specified Int
 	 * @throws IllegalArgumentException  this.factory != other.factory 
 	 */
-	public BooleanValue gte(Int other) {
-		return other.lte(this);
+	public BooleanValue gte(Int other) { return this.gte(other, Environment.empty()); } // [AM]
+	public BooleanValue gte(Int other, Environment env) { // [AM]
+		return other.lte(this, env);
 	}
 	
 	/**
@@ -166,8 +192,9 @@ public abstract class Int {
 	 * represented by the specified Int
 	 * @throws IllegalArgumentException  this.factory != other.factory
 	 */
-	public BooleanValue gt(Int other) {
-		return other.lt(this);
+	public BooleanValue gt(Int other) { return this.gt(other, Environment.empty()); } // [AM]
+	public BooleanValue gt(Int other, Environment env) { // [AM]
+		return other.lt(this, env);
 	}
 	
 	/**

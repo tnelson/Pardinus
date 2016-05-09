@@ -38,6 +38,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import kodkod.ast.ConstantFormula;
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Node;
 import kodkod.ast.Variable;
@@ -150,7 +151,7 @@ final class FileLogger extends TranslationLogger {
 	 * @throws IllegalStateException  this log has been closed
 	 */
 	@Override
-	void log(Formula f, BooleanValue v, Environment<BooleanMatrix> env) {
+	void log(Formula f, BooleanValue v, Environment<BooleanMatrix, Expression> env) { // [AM]
 		if (out==null) throw new IllegalStateException();
 	
 		final int index = logMap.indexOf(f);

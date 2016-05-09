@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,12 +50,14 @@ import kodkod.util.ints.Ints;
  * <code>{ s0, ..., sn }</code>. 
  * 
  * @author Emina Torlak
+ * @modified nmm, tmg (added targets and weights)
  */
 public final class SymmetryDetector {
 	private final Bounds bounds;
 	/* invariant: representatives always holds a sequence of IntSets that partition bounds.universe */
 	private final List<IntSet> parts;
 	private final int usize;
+	
 	
 	/**
 	 * Constructs a new SymmetryDetector for the given bounds.
@@ -63,13 +66,14 @@ public final class SymmetryDetector {
 	private SymmetryDetector(Bounds bounds) {
 		this.bounds = bounds;
 		this.usize = bounds.universe().size();
-		
-        //	start with the maximum partition -- the whole universe.
+
+		//	start with the maximum partition -- the whole universe.
 		this.parts = new LinkedList<IntSet>();
 		final IntSet set = Ints.bestSet(usize);
 		for(int i = 0; i < usize; i++) { set.add(i); }
 		this.parts.add(set);
 	}
+	
 	
 	/**
 	 * Returns the coarsest sound partition of {@code bounds.universe} into symmetry classes. 
@@ -95,7 +99,7 @@ public final class SymmetryDetector {
 		assert parts.size()==detector.parts.size(); // sanity check
 		return parts;
 	}
-
+	
 	
 	/**
 	 * Partitions this.bounds.universe into sets of equivalent atoms.
@@ -128,19 +132,25 @@ public final class SymmetryDetector {
 	}
 	
 	/**
-	 * Returns an array that contains unique non-empty tuplesets in the given bounds, 
+	 * Returns an array that contains unique non-empty tuplesets in the given bounds,
 	 * sorted in the order of increasing size.
-	 * @return unique non-empty tuplesets in the given bounds, 
+	 * @return unique non-empty tuplesets in the given bounds,
 	 * sorted in the order of increasing size.
-	 */
-	private static TupleSet[] sort(Bounds bounds) { 
+	 */    
+	//TODO pt.uminho.haslab: consider weights?
+	private TupleSet[] sort(Bounds bounds) {
 		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
-		for(Relation r : bounds.relations()) { 
+		for(Relation r : bounds.relations()) {
 			final TupleSet lower = bounds.lowerBound(r);
 			final TupleSet upper = bounds.upperBound(r);
+			final TupleSet target = bounds.target(r); 	// pt.uminho.haslab: consider targets
 			if (!lower.isEmpty() && lower.size()<upper.size()) { sets.add(lower); }
 			if (!upper.isEmpty()) {	sets.add(upper); }
+
+			// pt.uminho.haslab: consider targets
+			if (target != null && !target.isEmpty()) { sets.add(target); }
 		}
+
 		final TupleSet[] sorted = sets.toArray(new TupleSet[sets.size()]);
 		Arrays.sort(sorted, new Comparator<TupleSet>(){
 			public int compare(TupleSet o1, TupleSet o2) {
@@ -149,6 +159,8 @@ public final class SymmetryDetector {
 		});
 		return sorted;
 	}
+	
+	
 	
 	/**
 	 * Refines the atomic partitions in this.parts based on the contents of the given tupleset, 

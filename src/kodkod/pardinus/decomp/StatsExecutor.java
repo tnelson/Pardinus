@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.pardinus;
+package kodkod.pardinus.decomp;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,7 +52,7 @@ public class StatsExecutor extends DProblemExecutor {
 	/**
 	 * Constructs an implementation of a decomposed problem solver to retrieve the problem's stats.
 	 *
-	 * @see kodkod.pardinus.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
+	 * @see kodkod.pardinus.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
 	public StatsExecutor(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n) {
 		super(new DMonitorImpl(), f1, f2, b1, b2, solver, n);
@@ -62,7 +62,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 * Registers the solution but never shuts down the executor, since every
 	 * integrated problem is expected to terminate.
 	 * 
-	 * @see kodkod.pardinus.DProblemExecutor#end(kkpartition.PProblem)
+	 * @see kodkod.pardinus.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
 	public void end(DSolution sol) {
@@ -103,7 +103,7 @@ public class StatsExecutor extends DProblemExecutor {
 	/**
 	 * Waits until every problem terminates or there is a timeout.
 	 * 
-	 * @see kodkod.pardinus.DProblemExecutor#waitUntil()
+	 * @see kodkod.pardinus.decomp.DProblemExecutor#waitUntil()
 	 */
 	public DSolution waitUntil() throws InterruptedException {
 		boolean timeout = executor.awaitTermination(3, TimeUnit.HOURS);

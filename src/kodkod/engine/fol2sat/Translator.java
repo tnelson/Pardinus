@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +54,8 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
+import kodkod.pardinus.target.TargetOrientedSATSolver;
+import kodkod.pardinus.target.WTargetOrientedSATSolver;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntSet;
 import kodkod.util.nodes.AnnotatedNode;
@@ -62,6 +65,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * respect to given {@link Bounds bounds} (or {@link Instance instances}) and {@link Options}.
  * 
  * @author Emina Torlak 
+ * @modified tmg, nmm (targets and weigths translation) 
  */
 public final class Translator {
 	
@@ -80,15 +84,23 @@ public final class Translator {
 	}
 	
 	/**
-	 * Evaluates the given formula to a BooleanConstant using the provided instance and options.  
-	 * 
+	 * Evaluates the given formula to a BooleanConstant using the provided instance and options.
+	 *
 	 * @return a BooleanConstant that represents the value of the formula.
 	 * @throws NullPointerException  formula = null || instance = null || options = null
 	 * @throws UnboundLeafException  the formula refers to an undeclared variable or a relation not mapped by the instance
 	 * @throws HigherOrderDeclException  the formula contains a higher order declaration
 	 */
 	public static BooleanConstant evaluate(Formula formula, Instance instance, Options options) {
-		return (BooleanConstant) FOL2BoolTranslator.translate(annotate(formula), LeafInterpreter.exact(instance, options));
+		final LeafInterpreter interpreter = LeafInterpreter.exact(instance, options);
+		final BooleanConstant eval = (BooleanConstant) FOL2BoolTranslator.translate(annotate(formula), interpreter);
+		//TODO: check OF
+//		final BooleanFactory factory = interpreter.factory();
+//        BooleanConstant overflow = (BooleanConstant) factory.of();
+//        if (options.noOverflow() && overflow.booleanValue()) { //[AM]
+//            eval = BooleanConstant.FALSE;
+//        }
+        return eval;
 	}
 	
 	/**
@@ -104,7 +116,7 @@ public final class Translator {
 	}
 
 	/**
-	 * Evalutes the given intexpression to an {@link kodkod.engine.bool.Int} using the provided instance and options. 
+	 * Evalutes the given intexpression to an {@link kodkod.engine.bool.Int} using the provided instance and options.
 	 * @return an {@link kodkod.engine.bool.Int} representing the value of the intExpr with respect
 	 * to the specified instance and options.
 	 * @throws NullPointerException  formula = null || instance = null || options = null
@@ -112,7 +124,16 @@ public final class Translator {
 	 * @throws HigherOrderDeclException  the expression contains a higher order declaration
 	 */
 	public static Int evaluate(IntExpression intExpr, Instance instance, Options options) {
-		return (Int) FOL2BoolTranslator.translate(annotate(intExpr), LeafInterpreter.exact(instance,options));
+		LeafInterpreter interpreter = LeafInterpreter.exact(instance, options);
+        Int ret = (Int) FOL2BoolTranslator.translate(annotate(intExpr), interpreter);
+        //TODO: check OF
+//		BooleanFactory factory = interpreter.factory();
+//		BooleanConstant bc = (BooleanConstant) factory.of();
+//		boolean overflow = false;
+//		if (options.noOverflow() && bc.booleanValue()) //[AM]
+//		    overflow = true;
+//		ret.setOverflowFlag(overflow);
+		return ret;
 	}
 	
 	/**
@@ -580,16 +601,41 @@ public final class Translator {
 	 *           t.vars[Relation].int in t.solver.variables && 
 	 *           t.solver.solve() iff SAT(this.formula, this.bounds, this.options)
 	 */
-	private Translation toCNF(BooleanFormula circuit, LeafInterpreter interpreter, TranslationLog log) {	
+	private Translation toCNF(BooleanFormula circuit, LeafInterpreter interpreter, TranslationLog log) {
 		options.reporter().translatingToCNF(circuit);
 		final int maxPrimaryVar = interpreter.factory().maxVariable();
+
 		if (incremental) {
 			final Bool2CNFTranslator incrementer = Bool2CNFTranslator.translateIncremental(circuit, maxPrimaryVar, options.solver());
 			return new Translation.Incremental(completeBounds(), options, SymmetryDetector.partition(originalBounds), interpreter, incrementer);
 		} else {
 			final Map<Relation, IntSet> varUsage = interpreter.vars();
-			interpreter = null; // enable gc
 			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula)circuit, maxPrimaryVar, options.solver());
+			// pt.uminho.haslab: add the targets to the SAT problem
+			for (Relation r : bounds.targets().keySet()) {
+				Integer w = bounds.weight(r);
+				if (w == null)
+					for (IndexedEntry<BooleanValue> e : interpreter.interpret(r)) {
+						int x = e.value().label();
+						if (e.value() instanceof BooleanConstant) ; // not a boolean variable;
+						else if (bounds.target(r).indexView().contains(e.index()))
+							((TargetOrientedSATSolver) cnf).addTarget(x);
+						else 
+							((TargetOrientedSATSolver) cnf).addTarget(-x);
+					}	
+				else
+					for (IndexedEntry<BooleanValue> e : interpreter.interpret(r)) {
+						int x = e.value().label();
+						if (e.value() instanceof BooleanConstant) ; // not a boolean variable;
+						else if (bounds.target(r).indexView().contains(e.index()))
+							((WTargetOrientedSATSolver) cnf).addWeight(x,w);
+						else 
+							((WTargetOrientedSATSolver) cnf).addWeight(-x,w);
+					}				
+			}
+
+			interpreter = null; // enable gc
+
 			return new Translation.Whole(completeBounds(), options, cnf, varUsage, maxPrimaryVar, log);
 		}
 	}

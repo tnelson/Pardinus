@@ -40,17 +40,24 @@ import kodkod.util.ints.Ints;
  * @specfield logTranslation: [0..2] // log translation events, default is 0 (no logging)
  * @specfield coreGranularity: [0..3] // unsat core granularity, default is 0 (only top-level conjuncts are considered)
  * @author Emina Torlak
+ * @changed nmm (removed final modifier, constructor by copy)
  */
-public class Options implements Cloneable { //@nmm: removed final
+public class Options implements Cloneable { 
 	private Reporter reporter = new AbstractReporter(){};
 	private SATFactory solver = SATFactory.DefaultSAT4J;
 	private int symmetryBreaking = 20;
 	private IntEncoding intEncoding = IntEncoding.TWOSCOMPLEMENT;
 	private int bitwidth = 4;
 	private int sharing = 3;
+	private boolean noOverflow = false; // [AM]
 	private int skolemDepth = 0;
 	private int logTranslation = 0;
 	private int coreGranularity = 0;
+	
+	//[AM]
+	public static boolean isDebug() {
+	    return false; //TODO: read from the environment or something
+	}
 	
 	/**
 	 * Constructs an Options object initialized with default values.
@@ -65,6 +72,22 @@ public class Options implements Cloneable { //@nmm: removed final
 	 *          this.coreGranularity' = 0
 	 */
 	public Options() {}
+	
+	/**
+	 * Constructs an Options object by copy.
+	 * @param options the options to be copied.
+	 */
+	public Options(Options options) {
+		this.setSolver(options.solver);
+		this.setReporter(options.reporter);
+		this.setBitwidth(options.bitwidth);
+		this.setIntEncoding(options.intEncoding);
+		this.setSharing(sharing);
+		this.setSymmetryBreaking(options.symmetryBreaking);
+		this.setSkolemDepth(options.skolemDepth);
+		this.setLogTranslation(options.logTranslation);
+		this.setCoreGranularity(options.coreGranularity);		
+	}
 	
 	/**
 	 * Returns the value of the solver options.
@@ -106,6 +129,13 @@ public class Options implements Cloneable { //@nmm: removed final
 		this.reporter = reporter;
 	}
 		
+
+	/** Returns the noOverflow flag */ // [AM]
+	public boolean noOverflow()                   { return noOverflow; }
+	/** Sets the noOverflow flag */ // [AM]
+	public void setNoOverflow(boolean noOverflow) { this.noOverflow = noOverflow; }
+
+	
 	/**
 	 * @throws IllegalArgumentException  arg !in [min..max]
 	 */
@@ -306,6 +336,7 @@ public class Options implements Cloneable { //@nmm: removed final
 		c.setSkolemDepth(skolemDepth);
 		c.setLogTranslation(logTranslation);
 		c.setCoreGranularity(coreGranularity);
+		c.setNoOverflow(noOverflow); // [AM]
 		return c;
 	}
 	
@@ -334,7 +365,9 @@ public class Options implements Cloneable { //@nmm: removed final
 		b.append(logTranslation);
 		b.append("\n coreGranularity: ");
 		b.append(coreGranularity);
-		return b.toString();
+		b.append("\n noOverflow: "); // [AM]
+        b.append(noOverflow);
+        return b.toString();
 	}
 	
 	/**

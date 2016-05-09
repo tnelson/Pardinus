@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.pardinus;
+package kodkod.pardinus.decomp;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -56,7 +56,7 @@ abstract public class DProblemExecutor extends Thread {
 	protected final ExecutorService executor;
 
 	/** a reporter that monitors the solving process */
-	protected final DMonitor monitor;
+	public final DMonitor monitor;
 
 	/**
 	 * Constructs an effective decomposed problem executor for a decomposed model finding problem

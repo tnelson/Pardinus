@@ -39,11 +39,14 @@ import kodkod.ast.Variable;
  * @author Emina Torlak 
  */
 @SuppressWarnings("unchecked")
-final class Environment<T> {
+public final class Environment<T, E> { // [AM]
 	private final Variable variable;
 	private final T value;
-	private final Environment<T> parent;
-	
+	private final E type; // [AM]
+	private final Environment<T, E> parent; // [AM]
+	private final Object envType;  // [AM] // may be null, but will typically contain Quantifier.ALL or Quantifier.SOME
+	private boolean negated; // [AM]
+
 	/**
 	 * The empty environment; EMPTY is its own parent.
 	 */
@@ -56,7 +59,10 @@ final class Environment<T> {
 	private Environment() {
 		this.variable = null;
 		this.value = null;
+		this.type = null; // [AM]
 		this.parent = this;
+		this.envType = null; // [AM]
+		this.negated = false; // [AM]
 	}
 	
 	/**  
@@ -65,18 +71,22 @@ final class Environment<T> {
 	 * 
 	 * @ensures this.parent' = parent && this.variable' = variable && this.value' = value
 	 */
-	private Environment(Environment<T> parent, Variable variable, T value) {
+	// [AM]
+	private Environment(Environment<T, E> parent, Variable variable, E type, T value, Object quant, boolean negated) {
 		this.variable = variable;
 		this.value = value;
+		this.type = type; // [AM]
 		this.parent = parent;
+		this.envType = quant; // [AM]
+		this.negated = negated; // [AM]
 	}
 	
 	/**
 	 * Returns the empty environment.
 	 * @return the empty environment.
 	 */
-	public static <T> Environment<T> empty() {
-		return (Environment<T>) EMPTY;
+	public static <T, E> Environment<T, E> empty() { // [AM]
+		return (Environment<T, E>) EMPTY;
 	}
 	
 	/**
@@ -85,7 +95,7 @@ final class Environment<T> {
 	 * 
 	 * @return this.parent
 	 */
-	public Environment<T> parent() { return parent; }
+	public Environment<T, E> parent() { return parent; } // [AM]
 	
 	/**
 	 * Returns a new environment that extends this environment with the specified
@@ -93,10 +103,17 @@ final class Environment<T> {
 	 * @requires variable != null
 	 * @return e : Environment | e.parent = this && e.variable = variable && e.value = value
 	 */
-	public Environment<T> extend(Variable variable, T value) {
-		assert variable !=  null;
-		return new Environment<T>(this, variable, value);
+	// [AM]
+    public Environment<T, E> extend(Variable variable, E type, T value) { return extend(variable, type, value, null); }
+	public Environment<T, E> extend(Variable variable, E type, T value, Object envType) {
+		return new Environment<T, E>(this, variable, type, value, envType, false);
 	}
+	
+	// [AM]
+	public void negate() {
+	    negated = !negated;
+	}
+
 	
 	/**
 	 * Returns this.variable.
@@ -107,11 +124,35 @@ final class Environment<T> {
 	}
 	
 	/**
+	 * Return this.isInt.
+	 * @return this.isInt
+	 */
+	// [AM]
+	public E type() {
+	    return this.type;
+	}
+
+	/**
 	 * Returns this.value.
 	 * @return this.value
 	 */
 	public T value() {
 		return this.value;
+	}
+	
+
+	/**
+     * Returns this.quant.
+     * @return this.quant
+     */
+	// [AM]
+	public Object envType() {
+        return envType;
+    }
+
+	// [AM]
+	public boolean isNegated() {
+	    return negated;
 	}
 	
 	/**
@@ -133,7 +174,7 @@ final class Environment<T> {
 	 * @return variable = this.variable => this.value, this.parent.lookup(variable)
 	 */
 	public T lookup(Variable variable) {
-		Environment<T> p = this;
+		Environment<T, E> p = this; // [AM]
 		// ok to use == for testing variable equality: 
 		// see kodkod.ast.LeafExpression#equals
 		while(p!=EMPTY && p.variable!=variable) {
@@ -141,6 +182,17 @@ final class Environment<T> {
 		}
 		return p.value;
 	}
+	
+	// [AM]
+	public E lookupType(Variable variable) {
+        Environment<T, E> p = this;
+        // ok to use == for testing variable equality:
+        // see kodkod.ast.LeafExpression#equals
+        while(!p.isEmpty() && p.variable!=variable) {
+            p = p.parent;
+        }
+        return p.type;
+    }
 	
 	/**
 	 * @see java.lang.Object#toString()

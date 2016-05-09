@@ -53,7 +53,7 @@ public class Relation extends LeafExpression {
 	 * @ensures this.name' = name && this.arity' = arity 
 	 * @throws IllegalArgumentException  arity < 1 
 	 */
-	private Relation(String name, int arity) {
+	private Relation(String name, int arity) { 
 		super(name,arity);
 	}
 	
@@ -159,6 +159,5 @@ public class Relation extends LeafExpression {
     public Formula totalOrder(Relation ordered, Relation first, Relation last) {
     		return new RelationPredicate.TotalOrdering(this, ordered, first, last);
     }
-	
-	
+
 }

@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,22 +20,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.ast.operator;
+package kodkod.pardinus.decomp;
 
-/**
- * Enumerates binary comparison operators:  =, < , >, <=, >=.
- */
-public enum IntCompOperator {
-	/** `=' operator */
-	EQ 	{ public String toString() { return "="; } },
-	/** `!=' operator */ // [AM]
-	NEQ { public String toString() { return "!="; } },
-	/** `<' operator */
-	LT 	{ public String toString() { return "<"; } },
-	/** `<=' operator */
-	LTE	{ public String toString() { return "<="; } },
-	/** `>' operator */
-	GT 	{ public String toString() { return ">"; } },
-	/** `>=' operator */
-	GTE { public String toString() { return ">="; } };
+import kodkod.engine.config.Options;
+
+public class DOptions extends Options {
+	// the number of parallel processes
+	private int threads = 4;
+
+	private Modes mode = Modes.PARALLEL;
+
+	public enum Modes {
+		BATCH, 
+		PARALLEL,
+		HYBRID,
+		INCREMENTAL,
+		STATS;
+	}
+
+	public DOptions () {
+		super();
+	}
+
+	public DOptions (Options options) {
+		super(options);
+	}
+	
+	/**
+	 * Sets the number of threads that will be launched in parallel.
+	 * @param threads
+	 */
+	public void setThreads(int threads) {
+		this.threads = threads;
+	}
+
+	public int threads() {
+		return threads;
+	}
+
+	public Modes getMode() {
+		return mode;
+	}
+
+	public void setMode(Modes mode) {
+		this.mode = mode;
+	}
+	
+	
 }

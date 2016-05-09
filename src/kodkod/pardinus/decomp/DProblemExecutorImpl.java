@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.pardinus;
+package kodkod.pardinus.decomp;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,7 +40,7 @@ import kodkod.instance.Bounds;
  * single SAT solution. Terminates once a SAT integrated / amalgatamted problem
  * is found or when every configuration has been explored.
  * 
- * @see kodkod.pardinus.DProblemExecutor
+ * @see kodkod.pardinus.decomp.DProblemExecutor
  * @author nmm, ejp
  */
 public class DProblemExecutorImpl extends DProblemExecutor {
@@ -63,7 +63,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	/**
 	 * Constructs an implementation of a decomposed problem solver with support for hybrid model.
 	 *
-	 * @see kodkod.pardinus.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
+	 * @see kodkod.pardinus.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
 	public DProblemExecutorImpl(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n, boolean it) {
 		super(new DMonitorImpl(), f1, f2, b1, b2, solver, n);
@@ -74,7 +74,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 * Registers the solution and shutdowns the executor if the caller is the
 	 * amalgamated problem, SAT integrated problem or last integrated problem.
 	 * 
-	 * @see kodkod.pardinus.DProblemExecutor#end(kkpartition.PProblem)
+	 * @see kodkod.pardinus.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
 	public void end(DSolution sol) {
@@ -179,7 +179,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	/**
 	 * Waits until a single solutions is added to the solution queue.
 	 * 
-	 * @see kodkod.pardinus.DProblemExecutor#waitUntil()
+	 * @see kodkod.pardinus.decomp.DProblemExecutor#waitUntil()
 	 */
 	@Override
 	public DSolution waitUntil() throws InterruptedException {

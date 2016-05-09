@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +58,7 @@ import kodkod.util.ints.TreeSequence;
  * @invariant all r: relations | lowerBound[r].arity = upperBound[r].arity = r.arity
  * @invariant all r: relations | lowerBound[r].tuples in upperBound[r].tuples       
  * @author Emina Torlak
+ * @modified nmm, tmg (added targets and weights)
  **/
 public final class Bounds implements Cloneable {
 	private final TupleFactory factory;
@@ -64,15 +66,22 @@ public final class Bounds implements Cloneable {
 	private final SparseSequence<TupleSet> intbounds;
 	private final Set<Relation> relations;
 	
+	private final Map<Relation, TupleSet> targets; 	// pt.uminho.haslab: the targets set to each relation
+	private final Map<Relation, Integer> weights; 	// pt.uminho.haslab: the weights set to each relation
+
+	
 	/**
 	 * Constructs a Bounds object with the given factory and mappings.
 	 */
-	private Bounds(TupleFactory factory, Map<Relation, TupleSet> lower, Map<Relation, TupleSet> upper, SparseSequence<TupleSet> intbounds) {
+	// pt.uminho.haslab: constructor considers targets and weights
+	private Bounds(TupleFactory factory, Map<Relation, TupleSet> lower, Map<Relation, TupleSet> upper, Map<Relation, TupleSet> target, Map<Relation, Integer> weights, SparseSequence<TupleSet> intbounds) {
 		this.factory = factory;
 		this.lowers = lower;
 		this.uppers = upper;
-		this.intbounds = intbounds;
-		this.relations = relations(lowers, uppers);
+        this.intbounds = intbounds;
+        this.relations = relations(lowers, uppers);
+		this.weights = weights;	// pt.uminho.haslab
+		this.targets = target;	// pt.uminho.haslab
 	}
 	
 	/**
@@ -84,6 +93,8 @@ public final class Bounds implements Cloneable {
 		this.factory = universe.factory();
 		this.lowers = new LinkedHashMap<Relation, TupleSet>();
 		this.uppers = new LinkedHashMap<Relation, TupleSet>();
+		this.targets = new LinkedHashMap<Relation, TupleSet>();	// pt.uminho.haslab
+		this.weights = new LinkedHashMap<Relation, Integer>();	// pt.uminho.haslab
 		this.intbounds = new TreeSequence<TupleSet>();
 		this.relations = relations(lowers, uppers);
 	}
@@ -184,6 +195,41 @@ public final class Bounds implements Cloneable {
 		return unmodifiableMap(uppers);
 	}
 	
+	/**
+	 * Returns the set of tuples that are the target of r. r may be in this.relations and not have targets set.
+	 * If r is not mapped by this, null is returned.
+	 * pt.uminho.haslab
+	 */
+	public TupleSet target(Relation r) {
+		return targets.get(r);
+	}
+	
+	/**
+	 * Returns a map view of this.targets.  The returned map is not modifiable.
+	 * pt.uminho.haslab
+	 * @return a map view of this.targets
+	 */
+	public Map<Relation, TupleSet> targets() {
+		return unmodifiableMap(targets);
+	}
+	
+	/**
+	 * Returns the weight of r for TO runs. r may be in this.targets and not have weights set.
+	 * If r is not mapped by this, null is returned.
+	 * pt.uminho.haslab
+	 */
+	public Integer weight(Relation r) {
+		return weights.get(r);
+	}
+	
+	/**
+	 * Returns a map view of this.weights.  The returned map is not modifiable.
+	 * pt.uminho.haslab
+	 * @return a map view of this.weights
+	 */	public Map<Relation, Integer> weights() {
+		return unmodifiableMap(weights);
+	}
+	 
 	/**
 	 * Returns the set of tuples representing the given integer.  If i is not
 	 * mapped by this, null is returned.
@@ -292,23 +338,54 @@ public final class Bounds implements Cloneable {
 		intbounds.put(i, ibound.clone().unmodifiableView());
 	}
 	
+	/**
+	 * Sets the target for the given relation.
+	 * pt.uminho.haslab
+	 * @requires lower.tuples in target.tuples && target.tuples in upper.tuples && target.arity = r.arity &&
+	 *           target.universe = this.universe && r in this.relations
+	 */
+	public void setTarget(Relation r, TupleSet target) {
+		if (!relations().contains(r))
+			throw new IllegalArgumentException("r !in this.relations");
+		if (!upperBounds().get(r).containsAll(target))
+			throw new IllegalArgumentException("target.tuples !in upper.tuples");
+//		if (!lowerBounds().containsKey(r))
+//			throw new IllegalArgumentException("lower.tuples !in target.tuples");			
+		if (!target.containsAll(lowerBounds().get(r)))
+			throw new IllegalArgumentException("lower.tuples !in target.tuples");	
+		targets.put(r, target.clone().unmodifiableView());
+	}
+	
+	/**
+	 * Sets the weight for the given relation.
+	 * pt.uminho.haslab
+	 * @requires r in this.relations
+	 */	public void setWeight(Relation r, Integer weight) {
+		//TODO: test range of weight
+		if (!relations().contains(r))
+			throw new IllegalArgumentException("r !in this.relations");
+		weights.put(r, weight);
+	}
+
 
 	/**
 	 * Returns an unmodifiable view of this Bounds object.
 	 * @return an unmodifiable view of his Bounds object.
 	 */
-	public Bounds unmodifiableView() {
-		return new Bounds(factory, unmodifiableMap(lowers), unmodifiableMap(uppers), unmodifiableSequence(intbounds));
+	// pt.uminho.haslab: considers targets and weights
+	public Bounds unmodifiableView() { 	
+		return new Bounds(factory, unmodifiableMap(lowers), unmodifiableMap(uppers), unmodifiableMap(targets), unmodifiableMap(weights), unmodifiableSequence(intbounds));
 	}
 	
 	/**
 	 * Returns a deep (modifiable) copy of this Bounds object.
 	 * @return a deep (modifiable) copy of this Bounds object.
 	 */
+	// pt.uminho.haslab: clone considers targets and weights
 	public Bounds clone() {
 		try {
-			return new Bounds(factory, new LinkedHashMap<Relation, TupleSet>(lowers), 
-					new LinkedHashMap<Relation, TupleSet>(uppers), intbounds.clone());
+			return new Bounds(universe().factory(), new LinkedHashMap<Relation, TupleSet>(lowers),  	
+					new LinkedHashMap<Relation, TupleSet>(uppers), new LinkedHashMap<Relation, TupleSet>(targets), new LinkedHashMap<Relation, Integer>(weights), intbounds.clone());
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
 		}

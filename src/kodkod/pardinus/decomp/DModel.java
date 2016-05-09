@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,22 +20,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.ast.operator;
+package kodkod.pardinus.decomp;
 
-/**
- * Enumerates binary comparison operators:  =, < , >, <=, >=.
- */
-public enum IntCompOperator {
-	/** `=' operator */
-	EQ 	{ public String toString() { return "="; } },
-	/** `!=' operator */ // [AM]
-	NEQ { public String toString() { return "!="; } },
-	/** `<' operator */
-	LT 	{ public String toString() { return "<"; } },
-	/** `<=' operator */
-	LTE	{ public String toString() { return "<="; } },
-	/** `>' operator */
-	GT 	{ public String toString() { return ">"; } },
-	/** `>=' operator */
-	GTE { public String toString() { return ">="; } };
+import kodkod.ast.Formula;
+import kodkod.instance.Bounds;
+
+public interface DModel {
+
+	/**
+	 * Bounds of the first partition.
+	 * @return
+	 */
+	public Bounds bounds1();
+
+	/**
+	 * Bounds of the second partition.
+	 * @requires bounds1().relations() & bounds2.requires() = empty
+	 * @return
+	 */
+	public Bounds bounds2();
+
+	/**
+	 * Formula for the first partition. Formula must refer to every relation in bounds1().
+ 	 * @requires partition1().relations() = bounds1().relations()
+	 * @return
+	 */
+	public Formula partition1();
+	
+	/**
+	 * Formula for the second partition.
+	 * @return
+	 */
+	public Formula partition2();
+
+	/**
+	 * The bits required to encode the model.
+ 	 * @requires partition2().relations() in bounds1().relations() + bounds2().relations() 
+	 * @return
+	 */
+	public int getBitwidth();
+	
 }

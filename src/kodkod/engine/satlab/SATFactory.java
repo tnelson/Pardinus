@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import kodkod.pardinus.target.WTargetOrientedSATSolver;
+
 import org.sat4j.minisat.SolverFactory;
 
 /**
@@ -76,6 +78,22 @@ public abstract class SATFactory {
 		public String toString() { return "DefaultSAT4J"; }
 	};
 	
+	// pt.uminho.haslab
+	public static final SATFactory PMaxSAT4J = new SATFactory() { 
+		public SATSolver instance() { 
+			return new PMaxSAT4J(org.sat4j.maxsat.SolverFactory.newDefault()); 
+		}
+		public String toString() { return "PMaxSAT4J"; }
+	};
+	
+	// pt.uminho.haslab
+	public static final SATFactory IncrementalSAT4J = new SATFactory() { 
+		public SATSolver instance() { 
+			return new IncrementalSAT4J(SolverFactory.instance().defaultSolver()); 
+		}
+		public String toString() { return "IncrementalSAT4J"; }
+	};
+	
 	/**
 	 * The factory that produces instances of the "light" sat4j solver.  The
 	 * light solver is suitable for solving many small instances of SAT problems.
@@ -87,6 +105,23 @@ public abstract class SATFactory {
 		}
 		public String toString() { return "LightSAT4J"; }
 	};
+	
+	// pt.uminho.haslab
+	public static final SATFactory Yices = new SATFactory() {
+		public SATSolver instance() {
+			return new Yices();
+		}
+		public String toString() { return "Yices"; }
+	};
+	
+	// pt.uminho.haslab
+	public static final SATFactory PMaxYices = new SATFactory() {
+		public SATSolver instance() {
+			return new PMaxYicesNative();
+		}
+		public String toString() { return "PMaxYicesNative"; }
+	};
+	
 	
 	/**
 	 * The factory that produces instances of Niklas E&eacute;n and Niklas S&ouml;rensson's
@@ -188,6 +223,7 @@ public abstract class SATFactory {
 	
 	}
 	
+	// pt.uminho.haslab
 	public static final SATFactory syrup() {
 		
 		final String executable = findStaticLibrary("glucose-syrup");
@@ -278,6 +314,30 @@ public abstract class SATFactory {
 		};
 	}
 	
+	// Yices does not follow standard WCNF output format
+	// pt.uminho.haslab
+	public static final SATFactory externalPMaxYices(final String executable, final String cnf, final int max, final String... options) {
+		return new SATFactory() {
+			@Override
+			public WTargetOrientedSATSolver instance() {
+				if (cnf != null) {
+					return new PMaxYicesExternal(executable, cnf, false, max, options);
+				} else {
+					try {
+						return new PMaxYicesExternal(executable, 
+								File.createTempFile("kodkod", String.valueOf(executable.hashCode())).getAbsolutePath(), 
+								false, max, options);
+					} catch (IOException e) {
+						throw new SATAbortedException("Could not create a temporary file.", e);
+					}
+				}
+			}
+			
+			public String toString() {
+				return (new File(executable)).getName();
+			}
+		};
+	}
 	
 	/**
 	 * Returns an instance of a SATSolver produced by this factory.

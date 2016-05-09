@@ -48,6 +48,11 @@ import kodkod.util.ints.IntSet;
  */
 public abstract class BooleanFactory {
 	/**
+	 * IMPLEMENTATION NOTE:  BooleanFactory is the facade and a mediator for this package.
+	 */
+	private static CBCFactory CONSTANT_FACTORY; // [AM]
+
+	/**
 	 * A circuit factory used internally to assemble circuits.
 	 */
 	private final CBCFactory circuits;
@@ -57,20 +62,32 @@ public abstract class BooleanFactory {
 	/** The bitwidth used for integer computations */
 	final int bitwidth;
 	
+	/** Whether or not it should forbid overflows */ // [AM]
+	final boolean noOverflow; 
+		
 	/**
 	 * Constructs a boolean factory with the given number of input variables.  Gates are
 	 * checked for semantic equality down to the given depth.  Integers are represented
-	 * using the given number of bits.
+	 * using the given number of bits. The noOverflow bit tells whether or not to forbid 
+	 * overflows.
+	 * 
 	 * @requires 0 <= numVars < Integer.MAX_VALUE
 	 * @requires checkToDepth >= 0 && bitwidth > 0
 	 * @ensures #this.components' = numInputVariables && this.components' in BooleanVariable 
 	 * @ensures this.bitwidth' = bitwidth
 	 * @ensures this.comparisonDepth' = comparisonDepth
 	 */
-	private BooleanFactory(int numVars, int comparisonDepth, int bitwidth) {
-		this.circuits = new CBCFactory(numVars, 1<<comparisonDepth);
+	 // [AM]
+	private BooleanFactory(int numVars, int comparisonDepth, int bitwidth, boolean noOverflow) {
+		if (numVars==0) {
+			if (CONSTANT_FACTORY==null)
+				CONSTANT_FACTORY = new CBCFactory(0, 1);
+			this.circuits = CONSTANT_FACTORY;
+		} else {
+			this.circuits = new CBCFactory(numVars, 1<<comparisonDepth);
+		}
 		this.bitwidth = bitwidth;
-		this.numVars = numVars;
+		this.noOverflow = noOverflow;
 	}
 	
 	/**
@@ -90,10 +107,11 @@ public abstract class BooleanFactory {
 	 * @throws IllegalArgumentException  numVars < 0 || numVars = Integer.MAX_VALUE
 	 * @throws NullPointerException  options = null
 	 */
+	 // [AM]
 	public static BooleanFactory factory(int numVars, Options options) {
 		switch(options.intEncoding()) {
 		case TWOSCOMPLEMENT : 
-			return new TwosComplementFactory(numVars, options.sharing(), options.bitwidth()); 
+			return new TwosComplementFactory(numVars, options.sharing(), options.bitwidth(), options.noOverflow()); 
 		default :
 			throw new IllegalArgumentException("unknown encoding: " + options.intEncoding());
 		}
@@ -136,7 +154,10 @@ public abstract class BooleanFactory {
 	 * Returns the bitwidth used for integer representation.
 	 * @return this.bitwidth
 	 */
-	public final int bitwidth() { return bitwidth; }
+	public final int bitwidth()       { return bitwidth; }
+	
+	/** Returns the noOverflow flag */ //[AM]
+	public final boolean noOverflow() { return noOverflow; }
 	
 	/**
 	 * Returns the encoding used by this factory to represent integers.
@@ -366,7 +387,7 @@ public abstract class BooleanFactory {
 	public final Int sum(Collection<BooleanValue> bits) {
 		return sum(bits.iterator(), 0, bits.size()-1);
 	}
-	
+		
 	/**
 	 * Returns a BooleanMatrix with the given dimensions and this 
 	 * as the factory for its non-FALSE components.  The returned matrix 
@@ -437,8 +458,9 @@ public abstract class BooleanFactory {
 		 * @ensures this.comparisonDepth' = comparisonDepth
 		 * @ensures this.intEncoding' = BINARY
 		 */
-		TwosComplementFactory(int numVars, int comparisonDepth, int bitwidth) {
-			super(numVars, comparisonDepth, bitwidth);
+		 // [AM]
+		TwosComplementFactory(int numVars, int comparisonDepth, int bitwidth, boolean noOverflow) {
+			super(numVars, comparisonDepth, bitwidth, noOverflow);
 		}
 		/**
 		 * Returns TWOSCOMPLEMENT.

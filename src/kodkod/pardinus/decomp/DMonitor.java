@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,22 +20,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.ast.operator;
+package kodkod.pardinus.decomp;
 
-/**
- * Enumerates binary comparison operators:  =, < , >, <=, >=.
- */
-public enum IntCompOperator {
-	/** `=' operator */
-	EQ 	{ public String toString() { return "="; } },
-	/** `!=' operator */ // [AM]
-	NEQ { public String toString() { return "!="; } },
-	/** `<' operator */
-	LT 	{ public String toString() { return "<"; } },
-	/** `<=' operator */
-	LTE	{ public String toString() { return "<="; } },
-	/** `>' operator */
-	GT 	{ public String toString() { return ">"; } },
-	/** `>=' operator */
-	GTE { public String toString() { return ">="; } };
+import java.util.List;
+
+import kodkod.engine.Solution;
+import kodkod.engine.Statistics;
+
+public interface DMonitor {
+
+	public abstract void newConfig(Solution config);
+
+	public abstract void newSolution(DSolution sol);
+
+	public abstract long getSats();
+
+	public abstract long getVars();
+
+	public abstract long getClauses();
+
+	public abstract void finishedLaunching();
+
+	public abstract void done(boolean timeout);
+
+	public abstract void terminated(boolean timeout);
+	
+	public List<DSolution> solutions ();
+
+	public abstract Statistics getConfigStats();
+
+	public abstract long getConfigTimes();
+	
+
 }

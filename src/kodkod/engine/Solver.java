@@ -21,9 +21,14 @@
  */
 package kodkod.engine;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import kodkod.ast.Formula;
@@ -41,6 +46,10 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
+import kodkod.pardinus.target.TargetOrientedSATSolver;
+import kodkod.pardinus.target.WTargetOrientedSATSolver;
+import kodkod.util.ints.IntIterator;
+import kodkod.util.nodes.PrettyPrinter;
 
 
 /** 
@@ -179,12 +188,29 @@ public final class Solver implements KodkodSolver {
 	public Iterator<Solution> solveAll(final Formula formula, final Bounds bounds) 
 		throws HigherOrderDeclException, UnboundLeafException, AbortedException {
 		
+	    if (Options.isDebug()) flushFormula(formula, bounds); // [AM] 	    
+
+		// nmm: this was commented, why?
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
 		return new SolutionIterator(formula, bounds, options);
 		
 	}
+
+	// [AM]
+    private void flushFormula(Formula formula, Bounds bounds)  {
+        try {
+            File f = new File(System.getProperty("java.io.tmpdir"), "kk.txt");
+            OutputStream os = new BufferedOutputStream(new FileOutputStream(f));
+            os.write(PrettyPrinter.print(formula, 2).getBytes());
+            os.write("\n================\n".getBytes());
+            os.write(bounds.toString().getBytes());
+            os.flush();
+            os.close();
+        } catch (Exception e) {
+        }
+    }
 
 	/**
 	 * {@inheritDoc}
@@ -259,10 +285,13 @@ public final class Solver implements KodkodSolver {
 	 * An iterator over all solutions of a model.
 	 * @author Emina Torlak
 	 */
-	private static final class SolutionIterator implements Iterator<Solution> {
+	public static final class SolutionIterator implements Iterator<Solution> { // pt.uminho.haslab: public
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
+		private Mode mode; // pt.uminho.haslab: TO mode
+		private Map<String, Integer> weights; // pt.uminho.haslab: signature weights
+
 		
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
@@ -286,8 +315,12 @@ public final class Solver implements KodkodSolver {
 		 */
 		public Solution next() {
 			if (!hasNext()) throw new NoSuchElementException();			
+			// TODO pt.uminho.haslab: trivial solutions not yet supported in TO
+			if (translation.trivial())
+				throw new RuntimeException("Trivial problems with targets not yet supported.");
+			else 
 			try {
-				return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution();
+				return  nextNonTrivialSolution();
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
@@ -309,29 +342,74 @@ public final class Solver implements KodkodSolver {
 		 * @return current solution
 		 */
 		private Solution nextNonTrivialSolution() {
+
 			final Translation.Whole transl = translation;
-			
+
 			final SATSolver cnf = transl.cnf();
 			final int primaryVars = transl.numPrimaryVariables();
-			
+			// pt.uminho.haslab: add the targets to generate the following solution
+			// due to the architecture of Alloy, targets are added directly to the SAT rather than through the bounds
+			try {				
+				cnf.valueOf(1); // fails if no previous solution
+				final int[] notModel = new int[primaryVars];
+				if (mode != null && (mode.equals(Mode.CLOSE) || mode.equals(Mode.FAR))) {
+					TargetOrientedSATSolver tcnf = (TargetOrientedSATSolver) cnf;
+					tcnf.clearTargets();
+					// pt.uminho.haslab: if there are weights must iterate through the relations to find the literal's owner
+					if (weights != null) {
+						WTargetOrientedSATSolver wcnf = (WTargetOrientedSATSolver) cnf;
+						for (Relation r : transl.bounds().relations()) {
+							Integer w = weights.get(r.name());
+							if (r.name().equals("Int/next") || r.name().equals("seq/Int") || r.name().equals("String")) {}
+							else {
+								if (w==null) { w = 1; }
+								IntIterator is = transl.primaryVariables(r).iterator();
+								while (is.hasNext()) {
+									int i = is.next();
+									// add the negation of the current model to the solver
+									notModel[i-1] = cnf.valueOf(i) ? -i : i;
+									// pt.uminho.haslab: add current model as weighted target
+									if (mode == Mode.CLOSE) wcnf.addWeight(cnf.valueOf(i) ? i : -i,w);
+									if (mode == Mode.FAR) wcnf.addWeight(cnf.valueOf(i) ? -i : i,w);
+								}
+							}
+						}
+					}
+					// pt.uminho.haslab: if there are no weights may simply iterate literals
+					else {
+						for(int i = 1; i <= primaryVars; i++) {
+							// add the negation of the current model to the solver
+							notModel[i-1] = cnf.valueOf(i) ? -i : i;
+							// pt.uminho.haslab: add current model as target
+							if (mode == Mode.CLOSE) tcnf.addTarget(cnf.valueOf(i) ? i : -i);
+							if (mode == Mode.FAR) tcnf.addTarget(cnf.valueOf(i) ? -i : i);
+						}
+					}
+
+				} else {
+					for(int i = 1; i <= primaryVars; i++) {
+						// add the negation of the current model to the solver
+						notModel[i-1] = cnf.valueOf(i) ? -i : i;
+					}
+				}				
+				cnf.addClause(notModel);
+			} 
+			catch(IllegalStateException e) { }
+			catch(Exception e) {throw e; }
+
+
 			transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
-			
+
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();
 			final long endSolve = System.currentTimeMillis();
 
 			final Statistics stats = new Statistics(transl, translTime, endSolve - startSolve);
 			final Solution sol;
-			
+
 			if (isSat) {			
 				// extract the current solution; can't use the sat(..) method because it frees the sat solver
 				sol = Solution.satisfiable(stats, transl.interpret());
-				// add the negation of the current model to the solver
-				final int[] notModel = new int[primaryVars];
-				for(int i = 1; i <= primaryVars; i++) {
-					notModel[i-1] = cnf.valueOf(i) ? -i : i;
-				}
-				cnf.addClause(notModel);
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
 				translation = null; // unsat, no more solutions
@@ -391,5 +469,34 @@ public final class Solver implements KodkodSolver {
 			return sol;
 		}
 		
+		/**
+		 * Calculates the next TO solutions with weights.
+		 * pt.uminho.haslab
+		 * @param i the TO mode
+		 * @param weights the signature weights
+		 */
+		public Solution next(Mode i, Map<String, Integer> weights) {
+			if (i != Mode.DEFAULT) {
+				if (!(translation.options().solver().instance() instanceof TargetOrientedSATSolver))
+					throw new AbortedException("Selected solver ("+translation.options().solver()+") does not have support for targets.");				
+				if (weights != null) {
+					if (!(translation.options().solver().instance() instanceof WTargetOrientedSATSolver))
+						throw new AbortedException("Selected solver ("+translation.options().solver()+") does not have support for targets with weights.");				
+				}
+			}
+			this.mode = i;
+			this.weights = weights;
+			return next();
+		}
+		
+		/**
+		 * The TO execution models.
+		 * pt.uminho.haslab
+		 */
+		public enum Mode {
+			DEFAULT,
+			FAR,
+			CLOSE
+		}
 	}
 }

@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.pardinus;
+package kodkod.pardinus.decomp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,6 +107,21 @@ public class DMonitorImpl implements DMonitor {
 	public void terminated(boolean timeout) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public List<DSolution> solutions() {
+		return solutions;
+	}
+
+	@Override
+	public Statistics getConfigStats() {
+		return config_stats;
+	}
+
+	@Override
+	public long getConfigTimes() {
+		return config_times;
 	}
 	
 }
