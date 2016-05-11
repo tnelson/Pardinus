@@ -167,15 +167,15 @@ public final class RunTestModel {
 		else if (selected_mode == Modes.STATS) {
 			DMonitor mon = psolver.executor().monitor;
 
-			int tt = mon.solutions().size();
+			long tt = mon.getNumRuns();
 			log.append(tt);
 			log.append("\t");
-			log.append(mon.getSats());
+			log.append(mon.getNumSATs());
 			log.append("\t");
-			log.append(tt-mon.getSats());
+			log.append(tt-mon.getNumSATs());
 			log.append("\t");
 			if (tt != 0)
-				log.append(((mon.getSats() * 100) / (long) tt));
+				log.append(((mon.getNumSATs() * 100) / (long) tt));
 			else 
 				log.append("0");
 			log.append("\t");
@@ -183,9 +183,9 @@ public final class RunTestModel {
 			log.append("\t");
 			log.append(mon.getConfigStats().clauses());
 			log.append("\t");
-			log.append(mon.getVars());
+			log.append(mon.getTotalVars());
 			log.append("\t");
-			log.append(mon.getClauses());
+			log.append(mon.getTotalClauses());
 			log.append("\t");
 			log.append(mon.getConfigTimes());
 			log.append("\t");
@@ -213,11 +213,11 @@ public final class RunTestModel {
 		log = new StringBuilder();
 	}
 
-	private static int getConfigNum(DSolver psolver2) {
+	private static long getConfigNum(DSolver psolver2) {
 		DMonitor mon = psolver2.executor().monitor;
-		int counter = mon.solutions().size();
+		long counter = mon.getNumRuns();
 		if (counter != 0)
-			if (!(mon.solutions().get(mon.solutions().size() - 1) instanceof IProblem))
+			if (mon.isAmalgamated())
 				counter = -counter;
 		return counter;
 	}
