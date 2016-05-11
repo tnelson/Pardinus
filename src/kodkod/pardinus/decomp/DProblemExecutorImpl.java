@@ -73,44 +73,58 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	/**
 	 * Registers the solution and shutdowns the executor if the caller is the
 	 * amalgamated problem, SAT integrated problem or last integrated problem.
+	 * @return 
 	 * 
 	 * @see kodkod.pardinus.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
-	public void end(DProblem sol) {
+	public synchronized void end(DProblem sol) {
+		if (Thread.currentThread().isInterrupted()) return;
 		monitor.newSolution(sol);
 		try {
-			// if the batch terminates, then shutdown the executor
+			// if the amalgamated terminates...
 			if (!(sol instanceof IProblem)) {
+				// store the sat or unsat solution
+				solution_queue.put(sol.getSolution());
+				running.set(1);
+				monitor.amalgamatedWon();
+				// terminate the integrated problems
 				if (!executor.isTerminated())
 					executor.shutdownNow();
-				running.set(1);
-			} else {
-				if (amalgamated_running != null && amalgamated_running.isAlive()) {
-					amalgamated_running.interrupt();
-					running.decrementAndGet();
-				}
-			}
-
-			if (sol.sat()) {
-				solution_queue.put(sol.getSolution());
-				sol.next();
-				executor.execute(sol);
-				running.incrementAndGet();
-			}
-
-			// if every process has been launched and there is none running,
-			// shutdown the executor
-			if (monitor.hasFinishedLaunching()) {
-				if (running.get() == 1) {
+				// if sat, iterate and launch
+				if (sol.sat()) {
+					amalgamated_running = sol.next();
+					amalgamated_running.start();
+				} else
+					running.incrementAndGet();
+			} 
+			// if a integrated terminates...
+			else {
+				// if it is sat...
+				if (sol.sat()) {
+					// store the sat solution
 					solution_queue.put(sol.getSolution());
-					if (!executor.isTerminated())
-						executor.shutdownNow();
+					// terminate the amalgamated problem
+					if (amalgamated_running != null && amalgamated_running.isAlive()) {
+						amalgamated_running.interrupt();
+						running.decrementAndGet();
+					}
+					// iterate and launch
+					executor.execute(sol.next());
+				} 
+				// if it is unsat...
+				else {
+					running.decrementAndGet();
+					// if last running integrated...
+					if (monitor.isConfigsDone() && running.get() == 0) {
+						// store the unsat solution
+						solution_queue.put(sol.getSolution()); 
+						// terminate the executor
+						if (!executor.isTerminated())
+							executor.shutdownNow();
+					} 
 				}
 			}
-			
-			running.decrementAndGet();
-
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -144,7 +158,6 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			// collects a batch of configurations
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();
-				monitor.newConfig(config);
 
 				if (config.unsat()) {
 					// when there is no configuration no solver will ever
@@ -156,6 +169,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 							e.printStackTrace();
 						}
 				} else {
+					monitor.newConfig(config);
 					DProblem problem = new IProblem(config, this);
 					problem.setPriority(MIN_PRIORITY);
 					problem_queue.add(problem);
@@ -172,7 +186,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			}
 		}
 //		executor.shutdown();
-		monitor.finishedLaunching();
+		monitor.configsDone();
 	}
 
 	/**

@@ -22,36 +22,39 @@
  */
 package kodkod.pardinus.decomp;
 
-import java.util.List;
-
 import kodkod.engine.Solution;
 import kodkod.engine.Statistics;
 
 public interface DMonitor {
 
-	public abstract void newConfig(Solution config);
+	public void newConfig(Solution config);
 
-	public abstract void newSolution(DProblem sol);
+	public void newSolution(DProblem sol);
 
-	public abstract long getSats();
+	public long getNumSATs();
 
-	public abstract long getVars();
+	public long getTotalVars();
 
-	public abstract long getClauses();
+	public long getTotalClauses();
 
-	public abstract void finishedLaunching();
+	public void configsDone();
 
-	public abstract boolean hasFinishedLaunching();
+	public boolean isConfigsDone();
 
-	public abstract void done(boolean timeout);
+	public void done(boolean timeout);
 
-	public abstract void terminated(boolean timeout);
-	
-	public List<DProblem> solutions ();
+	public void terminated(boolean timeout);
 
-	public abstract Statistics getConfigStats();
+	public long getNumRuns();
 
-	public abstract long getConfigTimes();
-	
+	public long getNumConfigs();
+
+	public Statistics getConfigStats();
+
+	public long getConfigTimes();
+
+	public void amalgamatedWon();
+
+	public boolean isAmalgamated();
 
 }

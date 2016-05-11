@@ -97,7 +97,7 @@ public class StatsExecutor extends DProblemExecutor {
 			}
 		}
 		executor.shutdown();
-		monitor.finishedLaunching();
+		monitor.configsDone();
 	}
 
 	/**

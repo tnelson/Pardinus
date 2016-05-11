@@ -44,6 +44,8 @@ public class DMonitorImpl implements DMonitor {
 	private long clauses = 0;
 	
 	protected final List<DProblem> solutions = new ArrayList<DProblem>();
+	private int configs = 0;
+	private boolean amalgamated_solution = false;
 
 	/* (non-Javadoc)
 	 * @see kodkod.pardinus.DReporterI#newConfig(kodkod.engine.Solution)
@@ -55,6 +57,7 @@ public class DMonitorImpl implements DMonitor {
 			config_stats = config.stats();
 		}
 		config_times += config.stats().solvingTime();
+		configs ++;
 	}
 
 	/* (non-Javadoc)
@@ -72,7 +75,7 @@ public class DMonitorImpl implements DMonitor {
 	 * @see kodkod.pardinus.DReporterI#getSats()
 	 */
 	@Override
-	public long getSats() {
+	public long getNumSATs() {
 		return sats;
 	}
 	
@@ -80,7 +83,7 @@ public class DMonitorImpl implements DMonitor {
 	 * @see kodkod.pardinus.DReporterI#getVars()
 	 */
 	@Override
-	public long getVars() {
+	public long getTotalVars() {
 		return vars;
 	}
 	
@@ -88,12 +91,12 @@ public class DMonitorImpl implements DMonitor {
 	 * @see kodkod.pardinus.DReporterI#getClauses()
 	 */
 	@Override
-	public long getClauses() {
+	public long getTotalClauses() {
 		return clauses;
 	}
 
 	@Override
-	public void finishedLaunching() {
+	public void configsDone() {
 		finished = true;
 	}
 
@@ -110,8 +113,8 @@ public class DMonitorImpl implements DMonitor {
 	}
 
 	@Override
-	public List<DProblem> solutions() {
-		return solutions;
+	public long getNumRuns() {
+		return solutions.size();
 	}
 
 	@Override
@@ -125,8 +128,23 @@ public class DMonitorImpl implements DMonitor {
 	}
 
 	@Override
-	public boolean hasFinishedLaunching() {
+	public boolean isConfigsDone() {
 		return finished;
+	}
+
+	@Override
+	public long getNumConfigs() {
+		return configs;
+	}
+
+	@Override
+	public void amalgamatedWon() {
+		amalgamated_solution  = true;
+	}
+
+	@Override
+	public boolean isAmalgamated() {
+		return amalgamated_solution;
 	}
 	
 }

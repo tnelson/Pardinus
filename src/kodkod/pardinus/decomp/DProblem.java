@@ -47,7 +47,7 @@ public class DProblem extends Thread {
 	public DProblem(DProblemExecutor manager, Formula formula, Bounds bnds) {
 		this.executor = manager;
 		if (this.executor != null) {
-			solver = new Solver(this.executor.solver.options());
+			solver = manager.solver;
 			this.bounds = bnds;
 			this.formula = formula;
 		} else {
@@ -57,6 +57,14 @@ public class DProblem extends Thread {
 		}
 	}
 
+	private DProblem(DProblemExecutor manager, Formula formula, Bounds bnds, Iterator<Solution> sols) {
+		this.executor = manager;
+		this.solver = manager.solver;
+		this.bounds = bnds;
+		this.formula = formula;
+		this.solutions = sols;
+	}
+	
 	public void run() {
 		if (solutions == null) {
 			solutions = solver.solveAll(formula,bounds);
@@ -70,7 +78,9 @@ public class DProblem extends Thread {
 		return solution.sat();
 	}
 	
-	public void next() {}
+	public DProblem next() {
+		return new DProblem(executor, formula, bounds, solutions);
+	}
 
 	public Solution getSolution() {
 		if (solution == null && solutions.hasNext()) solution = solutions.next();
