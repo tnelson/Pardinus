@@ -22,8 +22,13 @@
  */
 package kodkod.pardinus.decomp;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.DPardinusSolver;
+import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.instance.Bounds;
 import kodkod.pardinus.decomp.DOptions.Modes;
@@ -37,12 +42,12 @@ import kodkod.pardinus.decomp.DOptions.Modes;
  * built over regular Kodkod {@link kodkod.engine.config.Options options}. The
  * decomposed solve relies on regular Kodkod {@link kodkod.engine.Solver
  * solvers} that are deployed in parallel. The solver returns a
- * {@link kodkod.pardinus.decomp.DSolution decomposed solution} that can be iterated.
+ * {@link kodkod.pardinus.decomp.DProblem decomposed solution} that can be iterated.
  * 
  * @author nmm, ejp
  *
  */
-public class DSolver {
+public class DSolver implements DPardinusSolver {
 
 	/** the regular Kodkod solver used in the parallelization */
 	final public Solver solver;
@@ -51,7 +56,7 @@ public class DSolver {
 	private DProblemExecutor executor;
 
 	/** the decomposed problem options */
-	final public DOptions options;
+	final private DOptions options;
 
 	/**
 	 * Constructs a new decomposed solver built over a standard Kodkod
@@ -65,7 +70,7 @@ public class DSolver {
 	 *             if the solver is not incremental.
 	 */
 	public DSolver(Solver solver) {
-		if (solver.options().solver().incremental())
+		if (!solver.options().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 		this.options = new DOptions(solver.options());
 		this.solver = solver;
@@ -97,21 +102,22 @@ public class DSolver {
 	 * {@link kodkod.pardinus.decomp.DProblemExecutor executor} to handle the
 	 * decomposed problem in parallel, given the defined
 	 * {@link kodkod.pardinus.decomp.DOptions options}.
-	 * 
-	 * @param b1
-	 *            the partial problem bounds.
-	 * @param b2
-	 *            the remainder problem bounds.
 	 * @param f1
 	 *            the partial problem formula.
 	 * @param f2
 	 *            the remainder problem formula.
+	 * @param b1
+	 *            the partial problem bounds.
+	 * @param b2
+	 *            the remainder problem bounds.
+	 * 
 	 * @requires f1 to be defined over b1 and f2 over b2.
 	 * @return a decomposed solution.
 	 * @throws InterruptedException
 	 *             if the solving process is interrupted.
 	 */
-	public DSolution solve(Bounds b1, Bounds b2, Formula f1, Formula f2) throws InterruptedException {
+	@Override
+	public Solution solve(Formula f1, Formula f2, Bounds b1, Bounds b2) throws InterruptedException {
 		if (options.getMode() == Modes.STATS)
 			executor = new StatsExecutor(f1, f2, b1, b2, solver, options.threads());
 		else if (options.getMode() == Modes.HYBRID)
@@ -119,7 +125,7 @@ public class DSolver {
 		else
 			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver, options.threads(), false);
 		executor.start();
-		DSolution sol = executor.waitUntil();
+		Solution sol = executor.waitUntil();
 		executor.terminate();
 		return sol;
 	}
@@ -137,5 +143,80 @@ public class DSolver {
 	 * Releases the resources, if any.
 	 */
 	public void free() {}
+
+	@Override
+	public Solution solve(Formula formula, Bounds bounds) {
+		Solution s = null;
+		try {
+			s = solve(formula, Formula.TRUE, bounds, new Bounds(bounds.universe()));
+		} catch (InterruptedException e) {
+			// Should throw AbortedException
+			e.printStackTrace();
+		}
+		return s;
+	}
+
+	@Override
+	public DOptions options() {
+		return options;
+	}
+
+	@Override
+	public Iterator<Solution> solveAll(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2) {
+		// nmm: this was commented, why?
+		if (!options.solver().incremental())
+			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
+		
+		return new DSolutionIterator(formula1, formula2, bounds1, bounds2, options, solver); 
+	}
+	
+	private static class DSolutionIterator implements Iterator<Solution> {
+		private DProblemExecutor executor;
+
+		/**
+		 * Constructs a solution iterator for the given formula, bounds, and options.
+		 */
+		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, DOptions options, Solver solver) {
+			if (options.getMode() == Modes.STATS)
+				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver, options.threads());
+			else if (options.getMode() == Modes.HYBRID)
+				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver, options.threads(), true);
+			else
+				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver, options.threads(), false);
+			executor.start();
+		}
+		
+		/**
+		 * Returns true if there is another solution.
+		 * @see java.util.Iterator#hasNext()
+		 */
+		public boolean hasNext() {  return !executor.executor.isTerminated(); }
+		
+		/**
+		 * Returns the next solution if any.
+		 * @see java.util.Iterator#next()
+		 */
+		public Solution next() {
+			if (!hasNext()) throw new NoSuchElementException();			
+			try {
+				return executor.waitUntil();
+			} catch (InterruptedException e) {
+				try {
+					executor.terminate();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				// Should throw AbortedException
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		/** @throws UnsupportedOperationException */
+		public void remove() { throw new UnsupportedOperationException(); }
+		
+	}
+	
 
 }

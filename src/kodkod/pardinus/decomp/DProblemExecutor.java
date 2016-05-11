@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import kodkod.ast.Formula;
+import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.instance.Bounds;
 
@@ -84,7 +85,7 @@ abstract public class DProblemExecutor extends Thread {
 	 * 
 	 * @param sol the solution calculated by the caller.
 	 */
-	public abstract void end(DSolution sol);
+	public abstract void end(DProblem sol);
 
 	/**
 	 * Starts the solving process.
@@ -96,7 +97,7 @@ abstract public class DProblemExecutor extends Thread {
 	 * @return
 	 * @throws InterruptedException if interrupted while waiting.
 	 */
-	public abstract DSolution waitUntil() throws InterruptedException;
+	public abstract Solution waitUntil() throws InterruptedException;
 
 	/**
 	 * Terminates the thread executor and the running solvers.

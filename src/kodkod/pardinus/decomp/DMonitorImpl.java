@@ -38,11 +38,12 @@ public class DMonitorImpl implements DMonitor {
 	private long config_times = -1;
 	private Statistics config_stats = null;
 
+	private boolean finished = false;
 	private long sats = 0;
 	private long vars = 0;
 	private long clauses = 0;
 	
-	protected final List<DSolution> solutions = new ArrayList<DSolution>();
+	protected final List<DProblem> solutions = new ArrayList<DProblem>();
 
 	/* (non-Javadoc)
 	 * @see kodkod.pardinus.DReporterI#newConfig(kodkod.engine.Solution)
@@ -60,7 +61,7 @@ public class DMonitorImpl implements DMonitor {
 	 * @see kodkod.pardinus.DReporterI#newSolution(kodkod.pardinus.DSolution)
 	 */
 	@Override
-	public synchronized void newSolution(DSolution sol) {
+	public synchronized void newSolution(DProblem sol) {
     	solutions.add(sol);
 		if (sol.sat()) sats++;
 		vars += sol.getSolution().stats().primaryVariables();
@@ -93,8 +94,7 @@ public class DMonitorImpl implements DMonitor {
 
 	@Override
 	public void finishedLaunching() {
-		// TODO Auto-generated method stub
-		
+		finished = true;
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class DMonitorImpl implements DMonitor {
 	}
 
 	@Override
-	public List<DSolution> solutions() {
+	public List<DProblem> solutions() {
 		return solutions;
 	}
 
@@ -122,6 +122,11 @@ public class DMonitorImpl implements DMonitor {
 	@Override
 	public long getConfigTimes() {
 		return config_times;
+	}
+
+	@Override
+	public boolean hasFinishedLaunching() {
+		return finished;
 	}
 	
 }

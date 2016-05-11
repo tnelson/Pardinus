@@ -46,19 +46,19 @@ import kodkod.instance.Bounds;
 public class DProblemExecutorImpl extends DProblemExecutor {
 
 	/** the queue of solvers to be launched */
-	private final List<DSolution> problem_queue = new ArrayList<DSolution>();
+	private final List<DProblem> problem_queue = new ArrayList<DProblem>();
 
 	/** the number of effectively running solvers */
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<DSolution> solution_queue = new LinkedBlockingQueue<DSolution>(10);
+	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(10);
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
 
 	/** whether the amalgamated solver is currently running */
-	private boolean amalgamated_running = false;
+	private DProblem amalgamated_running;
 
 	/**
 	 * Constructs an implementation of a decomposed problem solver with support for hybrid model.
@@ -77,47 +77,46 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 * @see kodkod.pardinus.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
-	public void end(DSolution sol) {
+	public void end(DProblem sol) {
 		monitor.newSolution(sol);
 		try {
-			running.decrementAndGet();
-			if (sol.sat())
-				solution_queue.put(sol);
 			// if the batch terminates, then shutdown the executor
 			if (!(sol instanceof IProblem)) {
-				amalgamated_running = false;
-				shutdown();
+				if (!executor.isTerminated())
+					executor.shutdownNow();
+				running.set(1);
 			} else {
-				// if every process has been launched and there is none running,
-				// shutdown the executor
-				if (executor.isShutdown()) {
-					if (running.get() == 0 || (running.get() == 1 && amalgamated_running))
-						shutdown();
+				if (amalgamated_running != null && amalgamated_running.isAlive()) {
+					amalgamated_running.interrupt();
+					running.decrementAndGet();
 				}
-				// if a SAT integrated problem terminated, shutdown the executor
-				else if (sol.sat())
-					shutdown();
-
 			}
+
+			if (sol.sat()) {
+				solution_queue.put(sol.getSolution());
+				sol.next();
+				executor.execute(sol);
+				running.incrementAndGet();
+			}
+
+			// if every process has been launched and there is none running,
+			// shutdown the executor
+			if (monitor.hasFinishedLaunching()) {
+				if (running.get() == 1) {
+					solution_queue.put(sol.getSolution());
+					if (!executor.isTerminated())
+						executor.shutdownNow();
+				}
+			}
+			
+			running.decrementAndGet();
+
+
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 
-	/**
-	 * Shuts down the executor by inserting the poison token into the solution
-	 * queue and sending a termination signal to every running thread.
-	 * 
-	 * @throws InterruptedException
-	 *             if the solution queue is interrupted
-	 */
-	private void shutdown() throws InterruptedException {
-		if (!Thread.currentThread().isInterrupted())
-			solution_queue.put(DSolution.DONE);
-		running.set(0);
-		if (!executor.isTerminated())
-			executor.shutdownNow();
-	}
 
 	/**
 	 * Launches the parallel finders to solve the decomposed problem until the
@@ -131,11 +130,11 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	public void run() {
 		// if hybrid mode, launch the amalgamated problem
 		if (hybrid) {
-			DSolution amalg = new DSolution(this, formula1.and(formula2), merge(bounds1, bounds2));
+			DProblem amalg = new DProblem(this, formula1.and(formula2), merge(bounds1, bounds2));
 			amalg.setPriority(MAX_PRIORITY);
 			executor.execute(amalg);
 			running.incrementAndGet();
-			amalgamated_running = true;
+			amalgamated_running = amalg;
 		}
 
 		Iterator<Solution> configs = solver.solveAll(formula1, bounds1);
@@ -152,12 +151,12 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 					// callback so it must be terminated here
 					if (first)
 						try {
-							shutdown();
+							solution_queue.put(config);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 				} else {
-					DSolution problem = new IProblem(config, this);
+					DProblem problem = new IProblem(config, this);
 					problem.setPriority(MIN_PRIORITY);
 					problem_queue.add(problem);
 				}
@@ -167,12 +166,12 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			}
 			// launches a batch of integrated problems
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
-				DSolution problem = problem_queue.remove(0/*problem_queue.size()-1*/);
+				DProblem problem = problem_queue.remove(0/*problem_queue.size()-1*/);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}
 		}
-		executor.shutdown();
+//		executor.shutdown();
 		monitor.finishedLaunching();
 	}
 
@@ -182,9 +181,8 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 * @see kodkod.pardinus.decomp.DProblemExecutor#waitUntil()
 	 */
 	@Override
-	public DSolution waitUntil() throws InterruptedException {
-		DSolution sol = null;
-		sol = solution_queue.take();
+	public Solution waitUntil() throws InterruptedException {
+		Solution sol = solution_queue.take();
 		monitor.done(false);
 		return sol;
 	}

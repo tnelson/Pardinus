@@ -44,7 +44,7 @@ public class StatsExecutor extends DProblemExecutor {
 
 
 	/** the queue of solvers to be launched */
-	private final List<DSolution> problem_queue = new ArrayList<DSolution>();
+	private final List<DProblem> problem_queue = new ArrayList<DProblem>();
 
 	/** the number of effectively running solvers */
 	private final AtomicInteger running = new AtomicInteger(0);
@@ -65,7 +65,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 * @see kodkod.pardinus.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
-	public void end(DSolution sol) {
+	public void end(DProblem sol) {
 		monitor.newSolution(sol);
 		running.decrementAndGet();
 	}
@@ -85,13 +85,13 @@ public class StatsExecutor extends DProblemExecutor {
 				Solution config = configs.next();
 				monitor.newConfig(config);
 				if (config.sat()) {
-					DSolution problem = new IProblem(config, this);
+					DProblem problem = new IProblem(config, this);
 					problem.setPriority(MIN_PRIORITY);
 					problem_queue.add(problem);
 				}
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
-				DSolution problem = problem_queue.remove(/* 0 */problem_queue.size() - 1);
+				DProblem problem = problem_queue.remove(/* 0 */problem_queue.size() - 1);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}
@@ -105,7 +105,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 * 
 	 * @see kodkod.pardinus.decomp.DProblemExecutor#waitUntil()
 	 */
-	public DSolution waitUntil() throws InterruptedException {
+	public Solution waitUntil() throws InterruptedException {
 		boolean timeout = executor.awaitTermination(3, TimeUnit.HOURS);
 		monitor.done(timeout);
 		return null;

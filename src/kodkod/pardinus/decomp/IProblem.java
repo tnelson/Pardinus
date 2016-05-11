@@ -28,7 +28,7 @@ import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 
-public class IProblem extends DSolution {
+public class IProblem extends DProblem {
 
 	final public Solution config;
 
@@ -78,12 +78,6 @@ public class IProblem extends DSolution {
 			for (TupleSet x : config.instance().relationTuples().values())
 				c = c + x.size();
 		return c;
-	}
-	
-	public String toString() {
-		if (config==null) return "M: POISON";
-		if (getSolution()==null) return "M: UNSOLVED";
-		return "M: "+ configSize() +  "\t" + getSolution().outcome() + "\t" + getSolveTime();
 	}
 	
 }

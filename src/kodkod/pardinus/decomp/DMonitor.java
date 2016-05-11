@@ -31,7 +31,7 @@ public interface DMonitor {
 
 	public abstract void newConfig(Solution config);
 
-	public abstract void newSolution(DSolution sol);
+	public abstract void newSolution(DProblem sol);
 
 	public abstract long getSats();
 
@@ -41,11 +41,13 @@ public interface DMonitor {
 
 	public abstract void finishedLaunching();
 
+	public abstract boolean hasFinishedLaunching();
+
 	public abstract void done(boolean timeout);
 
 	public abstract void terminated(boolean timeout);
 	
-	public List<DSolution> solutions ();
+	public List<DProblem> solutions ();
 
 	public abstract Statistics getConfigStats();
 
