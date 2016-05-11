@@ -14,11 +14,11 @@ import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
-import kodkod.pardinus.DSolver;
-import kodkod.pardinus.IProblem;
-import kodkod.pardinus.DSolution;
-import kodkod.pardinus.PartitionModel;
-import kodkod.pardinus.DOptions.Modes;
+import kodkod.pardinus.decomp.DModel;
+import kodkod.pardinus.decomp.DMonitor;
+import kodkod.pardinus.decomp.DSolver;
+import kodkod.pardinus.decomp.IProblem;
+import kodkod.pardinus.decomp.DOptions.Modes;
 import kodkod.test.pardinus.RunTests.Solvers;
 
 public final class RunTestModel {
@@ -26,7 +26,6 @@ public final class RunTestModel {
 	final static Solver solver = new Solver();
 	final static DSolver psolver = new DSolver(solver);
 
-	static DSolution psolution = null;
 	static Solution solution = null;
 	static Iterator<Solution> solutions = null;
 
@@ -34,7 +33,7 @@ public final class RunTestModel {
 	static Solvers selected_solver;
 	static Modes selected_mode;
 
-	static PartitionModel model;
+	static DModel model;
 	
 	static private StringBuilder log = new StringBuilder();
 
@@ -61,9 +60,9 @@ public final class RunTestModel {
 		String[] model_args = Arrays.copyOfRange(args, 4, args.length);
 
 		// dynamically create a partition model from the specified class
-		model = (PartitionModel) Class.forName(args[0]).getConstructor(String[].class)
+		model = (DModel) Class.forName(args[0]).getConstructor(String[].class)
 				.newInstance((Object) model_args);
-
+		
 		// the chosen partition mode
 		selected_mode = Modes.valueOf(args[1]);
 		// the chosen solver
@@ -124,24 +123,20 @@ public final class RunTestModel {
 		case BATCH:
 			solution = go_batch(b1, b2, f1, f2);
 			break;
-		case SEQUENTIAL:
-			psolver.options().setThreads(1);
-			psolution = psolver.solve(b1, b2, f1, f2);
-			break;
 		case PARALLEL:
 			psolver.options().setThreads(threads);
-			psolution = psolver.solve(b1, b2, f1, f2);
+			solution = psolver.solve(f1, f2, b1, b2);
 			break;
 		case HYBRID:
 			psolver.options().setThreads(threads);
-			psolution = psolver.solve(b1, b2, f1, f2);
+			solution = psolver.solve(f1, f2, b1, b2);
 			break;
 		case INCREMENTAL:
 			solution = go_incremental(b1, b2, f1, f2);
 			break;
 		case STATS:
 			psolver.options().setThreads(threads);
-			psolution = psolver.solve(b1, b2, f1, f2);
+			solution = psolver.solve(f1, f2, b1, b2);
 			break;
 		default:
 			break;
@@ -159,10 +154,10 @@ public final class RunTestModel {
 //		log.append((t3 - t2));
 //		log.append("\t");
 		
-		if (selected_mode == Modes.SEQUENTIAL || selected_mode == Modes.PARALLEL || selected_mode == Modes.HYBRID) {
+		if (selected_mode == Modes.PARALLEL || selected_mode == Modes.HYBRID) {
 			log.append((t2 - t1));
 			log.append("\t");
-			log.append(psolution.sat() ? "S" : "U");
+			log.append(solution.sat() ? "S" : "U");
 			log.append("\t");
 			log.append(getConfigNum(psolver));
 			log.append("\t");
@@ -170,27 +165,29 @@ public final class RunTestModel {
 //			log.append(psolution.getSolution().instance());
 		}
 		else if (selected_mode == Modes.STATS) {
-			int tt = psolver.manager().solutions().size();
+			DMonitor mon = psolver.executor().monitor;
+
+			int tt = mon.solutions().size();
 			log.append(tt);
 			log.append("\t");
-			log.append(psolver.manager().getSats());
+			log.append(mon.getSats());
 			log.append("\t");
-			log.append(tt-psolver.manager().getSats());
+			log.append(tt-mon.getSats());
 			log.append("\t");
 			if (tt != 0)
-				log.append(((psolver.manager().getSats() * 100) / (long) tt));
+				log.append(((mon.getSats() * 100) / (long) tt));
 			else 
 				log.append("0");
 			log.append("\t");
-			log.append(psolver.manager().getConfigStats().primaryVariables());
+			log.append(mon.getConfigStats().primaryVariables());
 			log.append("\t");
-			log.append(psolver.manager().getConfigStats().clauses());
+			log.append(mon.getConfigStats().clauses());
 			log.append("\t");
-			log.append(psolver.manager().getVars());
+			log.append(mon.getVars());
 			log.append("\t");
-			log.append(psolver.manager().getClauses());
+			log.append(mon.getClauses());
 			log.append("\t");
-			log.append(psolver.manager().getConfigTimes());
+			log.append(mon.getConfigTimes());
 			log.append("\t");
 //			solution = go_batch(b1, b2, f1, f2);
 //			log.append(solution.stats().primaryVariables());
@@ -217,9 +214,10 @@ public final class RunTestModel {
 	}
 
 	private static int getConfigNum(DSolver psolver2) {
-		int counter = psolver2.manager().solutions().size();
+		DMonitor mon = psolver2.executor().monitor;
+		int counter = mon.solutions().size();
 		if (counter != 0)
-			if (!(psolver2.manager().solutions().get(psolver2.manager().solutions().size() - 1) instanceof IProblem))
+			if (!(mon.solutions().get(mon.solutions().size() - 1) instanceof IProblem))
 				counter = -counter;
 		return counter;
 	}

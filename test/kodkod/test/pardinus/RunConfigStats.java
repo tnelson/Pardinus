@@ -17,25 +17,25 @@ import java.util.Map;
 
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.examples.pardinus.DiffEgP;
-import kodkod.examples.pardinus.DijkstraP;
-import kodkod.examples.pardinus.DiningP;
-import kodkod.examples.pardinus.FilesystemP;
-import kodkod.examples.pardinus.HandshakeP;
-import kodkod.examples.pardinus.HotelP;
-import kodkod.examples.pardinus.JobsP;
-import kodkod.examples.pardinus.LiftP;
-import kodkod.examples.pardinus.NetconfigP;
-import kodkod.examples.pardinus.PeaceableP;
-import kodkod.examples.pardinus.RedBlackTreeP;
-import kodkod.examples.pardinus.RingP;
-import kodkod.examples.pardinus.SpanP;
-import kodkod.examples.pardinus.FilesystemP.Variant;
-import kodkod.examples.pardinus.HandshakeP.Variant2;
-import kodkod.examples.pardinus.RedBlackTreeP.Variant1;
-import kodkod.pardinus.DSolver;
-import kodkod.pardinus.DSolution;
-import kodkod.pardinus.DOptions.Modes;
+import kodkod.examples.pardinus.decomp.DiffEgP;
+import kodkod.examples.pardinus.decomp.DijkstraP;
+import kodkod.examples.pardinus.decomp.DiningP;
+import kodkod.examples.pardinus.decomp.FilesystemP;
+import kodkod.examples.pardinus.decomp.HandshakeP;
+import kodkod.examples.pardinus.decomp.HotelP;
+import kodkod.examples.pardinus.decomp.JobsP;
+import kodkod.examples.pardinus.decomp.LiftP;
+import kodkod.examples.pardinus.decomp.NetconfigP;
+import kodkod.examples.pardinus.decomp.PeaceableP;
+import kodkod.examples.pardinus.decomp.RedBlackTreeP;
+import kodkod.examples.pardinus.decomp.RingP;
+import kodkod.examples.pardinus.decomp.SpanP;
+import kodkod.examples.pardinus.decomp.FilesystemP.Variant;
+import kodkod.examples.pardinus.decomp.HandshakeP.Variant2;
+import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant1;
+import kodkod.pardinus.decomp.DProblem;
+import kodkod.pardinus.decomp.DSolver;
+import kodkod.pardinus.decomp.DOptions.Modes;
 import kodkod.test.pardinus.RunTests.Solvers;
 
 public final class RunConfigStats {
@@ -43,9 +43,9 @@ public final class RunConfigStats {
 	final static Solver solver = new Solver();
 	final static DSolver psolver = new DSolver(solver);
 
-	final static Map<Integer,List<DSolution>> stats = new HashMap<Integer,List<DSolution>> ();
+	final static Map<Integer,List<DProblem>> stats = new HashMap<Integer,List<DProblem>> ();
 
-	static DSolution psolution = null;
+	static DProblem psolution = null;
 	static Solution solution = null;
 
 	static int threads = 4;

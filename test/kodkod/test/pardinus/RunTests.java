@@ -18,33 +18,33 @@ import java.util.Map;
 
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.examples.pardinus.DiffEgP;
-import kodkod.examples.pardinus.DijkstraP;
-import kodkod.examples.pardinus.DiningP;
-import kodkod.examples.pardinus.FilesystemP;
-import kodkod.examples.pardinus.HandshakeP;
-import kodkod.examples.pardinus.HotelP;
-import kodkod.examples.pardinus.LiftP;
-import kodkod.examples.pardinus.NetconfigP;
-import kodkod.examples.pardinus.PeaceableP;
-import kodkod.examples.pardinus.RedBlackTreeP;
-import kodkod.examples.pardinus.RingP;
-import kodkod.examples.pardinus.SpanP;
-import kodkod.examples.pardinus.FilesystemP.Variant;
-import kodkod.examples.pardinus.HandshakeP.Variant2;
-import kodkod.examples.pardinus.RedBlackTreeP.Variant1;
-import kodkod.pardinus.DSolver;
-import kodkod.pardinus.DSolution;
-import kodkod.pardinus.DOptions.Modes;
+import kodkod.examples.pardinus.decomp.DiffEgP;
+import kodkod.examples.pardinus.decomp.DijkstraP;
+import kodkod.examples.pardinus.decomp.DiningP;
+import kodkod.examples.pardinus.decomp.FilesystemP;
+import kodkod.examples.pardinus.decomp.HandshakeP;
+import kodkod.examples.pardinus.decomp.HotelP;
+import kodkod.examples.pardinus.decomp.LiftP;
+import kodkod.examples.pardinus.decomp.NetconfigP;
+import kodkod.examples.pardinus.decomp.PeaceableP;
+import kodkod.examples.pardinus.decomp.RedBlackTreeP;
+import kodkod.examples.pardinus.decomp.RingP;
+import kodkod.examples.pardinus.decomp.SpanP;
+import kodkod.examples.pardinus.decomp.FilesystemP.Variant;
+import kodkod.examples.pardinus.decomp.HandshakeP.Variant2;
+import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant1;
+import kodkod.pardinus.decomp.DProblem;
+import kodkod.pardinus.decomp.DSolver;
+import kodkod.pardinus.decomp.DOptions.Modes;
 
 public final class RunTests {
 
 	final static Solver solver = new Solver();
 	final static DSolver psolver = new DSolver(solver);
 
-	final static Map<Integer,List<DSolution>> stats = new HashMap<Integer,List<DSolution>> ();
+	final static Map<Integer,List<DProblem>> stats = new HashMap<Integer,List<DProblem>> ();
 
-	static DSolution psolution = null;
+	static DProblem psolution = null;
 	static Solution solution = null;
 
 	static int tries, threads = 4;
@@ -76,7 +76,7 @@ public final class RunTests {
 
 		if(opts.contains("-t")) modes.add(Modes.STATS);
 		if(opts.contains("-b")) modes.add(Modes.BATCH);
-		if(opts.contains("-s")) modes.add(Modes.SEQUENTIAL);
+		if(opts.contains("-s")) { modes.add(Modes.PARALLEL); threads = 1;}
 		if(opts.contains("-p")) modes.add(Modes.PARALLEL);
 		if(opts.contains("-h")) modes.add(Modes.HYBRID);
 		if(opts.contains("-i")) modes.add(Modes.INCREMENTAL);
@@ -206,9 +206,6 @@ public final class RunTests {
 			if (modes.contains(Modes.BATCH))
 				for (int i = 0; i < tries; i++)
 					header.append("M.B\tSat\t");
-			if (modes.contains(Modes.SEQUENTIAL))
-				for (int i = 0; i < tries; i++)
-					header.append("M.S\tSat\tC.#\tC.t\t");
 			if (modes.contains(Modes.PARALLEL))
 				for (int i = 0; i < tries; i++)
 					header.append("M.P\tSat\tC.#\tC.t\t");
@@ -224,9 +221,6 @@ public final class RunTests {
 			if (modes.contains(Modes.BATCH))
 				for (int i = 0; i < tries; i++)
 					header.append("G.B\tSat\t");
-			if (modes.contains(Modes.SEQUENTIAL))
-				for (int i = 0; i < tries; i++)
-					header.append("G.S\tSat\tC.#\tC.t\t");
 			if (modes.contains(Modes.PARALLEL))
 				for (int i = 0; i < tries; i++)
 					header.append("G.P\tSat\tC.#\tC.t\t");
