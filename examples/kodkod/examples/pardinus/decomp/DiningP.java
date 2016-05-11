@@ -173,4 +173,11 @@ public class DiningP implements DModel {
 		sb.append(n_ts);		
 		return sb.toString();
 	}
+
+
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

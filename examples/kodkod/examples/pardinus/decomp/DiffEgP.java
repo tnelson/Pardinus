@@ -3,7 +3,6 @@ package kodkod.examples.pardinus.decomp;
 import java.util.ArrayList;
 import java.util.List;
 
-import kodkod.ast.Decls;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -188,5 +187,10 @@ public class DiffEgP implements DModel {
 	@Override
 	public int getBitwidth() {
 		return 1;
+	}
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

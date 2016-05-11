@@ -222,4 +222,9 @@ public class RedBlackTreeP implements DModel {
 		sb.append(n);		
 		return sb.toString();
 	}
+
+	@Override
+	public String shortName() {
+		return "RedBlackTree "+n+" "+v1.name()+" "+v2.name();
+	}
 }

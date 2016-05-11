@@ -237,4 +237,10 @@ public class HandshakeP implements DModel {
 		sb.append(persons);		
 		return sb.toString();
 	}
+
+
+	@Override
+	public String shortName() {
+		return "Handshake "+persons+" "+counter.name()+" "+var.name();
+	}
 }

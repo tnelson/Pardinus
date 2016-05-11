@@ -415,5 +415,10 @@ public final class RingP implements DModel {
 	public int getBitwidth() {
 		return 1;
 	}
+
+	@Override
+	public String shortName() {
+		return "Ring "+n_ps+" "+n_ts+" "+variant.name()+" "+variable.name();
+	}
 	
 }

@@ -8,7 +8,6 @@ import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
-import kodkod.examples.pardinus.decomp.SpanP.Variant;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
@@ -357,5 +356,10 @@ public class DijkstraP implements DModel {
 	@Override
 	public int getBitwidth() {
 		return 1;
+	}
+
+	@Override
+	public String shortName() {
+		return "Dijkstra "+processes+" "+states+" "+var.name();
 	}
 }

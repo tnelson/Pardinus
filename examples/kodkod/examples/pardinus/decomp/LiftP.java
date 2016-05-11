@@ -443,6 +443,12 @@ public final class LiftP implements DModel {
 	public int getBitwidth() {
 		return 1;
 	}
+
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 
 

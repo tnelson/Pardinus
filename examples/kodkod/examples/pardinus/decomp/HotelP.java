@@ -272,6 +272,11 @@ public final class HotelP implements DModel {
 		return 1;
 	}
 
+	@Override
+	public String shortName() {
+		return "Hotel "+n+" "+t+" "+variant.name();
+	}
+
 
 
 

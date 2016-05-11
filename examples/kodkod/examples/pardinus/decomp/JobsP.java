@@ -3,14 +3,10 @@ package kodkod.examples.pardinus.decomp;
 import java.util.ArrayList;
 import java.util.List;
 
-import kodkod.ast.ConstantExpression;
-import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.IntConstant;
-import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
-import kodkod.ast.operator.FormulaOperator;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
@@ -157,5 +153,12 @@ public class JobsP implements DModel {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Jobs");
 		return sb.toString();
+	}
+
+
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

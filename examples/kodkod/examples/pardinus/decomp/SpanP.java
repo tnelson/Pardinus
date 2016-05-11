@@ -344,4 +344,10 @@ public class SpanP implements DModel {
 		sb.append(n_ts);		
 		return sb.toString();
 	}
+
+
+	@Override
+	public String shortName() {
+		return "Span "+n_ps+" "+n_ts+" "+var.name();
+	}
 }

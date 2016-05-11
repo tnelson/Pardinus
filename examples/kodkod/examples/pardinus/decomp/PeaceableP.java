@@ -148,4 +148,10 @@ public class PeaceableP implements DModel {
 		sb.append(n);		
 		return sb.toString();
 	}
+
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
