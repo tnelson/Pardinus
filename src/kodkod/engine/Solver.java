@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +47,6 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.pardinus.TargetSATSolver;
 import kodkod.engine.satlab.pardinus.WTargetSATSolver;
 import kodkod.instance.Bounds;
-import kodkod.instance.Bounds.TBounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
@@ -74,6 +74,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * 
  * @specfield options: Options 
  * @author Emina Torlak 
+ * @modified nmm, tmg
  */
 public final class Solver implements KodkodSolver {
 	private final Options options;
@@ -195,7 +196,7 @@ public final class Solver implements KodkodSolver {
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
-		if (bounds instanceof TBounds) return new TSolutionIterator(formula, (TBounds) bounds, options);
+		if (!bounds.targets().isEmpty()) return new TSolutionIterator(formula, bounds, options);
 		else return new SolutionIterator(formula, bounds, options);
 		
 	}
@@ -432,7 +433,7 @@ public final class Solver implements KodkodSolver {
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		TSolutionIterator(Formula formula, TBounds bounds, Options options) {
+		TSolutionIterator(Formula formula, Bounds bounds, Options options) {
 			this.translTime = System.currentTimeMillis();
 			this.translation = Translator.translate(formula, bounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;

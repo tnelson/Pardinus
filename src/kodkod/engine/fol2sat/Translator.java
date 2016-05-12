@@ -54,7 +54,6 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.pardinus.TargetSATSolver;
 import kodkod.engine.satlab.pardinus.WTargetSATSolver;
 import kodkod.instance.Bounds;
-import kodkod.instance.Bounds.TBounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -613,7 +612,7 @@ public final class Translator {
 			final Map<Relation, IntSet> varUsage = interpreter.vars();
 			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula)circuit, maxPrimaryVar, options.solver());
 			// pt.uminho.haslab-: add the targets to the SAT problem
-			if (bounds instanceof TBounds) doTargets((TBounds) bounds, interpreter, cnf);
+			if (!bounds.targets().isEmpty()) doTargets(bounds, interpreter, cnf);
 
 			interpreter = null; // enable gc
 
@@ -622,7 +621,7 @@ public final class Translator {
 	}
 
 	// pt.uminho.haslab+: add the targets to the SAT problem
-	private void doTargets(TBounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
+	private void doTargets(Bounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
 		for (Relation r : bounds.targets().keySet()) {
 			Integer w = bounds.weight(r);
 			if (w == null)

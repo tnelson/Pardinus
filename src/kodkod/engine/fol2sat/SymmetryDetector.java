@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@ import java.util.Set;
 
 import kodkod.ast.Relation;
 import kodkod.instance.Bounds;
-import kodkod.instance.Bounds.TBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
@@ -139,7 +138,7 @@ public final class SymmetryDetector {
 	 * sorted in the order of increasing size.
 	 */    
 	private TupleSet[] sort(Bounds bounds) {
-		if (bounds instanceof TBounds) sort((TBounds) bounds); 	// pt.uminho.haslab-
+		if (!bounds.targets().isEmpty()) sortT(bounds); 	// pt.uminho.haslab-
 		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
 		for(Relation r : bounds.relations()) {
 			final TupleSet lower = bounds.lowerBound(r);
@@ -159,7 +158,7 @@ public final class SymmetryDetector {
 	
 	// pt.uminho.haslab+
 	// TODO pt.uminho.haslab: consider weights?
-	private TupleSet[] sort(TBounds bounds) {
+	private TupleSet[] sortT(Bounds bounds) {
 		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
 		for(Relation r : bounds.relations()) {
 			final TupleSet lower = bounds.lowerBound(r);
