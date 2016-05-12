@@ -75,18 +75,7 @@ public class IProblem extends DProblem {
 		}
 		return null;
 	}
-	
-	/**
-	 * Calculates the size of the configuration (number of tuples in the relations).
-	 * @return
-	 */
-	private int configSize() {
-		int c = 0;
-			for (TupleSet x : config.instance().relationTuples().values())
-				c = c + x.size();
-		return c;
-	}
-	
+
 	public IProblem next() {
 		return new IProblem(config, executor, getIterator());
 	}
