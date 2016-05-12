@@ -17,7 +17,6 @@ import kodkod.instance.Bounds;
 import kodkod.pardinus.decomp.DModel;
 import kodkod.pardinus.decomp.DMonitor;
 import kodkod.pardinus.decomp.DSolver;
-import kodkod.pardinus.decomp.IProblem;
 import kodkod.pardinus.decomp.DOptions.Modes;
 import kodkod.test.pardinus.RunTests.Solvers;
 

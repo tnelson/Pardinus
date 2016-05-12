@@ -230,7 +230,7 @@ public class RedBlackTests {
 		Solution solution = psolver.solve(f1, f2, b1, b2);
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 5);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 5);
+		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 6);
 		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
 	}
 	
@@ -326,7 +326,7 @@ public class RedBlackTests {
 		Solution solution = psolver.solve(f1, f2, b1, b2);
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 5);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 5);
+		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 6);
 		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
 	}
 	
