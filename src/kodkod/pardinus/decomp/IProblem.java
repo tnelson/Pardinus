@@ -22,6 +22,8 @@
  */
 package kodkod.pardinus.decomp;
 
+import java.util.Iterator;
+
 import kodkod.ast.Relation;
 import kodkod.engine.Solution;
 import kodkod.instance.Bounds;
@@ -34,6 +36,11 @@ public class IProblem extends DProblem {
 
 	public IProblem(Solution cfg, DProblemExecutor manager) {
 		super(manager, manager.formula2, configBounds(manager, cfg));
+		this.config = cfg;
+	}
+	
+	public IProblem(Solution cfg, DProblemExecutor manager, Iterator<Solution> sols) {
+		super(manager, manager.formula2, configBounds(manager, cfg), sols);
 		this.config = cfg;
 	}
 	
@@ -78,6 +85,10 @@ public class IProblem extends DProblem {
 			for (TupleSet x : config.instance().relationTuples().values())
 				c = c + x.size();
 		return c;
+	}
+	
+	public IProblem next() {
+		return new IProblem(config, executor, getIterator());
 	}
 	
 }

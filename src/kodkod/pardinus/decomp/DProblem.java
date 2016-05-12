@@ -44,10 +44,10 @@ public class DProblem extends Thread {
 	final public Formula formula;
 	final public DProblemExecutor executor;
 
-	public DProblem(DProblemExecutor manager, Formula formula, Bounds bnds) {
-		this.executor = manager;
+	public DProblem(DProblemExecutor executor, Formula formula, Bounds bnds) {
+		this.executor = executor;
 		if (this.executor != null) {
-			solver = manager.solver;
+			solver = executor.solver;
 			this.bounds = bnds;
 			this.formula = formula;
 		} else {
@@ -57,7 +57,7 @@ public class DProblem extends Thread {
 		}
 	}
 
-	private DProblem(DProblemExecutor manager, Formula formula, Bounds bnds, Iterator<Solution> sols) {
+	protected DProblem(DProblemExecutor manager, Formula formula, Bounds bnds, Iterator<Solution> sols) {
 		this.executor = manager;
 		this.solver = manager.solver;
 		this.bounds = bnds;
@@ -71,7 +71,7 @@ public class DProblem extends Thread {
 			solver.free();
 		}
 		solution = solutions.next();
-		if (!Thread.currentThread().isInterrupted()) executor.end(this);
+		executor.end(this);
 	}
 
 	public boolean sat() {
@@ -85,6 +85,10 @@ public class DProblem extends Thread {
 	public Solution getSolution() {
 		if (solution == null && solutions.hasNext()) solution = solutions.next();
 		return solution;
+	}
+	
+	protected Iterator<Solution> getIterator() {
+		return solutions;
 	}
 	
 }

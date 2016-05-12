@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
@@ -78,9 +79,8 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 * @see kodkod.pardinus.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
-	public synchronized void end(DProblem sol) {
+	public void end(DProblem sol) {
 		if (Thread.currentThread().isInterrupted()) return;
-		monitor.newSolution(sol);
 		try {
 			// if the amalgamated terminates...
 			if (!(sol instanceof IProblem)) {
@@ -125,10 +125,13 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 					} 
 				}
 			}
-
+			monitor.newSolution(sol);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			// was interrupted in the meantime
+		} catch (RejectedExecutionException e) {
+			// was shutdown in the meantime
 		}
+
 	}
 
 
@@ -181,7 +184,11 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			// launches a batch of integrated problems
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
 				DProblem problem = problem_queue.remove(0/*problem_queue.size()-1*/);
-				executor.execute(problem);
+				try {
+					executor.execute(problem);
+				} catch (RejectedExecutionException e) {
+					// if it was shutdown in the meantime
+				}
 				running.incrementAndGet();
 			}
 		}

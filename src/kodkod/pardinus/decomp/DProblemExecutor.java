@@ -104,7 +104,7 @@ abstract public class DProblemExecutor extends Thread {
 	 * 
 	 * @throws InterruptedException if interrupted while waiting.
 	 */
-	public synchronized void terminate() throws InterruptedException {
+	public void terminate() throws InterruptedException {
 		if (!executor.isShutdown())
 			executor.shutdownNow();
 		if (!executor.isTerminated()) {
