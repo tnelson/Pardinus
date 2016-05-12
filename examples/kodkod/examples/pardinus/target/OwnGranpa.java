@@ -7,7 +7,7 @@ import java.util.List;
 import kodkod.ast.*;
 import kodkod.ast.operator.*;
 import kodkod.instance.*;
-import kodkod.instance.Bounds.TBounds;
+import kodkod.instance.Bounds;
 import kodkod.engine.*;
 import kodkod.engine.Solver.TSolutionIterator.Mode;
 import kodkod.engine.Solver.TSolutionIterator;
@@ -34,7 +34,7 @@ public final class OwnGranpa {
 
 		Universe universe = new Universe(atomlist);
 		TupleFactory factory = universe.factory();
-		TBounds bounds = new TBounds(universe);
+		Bounds bounds = new Bounds(universe);
 
 		TupleSet _nxtupper = factory.noneOf(2);
 		bounds.boundExactly(_nxt, _nxtupper);

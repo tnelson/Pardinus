@@ -7,7 +7,6 @@ import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.*;
-import kodkod.instance.Bounds.TBounds;
 
 /**
  * Target-oriented model finding example: graph coloring.
@@ -44,7 +43,7 @@ public final class Graph {
 			atoms.add("C" + i);
 		}
 		Universe universe = new Universe(atoms);
-		TBounds bounds = new TBounds(universe);
+		Bounds bounds = new Bounds(universe);
 		String lastN = "N" + (size-1);
 		String lastC = "C" + (size-1);
 		TupleFactory factory = universe.factory();
@@ -122,7 +121,7 @@ public final class Graph {
 			atoms.add("C" + i);
 		}
 		Universe universe = new Universe(atoms);
-		TBounds bounds = new TBounds(universe);
+		Bounds bounds = new Bounds(universe);
 		String lastN = "N" + (size-1);
 		String lastC = "C" + (size-1);
 		TupleFactory factory = universe.factory();
