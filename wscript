@@ -18,6 +18,16 @@ def build(bld):
     bld(rule = 'unzip ${SRC} -x *src.jar',
         source = 'sat4j-core-v20130525.zip',
         target = 'org.sat4j.core.jar')
+    bld(rule = 'wget http://download.forge.ow2.org/sat4j/${TGT}',
+        target = 'sat4j-maxsat-v20130525.zip')
+    bld(rule = 'unzip ${SRC} -x *src.jar',
+        source = 'sat4j-maxsat-v20130525.zip',
+        target = 'org.sat4j.maxsat.jar')
+    bld(rule = 'wget http://download.forge.ow2.org/sat4j/${TGT}',
+        target = 'sat4j-pb-v20130525.zip')
+    bld(rule = 'unzip ${SRC} -x *src.jar',
+        source = 'sat4j-pb-v20130525.zip',
+        target = 'org.sat4j.pb.jar')
     bld.add_group()
 
     bld(features  = 'javac jar',
@@ -25,7 +35,7 @@ def build(bld):
         srcdir    = 'src', 
         outdir    = 'kodkod',
         compat    = '1.8',
-        classpath = ['.', 'org.sat4j.core.jar'],
+        classpath = ['.', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'],
         manifest  = 'src/MANIFEST',
         basedir   = 'kodkod',
         destfile  = 'kodkod.jar')
@@ -41,7 +51,7 @@ def build(bld):
         basedir   = 'examples',
         destfile  = 'examples.jar')
     
-    bld.install_files('${LIBDIR}', ['kodkod.jar', 'examples.jar'])
+    bld.install_files('${LIBDIR}', ['kodkod.jar', 'examples.jar', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'])
 
 def distclean(ctx):
     from waflib import Scripting
