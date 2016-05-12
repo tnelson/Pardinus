@@ -1,6 +1,7 @@
 package kodkod.engine.satlab;
 
-import kodkod.pardinus.target.WTargetOrientedSATSolver;
+import kodkod.engine.satlab.pardinus.WTargetSATSolver;
+
 
 /**
  * 
@@ -8,7 +9,7 @@ import kodkod.pardinus.target.WTargetOrientedSATSolver;
  *
  */
 
-public class PMaxYicesNative extends Yices implements WTargetOrientedSATSolver {
+public class PMaxYicesNative extends Yices implements WTargetSATSolver {
 
 
 	private int targetCount;

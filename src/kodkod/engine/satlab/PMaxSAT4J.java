@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import kodkod.pardinus.target.WTargetOrientedSATSolver;
+import kodkod.engine.satlab.pardinus.WTargetSATSolver;
 
 import org.sat4j.maxsat.WeightedMaxSatDecorator;
 import org.sat4j.pb.IPBSolver;
@@ -44,7 +44,7 @@ import org.sat4j.specs.IteratorInt;
  * 
  * @author tmg, nmm
  */
-final class PMaxSAT4J implements WTargetOrientedSATSolver { // pt.uminho.haslab: extended to support weighted TO
+final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extended to support weighted TO
 	private WeightedMaxSatDecorator solver;
 	private IOptimizationProblem optproblem;
 	private ReadOnlyIVecInt wrapper;

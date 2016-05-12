@@ -25,7 +25,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import kodkod.pardinus.target.TargetOrientedSATSolver;
+import kodkod.engine.satlab.pardinus.TargetSATSolver;
 
 import org.sat4j.core.ConstrGroup;
 import org.sat4j.specs.ContradictionException;
@@ -40,7 +40,7 @@ import org.sat4j.specs.IteratorInt;
  * 
  * @author tmg
  */
-final class IncrementalSAT4J implements TargetOrientedSATSolver {
+final class IncrementalSAT4J implements TargetSATSolver {
 	private ISolver solver;
 	private final ReadOnlyIVecInt wrapper;
 	private Boolean sat; 

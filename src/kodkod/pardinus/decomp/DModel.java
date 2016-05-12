@@ -60,4 +60,6 @@ public interface DModel {
 	 */
 	public int getBitwidth();
 	
+	public String shortName();
+	
 }

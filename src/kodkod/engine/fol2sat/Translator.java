@@ -51,11 +51,12 @@ import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
 import kodkod.engine.config.Options;
 import kodkod.engine.satlab.SATSolver;
+import kodkod.engine.satlab.pardinus.TargetSATSolver;
+import kodkod.engine.satlab.pardinus.WTargetSATSolver;
 import kodkod.instance.Bounds;
+import kodkod.instance.Bounds.TBounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
-import kodkod.pardinus.target.TargetOrientedSATSolver;
-import kodkod.pardinus.target.WTargetOrientedSATSolver;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntSet;
 import kodkod.util.nodes.AnnotatedNode;
@@ -611,32 +612,37 @@ public final class Translator {
 		} else {
 			final Map<Relation, IntSet> varUsage = interpreter.vars();
 			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula)circuit, maxPrimaryVar, options.solver());
-			// pt.uminho.haslab: add the targets to the SAT problem
-			for (Relation r : bounds.targets().keySet()) {
-				Integer w = bounds.weight(r);
-				if (w == null)
-					for (IndexedEntry<BooleanValue> e : interpreter.interpret(r)) {
-						int x = e.value().label();
-						if (e.value() instanceof BooleanConstant) ; // not a boolean variable;
-						else if (bounds.target(r).indexView().contains(e.index()))
-							((TargetOrientedSATSolver) cnf).addTarget(x);
-						else 
-							((TargetOrientedSATSolver) cnf).addTarget(-x);
-					}	
-				else
-					for (IndexedEntry<BooleanValue> e : interpreter.interpret(r)) {
-						int x = e.value().label();
-						if (e.value() instanceof BooleanConstant) ; // not a boolean variable;
-						else if (bounds.target(r).indexView().contains(e.index()))
-							((WTargetOrientedSATSolver) cnf).addWeight(x,w);
-						else 
-							((WTargetOrientedSATSolver) cnf).addWeight(-x,w);
-					}				
-			}
+			// pt.uminho.haslab-: add the targets to the SAT problem
+			if (bounds instanceof TBounds) doTargets((TBounds) bounds, interpreter, cnf);
 
 			interpreter = null; // enable gc
 
 			return new Translation.Whole(completeBounds(), options, cnf, varUsage, maxPrimaryVar, log);
+		}
+	}
+
+	// pt.uminho.haslab+: add the targets to the SAT problem
+	private void doTargets(TBounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
+		for (Relation r : bounds.targets().keySet()) {
+			Integer w = bounds.weight(r);
+			if (w == null)
+				for (IndexedEntry<BooleanValue> e : interpreter.interpret(r)) {
+					int x = e.value().label();
+					if (e.value() instanceof BooleanConstant) ; // not a boolean variable;
+					else if (bounds.target(r).indexView().contains(e.index()))
+						((TargetSATSolver) cnf).addTarget(x);
+					else 
+						((TargetSATSolver) cnf).addTarget(-x);
+				}	
+			else
+				for (IndexedEntry<BooleanValue> e : interpreter.interpret(r)) {
+					int x = e.value().label();
+					if (e.value() instanceof BooleanConstant) ; // not a boolean variable;
+					else if (bounds.target(r).indexView().contains(e.index()))
+						((WTargetSATSolver) cnf).addWeight(x,w);
+					else 
+						((WTargetSATSolver) cnf).addWeight(-x,w);
+				}				
 		}
 	}
 	

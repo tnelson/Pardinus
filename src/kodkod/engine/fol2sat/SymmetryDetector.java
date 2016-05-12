@@ -35,6 +35,7 @@ import java.util.Set;
 
 import kodkod.ast.Relation;
 import kodkod.instance.Bounds;
+import kodkod.instance.Bounds.TBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
@@ -137,8 +138,28 @@ public final class SymmetryDetector {
 	 * @return unique non-empty tuplesets in the given bounds,
 	 * sorted in the order of increasing size.
 	 */    
-	//TODO pt.uminho.haslab: consider weights?
 	private TupleSet[] sort(Bounds bounds) {
+		if (bounds instanceof TBounds) sort((TBounds) bounds); 	// pt.uminho.haslab-
+		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
+		for(Relation r : bounds.relations()) {
+			final TupleSet lower = bounds.lowerBound(r);
+			final TupleSet upper = bounds.upperBound(r);
+			if (!lower.isEmpty() && lower.size()<upper.size()) { sets.add(lower); }
+			if (!upper.isEmpty()) {	sets.add(upper); }
+		}
+
+		final TupleSet[] sorted = sets.toArray(new TupleSet[sets.size()]);
+		Arrays.sort(sorted, new Comparator<TupleSet>(){
+			public int compare(TupleSet o1, TupleSet o2) {
+				return o1.size() - o2.size();
+			}
+		});
+		return sorted;
+	}
+	
+	// pt.uminho.haslab+
+	// TODO pt.uminho.haslab: consider weights?
+	private TupleSet[] sort(TBounds bounds) {
 		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
 		for(Relation r : bounds.relations()) {
 			final TupleSet lower = bounds.lowerBound(r);

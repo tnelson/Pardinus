@@ -36,8 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kodkod.pardinus.target.TargetOrientedSATSolver;
-import kodkod.pardinus.target.WTargetOrientedSATSolver;
+import kodkod.engine.satlab.pardinus.WTargetSATSolver;
+
 
 
 
@@ -46,7 +46,7 @@ import kodkod.pardinus.target.WTargetOrientedSATSolver;
  * executed in a separate process.
  * @author tmg
  */
-final class PMaxYicesExternal implements WTargetOrientedSATSolver { // pt.uminho.haslab: extended to support weighted TO
+final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab: extended to support weighted TO
 	private StringBuilder buffer = new StringBuilder();
 	private final int capacity = 8192;
 	private final boolean deleteTemp;

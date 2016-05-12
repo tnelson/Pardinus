@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import kodkod.pardinus.target.WTargetOrientedSATSolver;
+import kodkod.engine.satlab.pardinus.WTargetSATSolver;
 
 import org.sat4j.minisat.SolverFactory;
 
@@ -319,7 +319,7 @@ public abstract class SATFactory {
 	public static final SATFactory externalPMaxYices(final String executable, final String cnf, final int max, final String... options) {
 		return new SATFactory() {
 			@Override
-			public WTargetOrientedSATSolver instance() {
+			public WTargetSATSolver instance() {
 				if (cnf != null) {
 					return new PMaxYicesExternal(executable, cnf, false, max, options);
 				} else {
