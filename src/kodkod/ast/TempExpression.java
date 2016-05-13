@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +28,22 @@ import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
 /** 
- * An {@link kodkod.ast.Expression expression} with one child.
- * 
- * @specfield expression: Expression
- * @specfield op: ExprOperator
- * @invariant op.unary()
- * @invariant children = 0->Expression
- * @author Emina Torlak 
+ * @author Eduardo Pessoa, nmm
  */
-public final class UnaryExpression extends Expression {
+public final class TempExpression extends Expression {
     private final Expression expression;
     private final ExprOperator op;
     private final int arity;
     
     /**  
-     * Constructs a new unary expression: op expression
-     * 
-     * @ensures this.expression' = expression && this.op' = op
-     * @throws NullPointerException  expression = null || op = null
-     * @throws IllegalArgumentException  op in {TRANSPOSE, CLOSURE, REFLEXIVE_CLOSURE} && child.arity != 2
      */
-    UnaryExpression(ExprOperator op, Expression child) {
-        if (!op.unary()) {
-            throw new IllegalArgumentException("Not a unary operator: " + op);
-        }
-        if (child.arity()!=2) {
-            throw new IllegalArgumentException("Invalid arity: " + child + "::" + child.arity());
+    TempExpression(ExprOperator op, Expression child) {
+        if (!(op == ExprOperator.POST)) {
+            throw new IllegalArgumentException("Not a temporal operator: " + op);
         }
         this.expression = child;
         this.op = op;
-        this.arity = 2;
+        this.arity = child.arity();
     }
 
     /**
@@ -104,6 +91,6 @@ public final class UnaryExpression extends Expression {
      *  post operator toString.
 	 */ 
     public String toString() {
-        return op.toString() + expression.toString();
+    	return expression.toString()+op.toString(); //pt.uminho.haslab: postfix 
     }   
 }

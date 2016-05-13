@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import java.util.Set;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -54,8 +56,10 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.Multiplicity;
 
@@ -68,6 +72,7 @@ import kodkod.ast.operator.Multiplicity;
  * @specfield cache: Node ->lone Node
  * @invariant cached in cache.Node
  * @author Emina Torlak 
+ * @modified Eduardo Pessoa, nmm
  */
 public abstract class AbstractReplacer implements ReturnVisitor<Expression, Formula, Decls, IntExpression> {
 	protected final Map<Node,Node> cache;
@@ -646,4 +651,36 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression, Form
 		return cache(pred,ret);
 	}
 	
+	// pt.uminho.haslab
+	public Formula visit(UnaryTempFormula temporalFormula) {
+		Formula ret = lookup(temporalFormula);
+		if (ret!=null) return ret;
+		final Formula child = temporalFormula.formula().accept(this);
+		ret = (child==temporalFormula.formula()) ? temporalFormula : child.always();
+		return cache(temporalFormula,ret);
+	}
+
+	// pt.uminho.haslab
+	public Formula visit(BinaryTempFormula temporalFormula) {
+		Formula ret = lookup(temporalFormula);
+		if (ret!=null) return ret;
+		
+		final Formula left  = temporalFormula.left().accept(this);
+		final Formula right = temporalFormula.right().accept(this);
+		ret = (left==temporalFormula.left() && right==temporalFormula.right()) ? 
+				temporalFormula : left.compose(temporalFormula.op(), right);     
+		return cache(temporalFormula,ret);
+	}
+
+	// pt.uminho.haslab
+	public Expression visit(TempExpression tempExpr) {
+		Expression ret = lookup(tempExpr);
+		if (ret!=null) return ret;
+
+		final Expression child = tempExpr.expression().accept(this);
+		ret = (child==tempExpr.expression()) ? 
+				tempExpr : child.apply(tempExpr.op());
+		return cache(tempExpr,ret);
+	}
+
 }

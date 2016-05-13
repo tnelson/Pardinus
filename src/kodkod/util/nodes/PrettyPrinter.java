@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +30,7 @@ import java.util.Set;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -56,19 +58,23 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
 
 /**
  * Pretty-prints Kodkod nodes.
  * 
  * @author Emina Torlak
+ * @modified Eduardo Pessoa, nmm
  */
 public final class PrettyPrinter {
 
@@ -331,6 +337,18 @@ public final class PrettyPrinter {
 			visitChild(node.expression(), parenthesize(node.expression()));
 		}
 		
+		// pt.uminho.haslab
+		public void visit(TempExpression node) { 
+			visitChild(node.expression(), parenthesize(node.expression()));
+			append(node.op());
+		}
+
+		// pt.uminho.haslab
+		public void visit(UnaryTempFormula node) { 
+			append(node.op());
+			visitChild(node.formula(), parenthesize(node.formula()));
+		}
+
 		/*--------------BINARY NODES---------------*/
 		
 		/** @return true if the given  expression needs to be parenthesized if a 
@@ -388,7 +406,12 @@ public final class PrettyPrinter {
 			        (op==FormulaOperator.IMPLIES || 
 			         ((BinaryFormula)child).op()!=op));
 		}
-	
+
+		// pt.uminho.haslab
+		private boolean parenthesize(TemporalOperator op, Formula child) { 
+			return true;
+		}
+
 		/** @ensures appends the tokenization of the given node to this.tokens */
 		public void visit(BinaryFormula node) {
 			final FormulaOperator op = node.op();
@@ -417,6 +440,22 @@ public final class PrettyPrinter {
 			infix(node.op());
 			visitChild(node.right(), parenthesize(node.right()));
 		}
+		
+		// pt.uminho.haslab
+		public void visit(BinaryTempFormula node) {
+			final TemporalOperator op = node.op();
+			final boolean pleft = parenthesize(op, node.left());
+			if (pleft) indent++;
+			visitChild(node.left(), pleft);
+			if (pleft) indent--;
+			infix(op);
+			newline();
+			final boolean pright =  parenthesize(op, node.right());
+			if (pright) indent++;
+			visitChild(node.right(), pright);
+			if (pright) indent--;
+		}
+		
 		
 		/*--------------TERNARY NODES---------------*/
 		
@@ -717,6 +756,14 @@ public final class PrettyPrinter {
 		public void visit(UnaryExpression unaryExpr) { 
 			visit(unaryExpr, unaryExpr.op(), unaryExpr.expression()); 
 		}
+		// pt.uminho.haslab
+		public void visit(TempExpression tempExpr) {
+			visit(tempExpr, tempExpr.op(), tempExpr.expression()); 
+		}
+		// pt.uminho.haslab
+		public void visit(UnaryTempFormula tempFormula) {
+			visit(tempFormula, tempFormula.op(), tempFormula.formula()); 
+		}
 		public void visit(Comprehension comprehension) { 
 			visit(comprehension, "setcomp", comprehension.decls(), comprehension.formula());
 		}
@@ -745,6 +792,8 @@ public final class PrettyPrinter {
 		}
 		public void visit(NaryFormula formula) { visit(formula, formula.op(), formula.iterator()); }
 		public void visit(BinaryFormula binFormula) { visit(binFormula, binFormula.op(), binFormula.left(), binFormula.right()); }
+		// pt.uminho.haslab
+		public void visit(BinaryTempFormula tempFormula) { visit(tempFormula, tempFormula.op(), tempFormula.left(), tempFormula.right()); }
 		public void visit(NotFormula not) { visit(not, "not", not.formula()); }
 		public void visit(ConstantFormula constant) { visit(constant, constant.booleanValue()); }
 		public void visit(ComparisonFormula compFormula) { visit(compFormula, compFormula.op(), compFormula.left(), compFormula.right());}

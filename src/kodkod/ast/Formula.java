@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +28,14 @@ import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
 import static kodkod.ast.operator.Quantifier.ALL;
 import static kodkod.ast.operator.Quantifier.SOME;
+import static kodkod.ast.operator.TemporalOperator.ALWAYS;
+import static kodkod.ast.operator.TemporalOperator.EVENTUALLY;
+import static kodkod.ast.operator.TemporalOperator.HISTORICALLY;
+import static kodkod.ast.operator.TemporalOperator.NEXT;
+import static kodkod.ast.operator.TemporalOperator.ONCE;
+import static kodkod.ast.operator.TemporalOperator.PREVIOUS;
+import static kodkod.ast.operator.TemporalOperator.RELEASE;
+import static kodkod.ast.operator.TemporalOperator.UNTIL;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +43,7 @@ import java.util.Iterator;
 
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Quantifier;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.util.collections.Containers;
 
@@ -42,6 +52,7 @@ import kodkod.util.collections.Containers;
  * all methods in this class throw a NullPointerException when given
  * null arguments.
  * @author Emina Torlak 
+ * @modified Eduardo Pessoa, nmm
  */
 public abstract class Formula extends Node {
 	
@@ -104,6 +115,12 @@ public abstract class Formula extends Node {
     public final Formula compose(FormulaOperator op, Formula formula) {
     	return new BinaryFormula(this, op, formula);
     }
+    
+    // pt.uminho.haslab
+    public final Formula compose(TemporalOperator op, Formula formula) {
+    	return new BinaryTempFormula(this, op, formula);
+    }
+    
     
     /**
      * Returns the conjunction of the given formulas.  The effect of this method is the
@@ -193,6 +210,35 @@ public abstract class Formula extends Node {
     }
     
     /**
+     * Temporal operators compose
+     * pt.uminho.haslab
+     */
+    public static Formula compose(TemporalOperator op, Collection<? extends Formula> formulas) { 
+    	switch(formulas.size()) { 
+    	case 0 :  throw new IllegalArgumentException("Expected at least one argument: " + formulas);
+    	case 1 :  return new UnaryTempFormula(op, formulas.iterator().next());
+    	case 2 :
+    		final Iterator<? extends Formula> itr = formulas.iterator();
+    		return new BinaryTempFormula(itr.next(), op, itr.next());
+    	default : throw new IllegalArgumentException("Expected unary or binary formula: " + formulas);
+    	}
+    }
+    
+    /**
+     * Temporal operators compose
+     * pt.uminho.haslab
+     */
+    public static Formula compose(TemporalOperator op,  Formula...formulas) { 
+    	switch(formulas.length) { 
+    	case 0 :  throw new IllegalArgumentException("Expected at least one argument: " + Arrays.toString(formulas));
+    	case 1 :  return new UnaryTempFormula(op, formulas[0]);
+    	case 2 :
+    		return new BinaryTempFormula(formulas[0], op, formulas[1]);
+    	default : throw new IllegalArgumentException("Expected unary or binary formula: " + Arrays.toString(formulas));
+    	}
+    }
+
+    /**
      * Returns a formula that represents a universal quantification of this
      * formula over the given declarations.  The effect of this method is the same 
      * as calling this.quantify(ALL, decls).
@@ -256,6 +302,46 @@ public abstract class Formula extends Node {
     public final Formula not() {
         return new NotFormula(this);
     }
+    
+    
+    /**
+     * Temporal operators methods.
+     * pt.uminho.haslab
+     */
+    public final Formula always() {
+        return new UnaryTempFormula(ALWAYS, this);
+    }
+
+    public final Formula eventually() {
+        return new UnaryTempFormula(EVENTUALLY, this);
+    }
+
+    public final Formula until(Formula f) {
+        return new BinaryTempFormula(this, UNTIL, f);
+    }
+
+    public final Formula release(Formula f)
+    {
+        return new BinaryTempFormula(this, RELEASE, f);
+    }
+
+    public final Formula next() {
+        return new UnaryTempFormula(NEXT, this);
+    }
+
+    public final Formula historically() {
+        return new UnaryTempFormula(HISTORICALLY, this);
+    }
+
+    public final Formula once() {
+        return new UnaryTempFormula(ONCE, this);
+    }
+
+    public final Formula previous() {
+        return new UnaryTempFormula(PREVIOUS, this);
+    }
+
+
     
     /**
      * Accepts the given visitor and returns the result.

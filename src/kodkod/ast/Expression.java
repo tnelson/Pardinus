@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +31,7 @@ import static kodkod.ast.operator.ExprOperator.DIFFERENCE;
 import static kodkod.ast.operator.ExprOperator.INTERSECTION;
 import static kodkod.ast.operator.ExprOperator.JOIN;
 import static kodkod.ast.operator.ExprOperator.OVERRIDE;
+import static kodkod.ast.operator.ExprOperator.POST;
 import static kodkod.ast.operator.ExprOperator.PRODUCT;
 import static kodkod.ast.operator.ExprOperator.REFLEXIVE_CLOSURE;
 import static kodkod.ast.operator.ExprOperator.TRANSPOSE;
@@ -38,7 +40,6 @@ import static kodkod.ast.operator.Multiplicity.LONE;
 import static kodkod.ast.operator.Multiplicity.NO;
 import static kodkod.ast.operator.Multiplicity.ONE;
 import static kodkod.ast.operator.Multiplicity.SOME;
-
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,6 +61,7 @@ import kodkod.util.collections.Containers;
  * @invariant arity > 0
  *
  * @author Emina Torlak 
+ * @modified Eduardo Pessoa, nmm
  */
 public abstract class Expression extends Node {
 	
@@ -388,6 +390,12 @@ public abstract class Expression extends Node {
     public final Formula lone() {
         return apply(LONE);
     }
+    
+    /**
+     * Post operator (Unary Operator).
+     * pt.uminho.haslab
+     */
+    public final Expression post() {return apply(POST);}
     
     /**
      * Returns the formula that results from applying the specified multiplicity to

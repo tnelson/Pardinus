@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +22,7 @@
  */
 package kodkod.ast.visitor;
 
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
@@ -46,6 +48,8 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.Variable;
@@ -59,6 +63,7 @@ import kodkod.ast.Variable;
  * return values of types E, F, D, and I respectively. 
  *
  * @author Emina Torlak  
+ * @modified Eduardo Pessoa, nmm
  */
 public interface ReturnVisitor<E, F, D, I> {
     
@@ -209,5 +214,13 @@ public interface ReturnVisitor<E, F, D, I> {
      */
     public F visit(RelationPredicate predicate);
 
+    // pt.uminho.haslab
+    public F visit(UnaryTempFormula temporalFormula);
+
+    // pt.uminho.haslab
+    public F visit(BinaryTempFormula temporalFormula);
+
+    // pt.uminho.haslab
+    public E visit(TempExpression temporalExpr);
     
 }

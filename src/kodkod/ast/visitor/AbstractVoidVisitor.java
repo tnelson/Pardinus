@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +25,7 @@ package kodkod.ast.visitor;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -50,14 +52,17 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 
 /** 
  * Implements a depth first traversal of the kodkod AST.  
  *
  * @author Emina Torlak 
+ * @modified Eduardo Pessoa, mnn
  */
 public abstract class AbstractVoidVisitor implements VoidVisitor {
 	
@@ -360,5 +365,24 @@ public abstract class AbstractVoidVisitor implements VoidVisitor {
 			tp.last().accept(this);
 		}
 	}
-	
+
+	// pt.uminho.haslab
+	public void visit(UnaryTempFormula temporalFormula) {
+		if (visited(temporalFormula)) return;
+		temporalFormula.formula().accept(this);
+		
+	}
+
+	// pt.uminho.haslab
+	public void visit(BinaryTempFormula temporalFormula) {
+		if (visited(temporalFormula)) return;
+		temporalFormula.left().accept(this);
+		temporalFormula.right().accept(this);
+	}
+
+	// pt.uminho.haslab
+	public void visit(TempExpression temporalExpr) {
+		if (visited(temporalExpr)) return;
+		temporalExpr.expression().accept(this);
+	}
 }

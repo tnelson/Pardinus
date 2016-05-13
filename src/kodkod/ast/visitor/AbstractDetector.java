@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import java.util.Set;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -54,8 +56,10 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 
 /**
@@ -69,6 +73,7 @@ import kodkod.ast.Variable;
  * @specfield cache: Node -> lone Boolean
  * @specfield cached in cache.Node
  * @author Emina Torlak
+ * @modified Eduardo Pessoa, nmm
  */
 public abstract class AbstractDetector implements ReturnVisitor<Boolean, Boolean, Boolean, Boolean> {
 	protected final Map<Node, Boolean> cache;
@@ -477,4 +482,23 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean, Boolean
 		}
 		return cache(predicate, false);
 	}
+	
+	// pt.uminho.haslab
+	public Boolean visit(UnaryTempFormula temporalFormula) {
+		final Boolean ret = lookup(temporalFormula);
+		return (ret!=null) ? ret : cache(temporalFormula, temporalFormula.formula().accept(this));
+	}
+
+	// pt.uminho.haslab
+	public Boolean visit(BinaryTempFormula tempFormula) {
+		final Boolean ret = lookup(tempFormula);
+		return (ret!=null) ? ret : cache(tempFormula, tempFormula.left().accept(this) || tempFormula.right().accept(this));
+	}
+
+	// pt.uminho.haslab
+	public Boolean visit(TempExpression tempExpr) {
+		final Boolean ret = lookup(tempExpr);
+		return (ret!=null) ? ret : cache(tempExpr, tempExpr.expression().accept(this));
+	}
+
 }

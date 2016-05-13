@@ -29,6 +29,7 @@ import java.util.Map;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -56,8 +57,10 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprCompOperator;
 import kodkod.ast.operator.ExprOperator;
@@ -1081,5 +1084,21 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		}
 		return cache(intComp, ret);
 	}
+	
+	// pt.uminho.haslab: should be converted into strandard Kodkod before FOL translation
+	public final BooleanValue visit(UnaryTempFormula temporalFormula) {
+		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
+	}
+
+	// pt.uminho.haslab: should be converted into strandard Kodkod before FOL translation
+	public final BooleanValue visit(BinaryTempFormula temporalFormula) {
+		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
+	}
+
+	// pt.uminho.haslab: should be converted into strandard Kodkod before FOL translation
+	public final BooleanMatrix visit(TempExpression temporalExpr) {
+		throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
+	}
+
 }
 

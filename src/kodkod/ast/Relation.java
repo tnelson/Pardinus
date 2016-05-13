@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +54,7 @@ public class Relation extends LeafExpression {
 	 * @ensures this.name' = name && this.arity' = arity 
 	 * @throws IllegalArgumentException  arity < 1 
 	 */
-	private Relation(String name, int arity) { 
+	Relation(String name, int arity) {  // pt.uminho.haslab: removed private
 		super(name,arity);
 	}
 	

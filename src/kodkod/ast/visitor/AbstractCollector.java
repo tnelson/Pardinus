@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +30,7 @@ import java.util.Set;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -55,8 +57,10 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 
 /**
@@ -71,6 +75,7 @@ import kodkod.ast.Variable;
  * @specfield cache: Node -> lone Set<T>
  * @specfield cached in cache.Node
  * @author Emina Torlak
+ * @modified Eduardo Pessoa, nmm
  */
 public abstract class AbstractCollector<T> implements
 		ReturnVisitor<Set<T>, Set<T>, Set<T>, Set<T>> {
@@ -587,5 +592,34 @@ public abstract class AbstractCollector<T> implements
 		}
 		return cache(pred,ret);
 	}
+
+	// pt.uminho.haslab
+	public Set<T> visit(UnaryTempFormula temporalFormula) {
+		Set<T> ret = lookup(temporalFormula);
+		if (ret!=null) return ret;
+		ret = newSet();
+		ret.addAll(temporalFormula.formula().accept(this));
+		return cache(temporalFormula, ret);
+	}
+
+	// pt.uminho.haslab
+	public Set<T> visit(BinaryTempFormula temporalFormula) {
+		Set<T> ret = lookup(temporalFormula);
+		if (ret!=null) return ret;		
+		ret = newSet();
+		ret.addAll(temporalFormula.left().accept(this));
+		ret.addAll(temporalFormula.right().accept(this));
+		return cache(temporalFormula, ret);
+	}
+	
+	// pt.uminho.haslab
+	public Set<T> visit(TempExpression tempExpr) {
+		Set<T> ret = lookup(tempExpr);
+		if (ret!=null) return ret;
+		ret = newSet();
+		ret.addAll(tempExpr.expression().accept(this));
+		return cache(tempExpr,ret);
+	}
+
 
 }
