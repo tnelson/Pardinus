@@ -56,6 +56,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 
 /** 
@@ -102,7 +103,10 @@ public abstract class AbstractVoidVisitor implements VoidVisitor {
 	 * Does nothing.
 	 */
 	public void visit(Relation relation) {}
-	
+
+//	// pt.uminho.haslab
+//	public void visit(VarRelation relation) {}
+
 	/**
 	 * Does nothing.
 	 */

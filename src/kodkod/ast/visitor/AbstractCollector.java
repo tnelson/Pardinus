@@ -61,6 +61,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 
 /**
@@ -188,6 +189,12 @@ public abstract class AbstractCollector<T> implements
 	public Set<T> visit(Relation relation) {
 		return Collections.EMPTY_SET;
 	}
+
+//	@SuppressWarnings("unchecked")
+//	// pt.uminho.haslab
+//	public Set<T> visit(VarRelation relation) {
+//		return Collections.EMPTY_SET;
+//	}
 
 	/**
 	 * Returns Collections.EMPTY_SET

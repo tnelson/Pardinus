@@ -44,8 +44,8 @@ import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.satlab.SATAbortedException;
 import kodkod.engine.satlab.SATProver;
 import kodkod.engine.satlab.SATSolver;
-import kodkod.engine.satlab.pardinus.TargetSATSolver;
-import kodkod.engine.satlab.pardinus.WTargetSATSolver;
+import kodkod.engine.satlab.TargetSATSolver;
+import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
@@ -143,7 +143,9 @@ public final class Solver implements KodkodSolver {
 		final long startTransl = System.currentTimeMillis();
 		
 		try {			
+			System.out.println("Ping1");
 			final Translation.Whole translation = Translator.translate(formula, bounds, options);
+			System.out.println("Ping2");
 			final long endTransl = System.currentTimeMillis();
 			
 			if (translation.trivial())

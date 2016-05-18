@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.BinaryFormula;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -55,6 +57,8 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprCastOperator;
 import kodkod.ast.operator.FormulaOperator;
@@ -75,6 +79,7 @@ import kodkod.util.collections.Stack;
  *                                            // which they were derived by some transformation process
  *                                            // (e.g. skolemization, predicate inlining)                                     
  * @author Emina Torlak
+ * @modified nmm
  */ 
 public final class AnnotatedNode<N extends Node> {
 	private final N node;
@@ -173,10 +178,15 @@ public final class AnnotatedNode<N extends Node> {
 			public void visit(Relation relation) {
 				relations.add(relation);
 			}
+//			// pt.uminho.haslab
+//			public void visit(VarRelation relation) {
+//				relations.add(relation);
+//			}
 		};
 		node.accept(visitor);
 		return relations;
 	}
+	
 	
 	/**
 	 * Returns true if this.node contains a child whose meaning depends on 
@@ -457,6 +467,14 @@ public final class AnnotatedNode<N extends Node> {
 		 */
 		public void visit(QuantifiedFormula quantFormula) {
 			visited(quantFormula);
+		}
+		// pt.uminho.haslab
+		public void visit(UnaryTempFormula tempFormula) {
+			visited(tempFormula);
+		}
+		// pt.uminho.haslab
+		public void visit(BinaryTempFormula tempFormula) {
+			visited(tempFormula);
 		}
 		/**
 		 * Visits the children of the given formula if it has not been visited already with

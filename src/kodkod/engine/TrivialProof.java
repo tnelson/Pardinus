@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.BinaryFormula;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.ConstantFormula;
 import kodkod.ast.Decl;
@@ -39,6 +41,7 @@ import kodkod.ast.Node;
 import kodkod.ast.NotFormula;
 import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.RelationPredicate;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.visitor.AbstractVoidVisitor;
 import kodkod.engine.fol2sat.RecordFilter;
@@ -56,6 +59,7 @@ import kodkod.util.ints.TreeSequence;
  * is discovered through translation alone.
  *  
  * @author Emina Torlak
+ * @modified nmm
  */
 final class TrivialProof extends Proof {
 	private Map<Formula,Node> coreRoots;
@@ -315,6 +319,17 @@ final class TrivialProof extends Proof {
 			
 			if (lvisit) { l.accept(this); }
 			if (rvisit) { r.accept(this); }
+		}
+		
+		
+		// pt.uminho.haslab
+		public final void visit(BinaryTempFormula tempFormula) {
+			throw new UnsupportedOperationException("Temporal skolemizer.");
+		}
+
+		// pt.uminho.haslab
+		public final void visit(UnaryTempFormula tempFormula) {
+			throw new UnsupportedOperationException("Temporal skolemizer.");
 		}
 		
 		/**

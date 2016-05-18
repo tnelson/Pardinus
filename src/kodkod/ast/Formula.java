@@ -237,6 +237,12 @@ public abstract class Formula extends Node {
     	default : throw new IllegalArgumentException("Expected unary or binary formula: " + Arrays.toString(formulas));
     	}
     }
+    
+    // pt.uminho.haslab
+    public final Formula compose(TemporalOperator op) {
+    	return new UnaryTempFormula(op, this);
+    }
+
 
     /**
      * Returns a formula that represents a universal quantification of this

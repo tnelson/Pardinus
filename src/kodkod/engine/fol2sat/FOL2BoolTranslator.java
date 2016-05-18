@@ -61,6 +61,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprCompOperator;
 import kodkod.ast.operator.ExprOperator;
@@ -327,6 +328,11 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		}
 		return ret;
 	}
+
+//	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
+//	public final BooleanMatrix visit(VarRelation relation) {
+//		throw new UnsupportedOperationException("Temporal relation: "+relation);
+//	}
 
 	/**
 	 * Returns this.interpreter.interpret(constExpr).
@@ -1085,17 +1091,17 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		return cache(intComp, ret);
 	}
 	
-	// pt.uminho.haslab: should be converted into strandard Kodkod before FOL translation
+	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
 	public final BooleanValue visit(UnaryTempFormula temporalFormula) {
 		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
 	}
 
-	// pt.uminho.haslab: should be converted into strandard Kodkod before FOL translation
+	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
 	public final BooleanValue visit(BinaryTempFormula temporalFormula) {
 		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
 	}
 
-	// pt.uminho.haslab: should be converted into strandard Kodkod before FOL translation
+	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
 	public final BooleanMatrix visit(TempExpression temporalExpr) {
 		throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
 	}

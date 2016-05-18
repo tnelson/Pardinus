@@ -20,7 +20,6 @@ class Yices extends NativeSolver {
 		super(make());
 		makearray = true;
 		array = allocArray();
-		//System.out.println("new");
 	}
 	
 	static {

@@ -28,8 +28,6 @@ package kodkod.ast.operator;
  * Enumerates unary (~, ^, *), binary (+, &, ++, ->, -, .) and nary (+, &, ++, ->) expression operators.
  * @specfield op: (int->lone Expression) -> Expression
  * @invariant all args: seq Expression, out: Expression | args->out in op => (out.children = args && out.op = this)
- * 
- * @modified Eduardo Pessoa, nmm
  */
 public enum ExprOperator {
 	/** Relational union (+) operator. */
@@ -49,16 +47,11 @@ public enum ExprOperator {
     /** Transitive closure (^) operator. */
     CLOSURE 			{ public String toString() { return "^";} },
     /** Reflexive transitive closure (*) operator. */
-    REFLEXIVE_CLOSURE 	{ public String toString() { return "*";} },
+    REFLEXIVE_CLOSURE 	{ public String toString() { return "*";} };
   	
-    /**
-    *  post temporal operator.
-    *  pt.uminho.haslab
-    */
-    POST 	{ public String toString() { return "'";} };
-  	
+
  
-    static final int unary = TRANSPOSE.index() | CLOSURE.index() | REFLEXIVE_CLOSURE.index() | POST.index(); //pt.uminho.haslab
+    static final int unary = TRANSPOSE.index() | CLOSURE.index() | REFLEXIVE_CLOSURE.index();
     
     static final int binary = ~unary;
     

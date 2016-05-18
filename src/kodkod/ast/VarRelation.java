@@ -34,7 +34,7 @@ public class VarRelation extends Relation {
     }
 
     public static VarRelation nary(String paramString, int paramInt) {
-        return nary(paramString, paramInt);
+        return new VarRelation(paramString, paramInt);
     }
 
     public static VarRelation unary(String paramString) {

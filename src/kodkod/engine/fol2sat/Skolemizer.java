@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import kodkod.ast.BinaryFormula;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.Decl;
@@ -54,6 +55,7 @@ import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Multiplicity;
@@ -479,6 +481,16 @@ abstract class Skolemizer extends AbstractReplacer {
 		skolemDepth = oldDepth;
 		ret = (left==bf.left()&&right==bf.right()) ? bf : left.compose(op, right);
 		return source(cache(bf,ret),bf);
+	}
+	
+	// pt.uminho.haslab
+	public final Formula visit(BinaryTempFormula tempFormula) {
+		throw new UnsupportedOperationException("Temporal skolemizer.");
+	}
+
+	// pt.uminho.haslab
+	public final Formula visit(UnaryTempFormula tempFormula) {
+		throw new UnsupportedOperationException("Temporal skolemizer.");
 	}
 
 	/**

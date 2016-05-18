@@ -31,7 +31,7 @@ import static kodkod.ast.operator.ExprOperator.DIFFERENCE;
 import static kodkod.ast.operator.ExprOperator.INTERSECTION;
 import static kodkod.ast.operator.ExprOperator.JOIN;
 import static kodkod.ast.operator.ExprOperator.OVERRIDE;
-import static kodkod.ast.operator.ExprOperator.POST;
+import static kodkod.ast.operator.TemporalOperator.POST;
 import static kodkod.ast.operator.ExprOperator.PRODUCT;
 import static kodkod.ast.operator.ExprOperator.REFLEXIVE_CLOSURE;
 import static kodkod.ast.operator.ExprOperator.TRANSPOSE;
@@ -49,6 +49,7 @@ import kodkod.ast.operator.ExprCastOperator;
 import kodkod.ast.operator.ExprCompOperator;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.Multiplicity;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.util.collections.Containers;
 
@@ -290,7 +291,12 @@ public abstract class Expression extends Node {
     public final Expression apply(ExprOperator op) {
     	return new UnaryExpression(op, this);
     }
-    
+
+    // pt.uminho.haslab
+    public final Expression apply(TemporalOperator op) {
+    	return new TempExpression(op, this);
+    }
+
     /**
      * Returns the projection of this expression onto the specified columns.
      * @return {e: Expression | e = project(this, columns) }

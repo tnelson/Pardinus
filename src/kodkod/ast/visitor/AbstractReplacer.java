@@ -60,6 +60,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.Multiplicity;
 
@@ -180,6 +181,12 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression, Form
 		final Expression ret = lookup(relation);
 		return ret==null ? cache(relation,relation) : ret; 
 	}
+	
+//	// pt.uminho.haslab
+//	public Expression visit(VarRelation relation) { 
+//		final Expression ret = lookup(relation);
+//		return ret==null ? cache(relation,relation) : ret; 
+//	}
 	
 	/** 
 	 * Calls lookup(variable) and returns the cached value, if any.  

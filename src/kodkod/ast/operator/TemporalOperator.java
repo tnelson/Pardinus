@@ -42,8 +42,10 @@ public enum TemporalOperator {
 
     UNTIL { public String toString() { return "until"; }},
 
-    RELEASE { public String toString() { return "release"; }};
-    
+    RELEASE { public String toString() { return "release"; }},
+
+    POST 	{ public String toString() { return "'";} };
+  	
     static final int binary = UNTIL.index() | RELEASE.index();
 
     static final int unary = ~binary;

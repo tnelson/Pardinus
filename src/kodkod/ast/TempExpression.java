@@ -24,6 +24,7 @@ package kodkod.ast;
 
 
 import kodkod.ast.operator.ExprOperator;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
@@ -32,13 +33,13 @@ import kodkod.ast.visitor.VoidVisitor;
  */
 public final class TempExpression extends Expression {
     private final Expression expression;
-    private final ExprOperator op;
+    private final TemporalOperator op;
     private final int arity;
     
     /**  
      */
-    TempExpression(ExprOperator op, Expression child) {
-        if (!(op == ExprOperator.POST)) {
+    TempExpression(TemporalOperator op, Expression child) {
+        if (!(op == TemporalOperator.POST)) {
             throw new IllegalArgumentException("Not a temporal operator: " + op);
         }
         this.expression = child;
@@ -65,7 +66,7 @@ public final class TempExpression extends Expression {
      * Returns this.op.
      * @return this.op
      */
-    public ExprOperator op() {return op;}
+    public TemporalOperator op() {return op;}
     
     
 	/**

@@ -194,5 +194,7 @@ public interface VoidVisitor {
     // pt.uminho.haslab
     public void visit(TempExpression temporalExpr);
 
+//    // pt.uminho.haslab
+//    public void visit(VarRelation relation);
 
 }

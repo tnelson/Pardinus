@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import kodkod.engine.satlab.pardinus.TargetSATSolver;
-
 import org.sat4j.core.ConstrGroup;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;

@@ -52,6 +52,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 
 
@@ -222,5 +223,8 @@ public interface ReturnVisitor<E, F, D, I> {
 
     // pt.uminho.haslab
     public E visit(TempExpression temporalExpr);
+    
+//    // pt.uminho.haslab
+//    public E visit(VarRelation relation);
     
 }

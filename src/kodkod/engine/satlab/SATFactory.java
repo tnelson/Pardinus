@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import kodkod.engine.satlab.pardinus.WTargetSATSolver;
-
 import org.sat4j.minisat.SolverFactory;
 
 /**
@@ -229,6 +227,14 @@ public abstract class SATFactory {
 		final String executable = findStaticLibrary("glucose-syrup");
 		return externalFactory(executable==null ? "glucose-syrup" : executable, 
 				null, "-verb=0");
+	
+	}
+	
+	// pt.uminho.haslab
+	public static final SATFactory yicesExternal() {
+		
+		final String executable = findStaticLibrary("yices");
+		return externalPMaxYices(executable==null ? "yices" : executable, null, 2000, "-d","-e","-ms","-mw",""+2000);
 	
 	}
 	

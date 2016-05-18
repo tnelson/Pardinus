@@ -1,4 +1,4 @@
-package kodkod.engine.satlab.pardinus;
+package kodkod.engine.satlab;
 
 /**
  * A SAT solver with support for partial satisfaction with weights.

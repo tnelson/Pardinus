@@ -1,6 +1,5 @@
-package kodkod.engine.satlab.pardinus;
+package kodkod.engine.satlab;
 
-import kodkod.engine.satlab.SATSolver;
 
 /**
  * A SAT solver with support for partial satisfaction.

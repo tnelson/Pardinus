@@ -62,6 +62,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
@@ -225,6 +226,9 @@ public final class PrettyPrinter {
 		/*--------------LEAVES---------------*/
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
 		public void visit(Relation node) { append(node); }
+
+//		// pt.uminho.haslab
+//		public void visit(VarRelation node) { append(node); }
 
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
 		public void visit(Variable node) { append(node); }
@@ -743,6 +747,10 @@ public final class PrettyPrinter {
 		public void visit(Decl decl) { visit(decl, "decl", decl.variable(), decl.expression()); }
 		
 		public void visit(Relation relation) { visit(relation, relation.name()); }
+
+//		// pt.uminho.haslab
+//		public void visit(VarRelation relation) { visit(relation, relation.name()); }
+
 		public void visit(Variable variable) { visit(variable, variable.name()); }	
 		public void visit(ConstantExpression constExpr) { visit(constExpr, constExpr.name()); }
 		

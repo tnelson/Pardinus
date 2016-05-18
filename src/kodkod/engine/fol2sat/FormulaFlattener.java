@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.BinaryFormula;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.ConstantFormula;
 import kodkod.ast.Decls;
@@ -48,6 +50,7 @@ import kodkod.ast.Node;
 import kodkod.ast.NotFormula;
 import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.RelationPredicate;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Quantifier;
 import kodkod.ast.visitor.AbstractVoidVisitor;
@@ -58,6 +61,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * by breaking up universally quantifier formulas whenever possible.
  * 
  * @author Emina Torlak
+ * @modifed nmm
  */
 final class FormulaFlattener extends AbstractVoidVisitor {
 
@@ -194,6 +198,16 @@ final class FormulaFlattener extends AbstractVoidVisitor {
 				bf.right().accept(this);
 			}
 		}
+	}
+	
+	// pt.uminho.haslab
+	public final void visit(BinaryTempFormula tempFormula) {
+		throw new UnsupportedOperationException("Temporal skolemizer.");
+	}
+
+	// pt.uminho.haslab
+	public final void visit(UnaryTempFormula tempFormula) {
+		throw new UnsupportedOperationException("Temporal skolemizer.");
 	}
 	
 	/**
