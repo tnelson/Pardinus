@@ -36,7 +36,7 @@ import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
 import kodkod.engine.config.Options;
-import kodkod.engine.config.Options.Mode;
+import kodkod.engine.config.Options.TMode;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationLog;
@@ -430,7 +430,7 @@ public final class Solver implements KodkodSolver {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
-		private Mode mode; // pt.uminho.haslab: TO mode
+		private TMode mode; // pt.uminho.haslab: TO mode
 		private Map<String, Integer> weights; // pt.uminho.haslab: signature weights
 
 		
@@ -493,7 +493,7 @@ public final class Solver implements KodkodSolver {
 			try {				
 				cnf.valueOf(1); // fails if no previous solution
 				final int[] notModel = new int[primaryVars];
-				if (mode != null && (mode.equals(Mode.CLOSE) || mode.equals(Mode.FAR))) {
+				if (mode != null && (mode.equals(TMode.CLOSE) || mode.equals(TMode.FAR))) {
 					TargetSATSolver tcnf = (TargetSATSolver) cnf;
 					tcnf.clearTargets();
 					// pt.uminho.haslab: if there are weights must iterate through the relations to find the literal's owner
@@ -510,8 +510,8 @@ public final class Solver implements KodkodSolver {
 									// add the negation of the current model to the solver
 									notModel[i-1] = cnf.valueOf(i) ? -i : i;
 									// pt.uminho.haslab: add current model as weighted target
-									if (mode == Mode.CLOSE) wcnf.addWeight(cnf.valueOf(i) ? i : -i,w);
-									if (mode == Mode.FAR) wcnf.addWeight(cnf.valueOf(i) ? -i : i,w);
+									if (mode == TMode.CLOSE) wcnf.addWeight(cnf.valueOf(i) ? i : -i,w);
+									if (mode == TMode.FAR) wcnf.addWeight(cnf.valueOf(i) ? -i : i,w);
 								}
 							}
 						}
@@ -522,8 +522,8 @@ public final class Solver implements KodkodSolver {
 							// add the negation of the current model to the solver
 							notModel[i-1] = cnf.valueOf(i) ? -i : i;
 							// pt.uminho.haslab: add current model as target
-							if (mode == Mode.CLOSE) tcnf.addTarget(cnf.valueOf(i) ? i : -i);
-							if (mode == Mode.FAR) tcnf.addTarget(cnf.valueOf(i) ? -i : i);
+							if (mode == TMode.CLOSE) tcnf.addTarget(cnf.valueOf(i) ? i : -i);
+							if (mode == TMode.FAR) tcnf.addTarget(cnf.valueOf(i) ? -i : i);
 						}
 					}
 
@@ -617,7 +617,7 @@ public final class Solver implements KodkodSolver {
 		 * @param weights the signature weights
 		 */
 		public Solution next(Map<String, Integer> weights) {
-			if (translation.options().getTargetMode() != Mode.DEFAULT) {
+			if (translation.options().getTargetMode() != TMode.DEFAULT) {
 				if (!(translation.options().solver().instance() instanceof TargetSATSolver))
 					throw new AbortedException("Selected solver ("+translation.options().solver()+") does not have support for targets.");				
 				if (weights != null) {

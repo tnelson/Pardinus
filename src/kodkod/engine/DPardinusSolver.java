@@ -26,11 +26,11 @@ import java.util.Iterator;
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
+import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
-import kodkod.pardinus.decomp.DOptions;
 
 /** 
  * A computational engine for solving relational satisfiability problems. 
@@ -60,7 +60,7 @@ public interface DPardinusSolver extends KodkodSolver { // pt.uminho.haslab
 	 * Returns the Options object used by this solver.
 	 * @return this.options
 	 */
-	public DOptions options() ;
+	public Options options() ;
 	
 	/**
 	 * Attempts to satisfy the given {@code formula} and {@code bounds} with respect to 

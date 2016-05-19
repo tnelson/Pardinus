@@ -30,8 +30,9 @@ import kodkod.ast.Relation;
 import kodkod.engine.DPardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Options;
+import kodkod.engine.config.Options.DMode;
 import kodkod.instance.Bounds;
-import kodkod.pardinus.decomp.DOptions.Modes;
 
 /**
  * A computational engine for solving relational satisfiability problems. Such a
@@ -56,7 +57,7 @@ public class DSolver implements DPardinusSolver {
 	private DProblemExecutor executor;
 
 	/** the decomposed problem options */
-	final private DOptions options;
+	final private Options options;
 
 	/**
 	 * Constructs a new decomposed solver built over a standard Kodkod
@@ -72,7 +73,7 @@ public class DSolver implements DPardinusSolver {
 	public DSolver(Solver solver) {
 		if (!solver.options().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
-		this.options = new DOptions(solver.options());
+		this.options = solver.options();
 		this.solver = solver;
 	}
 
@@ -88,7 +89,7 @@ public class DSolver implements DPardinusSolver {
 	 * @throws IllegalArgumentException
 	 *             if the solver is not incremental.
 	 */
-	public DSolver(Solver solver, DOptions opt) {
+	public DSolver(Solver solver, Options opt) {
 		if (solver.options().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 		this.options = opt;
@@ -118,9 +119,9 @@ public class DSolver implements DPardinusSolver {
 	 */
 	@Override
 	public Solution solve(Formula f1, Formula f2, Bounds b1, Bounds b2) throws InterruptedException {
-		if (options.getMode() == Modes.STATS)
+		if (options.getMode() == DMode.STATS)
 			executor = new StatsExecutor(f1, f2, b1, b2, solver, options.threads());
-		else if (options.getMode() == Modes.HYBRID)
+		else if (options.getMode() == DMode.HYBRID)
 			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver, options.threads(), true);
 		else
 			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver, options.threads(), false);
@@ -157,7 +158,7 @@ public class DSolver implements DPardinusSolver {
 	}
 
 	@Override
-	public DOptions options() {
+	public Options options() {
 		return options;
 	}
 
@@ -176,10 +177,10 @@ public class DSolver implements DPardinusSolver {
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, DOptions options, Solver solver) {
-			if (options.getMode() == Modes.STATS)
+		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, Options options, Solver solver) {
+			if (options.getMode() == DMode.STATS)
 				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver, options.threads());
-			else if (options.getMode() == Modes.HYBRID)
+			else if (options.getMode() == DMode.HYBRID)
 				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver, options.threads(), true);
 			else
 				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver, options.threads(), false);

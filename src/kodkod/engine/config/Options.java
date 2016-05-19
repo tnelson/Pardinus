@@ -54,9 +54,6 @@ public class Options implements Cloneable {
 	private int logTranslation = 0;
 	private int coreGranularity = 0;
 
-	// pt.uminho.haslab
-	private Mode target_mode;
-
 	//[AM]
 	public static boolean isDebug() {
 	    return false; //TODO: read from the environment or something
@@ -411,23 +408,86 @@ public class Options implements Cloneable {
 		abstract IntRange range(int bitwidth) ;
 	}
 	
+
+	// pt.uminho.haslab: target-oriented solving
+	
+	// pt.uminho.haslab
+	private TMode target_mode;
+
 	/**
 	 * The TO execution models.
 	 * pt.uminho.haslab
 	 */
-	public enum Mode {
+	public enum TMode {
 		DEFAULT,
 		FAR,
 		CLOSE
 	}
 	
 	// pt.uminho.haslab
-	public Mode getTargetMode() {
+	public TMode getTargetMode() {
 		return target_mode;
 	}
 	
 	// pt.uminho.haslab
-	public void setTargetMode(Mode mode) {
+	public void setTargetMode(TMode mode) {
 		target_mode = mode;
 	}
+	
+	// pt.uminho.haslab: decomposed solving
+	
+	// pt.uminho.haslab
+	private int threads = 4;
+
+	// pt.uminho.haslab
+	private DMode mode = DMode.PARALLEL;
+
+	// pt.uminho.haslab
+	public enum DMode {
+		BATCH, 
+		PARALLEL,
+		HYBRID,
+		INCREMENTAL,
+		STATS;
+	}
+	
+	/**
+	 * Sets the number of threads that will be launched in parallel.
+	 * @param threads
+	 */
+	// pt.uminho.haslab
+	public void setThreads(int threads) {
+		this.threads = threads;
+	}
+
+	// pt.uminho.haslab
+	public int threads() {
+		return threads;
+	}
+
+	// pt.uminho.haslab
+	public DMode getMode() {
+		return mode;
+	}
+
+	// pt.uminho.haslab
+	public void setMode(DMode mode) {
+		this.mode = mode;
+	}
+	
+	// pt.uminho.haslab: temporal solving
+	
+	// pt.uminho.haslab
+	private int trace_length;
+	
+	// pt.uminho.haslab
+	public void setTraceLength(int trace_length) {
+		this.trace_length = trace_length;
+	}
+
+	// pt.uminho.haslab
+	public int traceLength() {
+		return trace_length;
+	}
+	
 }
