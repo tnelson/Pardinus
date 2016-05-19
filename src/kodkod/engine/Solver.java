@@ -36,6 +36,7 @@ import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
 import kodkod.engine.config.Options;
+import kodkod.engine.config.Options.Mode;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationLog;
@@ -198,7 +199,8 @@ public final class Solver implements KodkodSolver {
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
-		if (!bounds.targets().isEmpty()) return new TSolutionIterator(formula, bounds, options);
+		if (!bounds.targets().isEmpty()) 
+			return new TSolutionIterator(formula, bounds, options);
 		else return new SolutionIterator(formula, bounds, options);
 		
 	}
@@ -614,8 +616,8 @@ public final class Solver implements KodkodSolver {
 		 * @param i the TO mode
 		 * @param weights the signature weights
 		 */
-		public Solution next(Mode i, Map<String, Integer> weights) {
-			if (i != Mode.DEFAULT) {
+		public Solution next(Map<String, Integer> weights) {
+			if (translation.options().getTargetMode() != Mode.DEFAULT) {
 				if (!(translation.options().solver().instance() instanceof TargetSATSolver))
 					throw new AbortedException("Selected solver ("+translation.options().solver()+") does not have support for targets.");				
 				if (weights != null) {
@@ -623,18 +625,8 @@ public final class Solver implements KodkodSolver {
 						throw new AbortedException("Selected solver ("+translation.options().solver()+") does not have support for targets with weights.");				
 				}
 			}
-			this.mode = i;
 			this.weights = weights;
 			return next();
 		}
-		
-		/**
-		 * The TO execution models.
-		 * pt.uminho.haslab
-		 */
-		public enum Mode {
-			DEFAULT,
-			FAR,
-			CLOSE
-		}
+
 	}}

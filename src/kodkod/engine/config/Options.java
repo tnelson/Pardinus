@@ -53,7 +53,10 @@ public class Options implements Cloneable {
 	private int skolemDepth = 0;
 	private int logTranslation = 0;
 	private int coreGranularity = 0;
-	
+
+	// pt.uminho.haslab
+	private Mode target_mode;
+
 	//[AM]
 	public static boolean isDebug() {
 	    return false; //TODO: read from the environment or something
@@ -408,4 +411,23 @@ public class Options implements Cloneable {
 		abstract IntRange range(int bitwidth) ;
 	}
 	
+	/**
+	 * The TO execution models.
+	 * pt.uminho.haslab
+	 */
+	public enum Mode {
+		DEFAULT,
+		FAR,
+		CLOSE
+	}
+	
+	// pt.uminho.haslab
+	public Mode getTargetMode() {
+		return target_mode;
+	}
+	
+	// pt.uminho.haslab
+	public void setTargetMode(Mode mode) {
+		target_mode = mode;
+	}
 }
