@@ -99,15 +99,9 @@ public class TemporalFormulaExtension {
 
     public void temporalFormulaExtension(){
         AddTimeToFormula addTimeToFormula =  new AddTimeToFormula(Time,next,init,end,infinite);
-        Formula result = this.dynamicFormula.accept(addTimeToFormula);
+        Formula result = addTimeToFormula.convert(dynamicFormula);
         this.varRelationsList = addTimeToFormula.getVarRelations();
-        if(addTimeToFormula.postConditionInInitState()){
-            this.dynamicFormulaExpanded = allStuff.and(init.join(next).some()).and(result);
-        }else{
-            this.dynamicFormulaExpanded = allStuff.and(result);
-        }
-
-
+        this.dynamicFormulaExpanded = allStuff.and(result);
     }
 
     public void putTimeInList(){

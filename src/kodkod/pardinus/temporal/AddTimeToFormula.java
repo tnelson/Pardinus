@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import kodkod.ast.BinaryTempFormula;
+import kodkod.ast.ConstantFormula;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Node;
@@ -33,18 +34,12 @@ public class AddTimeToFormula extends AbstractReplacer {
 	private Relation end;
 
 	private Formula infinite;
-
+	
 	private Set<VarRelation> relations;
-
-    private boolean postConditionInInitState;
 
 	public Set<VarRelation> getVarRelations() {
 		return relations;
 	}
-	
-    public boolean postConditionInInitState() {
-        return postConditionInInitState;
-    }
 
 	public AddTimeToFormula(Relation time, Relation next, Relation init, Relation end, Formula infinite) {
 		super(new HashSet<Node>());
@@ -54,11 +49,18 @@ public class AddTimeToFormula extends AbstractReplacer {
 		this.init = init;
 		this.end = end;
 		this.infinite = infinite;
-        this.postConditionInInitState = false;
 		pushVariable();
 	}
 
-	@Override
+    public Formula convert(Formula f){
+        Formula result = f.accept(this);
+        if (needToDeclarePostR > 0)
+			return forceNextExists(init, needToDeclarePostR).and(result);
+		else
+			return result;
+    }
+	
+    @Override
 	public Expression visit(Relation relation) {
 		if (isTemporal(relation))
 			return this.getRelation(relation.name(), relation).join(this.getVariable());
@@ -74,10 +76,13 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	@Override
 	public Formula visit(UnaryTempFormula unaryTempFormula) {
+		int temp = needToDeclarePostR;
+		needToDeclarePostR = 0;
 		this.pushOperator(unaryTempFormula.op());
 		this.pushVariable();
 		Formula e = unaryTempFormula.formula().accept(this);
-		Formula rt = this.getQuantifier(this.getOperator(), e);
+		Formula rt = this.getQuantifier(this.getOperator(), e, needToDeclarePostR);
+		needToDeclarePostR = temp;
 		this.popOperator();
 		this.popVariable();
 		return rt;	
@@ -87,34 +92,39 @@ public class AddTimeToFormula extends AbstractReplacer {
 	public Formula visit(BinaryTempFormula binaryTempFormula) {
 		this.pushOperator(binaryTempFormula.op());
 		this.pushVariable();
-		Formula rt;
-		if (binaryTempFormula.op() == TemporalOperator.UNTIL) {
-			int temp = needToDeclarePostR;
-			Formula right = binaryTempFormula.right().accept(this);
-			int quantificationPostRight = this.needToDeclarePostR;
+		int temp, quantificationPostRight, quantificationPostLeft, quantificationPostLeftf;
+		Formula rt, left, right;
+		switch(binaryTempFormula.op()) {
+		case UNTIL:
+			temp = needToDeclarePostR;
+			right = binaryTempFormula.right().accept(this);
+			quantificationPostRight = this.needToDeclarePostR;
 			this.needToDeclarePostR = temp;
 			this.pushVariable();
-			Formula left = binaryTempFormula.left().accept(this);
-			int quantificationPostLeftf = this.needToDeclarePostR;
+			left = binaryTempFormula.left().accept(this);
+			quantificationPostLeftf = this.needToDeclarePostR;
 			this.needToDeclarePostR = temp;
 			rt = this.getQuantifierUntil(left, right, quantificationPostLeftf, quantificationPostRight);
 			this.popVariable();
-		} else {
-			int temp = needToDeclarePostR;
+			break;
+		case RELEASE:
+			temp = needToDeclarePostR;
 			Formula rightAlways = binaryTempFormula.right().accept(this);
 			int quantificationPostRightAlways = this.needToDeclarePostR;
 			this.needToDeclarePostR = temp;
 			this.pushVariable();
-			Formula left = binaryTempFormula.left().accept(this);
-			int quantificationPostLeft = this.needToDeclarePostR;
+			left = binaryTempFormula.left().accept(this);
+			quantificationPostLeft = this.needToDeclarePostR;
 			this.needToDeclarePostR = temp;
 			this.pushVariable();
-			Formula right = binaryTempFormula.right().accept(this);
-			int quantificationPostRight = this.needToDeclarePostR;
+			right = binaryTempFormula.right().accept(this);
+			quantificationPostRight = this.needToDeclarePostR;
 			this.needToDeclarePostR = temp;
 			rt = this.getQuantifierRelease(rightAlways, left, right, quantificationPostRightAlways, quantificationPostLeft, quantificationPostRight);
 			this.popVariable();
 			this.popVariable();
+			break;
+		default: throw new UnsupportedOperationException("Unsupported binary temporal operator:"+binaryTempFormula.op());
 		}
 		this.popVariable();
 		this.popOperator();
@@ -125,8 +135,6 @@ public class AddTimeToFormula extends AbstractReplacer {
 	public Expression visit(TempExpression tempExpression) {
 		this.pushOperator(TemporalOperator.POST);
 		this.pushVariable();
-        if (this.getVariableLastQuantification() == init)
-            this.postConditionInInitState = true;
 		this.needToDeclarePostR++;
 		Expression localExpression2 = tempExpression.expression().accept(this);
 		this.popOperator();
@@ -180,54 +188,61 @@ public class AddTimeToFormula extends AbstractReplacer {
 		return alw.or(nfright);
 	}
 
-	public Formula getQuantifier(TemporalOperator op, Formula e) {
+	public Formula getQuantifier(TemporalOperator op, Formula e, int posts) {
 		Variable v;
 		Expression quantification = this.getVariableLastQuantification();
 		switch(op) {
 		case ALWAYS:
 			v = (Variable) getVariable();
-			if (this.needToDeclarePostR>0) {
-				this.needToDeclarePostR--; // desnecessario! infinite => G some next 
-				return infinite.and(v.join(next).some().and(e).forAll(v.oneOf(quantification.join(next.reflexiveClosure()))));
+			if (posts>0) { // desnecessario! infinite => G some next 
+				return infinite.and(forceNextExists(v, posts).and(e).forAll(v.oneOf(quantification.join(next.reflexiveClosure()))));
 			} else {
 				return infinite.and(e.forAll(v.oneOf(quantification.join(next.reflexiveClosure()))));
 			}
 		case EVENTUALLY:
 			v = (Variable) getVariable();
-			if (this.needToDeclarePostR>0) {
-				this.needToDeclarePostR--;
-				return v.join(next).some().and(e).forSome(v.oneOf(quantification.join(next.reflexiveClosure())));
+			if (posts>0) {
+				return forceNextExists(v, posts).and(e).forSome(v.oneOf(quantification.join(next.reflexiveClosure())));
 			} else {
 				return e.forSome(v.oneOf(quantification.join(next.reflexiveClosure())));
 			}
 		case HISTORICALLY:
 			v = (Variable) getVariable();
-			if (this.needToDeclarePostR>0) {
-				this.needToDeclarePostR--;
-				return v.join(next).some().and(e).forAll(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
-
+			if (posts>0) {
+				return forceNextExists(v, posts).and(e).forAll(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
 			} else {
 				return e.forAll(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
 			}
 		case ONCE:
 			v = (Variable) this.getVariable();
-			if (this.needToDeclarePostR>0) {
-				this.needToDeclarePostR--;
-				return v.join(next).some().and(e).forSome(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
+			if (posts>0) {
+				return forceNextExists(v, posts).and(e).forSome(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
 			} else {
 				return e.forSome(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
 			}
 		case NEXT:
 		case PREVIOUS:
-			if (this.needToDeclarePostR>0) {
-				this.needToDeclarePostR--;
-				return this.getVariable().join(next).some().and(this.getVariable().some().and(e));
+			Expression v1 = this.getVariable();
+			if (posts>0) {
+				return forceNextExists(v1, posts).and(v1.some().and(e));
 			} else {
-				return this.getVariable().some().and(e);
+				return v1.some().and(e);
 			}
 		default:
 			return e;
 		}
+	}
+	
+	private Formula forceNextExists(Expression v, int n) {
+		Formula res = ConstantFormula.TRUE;
+		Expression aux = v;
+		for (int i = 1; i <= n; i++) {
+			for (int j = 0; j < i; j++)
+				aux = aux.join(next);
+			res = res.equals(ConstantFormula.TRUE)?aux.some():res.and(aux.some());
+			aux = v;
+		}
+		return res;
 	}
 
 
@@ -253,8 +268,6 @@ public class AddTimeToFormula extends AbstractReplacer {
 		this.operators.remove(this.totalOperators);
 		this.totalOperators--;
 	}
-
-
 
 	/*VarRelations*/
 
