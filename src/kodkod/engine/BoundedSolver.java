@@ -33,6 +33,9 @@ import kodkod.engine.config.BoundedOptions;
  * @author nmm
  *
  */
-public interface BoundedSolver extends PardinusSolver<BoundedOptions> {
+public interface BoundedSolver extends PardinusSolver {
 
+	@Override
+	public BoundedOptions options();
+	
 }
