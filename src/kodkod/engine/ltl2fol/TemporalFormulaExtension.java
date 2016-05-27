@@ -73,7 +73,7 @@ public class TemporalFormulaExtension {
         this.temporalFormulaExtension();
         this.putTimeInList();
         Bounding bounding = new Bounding(bounds,numberoftimes,this.timeList,varExtendedRelationsList,this.dynamicRelations);
-        SplitBounds splitBounds = new SplitBounds(bounding.getExpandedRelations(),this.staticRelations,bounding.getExpandedBounds());
+        SplitBounds splitBounds = new SplitBounds(varExtendedRelationsList,this.staticRelations,bounding.getExpandedBounds());
         this.staticBounds = splitBounds.getStaticBounds();
         this.dynamicBounds = splitBounds.getDynamicBounds();
 

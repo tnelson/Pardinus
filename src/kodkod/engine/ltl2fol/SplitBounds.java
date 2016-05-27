@@ -4,7 +4,9 @@ import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.instance.Bounds;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,8 +22,8 @@ public class SplitBounds {
     private Set<Relation>  staticRelations;
     private Bounds bounds;
 
-    public SplitBounds(Set dynamicRelations,Set staticRelations,Bounds bounds){
-        this.dynamicRelations = dynamicRelations;
+    public SplitBounds(Map<String,Relation> dynamicRelations,Set staticRelations,Bounds bounds){
+        this.dynamicRelations = new HashSet<Relation>(dynamicRelations.values());
         this.staticRelations = staticRelations;
         this.bounds = bounds;
 
