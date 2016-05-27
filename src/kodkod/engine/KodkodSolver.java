@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-2012, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,13 +51,15 @@ import kodkod.instance.Instance;
  * 
  * @specfield options: Options 
  * @author Emina Torlak 
+ * @modified nmm
  */
-public interface KodkodSolver {
+public interface KodkodSolver extends BoundedSolver { // pt.uminho.haslab: solver hierarchy
 
 	/**
 	 * Returns the Options object used by this solver.
 	 * @return this.options
 	 */
+	@Override // pt.uminho.haslab: solver hierarchy
 	public Options options() ;
 	
 	/**
@@ -75,6 +78,7 @@ public interface KodkodSolver {
 	 * be skolemized, or it can be skolemized but {@code this.options.skolemDepth} is insufficiently large
 	 * @throws AbortedException  this solving task was aborted  
 	 */
+	@Override // pt.uminho.haslab: solver hierarchy
 	public Solution solve(Formula formula, Bounds bounds) 
 	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
 	
@@ -103,6 +107,7 @@ public interface KodkodSolver {
 	/**
 	 * Releases the resources, if any, associated with this solver.
 	 */
+	@Override // pt.uminho.haslab: solver hierarchy
 	public void free();
 	
 }

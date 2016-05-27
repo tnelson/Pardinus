@@ -36,7 +36,7 @@ import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
 import kodkod.engine.config.Options;
-import kodkod.engine.config.Options.TMode;
+import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationLog;

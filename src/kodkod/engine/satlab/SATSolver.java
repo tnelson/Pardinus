@@ -32,7 +32,7 @@ package kodkod.engine.satlab;
  * @invariant all c: clauses | all disj i,j: c.literals | abs(i) != abs(j)
  * @author Emina Torlak
  */
-public interface SATSolver {
+public interface SATSolver extends PrimitiveSolver {
 	
 	/**
 	 * Returns the size of this solver's vocabulary.

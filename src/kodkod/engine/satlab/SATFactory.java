@@ -36,7 +36,7 @@ import org.sat4j.minisat.SolverFactory;
  * solver by Niklas E&eacute;n and Niklas S&ouml;rensson.
  * @author Emina Torlak
  */
-public abstract class SATFactory {
+public abstract class SATFactory extends PrimitiveFactory { // pt.uminho.haslab: generic interface
 	
 	/**
 	 * Constructs a new instance of SATFactory.

@@ -132,7 +132,7 @@ final class ExternalSolver implements SATSolver {
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
 	 */
-	public boolean addClause(int[] lits) {
+	public boolean addClause(int[] lits) { // pt.uminho.haslab
 		clauses++;
 		if (buffer.length()>capacity) 
 			flush();

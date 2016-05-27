@@ -42,7 +42,7 @@ import kodkod.util.ints.Ints;
  * @author Emina Torlak
  * @changed nmm (removed final modifier, constructor by copy)
  */
-public class Options implements Cloneable { 
+public class Options implements Cloneable, BoundedOptions, DecomposedOptions, TemporalOptions, TargetOptions { 
 	private Reporter reporter = new AbstractReporter(){};
 	private SATFactory solver = SATFactory.DefaultSAT4J;
 	private int symmetryBreaking = 20;
@@ -414,15 +414,6 @@ public class Options implements Cloneable {
 	// pt.uminho.haslab
 	private TMode target_mode;
 
-	/**
-	 * The TO execution models.
-	 * pt.uminho.haslab
-	 */
-	public enum TMode {
-		DEFAULT,
-		FAR,
-		CLOSE
-	}
 	
 	// pt.uminho.haslab
 	public TMode getTargetMode() {
@@ -442,15 +433,6 @@ public class Options implements Cloneable {
 	// pt.uminho.haslab
 	private DMode mode = DMode.PARALLEL;
 
-	// pt.uminho.haslab
-	public enum DMode {
-		BATCH, 
-		PARALLEL,
-		HYBRID,
-		INCREMENTAL,
-		STATS;
-	}
-	
 	/**
 	 * Sets the number of threads that will be launched in parallel.
 	 * @param threads
