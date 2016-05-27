@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +46,9 @@ import kodkod.util.ints.TreeSequence;
  * @invariant all i: tuples.TupleSet & int | ints[i].arity = 1 && ints[i].size() = 1 
  * 
  * @author Emina Torlak
+ * @modified nmm
  */
-public final class Instance implements Cloneable {
+public class Instance implements Cloneable { // pt.uminho.haslab: removed final
 	private final Map<Relation, TupleSet> tuples;
 	private final SparseSequence<TupleSet> ints;
 	private final Universe universe;
