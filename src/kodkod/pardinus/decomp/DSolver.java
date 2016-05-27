@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2015-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,12 @@ import java.util.NoSuchElementException;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.DPardinusSolver;
+import kodkod.engine.BoundedSolver;
+import kodkod.engine.DecomposedSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.Options;
-import kodkod.engine.config.Options.DMode;
+import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.instance.Bounds;
 
 /**
@@ -48,7 +49,7 @@ import kodkod.instance.Bounds;
  * @author nmm, ejp
  *
  */
-public class DSolver implements DPardinusSolver {
+public class DSolver implements DecomposedSolver, BoundedSolver {
 
 	/** the regular Kodkod solver used in the parallelization */
 	final public Solver solver;
