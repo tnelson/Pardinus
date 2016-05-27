@@ -10,7 +10,10 @@ import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -40,8 +43,8 @@ public class TemporalFormulaExtension {
     
     
     
-    private List<Relation> timeList;
-    public Set<VarRelation> varRelationsList;
+    private Relation[] timeList;
+    public Map<String,Relation> varExtendedRelationsList;
 
     private Formula formula;
 
@@ -55,10 +58,8 @@ public class TemporalFormulaExtension {
 
     private Formula staticFormula;
 
-
-
-    private Set dynamicRelations;
-    private Set staticRelations;
+    private Set<Relation> dynamicRelations;
+    private Set<Relation> staticRelations;
 
     private Bounds bounds;
     private Bounds dynamicBounds;
@@ -71,8 +72,8 @@ public class TemporalFormulaExtension {
         this.formulaSlicing();
         this.temporalFormulaExtension();
         this.putTimeInList();
-        Bounding bounding = new Bounding(bounds,numberoftimes,this.timeList,varRelationsList,this.dynamicRelations);
-        SplitBounds splitBounds = new SplitBounds(bounding.getDynamicRelations(),this.staticRelations,bounding.getBounds());
+        Bounding bounding = new Bounding(bounds,numberoftimes,this.timeList,varExtendedRelationsList,this.dynamicRelations);
+        SplitBounds splitBounds = new SplitBounds(bounding.getExpandedRelations(),this.staticRelations,bounding.getExpandedBounds());
         this.staticBounds = splitBounds.getStaticBounds();
         this.dynamicBounds = splitBounds.getDynamicBounds();
 
@@ -100,20 +101,19 @@ public class TemporalFormulaExtension {
     public void temporalFormulaExtension(){
         AddTimeToFormula addTimeToFormula =  new AddTimeToFormula(Time,next,init,end,infinite);
         Formula result = addTimeToFormula.convert(dynamicFormula);
-        this.varRelationsList = addTimeToFormula.getVarRelations();
+        this.varExtendedRelationsList = addTimeToFormula.getExtendedVarRelations();
         this.dynamicFormulaExpanded = allStuff.and(result);
     }
 
     public void putTimeInList(){
-        this.timeList = new ArrayList<Relation>();
-        this.timeList.add(Time);
-        this.timeList.add(init);
-        this.timeList.add(end);
-        this.timeList.add(next);
-
-        this.timeList.add(loop);
-        this.timeList.add(nextt);
-        this.dynamicRelations.addAll(this.timeList);
+        this.timeList = new Relation[6];
+        this.timeList[0] = Time;
+        this.timeList[1] = init;
+        this.timeList[2] = end;
+        this.timeList[3] = next;
+        this.timeList[4] = loop;
+        this.timeList[5] = nextt;
+        this.dynamicRelations.addAll(Arrays.asList(this.timeList));
     }
 
     public Bounds getDynamicBounds() {

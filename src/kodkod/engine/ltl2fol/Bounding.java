@@ -1,6 +1,27 @@
+/* 
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package kodkod.engine.ltl2fol;
 
-import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.instance.*;
@@ -8,144 +29,133 @@ import kodkod.instance.*;
 import java.util.*;
 
 /**
- * Created by Eduardo Pessoa on 20/03/16.
+ * This class creates new bounds with based on the old bounds(without temporal
+ * references). The temporal relations' bounds are filed with the Time atoms
+ * created in this class based on the number of times defined by the user.
+ *
+ * @author Eduardo Pessoa, nmm
+ *
  */
 public class Bounding {
-    private Bounds oldBounds;
+	private Bounds oldBounds;
 
-    private int numberOfTimes;
+	private int numberOfTimes;
 
-    private Universe universe;
-    private TupleFactory tupleFactory;
-    private Bounds bounds;
-    private List<Relation> timedRelations;
-    private Set<VarRelation> VarRelationsWithTime;
+	private Universe universe;
+	private TupleFactory tupleFactory;
+	private Bounds bounds;
+	private Relation[] timedRelations;
+	private Map<String, Relation> extendedVarRelations;
 
+	public Bounding(Bounds oldBounds, int numberOfTimes, Relation[] time, Map<String, Relation> extendedVarRelations,
+			Set<Relation> dynamicRelations) {
+		this.oldBounds = oldBounds;
+		this.numberOfTimes = numberOfTimes;
+		this.timedRelations = time;
+		this.extendedVarRelations = extendedVarRelations;
+		this.createUniverse();
+		this.bounding();
+	}
 
-    private Set<Relation> dynamicRelationsOld;
-    private Set<Relation> dynamicRelations;
-    private List<Relation> tempDynamicRelations;
+	public Bounds getExpandedBounds() {
+		return bounds;
+	}
 
+	/**
+	 * Expands the old bounds by converting the variable bounds into regular
+	 * bounds with a Time atom appended.
+	 */
+	private void bounding() {
+		TupleSet tupleSetTime = this.tupleFactory.range(this.tupleFactory.tuple(new Object[] { "Time0" }),
+				this.tupleFactory.tuple(new Object[] { "Time" + (this.numberOfTimes - 1) }));
+		for (Relation r : this.oldBounds.relations()) {
+			if (r instanceof VarRelation) {
+				this.makeNewTuplesFromOldBounds(r, tupleSetTime);
+			} else {
+				this.makeNewTuplesFromOldBounds(r);
+			}
+		}
 
-    public Bounding(Bounds oldBounds, int numberOfTimes, List<Relation> time, Set<VarRelation> varRelations,Set dynamicRelations) {
-        this.oldBounds = oldBounds;
-        this.numberOfTimes = numberOfTimes;
-        this.timedRelations = time;
-        this.VarRelationsWithTime = varRelations;
-        this.dynamicRelationsOld = dynamicRelations;
-        this.tempDynamicRelations = new ArrayList<Relation>();
-        this.dynamicRelations =  new HashSet<Relation>();
-        this.createUniverse();
-        this.bounding();
-        this.setVarRelationWithNewArity();
-    }
+		bounds.bound(timedRelations[0], tupleSetTime);// Time
+		bounds.bound(timedRelations[1], tupleSetTime);// init
+		bounds.bound(timedRelations[2], tupleSetTime);// end
+		bounds.bound(timedRelations[3], tupleSetTime.product(tupleSetTime));// next
+		bounds.bound(timedRelations[4], tupleSetTime.product(tupleSetTime));// loop
+		bounds.bound(timedRelations[5], tupleSetTime.product(tupleSetTime));// nextt
+	}
 
+	/*-------------------------*/
 
-    public Bounds getBounds() {
-        return bounds;
-    }
+	/**
+	 * Create a new universe by adding numberOfTimes Time atoms.
+	 */
+	private void createUniverse() {
+		ArrayList<Object> localArrayList = new ArrayList<Object>();
+		Iterator<Object> it = this.oldBounds.universe().iterator();
+		while (it.hasNext()) {
+			localArrayList.add(it.next());
+		}
 
-    public void bounding() {
-        TupleSet tupleSetTime = this.tupleFactory.range(this.tupleFactory.tuple(new Object[]{"Time0"}), this.tupleFactory.tuple(new Object[]{"Time" + (this.numberOfTimes - 1)}));
-        for (Relation r : this.oldBounds.upperBounds().keySet()) {
-            if (r instanceof VarRelation) {
-                if (oldBounds.upperBound(r).equals(oldBounds.lowerBound(r))) {
-                    this.makeNewTuplesFromOldBounds(r.arity(),true,r,tupleSetTime,true);
-                } else {
-                    this.makeNewTuplesFromOldBounds(r.arity(),true,r,tupleSetTime,false);
-                }
-            } else {
-                if (oldBounds.upperBound(r).equals(oldBounds.clone().lowerBound(r))) {
-                   this.makeNewTuplesFromOldBounds(r.arity(),false,r,null,true);
-                } else {
-                    this.makeNewTuplesFromOldBounds(r.arity(),false,r,null,false);
-                }
-            }
-        }
+		for (int i = 0; i < this.numberOfTimes; i++) {
+			localArrayList.add("Time" + i);
+		}
 
-        bounds.bound(timedRelations.get(0), tupleSetTime);//Time
-        bounds.bound(timedRelations.get(1), tupleSetTime);//init
-        bounds.bound(timedRelations.get(2), tupleSetTime);//end
-        bounds.bound(timedRelations.get(3), tupleSetTime.product(tupleSetTime));//next
-        bounds.bound(timedRelations.get(4), tupleSetTime.product(tupleSetTime));//loop
-        bounds.bound(timedRelations.get(5), tupleSetTime.product(tupleSetTime));//nextt
-    }
+		this.universe = new Universe(localArrayList);
+		this.tupleFactory = this.universe.factory();
+		this.bounds = new Bounds(this.universe);
+	}
 
+	/**
+	 * Converts the existing bounds of a variable relation into ones with the
+	 * current universe, appending the Time atoms.
+	 * 
+	 * @param relation
+	 *            the variable relation whose bounds are to be converted
+	 * @param tupleSetTime
+	 *            the time atoms in the universe
+	 */
+	private void makeNewTuplesFromOldBounds(Relation relation, TupleSet tupleSetTime) {
+		TupleSet tupleSetL = convert(oldBounds.lowerBounds().get(relation));
+		TupleSet tupleSetU = convert(oldBounds.upperBounds().get(relation));
 
-    public Set<Relation> getDynamicRelations() {
-        return this.dynamicRelations;
-    }
+		bounds.bound(this.extendedVarRelations.get(relation.name()), tupleSetL.product(tupleSetTime),
+				tupleSetU.product(tupleSetTime));
+	}
 
-    /*create new relations with new arity*/
-    public void setVarRelationWithNewArity(){
-        for (Relation rr : this.dynamicRelationsOld) {
-            Relation rTemp = relationsExists(rr);
-            this.dynamicRelations.add(rTemp);
-        }
-    }
+	/**
+	 * Converts the existing bounds of a static relation into ones with the
+	 * current universe.
+	 * 
+	 * @param relation
+	 *            the static relation whose bounds are to be converted
+	 */
+	private void makeNewTuplesFromOldBounds(Relation relation) {
+		TupleSet tupleSetL = convert(oldBounds.lowerBounds().get(relation));
+		TupleSet tupleSetU = convert(oldBounds.upperBounds().get(relation));
 
-    public Relation relationsExists(Relation rr){
-        for (Relation r : this.tempDynamicRelations){
-            if(r.name().equals(rr.name())){
-                return r;
-            }
-        }
-        return rr;
-    }
-    /*-------------------------*/
+		bounds.bound(relation, tupleSetL, tupleSetU);
+	}
 
-
-    public VarRelation getVarRelation(Relation r) {
-        Iterator it = this.VarRelationsWithTime.iterator();
-        while (it.hasNext()) {
-            VarRelation relation = (VarRelation) it.next();
-            if (relation.name().equals(r.name())) {
-                this.tempDynamicRelations.add(relation);
-                return relation;
-            }
-        }
-        return null;
-    }
-
-
-    public void createUniverse() {
-        ArrayList localArrayList = new ArrayList();
-        Iterator it = this.oldBounds.universe().iterator();
-        while (it.hasNext()) {
-            localArrayList.add(it.next());
-        }
-
-        for (int i = 0; i < this.numberOfTimes; i++) {
-            localArrayList.add("Time" + i);
-        }
-
-        this.universe = new Universe(localArrayList);
-        this.tupleFactory = this.universe.factory();
-        this.bounds = new Bounds(this.universe);
-    }
-
-    public void makeNewTuplesFromOldBounds(int arity,boolean isDinamicRelation, Relation relation,TupleSet tupleSetTime,boolean isExactlyBound) {
-        TupleSet tupleSet  = this.tupleFactory.noneOf(arity);
-        Iterator itr = oldBounds.clone().upperBounds().get(relation).iterator();
-        while (itr.hasNext()) {
-            Tuple t = (Tuple) itr.next();
-            List l = new ArrayList();
-            for (int i = 0; i < t.arity(); i++) {
-                l.add(t.atom(i));
-            }
-            tupleSet.add(this.tupleFactory.tuple(l));
-        }
-
-        if(isDinamicRelation){
-            if(isExactlyBound){bounds.boundExactly(this.getVarRelation(relation),tupleSet.product(tupleSetTime));}
-            else{bounds.bound(this.getVarRelation(relation),tupleSet.product(tupleSetTime));}
-        } else{
-            if(isExactlyBound){bounds.boundExactly(relation,tupleSet);}
-            else{bounds.bound(relation,tupleSet);}
-        }
-
-    }
-
-
+	/**
+	 * Converts an existing tuple set into an identical tuple set with the
+	 * current universe.
+	 * 
+	 * @param ts
+	 *            the existing tuple set
+	 * @return the converted tuple set
+	 */
+	private TupleSet convert(TupleSet ts) {
+		TupleSet tupleSet = this.tupleFactory.noneOf(ts.arity());
+		Iterator<Tuple> itr = ts.iterator();
+		while (itr.hasNext()) {
+			Tuple t = itr.next();
+			List<Object> l = new ArrayList<Object>();
+			for (int i = 0; i < t.arity(); i++) {
+				l.add(t.atom(i));
+			}
+			tupleSet.add(this.tupleFactory.tuple(l));
+		}
+		return tupleSet;
+	}
 
 }

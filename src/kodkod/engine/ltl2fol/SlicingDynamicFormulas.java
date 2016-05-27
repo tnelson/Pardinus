@@ -2,10 +2,11 @@ package kodkod.engine.ltl2fol;
 
 
         import kodkod.ast.*;
-        import kodkod.ast.operator.Multiplicity;
-        import kodkod.ast.visitor.ReturnVisitor;
-        import static kodkod.ast.operator.FormulaOperator.AND;
-        import java.util.*;
+import kodkod.ast.operator.Multiplicity;
+import kodkod.ast.visitor.ReturnVisitor;
+import static kodkod.ast.operator.FormulaOperator.AND;
+
+import java.util.*;
 
 public class SlicingDynamicFormulas implements ReturnVisitor<Expression, Formula, Decls, IntExpression> {
 
@@ -14,38 +15,38 @@ public class SlicingDynamicFormulas implements ReturnVisitor<Expression, Formula
 
 
     private boolean varRelation  = false;
-    private List dynamicFormulas;
-    private List staticFormulas;
+    private List<Formula> dynamicFormulas;
+    private List<Formula> staticFormulas;
     private Context context;
 
 
-    private Set dynamicRelations;
-    private Set staticRelations;
-    private Set temporalRelationsList;
+    private Set<Relation> dynamicRelations;
+    private Set<Relation> staticRelations;
+    private Set<Relation> temporalRelationsList;
 
 
     public SlicingDynamicFormulas() {
-        this.dynamicFormulas = new ArrayList<Relation>();
-        this.staticFormulas = new ArrayList<Relation>();
+        this.dynamicFormulas = new ArrayList<Formula>();
+        this.staticFormulas = new ArrayList<Formula>();
         this.context = Context.formulaExpansion;
-        this.dynamicRelations =  new HashSet();
-        this.staticRelations  = new HashSet();
-        this.temporalRelationsList =  new HashSet();
+        this.dynamicRelations =  new HashSet<Relation>();
+        this.staticRelations  = new HashSet<Relation>();
+        this.temporalRelationsList =  new HashSet<Relation>();
     }
 
-    public Set getDynamicRelations() {
+    public Set<Relation> getDynamicRelations() {
         return dynamicRelations;
     }
 
-    public Set getStaticRelations() {
+    public Set<Relation> getStaticRelations() {
         return staticRelations;
     }
 
-    public List getDynamicFormulas() {
+    public List<Formula> getDynamicFormulas() {
         return dynamicFormulas;
     }
 
-    public List getStaticFormulas() {
+    public List<Formula> getStaticFormulas() {
         return staticFormulas;
     }
 
@@ -231,7 +232,7 @@ public class SlicingDynamicFormulas implements ReturnVisitor<Expression, Formula
                     arrayOfFormula[j] = ((Formula) localFormula2.accept(this));
                 }else{
                     context = Context.formulaAnalysis;
-                    this.temporalRelationsList =  new HashSet();
+                    this.temporalRelationsList =  new HashSet<Relation>();
                     arrayOfFormula[j] = ((Formula) localFormula2.accept(this));
                     context = Context.formulaExpansion;
                     if(varRelation){this.varRelation = false;
@@ -261,7 +262,7 @@ public class SlicingDynamicFormulas implements ReturnVisitor<Expression, Formula
                 left = binaryFormula.left().accept(this);
             } else {
                 context = Context.formulaAnalysis;
-                this.temporalRelationsList =  new HashSet();
+                this.temporalRelationsList =  new HashSet<Relation>();
                 left = binaryFormula.left().accept(this);
                 context = Context.formulaExpansion;
                 if(varRelation){
@@ -281,7 +282,7 @@ public class SlicingDynamicFormulas implements ReturnVisitor<Expression, Formula
             }
             else {
                 context = Context.formulaAnalysis;
-                this.temporalRelationsList =  new HashSet();
+                this.temporalRelationsList =  new HashSet<Relation>();
                 right = binaryFormula.right().accept(this);
                 context = Context.formulaExpansion;
                 if(varRelation){this.varRelation = false;this.dynamicFormulas.add(right);

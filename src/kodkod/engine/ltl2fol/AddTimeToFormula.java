@@ -1,10 +1,11 @@
 package kodkod.engine.ltl2fol;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ConstantFormula;
@@ -35,15 +36,19 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	private Formula infinite;
 	
-	private Set<VarRelation> relations;
+	private Map<String,Relation> relations;
 
-	public Set<VarRelation> getVarRelations() {
+	/** 
+	 * The relations resulting from the extension of the variable relations.
+	 * @return
+	 */
+	public Map<String,Relation> getExtendedVarRelations() {
 		return relations;
 	}
 
 	public AddTimeToFormula(Relation time, Relation next, Relation init, Relation end, Formula infinite) {
 		super(new HashSet<Node>());
-		this.relations = new HashSet<VarRelation>();
+		this.relations = new HashMap<String,Relation>();
 		this.Time = time;
 		this.next = next;
 		this.init = init;
@@ -63,7 +68,7 @@ public class AddTimeToFormula extends AbstractReplacer {
     @Override
 	public Expression visit(Relation relation) {
 		if (isTemporal(relation))
-			return this.getRelation(relation.name(), relation).join(this.getVariable());
+			return this.getRelation((VarRelation) relation).join(this.getVariable());
 		else return relation;
 	}
 
@@ -271,26 +276,23 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	/*VarRelations*/
 
-	private VarRelation getRelation(String name, Relation v) {
-		VarRelation e = this.getRelationFromName(name);
+	/**
+	 * Returns the static relation corresponding to the extension of a variable relation.
+	 * Creates it first time.
+	 * @param name
+	 * @param v
+	 * @return
+	 */
+	private Relation getRelation(VarRelation v) {
+		Relation e = this.relations.get(v.name());
 		if (e == null) {
-			VarRelation varRelation = VarRelation.nary(name, v.arity() + 1);
-			this.relations.add(varRelation);
+			Relation varRelation = Relation.nary(v.name(), v.arity() + 1);
+			this.relations.put(v.name(),varRelation);
 			return varRelation;
 		} else {
 			return e;
 		}
 	}
-
-	private VarRelation getRelationFromName(String name) {
-		Iterator it = this.relations.iterator();
-		while (it.hasNext()) {
-			VarRelation aux = (VarRelation) it.next();
-			if (aux.name().equals(name)) return aux;
-		}
-		return null;
-	}
-
 
 	/*Variables*/
 	private List<Expression> variables = new ArrayList<Expression>();
