@@ -42,7 +42,7 @@ import kodkod.util.ints.Ints;
  * @author Emina Torlak
  * @changed nmm (removed final modifier, constructor by copy)
  */
-public class Options implements Cloneable, BoundedOptions, DecomposedOptions, TemporalOptions, TargetOptions { 
+public class Options implements Cloneable, BoundedOptions, DecomposedOptions<SATFactory>, TemporalOptions<SATFactory>, TargetOptions<SATFactory> { 
 	private Reporter reporter = new AbstractReporter(){};
 	private SATFactory solver = SATFactory.DefaultSAT4J;
 	private int symmetryBreaking = 20;
