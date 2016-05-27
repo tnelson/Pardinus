@@ -21,6 +21,8 @@
  */
 package kodkod.engine.satlab;
 
+import kodkod.engine.PrimitiveSolver;
+
 
 /**
  * Provides an interface to a SAT solver.

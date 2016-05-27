@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import kodkod.engine.PrimitiveFactory;
+
 import org.sat4j.minisat.SolverFactory;
 
 /**
@@ -35,8 +38,9 @@ import org.sat4j.minisat.SolverFactory;
  * and the <a href="http://www.cs.chalmers.se/Cs/Research/FormalMethods/MiniSat/">MiniSat</a> 
  * solver by Niklas E&eacute;n and Niklas S&ouml;rensson.
  * @author Emina Torlak
+ * @modified nmm
  */
-public abstract class SATFactory extends PrimitiveFactory { // pt.uminho.haslab: generic interface
+public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.uminho.haslab: generic interface
 	
 	/**
 	 * Constructs a new instance of SATFactory.
