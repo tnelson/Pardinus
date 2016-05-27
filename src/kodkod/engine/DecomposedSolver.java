@@ -31,11 +31,8 @@ import kodkod.instance.Bounds;
 /** 
  * @author nmm
  */
-public interface DecomposedSolver extends PardinusSolver { 
-	
-	@Override
-	public DecomposedOptions options();
-	
+public interface DecomposedSolver<O extends DecomposedOptions<?>> extends PardinusSolver<O> { 
+
 	public Solution solve(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2) throws InterruptedException;
 	
 	public Iterator<Solution> solveAll(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2);

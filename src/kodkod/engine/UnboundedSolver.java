@@ -33,8 +33,6 @@ import kodkod.engine.config.UnboundedOptions;
  * @author nmm
  *
  */
-public interface UnboundedSolver extends PardinusSolver {
+public interface UnboundedSolver<O extends UnboundedOptions> extends PardinusSolver<O> {
 	
-	@Override
-	public UnboundedOptions options();
 }

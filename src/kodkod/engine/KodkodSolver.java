@@ -53,7 +53,7 @@ import kodkod.instance.Instance;
  * @author Emina Torlak 
  * @modified nmm
  */
-public interface KodkodSolver extends BoundedSolver { // pt.uminho.haslab: solver hierarchy
+public interface KodkodSolver extends BoundedSolver<Options> { // pt.uminho.haslab: solver hierarchy
 
 	/**
 	 * Returns the Options object used by this solver.

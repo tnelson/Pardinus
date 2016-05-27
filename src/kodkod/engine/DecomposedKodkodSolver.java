@@ -48,7 +48,7 @@ import kodkod.instance.Bounds;
  * @author nmm, ejp
  *
  */
-public class DecomposedKodkodSolver implements DecomposedSolver, BoundedSolver {
+public class DecomposedKodkodSolver implements DecomposedSolver<Options>, BoundedSolver<Options> {
 
 	/** the regular Kodkod solver used in the parallelization */
 	final public Solver solver;

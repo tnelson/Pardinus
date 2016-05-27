@@ -33,9 +33,9 @@ import kodkod.instance.Bounds;
  * @author nmm
  *
  */
-public interface PardinusSolver {
+public interface PardinusSolver<O extends PardinusOptions<?>> {
 
-	public PardinusOptions options();
+	public PardinusOptions<?> options();
 
 	public Solution solve(Formula formula, Bounds bounds);
 
