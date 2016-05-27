@@ -1,12 +1,14 @@
 package kodkod.engine.satlab;
 
+import kodkod.engine.TargetPrimitiveSolver;
+
 
 /**
  * A SAT solver with support for partial satisfaction.
  * pt.uminho.haslab
  */
 
-public interface TargetSATSolver extends SATSolver {
+public interface TargetSATSolver extends SATSolver, TargetPrimitiveSolver {
 		
 	/**
 	 * The current number of target literals.
