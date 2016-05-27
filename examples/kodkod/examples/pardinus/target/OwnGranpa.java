@@ -7,10 +7,9 @@ import java.util.List;
 import kodkod.ast.*;
 import kodkod.ast.operator.*;
 import kodkod.instance.*;
-import kodkod.instance.Bounds;
 import kodkod.engine.*;
-import kodkod.engine.Solver.TSolutionIterator.Mode;
 import kodkod.engine.Solver.TSolutionIterator;
+import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.satlab.SATFactory;
 
 public final class OwnGranpa {
@@ -227,11 +226,12 @@ public final class OwnGranpa {
 		solver.options().setSymmetryBreaking(0);
 		solver.options().setNoOverflow(true);
 		TSolutionIterator sols = (TSolutionIterator) solver.solveAll(family,bounds);
-		Solution sol = sols.next(Mode.CLOSE,ws);
+		solver.options().setTargetMode(TMode.CLOSE);
+		Solution sol = sols.next(ws);
 		//System.out.println(sol.stats());
 		System.out.println(sol);
 		for (int i = 0; i<1;i++) {
-			sol = sols.next(Mode.CLOSE,ws);
+			sol = sols.next(ws);
 			System.out.println(sol);
 		}
 

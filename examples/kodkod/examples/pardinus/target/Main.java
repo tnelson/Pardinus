@@ -6,28 +6,24 @@ public class Main {
 
 	public static void main(String[] args) {
 		//aquecimento:
-		//Graph.graph(30, 3, OurSATFactory.YicesMAXSAT);
+		Graph.graph(30, 3, SATFactory.PMaxYices);
 		
-		
-		
-		/*
-		//Test Graph
+//		//Test Graph
 		System.out.println("=============Graph=====================");
 		System.out.println("no targets Yices");
-		Graph.notarget(OurSATFactory.Yices);
+		Graph.notarget(SATFactory.Yices);
 		Graph.graph_notarget(20, 3, SATFactory.DefaultSAT4J);
 		System.out.println("no targets SAT4J");
 		Graph.notarget(SATFactory.DefaultSAT4J);
 		System.out.println("targets Yices");
-		Graph.target(OurSATFactory.YicesMAXSAT);
+		Graph.target(SATFactory.PMaxYices);
 		System.out.println("targets SAT4J");
 		Graph.graph(30, 3, SATFactory.PMaxSAT4J);
 		Graph.target(SATFactory.PMaxSAT4J);
 		System.out.println("targets Inc. SAT4J");
 		Graph.target(SATFactory.IncrementalSAT4J);
-	
 		
-		*/
+		
 		//test Cd2Rdbms
 		System.out.println("=============Cd2Rdbms=====================");
 		

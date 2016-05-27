@@ -199,6 +199,7 @@ public final class Graph {
 		Solution sol = solver.solve(model.model(),model.bounds(size,back));
 		//System.out.println(sol.stats());
 		System.out.println(sol);
+		solver.free();
 		return(sol.stats().translationTime()+sol.stats().solvingTime());
 	}
 
@@ -209,7 +210,7 @@ public final class Graph {
 	 */
 	public static void target(SATFactory maxSATSolver) {
 		long res[][] = new long[10][6];
-		for (int size=10; size<=100; size+=10) {
+		for (int size=10; size<=30; size+=10) {
 			for (int delta=0; delta<=5; delta++) {
 				//System.out.println("Size: "+size);
 				//System.out.println("Delta: "+delta);
@@ -239,10 +240,11 @@ public final class Graph {
 		Graph model = new Graph();
 		Solver solver = new Solver();
 		solver.options().setSolver(satSolver);
-		//System.out.println(solver.toString());
+//		System.out.println(solver.toString());
 		solver.options().setBitwidth(1);
 		Solution sol = solver.solve(model.model(),model.bounds_notarget(size,back));
 		//System.out.println(sol);
+		solver.free();
 		return(sol.stats().translationTime()+sol.stats().solvingTime());
 	}
 	
@@ -253,10 +255,10 @@ public final class Graph {
 	 */
 	public static void notarget(SATFactory satSolver) {
 		long res[][] = new long[10][6];
-		for (int size=10; size<=100; size+=10) {
+		for (int size=10; size<=30; size+=10) {
 			for (int delta=0; delta<=5; delta++) {
-				//System.out.println("Size: "+size);
-				//System.out.println("Delta: "+delta);
+				System.out.println("Size: "+size);
+				System.out.println("Delta: "+delta);
 				
 				res[size/10-1][delta] = graph_notarget(size,delta,satSolver);		
 				//System.out.println(res[size/10-1][delta]);
