@@ -662,7 +662,7 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression, Form
 		Formula ret = lookup(temporalFormula);
 		if (ret!=null) return ret;
 		final Formula child = temporalFormula.formula().accept(this);
-		ret = (child==temporalFormula.formula()) ? temporalFormula : child.always();
+		ret = (child==temporalFormula.formula()) ? temporalFormula : child.compose(temporalFormula.op());
 		return cache(temporalFormula,ret);
 	}
 
