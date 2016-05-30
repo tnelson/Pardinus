@@ -1,14 +1,16 @@
 package kodkod.examples.pardinus.temporal;
 
-
 import kodkod.ast.Decls;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
+import kodkod.engine.Solution;
+import kodkod.engine.Solver;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
+import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
@@ -33,7 +35,7 @@ public class DijkstraP implements DModel {
         UNSAT;
     }
 
-    private  TemporalFormulaExtension temporalFormula;
+    private TemporalFormulaExtension temporalFormula;
 
     /**
      * Creates an instance of Dijkstra example.
@@ -177,7 +179,7 @@ public class DijkstraP implements DModel {
      * }
      * </pre>
      */
-    public Formula grabMutex(/*Expression s1, Expression s2,*/ Expression p, Expression m) {
+    public Formula grabMutex(Expression p, Expression m) {
         final Formula f1 = isStalled(p).not().and(m.in(p.join(holds)).not());
         final Formula isFree = isFree(m);
         final Formula f2 = p.join(holds.post()).eq(p.join(holds).union(m));/*TEMPORAL OP*/
@@ -261,7 +263,6 @@ public class DijkstraP implements DModel {
      * </pre>
      */
     public Formula grabOrRelease() {
-        final Variable pre = Variable.unary("pre");
         final Formula f1 = holds.post().eq(holds);/*TEMPORAL OP*/
         final Formula f2 = waits.post().eq(waits);/*TEMPORAL OP*/
         final Variable p = Variable.unary("p");
@@ -373,12 +374,34 @@ public class DijkstraP implements DModel {
         else return checkDijkstraPreventsDeadlocks();
     }
 
-	@Override
-	public String shortName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public String shortName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
+
+    public static void main(String[] args) {
+        DijkstraP model = new DijkstraP(new String[]{"2","2","15","SAT"});
+
+        Bounds b1 = model.temporalFormula.getStaticBounds();
+        Bounds b2 = model.temporalFormula.getDynamicBounds();
+        Formula f1 = model.temporalFormula.getStaticFormula();
+        Formula f2 = model.temporalFormula.getDynamicFormula();
+
+        Bounds b3 = b1.clone();
+        for (Relation r : b2.relations()) {
+            b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
+        }
+        Solver solver = new Solver();
+        solver.options().setSolver(SATFactory.DefaultSAT4J);
+        Solution sol = solver.solve(f1.and(f2), b3);
+
+        System.out.println(f2);
+
+        System.out.println(sol);
+        return;
+    }
 
 
 }

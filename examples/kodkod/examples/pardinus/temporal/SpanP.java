@@ -1,25 +1,22 @@
 package kodkod.examples.pardinus.temporal;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
-import kodkod.ast.Decls;
-import kodkod.ast.Expression;
-import kodkod.ast.Formula;
-import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
-import kodkod.ast.Variable;
+import kodkod.ast.*;
 import kodkod.ast.operator.FormulaOperator;
-import kodkod.engine.decomp.DModel;
+import kodkod.engine.Solution;
+import kodkod.engine.Solver;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
+import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
+import kodkod.pardinus.decomp.DModel;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class SpanP implements DModel {
-
 
 
     public Bounds bounds1(){
@@ -50,7 +47,7 @@ public class SpanP implements DModel {
 
     final private VarRelation level,parent,runs ;
 
-    private  TemporalFormulaExtension temporalFormula;
+    private TemporalFormulaExtension temporalFormula;
 
 
     public enum Variant {
@@ -242,14 +239,14 @@ public class SpanP implements DModel {
 
     private Formula traceWithoutLoop() {
         //Variable x101=Variable.unary("TraceWithoutLoop_s");
-       // Variable x103=Variable.unary("TraceWithoutLoop_s'");
-       // Formula x105=x101.eq(x103).not();
+        // Variable x103=Variable.unary("TraceWithoutLoop_s'");
+        // Formula x105=x101.eq(x103).not();
 
-       // Formula x109=equivStates(x101, x103).not();
+        // Formula x109=equivStates(x101, x103).not();
 
         //Formula x120=x103.in(x101.join(state_next.closure()));
         //Formula x123=x103.eq(x101.join(state_next)).not();
-       // Formula x118=x120.and(x123);
+        // Formula x118=x120.and(x123);
 
         Variable x129=Variable.unary("PossTrans_p");
         Formula x130=TRAct(x129).or(TRNop(x129));
@@ -270,10 +267,10 @@ public class SpanP implements DModel {
 
     private Formula badLivenessTrace() {
 
-      //  Variable x101=Variable.unary("BadLivenessTrace_s");
-       // Variable x103=Variable.unary("BadLivenessTrace_s'");
+        //  Variable x101=Variable.unary("BadLivenessTrace_s");
+        // Variable x103=Variable.unary("BadLivenessTrace_s'");
         //Formula x105=x101.eq(x103).not();
-       // Formula x104=x105.and(equivStates(x101, x103));
+        // Formula x104=x105.and(equivStates(x101, x103));
         //Formula x98=x104.forSome(x101.oneOf(State).and(x103.oneOf(State)));
 
         Formula x118=spanTreeAtState();
@@ -282,9 +279,6 @@ public class SpanP implements DModel {
 
         return x114;
     }
-
-
-
 
     public String toString() {
         StringBuilder sb = new StringBuilder("Span");
@@ -337,22 +331,33 @@ public class SpanP implements DModel {
         return b;
     }
 
-	@Override
-	public String shortName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 
+    @Override
+    public String shortName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 
+    public static void main(String[] args) {
+        SpanP model = new SpanP(new String[]{"2","9","V3"});
+        Bounds b1 = model.temporalFormula.getStaticBounds();
+        Bounds b2 = model.temporalFormula.getDynamicBounds();
+        Formula f1 = model.temporalFormula.getStaticFormula();
+        Formula f2 = model.temporalFormula.getDynamicFormula();
 
+        Bounds b3 = b1.clone();
+        for (Relation r : b2.relations()) {
+            b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
+        }
+        Solver solver = new Solver();
+        solver.options().setSolver(SATFactory.DefaultSAT4J);
+        Solution sol = solver.solve(f1.and(f2), b3);
 
+        System.out.println(f2);
 
-
-
-
-
-
-
+        System.out.println(sol);
+        return;
+    }
 }

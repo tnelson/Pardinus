@@ -1,23 +1,22 @@
 package kodkod.examples.pardinus.temporal;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
-import kodkod.ast.Decls;
-import kodkod.ast.Expression;
-import kodkod.ast.Formula;
-import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
-import kodkod.ast.Variable;
-import kodkod.engine.decomp.DModel;
+import kodkod.ast.*;
+import kodkod.engine.Solution;
+import kodkod.engine.Solver;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
+import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
+import kodkod.pardinus.decomp.DModel;
 
-public class RingP implements DModel {
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class RingP implements DModel{
 
 
 
@@ -66,7 +65,7 @@ public class RingP implements DModel {
     private VarRelation toSend, elected;
 
 
-    private  TemporalFormulaExtension temporalFormula;
+    private TemporalFormulaExtension temporalFormula;
 
     public RingP(String args[]) {
         this.n_ps = Integer.valueOf(args[0]);
@@ -162,7 +161,7 @@ public class RingP implements DModel {
      * @return <pre>pred skip (t, t�: Time, p: Process) {p.toSend.t = p.toSend.t�}<pre>
      */
     public Formula skip(Expression p) {
-        return p.join(toSend.post()).eq(p.join(toSend));
+        return p.join(toSend).eq(p.join(toSend.post()));
     }/*TEMPORAL OP*/
 
 
@@ -205,7 +204,7 @@ public class RingP implements DModel {
             c = (p.join(id)).in(p.join(toSend)).next().and(p.join(id).in(p.join(toSend)).not());/*TEMPORAL OP*/
         else
             //c = p.in(p.join(toSend).join(t).difference(p.join(toSend).join(t.join(tord.transpose()))));
-            c = p.in(p.join(toSend)).next().and(p.in(p.join(toSend)).not());/*TEMPORAL OP*/
+            c = p.in(p.join(toSend)).next().and((p.in(p.join(toSend))).not());/*TEMPORAL OP*/
 
         final Expression comprehension = c.comprehension(p.oneOf(Process));
         final Formula f2 = elected.post().eq(comprehension).always();/*TEMPORAL OP*/
@@ -221,35 +220,42 @@ public class RingP implements DModel {
      *   some Process.toSend.t => some p: Process | not skip (t, t�, p) }
      * </pre>
      */
+
+    /*pred Progress  {
+	always {some Process.toSend => after { some p: Process | not skip [p]} }
+	}*/
+
     public Formula progress() {
         final Variable p = Variable.unary("p");
-        final Formula f1 = Process.join(toSend).some().implies(skip(p).not().forSome(p.oneOf(Process)).next());/*TEMPORAL OP*/
+        final Formula f1 = (Process.join(toSend).some()).implies(skip(p).not().forSome(p.oneOf(Process)));
         return f1.always();/*TEMPORAL OP*/
     }
+
 
 
     /**
      * Returns the AtLeastOneElected assertion.
      * @return <pre>assert AtLeastOneElected { progress () => some elected.Time }</pre>
      */
-    public Formula atLeastOneElectedLoop() {
+    public Formula atLeastOneElectedLoop() {//GOODLIVENESS
         return (Process.some().and(progress())).implies(elected.some().eventually());/*TEMPORAL OP*/
     }
 
 
 
-    public Formula atLeastOneElected() {
-        return progress().implies(elected.some().eventually());
-    }/*TEMPORAL OP*/
+    public Formula atLeastOneElected() { ////BADLIVENESS
+        return (Process.some()).implies(elected.some().eventually());/*TEMPORAL OP*/
+    }
 
 
     /**
      * Returns the atMostOneElected assertion
      * @return <pre>assert AtMostOneElected {lone elected.Time}</pre>
      */
-    public Formula atMostOneElected() {
-        return elected.lone().always();
-    }/*TEMPORAL OP*/
+    public Formula atMostOneElected() { //GOODSAFETY
+        return elected.lone().always();/*TEMPORAL OP*/
+    }
+
 
     /**
      * Returns the declarations and facts of the model
@@ -351,10 +357,32 @@ public class RingP implements DModel {
         return b;
     }
 
-	@Override
-	public String shortName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
+    @Override
+    public String shortName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public static void main(String[] args) {
+        RingP model = new RingP(new String[]{"3","5","BADLIVENESS","STATIC"});
+
+        Bounds b1 = model.temporalFormula.getStaticBounds();
+        Bounds b2 = model.temporalFormula.getDynamicBounds();
+        Formula f1 = model.temporalFormula.getStaticFormula();
+        Formula f2 = model.temporalFormula.getDynamicFormula();
+
+        Bounds b3 = b1.clone();
+        for (Relation r : b2.relations()) {
+            b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
+        }
+        Solver solver = new Solver();
+        solver.options().setSolver(SATFactory.DefaultSAT4J);
+        Solution sol = solver.solve(f1.and(f2), b3);
+
+        System.out.println(f2);
+
+        System.out.println(sol);
+        return;
+    }
 }
