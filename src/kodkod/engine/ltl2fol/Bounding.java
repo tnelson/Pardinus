@@ -43,12 +43,11 @@ public class Bounding {
 
 	private Universe universe;
 	private TupleFactory tupleFactory;
-	private Bounds bounds;
+	private Bounds staticBounds, dynamicBounds;
 	private Relation[] timedRelations;
 	private Map<String, Relation> extendedVarRelations;
 
-	public Bounding(Bounds oldBounds, int numberOfTimes, Relation[] time, Map<String, Relation> extendedVarRelations,
-			Set<Relation> dynamicRelations) {
+	public Bounding(Bounds oldBounds, int numberOfTimes, Relation[] time, Map<String, Relation> extendedVarRelations) {
 		this.oldBounds = oldBounds;
 		this.numberOfTimes = numberOfTimes;
 		this.timedRelations = time;
@@ -57,8 +56,12 @@ public class Bounding {
 		this.bounding();
 	}
 
-	public Bounds getExpandedBounds() {
-		return bounds;
+	public Bounds getDynamicBounds() {
+		return dynamicBounds;
+	}
+
+	public Bounds getStaticBounds() {
+		return staticBounds;
 	}
 
 	/**
@@ -76,12 +79,12 @@ public class Bounding {
 			}
 		}
 
-		bounds.bound(timedRelations[0], tupleSetTime);// Time
-		bounds.bound(timedRelations[1], tupleSetTime);// init
-		bounds.bound(timedRelations[2], tupleSetTime);// end
-		bounds.bound(timedRelations[3], tupleSetTime.product(tupleSetTime));// next
-		bounds.bound(timedRelations[4], tupleSetTime.product(tupleSetTime));// loop
-		bounds.bound(timedRelations[5], tupleSetTime.product(tupleSetTime));// nextt
+		dynamicBounds.bound(timedRelations[0], tupleSetTime);// Time
+		dynamicBounds.bound(timedRelations[1], tupleSetTime);// init
+		dynamicBounds.bound(timedRelations[2], tupleSetTime);// end
+		dynamicBounds.bound(timedRelations[3], tupleSetTime.product(tupleSetTime));// next
+		dynamicBounds.bound(timedRelations[4], tupleSetTime.product(tupleSetTime));// loop
+		dynamicBounds.bound(timedRelations[5], tupleSetTime.product(tupleSetTime));// nextt
 	}
 
 	/*-------------------------*/
@@ -102,7 +105,8 @@ public class Bounding {
 
 		this.universe = new Universe(localArrayList);
 		this.tupleFactory = this.universe.factory();
-		this.bounds = new Bounds(this.universe);
+		this.dynamicBounds = new Bounds(this.universe);
+		this.staticBounds = new Bounds(this.universe);
 	}
 
 	/**
@@ -118,7 +122,7 @@ public class Bounding {
 		TupleSet tupleSetL = convert(oldBounds.lowerBounds().get(relation));
 		TupleSet tupleSetU = convert(oldBounds.upperBounds().get(relation));
 
-		bounds.bound(this.extendedVarRelations.get(relation.name()), tupleSetL.product(tupleSetTime),
+		dynamicBounds.bound(this.extendedVarRelations.get(relation.name()), tupleSetL.product(tupleSetTime),
 				tupleSetU.product(tupleSetTime));
 	}
 
@@ -133,7 +137,7 @@ public class Bounding {
 		TupleSet tupleSetL = convert(oldBounds.lowerBounds().get(relation));
 		TupleSet tupleSetU = convert(oldBounds.upperBounds().get(relation));
 
-		bounds.bound(relation, tupleSetL, tupleSetU);
+		staticBounds.bound(relation, tupleSetL, tupleSetU);
 	}
 
 	/**

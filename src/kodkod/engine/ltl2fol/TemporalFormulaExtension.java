@@ -1,20 +1,13 @@
 package kodkod.engine.ltl2fol;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
-import kodkod.engine.Solution;
-import kodkod.engine.Solver;
-import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by Eduardo Pessoa on 20/03/16.
@@ -61,7 +54,6 @@ public class TemporalFormulaExtension {
     private Set<Relation> dynamicRelations;
     private Set<Relation> staticRelations;
 
-    private Bounds bounds;
     private Bounds dynamicBounds;
     private Bounds staticBounds;
 
@@ -72,13 +64,12 @@ public class TemporalFormulaExtension {
         this.formulaSlicing();
         this.temporalFormulaExtension();
         this.putTimeInList();
-        Bounding bounding = new Bounding(bounds,numberoftimes,this.timeList,varExtendedRelationsList,this.dynamicRelations);
-        SplitBounds splitBounds = new SplitBounds(varExtendedRelationsList,this.staticRelations,bounding.getExpandedBounds());
-        this.staticBounds = splitBounds.getStaticBounds();
-        this.dynamicBounds = splitBounds.getDynamicBounds();
+        Bounding bounding = new Bounding(bounds,numberoftimes,this.timeList,varExtendedRelationsList);
+        this.staticBounds = bounding.getStaticBounds();
+        this.dynamicBounds = bounding.getDynamicBounds();
 
-        p("DYNAMIC PART: \n"+this.dynamicFormulaExpanded+"\n"+splitBounds.getDynamicBounds().toString());
-        p("\n\nSTATIC PART: \n"+this.staticFormula.toString()+"\n"+splitBounds.getStaticBounds().toString());
+//        p("DYNAMIC PART: \n"+this.dynamicFormulaExpanded+"\n"+bounding.getDynamicBounds().toString());
+//        p("\n\nSTATIC PART: \n"+this.staticFormula.toString()+"\n"+bounding.getStaticBounds().toString());
 
 
     }
@@ -99,7 +90,7 @@ public class TemporalFormulaExtension {
 
 
     public void temporalFormulaExtension(){
-        AddTimeToFormula addTimeToFormula =  new AddTimeToFormula(Time,next,init,end,infinite);
+        AddTimeToFormula addTimeToFormula =  new AddTimeToFormula(Time,nextt,init,end,infinite);
         Formula result = addTimeToFormula.convert(dynamicFormula);
         this.varExtendedRelationsList = addTimeToFormula.getExtendedVarRelations();
         this.dynamicFormulaExpanded = allStuff.and(result);
