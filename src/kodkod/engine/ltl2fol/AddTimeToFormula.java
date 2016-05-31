@@ -23,11 +23,14 @@ import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.AbstractReplacer;
 
 /**
- * Created by macbookpro on 14/03/16.
+ * @author Eduardo Pessoa, Nuno Macedo
+ *
  */
 public class AddTimeToFormula extends AbstractReplacer {
 
 	private int needToDeclarePostR;
+	private int numberMaxOfnestedPlicas;
+	private int numberMaxPlicasInit;;
 
 	private Relation next;
 	private Relation Time;
@@ -54,6 +57,7 @@ public class AddTimeToFormula extends AbstractReplacer {
 		this.init = init;
 		this.end = end;
 		this.infinite = infinite;
+		this.initializePostVariables();
 		pushVariable();
 	}
 
@@ -81,13 +85,15 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	@Override
 	public Formula visit(UnaryTempFormula unaryTempFormula) {
-		int temp = needToDeclarePostR;
-		needToDeclarePostR = 0;
+		int temp = this.needToDeclarePostR;
+		int tempI = this.numberMaxOfnestedPlicas;
+		this.initializePostVariables();
 		this.pushOperator(unaryTempFormula.op());
 		this.pushVariable();
 		Formula e = unaryTempFormula.formula().accept(this);
 		Formula rt = this.getQuantifier(this.getOperator(), e, needToDeclarePostR);
-		needToDeclarePostR = temp;
+		this.numberMaxOfnestedPlicas = tempI;
+		this.needToDeclarePostR = temp;
 		this.popOperator();
 		this.popVariable();
 		return rt;	
@@ -97,40 +103,40 @@ public class AddTimeToFormula extends AbstractReplacer {
 	public Formula visit(BinaryTempFormula binaryTempFormula) {
 		this.pushOperator(binaryTempFormula.op());
 		this.pushVariable();
-		int temp, quantificationPostRight, quantificationPostLeft, quantificationPostLeftf;
+		int temp, tempI, quantificationPostRight, quantificationPostLeft, quantificationPostLeftf;
+		temp = this.needToDeclarePostR;
+		tempI = this.numberMaxOfnestedPlicas;
+		this.initializePostVariables();
 		Formula rt, left, right;
 		switch(binaryTempFormula.op()) {
 		case UNTIL:
-			temp = needToDeclarePostR;
 			right = binaryTempFormula.right().accept(this);
 			quantificationPostRight = this.needToDeclarePostR;
-			this.needToDeclarePostR = temp;
 			this.pushVariable();
+			this.initializePostVariables();
 			left = binaryTempFormula.left().accept(this);
 			quantificationPostLeftf = this.needToDeclarePostR;
-			this.needToDeclarePostR = temp;
 			rt = this.getQuantifierUntil(left, right, quantificationPostLeftf, quantificationPostRight);
 			this.popVariable();
 			break;
 		case RELEASE:
-			temp = needToDeclarePostR;
 			Formula rightAlways = binaryTempFormula.right().accept(this);
-			int quantificationPostRightAlways = this.needToDeclarePostR;
-			this.needToDeclarePostR = temp;
 			this.pushVariable();
+			this.initializePostVariables();
 			left = binaryTempFormula.left().accept(this);
 			quantificationPostLeft = this.needToDeclarePostR;
-			this.needToDeclarePostR = temp;
+			this.initializePostVariables();
 			this.pushVariable();
 			right = binaryTempFormula.right().accept(this);
 			quantificationPostRight = this.needToDeclarePostR;
-			this.needToDeclarePostR = temp;
-			rt = this.getQuantifierRelease(rightAlways, left, right, quantificationPostRightAlways, quantificationPostLeft, quantificationPostRight);
+			rt = this.getQuantifierRelease(rightAlways, left, right, quantificationPostLeft, quantificationPostRight);
 			this.popVariable();
 			this.popVariable();
 			break;
 		default: throw new UnsupportedOperationException("Unsupported binary temporal operator:"+binaryTempFormula.op());
 		}
+		this.numberMaxOfnestedPlicas = tempI;
+		this.needToDeclarePostR = temp;
 		this.popVariable();
 		this.popOperator();
 		return rt;
@@ -140,7 +146,22 @@ public class AddTimeToFormula extends AbstractReplacer {
 	public Expression visit(TempExpression tempExpression) {
 		this.pushOperator(TemporalOperator.POST);
 		this.pushVariable();
-		this.needToDeclarePostR++;
+		//condition to verify the number max of nested plicas!!
+		if(tempExpression.expression() instanceof TempExpression){
+			numberMaxOfnestedPlicas++;
+		}else{
+			if (numberMaxOfnestedPlicas>this.needToDeclarePostR){
+				this.needToDeclarePostR = numberMaxOfnestedPlicas;
+				numberMaxOfnestedPlicas=1;
+			}
+		}
+
+		//if the context is not a temporal operator.
+		if (this.getVariableLastQuantification() == init) {
+			if (numberMaxOfnestedPlicas>this.numberMaxPlicasInit){
+				this.numberMaxPlicasInit = numberMaxOfnestedPlicas;
+			}
+		}
 		Expression localExpression2 = tempExpression.expression().accept(this);
 		this.popOperator();
 		this.popVariable();
@@ -152,41 +173,37 @@ public class AddTimeToFormula extends AbstractReplacer {
 		Variable l = getVariableUntil(false);
 		Formula nfleft;
 		if (quantificationLeft>0) {
-			nfleft = l.join(next).some().and(left).forAll(l.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure()).intersection(next.closure().join(r))));
+			nfleft = (forceNextExists(l, quantificationLeft).and(left)).forAll(l.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure()).intersection(next.closure().join(r))));
 		} else {
 			nfleft = left.forAll(l.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure()).intersection(next.closure().join(r))));
 		}
 
 		if (quantificationRight>0) {
-			return r.join(next).some().and(right).and(nfleft).forSome(r.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure())));
+			return (forceNextExists(r, quantificationRight).and(right)).and(nfleft).forSome(r.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure())));
 		} else {
 			return right.and(nfleft).forSome(r.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure())));
 		}
 	}
 
-	public Formula getQuantifierRelease(Formula always, Formula left, Formula right, int rightFormulaAlways, int leftFormula, int rightFormula) {
+	public Formula getQuantifierRelease(Formula always, Formula left, Formula right, int leftFormula, int rightFormula) {
 		Variable r = getVariableRelease(true, false);
 		Variable l = getVariableRelease(false, false);
 		Variable v = getVariableRelease(false, true);
 		Formula alw;
 		Formula nfleft;
 		Formula nfright;
-		if (rightFormulaAlways>0) { // desnecessario! infinite => G some next 
-			alw = infinite.and(v.join(next).some().and(always).forAll(v.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure()))));
-		} else {
-			alw = infinite.and(always.forAll(v.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure()))));
-		}
 
+		alw = infinite.and(always.forAll(v.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure()))));
 
 		if (rightFormula>0) {
-			nfleft = l.join(next).some().and(right).forAll(l.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure()).intersection(next.reflexiveClosure().join(r))));
+			nfleft = (forceNextExists(l, rightFormula).and(right)).forAll(l.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure()).intersection(next.reflexiveClosure().join(r))));
 		} else {
 			nfleft = right.forAll(l.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure()).intersection(next.reflexiveClosure().join(r))));
 		}
 
 
-		if (leftFormula>0) {
-			nfright = r.join(next).some().and(left).and(nfleft).forSome(r.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure())));
+		if (leftFormula >0) {
+			nfright = (forceNextExists(r, leftFormula).and(left)).and(nfleft).forSome(r.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure())));
 		} else {
 			nfright = left.and(nfleft).forSome(r.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure())));
 		}
@@ -199,11 +216,7 @@ public class AddTimeToFormula extends AbstractReplacer {
 		switch(op) {
 		case ALWAYS:
 			v = (Variable) getVariable();
-			if (posts>0) { // desnecessario! infinite => G some next 
-				return infinite.and(forceNextExists(v, posts).and(e).forAll(v.oneOf(quantification.join(next.reflexiveClosure()))));
-			} else {
-				return infinite.and(e.forAll(v.oneOf(quantification.join(next.reflexiveClosure()))));
-			}
+			return infinite.and(e.forAll(v.oneOf(quantification.join(next.reflexiveClosure()))));
 		case EVENTUALLY:
 			v = (Variable) getVariable();
 			if (posts>0) {
@@ -238,16 +251,18 @@ public class AddTimeToFormula extends AbstractReplacer {
 		}
 	}
 	
-	private Formula forceNextExists(Expression v, int n) {
-		Formula res = ConstantFormula.TRUE;
-		Expression aux = v;
-		for (int i = 1; i <= n; i++) {
-			for (int j = 0; j < i; j++)
-				aux = aux.join(next);
-			res = res.equals(ConstantFormula.TRUE)?aux.some():res.and(aux.some());
-			aux = v;
+	public Formula forceNextExists(Expression exp , int x){
+		Expression e = exp.join(next);
+		for (int i = 1;i < x;i++) {
+			e = e.join(next);
 		}
-		return res;
+		return e.some();
+	}
+
+	//Initialize the original values of the variable needToDeclarePostR and numberMaxOfnestedPlicas
+	public void initializePostVariables(){
+		this.needToDeclarePostR = 0;
+		this.numberMaxOfnestedPlicas = 1;
 	}
 
 
