@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.instance.Bounds;
@@ -19,28 +18,13 @@ public class TemporalFormulaExtension {
     private Relation end = Relation.unary("end");
     private Relation next = Relation.binary("next");
 
-
-
     private Relation nextt = Relation.binary("nextt");
     private Relation loop = Relation.nary("loop", 2);
-
-    Formula order = next.totalOrder(Time, init, end);
-    Formula loopDecl =  loop.partialFunction(end,Time);
-    Expression nextDecl = next.union(loop);
-    Formula nextFnct = nextt.eq(nextDecl);
-
-    Formula allStuff = Formula.and(order, loopDecl,  nextFnct);
-
-    Formula infinite = loop.one();
-
-    
-    
     
     private Relation[] timeList;
     public Map<String,Relation> varExtendedRelationsList;
 
     private Formula formula;
-
 
     //final types
 
@@ -57,7 +41,6 @@ public class TemporalFormulaExtension {
     private Bounds dynamicBounds;
     private Bounds staticBounds;
 
-
     public TemporalFormulaExtension(Formula f, Bounds bounds, int numberoftimes){
         this.formula=f;
         this.negativeNormalForm();
@@ -70,7 +53,6 @@ public class TemporalFormulaExtension {
 
 //        p("DYNAMIC PART: \n"+this.dynamicFormulaExpanded+"\n"+bounding.getDynamicBounds().toString());
 //        p("\n\nSTATIC PART: \n"+this.staticFormula.toString()+"\n"+bounding.getStaticBounds().toString());
-
 
     }
 
@@ -90,10 +72,11 @@ public class TemporalFormulaExtension {
 
 
     public void temporalFormulaExtension(){
-        AddTimeToFormula addTimeToFormula =  new AddTimeToFormula(Time,nextt,init,end,infinite);
+        LTL2FOLTranslator addTimeToFormula = new LTL2FOLTranslator(Time,init,end,next,nextt,loop);
         Formula result = addTimeToFormula.convert(dynamicFormula);
+        // TODO: @nmm: nao sei se deviam ser usadas as relations da formula, pq pode haver relations nos bounds que nao estao na formula
         this.varExtendedRelationsList = addTimeToFormula.getExtendedVarRelations();
-        this.dynamicFormulaExpanded = allStuff.and(result);
+        this.dynamicFormulaExpanded = result;
     }
 
     public void putTimeInList(){

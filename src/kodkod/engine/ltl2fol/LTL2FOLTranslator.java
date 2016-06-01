@@ -43,35 +43,52 @@ import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.AbstractReplacer;
 
 /**
+ * Translates an LTL temporal formula into its standard Kodkod FOL representation.
  * @author Eduardo Pessoa, nmm
- *
  */
-public class AddTimeToFormula extends AbstractReplacer {
+public class LTL2FOLTranslator extends AbstractReplacer {
 
-	private Relation next;
-	private Relation init;
-	
+	/** the relations representing the explicit time trace. */
+	private Relation next, init;
+
+	/** the formula forcing the time trace to be infinite. */
+	private Formula infinite, structural;
+
+	/**
+	 * handle the depth of nested post operators within the current temporal
+	 * formula.
+	 */
 	private int currentPostDepth, maxPostDepth;
 
-	private Formula infinite;
-
+	/**
+	 * the relations resulting from the extension of the variable relations.
+	 * TODO: should this translation be performed here or when the bounds are
+	 * converted?
+	 */
 	private Map<String, Relation> relations;
 
 	/**
-	 * The relations resulting from the extension of the variable relations.
-	 * 
-	 * @return
+	 * Translates an LTL temporal formula into its standard Kodkod FOL representation.
+	 * @param time the relation representing the time states.
+	 * @param init the relation representing the initial time state.
+	 * @param end the relation representing the last time state.
+	 * @param next the relation representing the finite time trace.
+	 * @param nextt the relation representing the potentially infinite time trace.
+	 * @param loop the relation representing the possible trace loop.
 	 */
-	Map<String, Relation> getExtendedVarRelations() {
-		return relations;
-	}
-
-	public AddTimeToFormula(Relation time, Relation next, Relation init, Relation end, Formula infinite) {
+	public LTL2FOLTranslator(Relation time, Relation init, Relation end ,Relation next, Relation nextt, Relation loop) {
 		super(new HashSet<Node>());
-		this.relations = new HashMap<String, Relation>();
+		relations = new HashMap<String, Relation>();
 		this.next = next;
 		this.init = init;
-		this.infinite = infinite;
+
+	    Formula order = next.totalOrder(time, init, end);
+	    Formula loopDecl =  loop.partialFunction(end,time);
+	    Expression nextDecl = next.union(loop);
+	    Formula nextFnct = nextt.eq(nextDecl);
+	    structural = Formula.and(order, loopDecl,  nextFnct);
+	    infinite = loop.one();		
+		
 		resetPostVariables();
 		pushVariable();
 	}
@@ -87,7 +104,7 @@ public class AddTimeToFormula extends AbstractReplacer {
 	 * @return the resulting FOL formula.
 	 */
 	public Formula convert(Formula tempFormula) {
-		Formula result = tempFormula.accept(this);
+		Formula result = tempFormula.accept(this).and(structural);
 		if (maxPostDepth > 0)
 			return forceNextExists(init, maxPostDepth).and(result);
 		else
@@ -96,9 +113,9 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	@Override
 	public Expression visit(Relation relation) {
-		maxPostDepth = currentPostDepth>maxPostDepth?currentPostDepth:maxPostDepth;
+		maxPostDepth = currentPostDepth > maxPostDepth ? currentPostDepth : maxPostDepth;
 		if (isTemporal(relation))
-			return getRelation((VarRelation) relation).join(this.getVariable());
+			return getRelation((VarRelation) relation).join(getVariable());
 		else
 			return relation;
 	}
@@ -113,8 +130,8 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	@Override
 	public Formula visit(UnaryTempFormula unaryTempFormula) {
-		int temp = this.currentPostDepth;
-		int tempM = this.maxPostDepth;
+		int temp = currentPostDepth;
+		int tempM = maxPostDepth;
 		resetPostVariables();
 		pushOperator(unaryTempFormula.op());
 		pushVariable();
@@ -122,83 +139,83 @@ public class AddTimeToFormula extends AbstractReplacer {
 		Formula rt = getQuantifier(getOperator(), e, maxPostDepth);
 		popOperator();
 		popVariable();
-		this.currentPostDepth = temp;
-		this.maxPostDepth = tempM;
+		currentPostDepth = temp;
+		maxPostDepth = tempM;
 		return rt;
 	}
 
 	@Override
 	public Formula visit(BinaryTempFormula binaryTempFormula) {
-		int temp = this.currentPostDepth;
-		int tempM = this.maxPostDepth;
+		int temp = currentPostDepth;
+		int tempM = maxPostDepth;
 
-		this.pushOperator(binaryTempFormula.op());
-		this.pushVariable();
+		pushOperator(binaryTempFormula.op());
+		pushVariable();
 		int quantificationPostRight, quantificationPostLeft, quantificationPostLeftf;
 		Formula rt, left, right;
 		switch (binaryTempFormula.op()) {
 		case UNTIL:
 			resetPostVariables();
 			right = binaryTempFormula.right().accept(this);
-			quantificationPostRight = this.maxPostDepth;
-			this.pushVariable();
+			quantificationPostRight = maxPostDepth;
+			pushVariable();
 			resetPostVariables();
 			left = binaryTempFormula.left().accept(this);
-			quantificationPostLeftf = this.maxPostDepth;
-			rt = this.getQuantifierUntil(left, right, quantificationPostLeftf, quantificationPostRight);
-			this.popVariable();
+			quantificationPostLeftf = maxPostDepth;
+			rt = getQuantifierUntil(left, right, quantificationPostLeftf, quantificationPostRight);
+			popVariable();
 			break;
 		case RELEASE:
 			resetPostVariables();
 			Formula rightAlways = binaryTempFormula.right().accept(this);
-			this.pushVariable();
+			pushVariable();
 			resetPostVariables();
 			left = binaryTempFormula.left().accept(this);
-			quantificationPostLeft = this.maxPostDepth;
-			this.pushVariable();
+			quantificationPostLeft = maxPostDepth;
+			pushVariable();
 			resetPostVariables();
 			right = binaryTempFormula.right().accept(this);
-			quantificationPostRight = this.maxPostDepth;
-			rt = this.getQuantifierRelease(rightAlways, left, right, quantificationPostLeft, quantificationPostRight);
-			this.popVariable();
-			this.popVariable();
+			quantificationPostRight = maxPostDepth;
+			rt = getQuantifierRelease(rightAlways, left, right, quantificationPostLeft, quantificationPostRight);
+			popVariable();
+			popVariable();
 			break;
 		default:
 			throw new UnsupportedOperationException("Unsupported binary temporal operator:" + binaryTempFormula.op());
 		}
-		this.popVariable();
-		this.popOperator();
-		this.currentPostDepth = temp;
-		this.maxPostDepth = tempM;
+		popVariable();
+		popOperator();
+		currentPostDepth = temp;
+		maxPostDepth = tempM;
 		return rt;
 	}
 
 	@Override
 	public Expression visit(TempExpression tempExpression) {
-		this.currentPostDepth++;
-		this.pushOperator(TemporalOperator.POST);
-		this.pushVariable();
-//		// condition to verify the number max of nested plicas!!
-//		if (tempExpression.expression() instanceof TempExpression) {
-//			numberMaxOfnestedPlicas++;
-//		} else {
-//			if (numberMaxOfnestedPlicas > this.needToDeclarePostR) {
-//				this.needToDeclarePostR = numberMaxOfnestedPlicas;
-//				numberMaxOfnestedPlicas = 1;
-//			}
-//		}
-//
-//		// if the context is not a temporal operator.
-//		if (this.getVariableLastQuantification() == init) {
-//			if (numberMaxOfnestedPlicas > this.numberMaxPlicasInit) {
-//				this.numberMaxPlicasInit = numberMaxOfnestedPlicas;
-//			}
-//		}
-		Expression localExpression2 = tempExpression.expression().accept(this);
-		this.popOperator();
-		this.popVariable();
-		this.currentPostDepth--;
-		return localExpression2;
+		currentPostDepth++;
+		pushOperator(tempExpression.op());
+		pushVariable();
+		// // condition to verify the number max of nested plicas!!
+		// if (tempExpression.expression() instanceof TempExpression) {
+		// numberMaxOfnestedPlicas++;
+		// } else {
+		// if (numberMaxOfnestedPlicas > needToDeclarePostR) {
+		// needToDeclarePostR = numberMaxOfnestedPlicas;
+		// numberMaxOfnestedPlicas = 1;
+		// }
+		// }
+		//
+		// // if the context is not a temporal operator.
+		// if (getVariableLastQuantification() == init) {
+		// if (numberMaxOfnestedPlicas > numberMaxPlicasInit) {
+		// numberMaxPlicasInit = numberMaxOfnestedPlicas;
+		// }
+		// }
+		Expression localExpression = tempExpression.expression().accept(this);
+		popOperator();
+		popVariable();
+		currentPostDepth--;
+		return localExpression;
 	}
 
 	private Formula getQuantifierUntil(Formula left, Formula right, int quantificationLeft, int quantificationRight) {
@@ -254,7 +271,7 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	private Formula getQuantifier(TemporalOperator op, Formula e, int posts) {
 		Variable v;
-		Expression quantification = this.getVariableLastQuantification();
+		Expression quantification = getVariableLastQuantification();
 		switch (op) {
 		case ALWAYS:
 			v = (Variable) getVariable();
@@ -275,7 +292,7 @@ public class AddTimeToFormula extends AbstractReplacer {
 				return e.forAll(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
 			}
 		case ONCE:
-			v = (Variable) this.getVariable();
+			v = (Variable) getVariable();
 			if (posts > 0) {
 				return forceNextExists(v, posts).and(e).forSome(
 						v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
@@ -284,7 +301,7 @@ public class AddTimeToFormula extends AbstractReplacer {
 			}
 		case NEXT:
 		case PREVIOUS:
-			Expression v1 = this.getVariable();
+			Expression v1 = getVariable();
 			if (posts > 0) {
 				return forceNextExists(v1, posts).and(v1.some().and(e));
 			} else {
@@ -303,8 +320,11 @@ public class AddTimeToFormula extends AbstractReplacer {
 		return e.some();
 	}
 
-	// Initialize the original values of the variable needToDeclarePostR and
-	// numberMaxOfnestedPlicas
+	/**
+	 * Resets the original values of the variable nested post operators
+	 * accumulators. Should be called whenever a new temporal variable is
+	 * quantified.
+	 */
 	private void resetPostVariables() {
 		currentPostDepth = 0;
 		maxPostDepth = 0;
@@ -312,26 +332,23 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	/* Operators Context */
 	private List<TemporalOperator> operators = new ArrayList<TemporalOperator>();
-	private int totalOperators = -1;
 
 	private void pushOperator(TemporalOperator op) {
-		this.totalOperators++;
-		this.operators.add(op);
+		operators.add(op);
 	}
 
 	private TemporalOperator getOperator() {
-		return this.operators.get(this.totalOperators);
+		return operators.get(operators.size() - 1);
 	}
 
-	private boolean thereAreOperator() {
-		if (this.operators.size() == 0)
-			return false;
-		return true;
-	}
+	// private boolean thereAreOperator() {
+	// if (operators.size() == 0)
+	// return false;
+	// return true;
+	// }
 
 	private void popOperator() {
-		this.operators.remove(this.totalOperators);
-		this.totalOperators--;
+		operators.remove(operators.size() - 1);
 	}
 
 	/* VarRelations */
@@ -345,10 +362,10 @@ public class AddTimeToFormula extends AbstractReplacer {
 	 * @return
 	 */
 	private Relation getRelation(VarRelation v) {
-		Relation e = this.relations.get(v.name());
+		Relation e = relations.get(v.name());
 		if (e == null) {
 			Relation varRelation = Relation.nary(v.name(), v.arity() + 1);
-			this.relations.put(v.name(), varRelation);
+			relations.put(v.name(), varRelation);
 			return varRelation;
 		} else {
 			return e;
@@ -357,102 +374,100 @@ public class AddTimeToFormula extends AbstractReplacer {
 
 	/* Variables */
 	private List<Expression> variables = new ArrayList<Expression>();
-	private int totalVar = 0;
 	private int totalVariablesIt = 0;
 
-	private void resetVariables() {
-		this.variables = new ArrayList<Expression>();
-		this.totalVar = 0;
-	}
+	// private void resetVariables() {
+	// variables = new ArrayList<Expression>();
+	// totalVar = 0;
+	// }
 
 	private void pushVariable() {
-		if (!this.thereAreVariables()) {
-			this.totalVar++;
-			this.variables.add(init);
+		if (!thereAreVariables()) {
+			variables.add(init);
 			return;
 		}
 
-		if (this.getOperator() == TemporalOperator.NEXT || this.getOperator() == TemporalOperator.POST) {
-			this.variables.add(getVariable().join(next));
-		} else {
-			if (this.getOperator() == TemporalOperator.PREVIOUS) {
-				this.variables.add(getVariable().join(next.transpose()));
-			} else {
-				Variable v = Variable.unary("t" + this.totalVariablesIt);
-				variables.add(v);
-				this.totalVariablesIt++;
-			}
+		switch(getOperator()) {
+		case NEXT:
+		case POST:
+			variables.add(getVariable().join(next));
+			break;
+		case PREVIOUS:
+			variables.add(getVariable().join(next.transpose()));
+			break;
+		default:
+			Variable v = Variable.unary("t" + totalVariablesIt);
+			variables.add(v);
+			totalVariablesIt++;
 		}
-		this.totalVar++;
 	}
 
 	private void popVariable() {
-		this.variables.remove(this.totalVar - 1);
-		if (this.totalVar > 0)
-			this.totalVar--;
+		variables.remove(variables.size() - 1);
 	}
 
 	private boolean thereAreVariables() {
-		if (this.variables.size() == 0)
-			return false;
-		return true;
+		return !variables.isEmpty();
+		// if (variables.size() == 0)
+		// return false;
+		// return true;
 	}
 
 	private Expression getVariable() {
-		return this.variables.get(this.totalVar - 1);
+		return variables.get(variables.size() - 1);
 	}
 
 	private Expression getVariableLastQuantification() {
-		return this.variables.get(this.totalVar - 2);
+		return variables.get(variables.size() - 2);
 	}
 
 	private Expression getVariableLastQuantificationUntil(boolean sideIsRight) {
 		if (!sideIsRight) {
-			return this.variables.get(this.totalVar - 3);
-
+			return variables.get(variables.size() - 3);
 		} else {
-			return this.variables.get(this.totalVar - 2);
-
+			return variables.get(variables.size() - 2);
 		}
 	}
 
 	private Variable getVariableUntil(boolean sideIsRight) {
 		if (!sideIsRight) {
-			return (Variable) this.variables.get(this.totalVar - 1);
+			return (Variable) variables.get(variables.size() - 1);
 		} else {
-			return (Variable) this.variables.get(this.totalVar - 2);
-
+			return (Variable) variables.get(variables.size() - 2);
 		}
 	}
 
 	private Expression getVariableLastQuantificationRelease(boolean sideIsRight, boolean isAlways) {
 		if (isAlways) {
-			return this.variables.get(this.totalVar - 4);
+			return variables.get(variables.size() - 4);
 		} else {
 			if (!sideIsRight) {
-				return this.variables.get(this.totalVar - 3);
-
+				return variables.get(variables.size() - 3);
 			} else {
-				return this.variables.get(this.totalVar - 2);
-
+				return variables.get(variables.size() - 2);
 			}
 		}
 	}
 
 	private Variable getVariableRelease(boolean sideIsRight, boolean isAlways) {
 		if (isAlways) {
-			return (Variable) this.variables.get(this.totalVar - 3);
+			return (Variable) variables.get(variables.size() - 3);
 		} else {
 			if (!sideIsRight) {
-				return (Variable) this.variables.get(this.totalVar - 1);
-
+				return (Variable) variables.get(variables.size() - 1);
 			} else {
-				return (Variable) this.variables.get(this.totalVar - 2);
-
+				return (Variable) variables.get(variables.size() - 2);
 			}
 		}
 	}
 
+	/**
+	 * Checks whether an AST node has temporal constructs.
+	 * 
+	 * @param n
+	 *            the node to be checked.
+	 * @return whether n has temporal constructs.
+	 */
 	private final boolean isTemporal(Node n) {
 		AbstractDetector det = new AbstractDetector(new HashSet<Node>()) {
 			public Boolean visit(UnaryTempFormula tempFormula) {
@@ -474,4 +489,12 @@ public class AddTimeToFormula extends AbstractReplacer {
 		return (boolean) n.accept(det);
 	}
 
+	/**
+	 * The relations resulting from the extension of the variable relations.
+	 * 
+	 * @return
+	 */
+	Map<String, Relation> getExtendedVarRelations() {
+		return relations;
+	}
 }
