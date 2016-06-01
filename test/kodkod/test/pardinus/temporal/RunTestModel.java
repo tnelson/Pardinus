@@ -1,3 +1,5 @@
+package kodkod.test.pardinus.temporal;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,24 +12,25 @@ import kodkod.engine.IncrementalSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.DecomposedOptions;
+import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DModel;
+import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.decomp.DProblem;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.temporal.DijkstraP;
-import kodkod.examples.pardinus.temporal.HotelP;
 import kodkod.instance.Bounds;
+import kodkod.test.pardinus.RunTests.Solvers;
 
 
 public final class RunTestModel {
 
-	final static Solver solver = new Solver();
-	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver(solver);
+	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver();
 
 	static DProblem psolution = null;
 	static Solution solution = null;
 
 	static int threads, sym = 20;
-	static DecomposedOptions.Solvers selected_solver;
+	static Solvers selected_solver;
 	static DecomposedOptions.DMode selected_mode;
 
 	static DModel model;
@@ -59,15 +62,15 @@ public final class RunTestModel {
 		// dynamically create a partition model from the specified class
 		//Test test = new Test();
 
-		String hotelArgs[] = {"3","10","INTERVENES"};
-		HotelP hotel = new HotelP(hotelArgs);
+//		String hotelArgs[] = {"3","10","INTERVENES"};
+//		HotelP hotel = new HotelP(hotelArgs);
 
 		//String ringArgs[] = {"3","10","BADLIVENESS","VARIABLE"};
 	    //RingP ring = new RingP(ringArgs);
 
 
-//		String dijkstraArgs[] = {"4","5","10","SAT"};
-//		DijkstraP dijkstraP = new DijkstraP(dijkstraArgs);
+		String dijkstraArgs[] = {"4","5","10","SAT"};
+		DijkstraP dijkstraP = new DijkstraP(dijkstraArgs);
 
 		//String spanArgs[] = {"4","10","V3"};
 		//SpanP spanP = new SpanP(spanArgs);
@@ -82,7 +85,7 @@ public final class RunTestModel {
 		// the chosen partition mode
 		selected_mode = DecomposedOptions.DMode.BATCH;//ParallelOptions.Modes.valueOf(args[1]);
 		// the chosen solver
-		selected_solver = DecomposedOptions.Solvers.DefaultSAT4J; //ParallelOptions.Solvers.valueOf(args[2]);
+		selected_solver = Solvers.GLUCOSE; //ParallelOptions.Solvers.valueOf(args[2]);
 
 		threads = 4; //Integer.valueOf(args[3]);
 		
@@ -94,30 +97,35 @@ public final class RunTestModel {
 		// guarantees that every running thread is terminated.
 		System.exit(0);
 	}
-
-
+	/**
+	 * Given a partitioned model, runs the model under selected parameters.
+	 * 
+	 * @param model
+	 * @param sym
+	 * @throws InterruptedException 
+	 */
 	private static void run_tests() throws InterruptedException {
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 
-		solver.options().setBitwidth(model.getBitwidth());
-		solver.options().setSymmetryBreaking(sym);
+		psolver.options().setBitwidth(model.getBitwidth());
+		psolver.options().setSymmetryBreaking(sym);
 
 		switch (selected_solver) {
 		case GLUCOSE:
-			solver.options().setSolver(SATFactory.Glucose);
+			psolver.options().setSolver(SATFactory.Glucose);
 			break;
 		case MINISAT:
-			solver.options().setSolver(SATFactory.MiniSat);
+			psolver.options().setSolver(SATFactory.MiniSat);
 			break;
 		case PLINGELING:
-			solver.options().setSolver(SATFactory.plingeling());
+			psolver.options().setSolver(SATFactory.plingeling());
 			break;
-		//case SYRUP:
-		//	solver.options().setSolver(SATFactory.syrup());
-		//	break;
+		case SYRUP:
+			psolver.options().setSolver(SATFactory.syrup());
+			break;
 		default:
 			break;
 		}
@@ -133,24 +141,20 @@ public final class RunTestModel {
 		case BATCH:
 			solution = go_batch(b1, b2, f1, f2);
 			break;
-		case SEQUENTIAL:
-			psolver.options().setThreads(1);
-			psolution = psolver.solve(b1, b2, f1, f2);
-			break;
 		case PARALLEL:
 			psolver.options().setThreads(threads);
-			psolution = psolver.solve(b1, b2, f1, f2);
+			solution = psolver.solve(f1, f2, b1, b2);
 			break;
 		case HYBRID:
 			psolver.options().setThreads(threads);
-			psolution = psolver.solve(b1, b2, f1, f2);
+			solution = psolver.solve(f1, f2, b1, b2);
 			break;
 		case INCREMENTAL:
 			solution = go_incremental(b1, b2, f1, f2);
 			break;
 		case STATS:
 			psolver.options().setThreads(threads);
-			psolution = psolver.solve(b1, b2, f1, f2);
+			solution = psolver.solve(f1, f2, b1, b2);
 			break;
 		default:
 			break;
@@ -158,39 +162,50 @@ public final class RunTestModel {
 
 		long t2 = System.currentTimeMillis();
 
+//		solution = solutions.next();
 		
-		if (selected_mode == DecomposedOptions.DMode.SEQUENTIAL || selected_mode == DecomposedOptions.DMode.PARALLEL || selected_mode == DecomposedOptions.DMode.HYBRID) {
+//		for (int i = 0; i<10; i++)
+//			solutions.next();
+		
+//		long t3 = System.currentTimeMillis();
+//		
+//		log.append((t3 - t2));
+//		log.append("\t");
+		
+		if (selected_mode == DMode.PARALLEL || selected_mode == DMode.HYBRID) {
 			log.append((t2 - t1));
 			log.append("\t");
-			log.append(psolution.sat() ? "S" : "U");
+			log.append(solution.sat() ? "S" : "U");
 			log.append("\t");
 			log.append(getConfigNum(psolver));
 			log.append("\t");
-			//log.append(getGenTime(psolver));
-			//log.append(psolution.getSolution().instance());
+//			log.append(getGenTime(psolver));
+//			log.append(psolution.getSolution().instance());
 		}
-		else if (selected_mode == DecomposedOptions.DMode.STATS) {
-			int tt = psolver.manager().solutions().size();
+		else if (selected_mode == DMode.STATS) {
+			DMonitor mon = psolver.executor().monitor;
+
+			long tt = mon.getNumRuns();
 			log.append(tt);
 			log.append("\t");
-			log.append(psolver.manager().getSats());
+			log.append(mon.getNumSATs());
 			log.append("\t");
-			log.append(tt-psolver.manager().getSats());
+			log.append(tt-mon.getNumSATs());
 			log.append("\t");
 			if (tt != 0)
-				log.append(((psolver.manager().getSats() * 100) / (long) tt));
+				log.append(((mon.getNumSATs() * 100) / (long) tt));
 			else 
 				log.append("0");
 			log.append("\t");
-			log.append(psolver.manager().getConfigStats().primaryVariables());
+			log.append(mon.getConfigStats().primaryVariables());
 			log.append("\t");
-			log.append(psolver.manager().getConfigStats().clauses());
+			log.append(mon.getConfigStats().clauses());
 			log.append("\t");
-			log.append(psolver.manager().getVars());
+			log.append(mon.getTotalVars());
 			log.append("\t");
-			log.append(psolver.manager().getClauses());
+			log.append(mon.getTotalClauses());
 			log.append("\t");
-			log.append(psolver.manager().getConfigTimes());
+			log.append(mon.getConfigTimes());
 			log.append("\t");
 //			solution = go_batch(b1, b2, f1, f2);
 //			log.append(solution.stats().primaryVariables());
@@ -203,7 +218,7 @@ public final class RunTestModel {
 			log.append((t2 - t1));
 			log.append("\t");
 			log.append(solution.sat() ? "S" : "U");
-			log.append(solution);
+//			log.append(solution);
 		}
 		log.append("\t");
 		flush();
@@ -216,10 +231,11 @@ public final class RunTestModel {
 		log = new StringBuilder();
 	}
 
-	private static int getConfigNum(ParallelSolver psolver2) {
-		int counter = psolver2.manager().solutions().size();
+	private static long getConfigNum(DecomposedKodkodSolver psolver2) {
+		DMonitor mon = psolver2.executor().monitor;
+		long counter = mon.getNumRuns();
 		if (counter != 0)
-			if (!(psolver2.manager().solutions().get(psolver2.manager().solutions().size() - 1) instanceof MProblem))
+			if (mon.isAmalgamated())
 				counter = -counter;
 		return counter;
 	}
@@ -238,11 +254,12 @@ public final class RunTestModel {
 		for (Relation r : b2.relations()) {
 			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
 		}
+		Solver solver = new Solver(psolver.options());
 		return solver.solve(f1.and(f2), b3);
 	}
 
 	private static Solution go_incremental(Bounds b1, Bounds b2, Formula f1, Formula f2) {
-		IncrementalSolver isolver = IncrementalSolver.solver(solver.options());
+		IncrementalSolver isolver = IncrementalSolver.solver(psolver.options());
 
 		Bounds b3 = b1.clone();
 		for (Relation r : b2.relations()) {

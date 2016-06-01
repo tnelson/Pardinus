@@ -1,5 +1,6 @@
 package kodkod.test.pardinus.temporal;
 import kodkod.ast.*;
+import kodkod.engine.config.Options;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
 import kodkod.instance.Bounds;
@@ -32,7 +33,9 @@ public class Test implements DModel {
     public Test() {
         Formula formula = finalFormula();
         Bounds var6 = bounds(3);
-        temporalFormula = new TemporalFormulaExtension(formula, var6,5);
+        Options options = new Options();
+        options.setTraceLength(5);
+        temporalFormula = new TemporalFormulaExtension(formula, var6, options);
     }
 
     public Bounds bounds1(){

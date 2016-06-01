@@ -1,5 +1,8 @@
 package kodkod.test.pardinus.temporal;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import kodkod.ast.*;
 import kodkod.engine.ltl2fol.LTL2FOLTranslator;
 
@@ -30,12 +33,22 @@ public class KKTemporalUnitTesting {
 
 
 
+
     private Relation nextt = Relation.binary("nextt");
     private Relation loop = Relation.nary("loop", 2);
 
 
-    LTL2FOLTranslator addTimeToFormula =  new LTL2FOLTranslator(Time,init,end,next,nextt,loop);
+    LTL2FOLTranslator addTimeToFormula;
 
+    public KKTemporalUnitTesting() {
+        Map<String,Relation> rels = new HashMap<String,Relation>();
+        rels.put(toSend.name(), Relation.nary(toSend.name(), toSend.arity()+1));	
+        rels.put(elected.name(), Relation.nary(elected.name(), elected.arity()+1));	
+        rels.put(naryRelation.name(), Relation.nary(naryRelation.name(), naryRelation.arity()+1));	
+        rels.put(pord.name(), Relation.nary(pord.name(), pord.arity()+1));	
+        addTimeToFormula =  new LTL2FOLTranslator(new Relation[]{Time,init,end,next,nextt,loop}, rels);
+     }
+    
 /*
 
     /*Declarations*/
