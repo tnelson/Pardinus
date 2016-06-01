@@ -36,7 +36,7 @@ import java.util.*;
  * @author Eduardo Pessoa, nmm
  *
  */
-public class Bounding {
+public class VarBoundsConversor {
 	private Bounds oldBounds;
 
 	private int numberOfTimes;
@@ -47,11 +47,11 @@ public class Bounding {
 	private Relation[] timedRelations;
 	private Map<String, Relation> extendedVarRelations;
 
-	public Bounding(Bounds oldBounds, int numberOfTimes, Relation[] time, Map<String, Relation> extendedVarRelations) {
+	public VarBoundsConversor(Bounds oldBounds, int numberOfTimes, Relation[] time) {
 		this.oldBounds = oldBounds;
 		this.numberOfTimes = numberOfTimes;
 		this.timedRelations = time;
-		this.extendedVarRelations = extendedVarRelations;
+		this.extendedVarRelations = new HashMap<String,Relation>();
 		this.createUniverse();
 		this.bounding();
 	}
@@ -73,7 +73,7 @@ public class Bounding {
 				this.tupleFactory.tuple(new Object[] { "Time" + (this.numberOfTimes - 1) }));
 		for (Relation r : this.oldBounds.relations()) {
 			if (r instanceof VarRelation) {
-				this.makeNewTuplesFromOldBounds(r, tupleSetTime);
+				this.makeNewTuplesFromOldBounds((VarRelation) r, tupleSetTime);
 			} else {
 				this.makeNewTuplesFromOldBounds(r);
 			}
@@ -118,11 +118,11 @@ public class Bounding {
 	 * @param tupleSetTime
 	 *            the time atoms in the universe
 	 */
-	private void makeNewTuplesFromOldBounds(Relation relation, TupleSet tupleSetTime) {
+	private void makeNewTuplesFromOldBounds(VarRelation relation, TupleSet tupleSetTime) {
 		TupleSet tupleSetL = convert(oldBounds.lowerBounds().get(relation));
 		TupleSet tupleSetU = convert(oldBounds.upperBounds().get(relation));
 
-		dynamicBounds.bound(this.extendedVarRelations.get(relation.name()), tupleSetL.product(tupleSetTime),
+		dynamicBounds.bound(getRelation(relation), tupleSetL.product(tupleSetTime),
 				tupleSetU.product(tupleSetTime));
 	}
 
@@ -161,5 +161,34 @@ public class Bounding {
 		}
 		return tupleSet;
 	}
+
+	/**
+	 * Returns the static relation corresponding to the extension of a variable
+	 * relation. Creates it first time.
+	 * 
+	 * @param name
+	 * @param v
+	 * @return
+	 */
+	private Relation getRelation(VarRelation v) {
+		Relation e = extendedVarRelations.get(v.name());
+		if (e == null) {
+			Relation varRelation = Relation.nary(v.name(), v.arity() + 1);
+			extendedVarRelations.put(v.name(), varRelation);
+			return varRelation;
+		} else {
+			return e;
+		}
+	}
+	
+	/**
+	 * The relations resulting from the extension of the variable relations.
+	 * 
+	 * @return
+	 */
+	Map<String, Relation> getExtendedVarRelations() {
+		return extendedVarRelations;
+	}
+
 
 }

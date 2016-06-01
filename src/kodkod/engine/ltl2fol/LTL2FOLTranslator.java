@@ -23,7 +23,6 @@
 package kodkod.engine.ltl2fol;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,9 @@ import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.AbstractReplacer;
 
 /**
- * Translates an LTL temporal formula into its standard Kodkod FOL representation.
+ * Translates an LTL temporal formula into its standard Kodkod FOL
+ * representation.
+ * 
  * @author Eduardo Pessoa, nmm
  */
 public class LTL2FOLTranslator extends AbstractReplacer {
@@ -68,27 +69,27 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	private Map<String, Relation> relations;
 
 	/**
-	 * Translates an LTL temporal formula into its standard Kodkod FOL representation.
-	 * @param time the relation representing the time states.
-	 * @param init the relation representing the initial time state.
-	 * @param end the relation representing the last time state.
-	 * @param next the relation representing the finite time trace.
-	 * @param nextt the relation representing the potentially infinite time trace.
-	 * @param loop the relation representing the possible trace loop.
+	 * Translates an LTL temporal formula into its standard Kodkod FOL
+	 * representation.
+	 * 
+	 * @param timeRels
+	 *            the relations representing the time trace, {Time,init,end,next,nextt,loop}.
+	 * @param loop
+	 *            the relation representing the possible trace loop.
 	 */
-	public LTL2FOLTranslator(Relation time, Relation init, Relation end ,Relation next, Relation nextt, Relation loop) {
+	public LTL2FOLTranslator(Relation [] timeRels, Map<String,Relation> relations) {
 		super(new HashSet<Node>());
-		relations = new HashMap<String, Relation>();
-		this.next = next;
-		this.init = init;
+		this.relations = relations;
+		this.next = timeRels[4];
+		this.init = timeRels[1];
 
-	    Formula order = next.totalOrder(time, init, end);
-	    Formula loopDecl =  loop.partialFunction(end,time);
-	    Expression nextDecl = next.union(loop);
-	    Formula nextFnct = nextt.eq(nextDecl);
-	    structural = Formula.and(order, loopDecl,  nextFnct);
-	    infinite = loop.one();		
-		
+		Formula order = timeRels[3].totalOrder(timeRels[0], timeRels[1], timeRels[2]);
+		Formula loopDecl = timeRels[5].partialFunction(timeRels[2], timeRels[0]);
+		Expression nextDecl = timeRels[3].union(timeRels[5]);
+		Formula nextFnct = timeRels[4].eq(nextDecl);
+		structural = Formula.and(order, loopDecl, nextFnct);
+		infinite = timeRels[5].one();
+
 		resetPostVariables();
 		pushVariable();
 	}
@@ -115,7 +116,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	public Expression visit(Relation relation) {
 		maxPostDepth = currentPostDepth > maxPostDepth ? currentPostDepth : maxPostDepth;
 		if (isTemporal(relation))
-			return getRelation((VarRelation) relation).join(getVariable());
+			return relations.get(relation.name()).join(getVariable());
 		else
 			return relation;
 	}
@@ -218,12 +219,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		return localExpression;
 	}
 
-	private Formula getQuantifierUntil(Formula left, Formula right, int quantificationLeft, int quantificationRight) {
+	private Formula getQuantifierUntil(Formula left, Formula right, int postDepthLeft, int postDepthRight) {
 		Variable r = getVariableUntil(true);
 		Variable l = getVariableUntil(false);
 		Formula nfleft;
-		if (quantificationLeft > 0) {
-			nfleft = (forceNextExists(l, quantificationLeft).and(left)).forAll(l
+		if (postDepthLeft > 0) {
+			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l
 					.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure()).intersection(
 							next.closure().join(r))));
 		} else {
@@ -231,8 +232,8 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 					.intersection(next.closure().join(r))));
 		}
 
-		if (quantificationRight > 0) {
-			return (forceNextExists(r, quantificationRight).and(right)).and(nfleft).forSome(
+		if (postDepthRight > 0) {
+			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft).forSome(
 					r.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure())));
 		} else {
 			return right.and(nfleft).forSome(
@@ -351,27 +352,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		operators.remove(operators.size() - 1);
 	}
 
-	/* VarRelations */
-
-	/**
-	 * Returns the static relation corresponding to the extension of a variable
-	 * relation. Creates it first time.
-	 * 
-	 * @param name
-	 * @param v
-	 * @return
-	 */
-	private Relation getRelation(VarRelation v) {
-		Relation e = relations.get(v.name());
-		if (e == null) {
-			Relation varRelation = Relation.nary(v.name(), v.arity() + 1);
-			relations.put(v.name(), varRelation);
-			return varRelation;
-		} else {
-			return e;
-		}
-	}
-
 	/* Variables */
 	private List<Expression> variables = new ArrayList<Expression>();
 	private int totalVariablesIt = 0;
@@ -387,7 +367,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			return;
 		}
 
-		switch(getOperator()) {
+		switch (getOperator()) {
 		case NEXT:
 		case POST:
 			variables.add(getVariable().join(next));
@@ -489,12 +469,4 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		return (boolean) n.accept(det);
 	}
 
-	/**
-	 * The relations resulting from the extension of the variable relations.
-	 * 
-	 * @return
-	 */
-	Map<String, Relation> getExtendedVarRelations() {
-		return relations;
-	}
 }

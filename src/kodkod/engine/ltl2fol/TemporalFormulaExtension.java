@@ -6,6 +6,7 @@ import java.util.Set;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.config.TemporalOptions;
 import kodkod.instance.Bounds;
 
 /**
@@ -41,13 +42,14 @@ public class TemporalFormulaExtension {
     private Bounds dynamicBounds;
     private Bounds staticBounds;
 
-    public TemporalFormulaExtension(Formula f, Bounds bounds, int numberoftimes){
+    public TemporalFormulaExtension(Formula f, Bounds bounds, TemporalOptions<?> options){
         this.formula=f;
         this.negativeNormalForm();
         this.formulaSlicing();
-        this.temporalFormulaExtension();
         this.putTimeInList();
-        Bounding bounding = new Bounding(bounds,numberoftimes,this.timeList,varExtendedRelationsList);
+        VarBoundsConversor bounding = new VarBoundsConversor(bounds,options.traceLength(),timeList);
+        varExtendedRelationsList = bounding.getExtendedVarRelations();
+        this.temporalFormulaExtension();
         this.staticBounds = bounding.getStaticBounds();
         this.dynamicBounds = bounding.getDynamicBounds();
 
@@ -72,10 +74,8 @@ public class TemporalFormulaExtension {
 
 
     public void temporalFormulaExtension(){
-        LTL2FOLTranslator addTimeToFormula = new LTL2FOLTranslator(Time,init,end,next,nextt,loop);
+        LTL2FOLTranslator addTimeToFormula = new LTL2FOLTranslator(timeList,varExtendedRelationsList);
         Formula result = addTimeToFormula.convert(dynamicFormula);
-        // TODO: @nmm: nao sei se deviam ser usadas as relations da formula, pq pode haver relations nos bounds que nao estao na formula
-        this.varExtendedRelationsList = addTimeToFormula.getExtendedVarRelations();
         this.dynamicFormulaExpanded = result;
     }
 
