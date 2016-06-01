@@ -4,19 +4,20 @@ package kodkod.examples.pardinus.temporal;
 import kodkod.ast.*;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Options;
+import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
-import kodkod.pardinus.decomp.DModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class RingP implements DModel{
+public class RingP implements DModel {
 
 
 
@@ -89,7 +90,9 @@ public class RingP implements DModel{
 
         Formula formula = finalFormula();
         Bounds var6 = bounds();
-        temporalFormula = new TemporalFormulaExtension(formula, var6,times);
+		Options options = new Options();
+		options.setTraceLength(times);
+        temporalFormula = new TemporalFormulaExtension(formula, var6, options);
     }
 
 

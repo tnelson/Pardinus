@@ -8,6 +8,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Options;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
 import kodkod.engine.satlab.SATFactory;
@@ -37,7 +38,7 @@ public class HotelP implements DModel {
 	public HotelP(String[] args) {
 		this.n = Integer.valueOf(args[0]);
 		this.variant = Variant.valueOf(args[2]);
-		int times = Integer.valueOf(args[1]);
+		this.t = Integer.valueOf(args[1]);
 
 		key = Relation.unary("Key");
 		guest = Relation.unary("Guest");
@@ -54,7 +55,9 @@ public class HotelP implements DModel {
 
 		Formula formula = finalFormula();
 		Bounds var6 = bounds();
-		temporalFormula = new TemporalFormulaExtension(formula, var6, times);
+		Options options = new Options();
+		options.setTraceLength(t);
+		temporalFormula = new TemporalFormulaExtension(formula, var6, options);
 	}
 
 	public Bounds bounds1() {
@@ -360,7 +363,7 @@ public class HotelP implements DModel {
 	}
 
     public static void main(String[] args) {
-		HotelP model = new HotelP(new String[]{"3","5","INTERVENES"});
+		HotelP model = new HotelP(new String[]{"3","4","INTERVENES"});
 		
 		Bounds b1 = model.temporalFormula.getStaticBounds();
 		Bounds b2 = model.temporalFormula.getDynamicBounds();

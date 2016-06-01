@@ -1,17 +1,23 @@
 package kodkod.examples.pardinus.temporal;
 
 
-import kodkod.ast.*;
+import kodkod.ast.Expression;
+import kodkod.ast.Formula;
+import kodkod.ast.Relation;
+import kodkod.ast.VarRelation;
+import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Options;
+import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
-import kodkod.pardinus.decomp.DModel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +83,9 @@ public class SpanP implements DModel {
 
         Formula formula = finalFormula();
         Bounds var6 = bounds();
-        temporalFormula = new TemporalFormulaExtension(formula, var6,n_ts);
+		Options options = new Options();
+		options.setTraceLength(n_ts);
+        temporalFormula = new TemporalFormulaExtension(formula, var6, options);
 
 
     }
