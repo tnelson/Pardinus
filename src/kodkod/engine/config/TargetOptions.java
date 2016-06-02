@@ -12,7 +12,7 @@ public interface TargetOptions<S extends PrimitiveFactory<?>> extends PardinusOp
 	 * 
 	 * @return Whether to initialize target-oriented constructs.
 	 */
-	public boolean isRunTarget();
+	public boolean runTarget();
 
 	/**
 	 * Instructs the solver to run in target-oriented mode.
@@ -20,14 +20,14 @@ public interface TargetOptions<S extends PrimitiveFactory<?>> extends PardinusOp
 	 * @param runTarget
 	 *            Whether to initialize target-oriented constructs.
 	 */
-	public void runTarget(boolean runTarget);
+	public void setRunTarget(boolean runTarget);
 
 	/**
 	 * The target-oriented mode that will be followed by the solver.
 	 * 
 	 * @return the target-oriented mode followed by the solver.
 	 */
-	public TMode getTargetMode();
+	public TMode targetMode();
 
 	/**
 	 * Instructs the solver to solve the problem in a specific target-oriented

@@ -8,7 +8,7 @@ import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.Options;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaExtension;
 import kodkod.engine.satlab.SATFactory;
@@ -60,7 +60,7 @@ public class DijkstraP implements DModel {
 
         Formula formula = finalFormula();
         Bounds var6 = bounds();
-		Options options = new Options();
+		ExtendedOptions options = new ExtendedOptions();
 		options.setTraceLength(times);
         temporalFormula = new TemporalFormulaExtension(formula, var6, options);
 

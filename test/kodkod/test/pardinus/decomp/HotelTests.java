@@ -6,7 +6,7 @@ import kodkod.ast.Formula;
 import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
-import kodkod.engine.config.Options;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
@@ -19,18 +19,18 @@ import org.junit.Test;
 
 public class HotelTests {
 	DecomposedKodkodSolver psolver;
-	Options opt, opt2;
+	ExtendedOptions opt, opt2;
 	
 	@Before 
 	public void method() throws InterruptedException {
 
-		opt = new Options();
+		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setSolver(SATFactory.Glucose);
-		opt.setMode(DMode.PARALLEL);
+		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
-		opt2 = new Options(opt);
-		opt2.runTarget(true);
+		opt2 = new ExtendedOptions(opt);
+		opt2.setRunTarget(true);
 		opt2.setTargetMode(TMode.FAR);
 		opt2.setSolver(SATFactory.PMaxSAT4J);
 		opt.setConfigOptions(opt2);
@@ -181,7 +181,7 @@ public class HotelTests {
 		int n = 3;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 		
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -206,7 +206,7 @@ public class HotelTests {
 		int n = 4;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -231,7 +231,7 @@ public class HotelTests {
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -256,7 +256,7 @@ public class HotelTests {
 		int n = 3;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -281,7 +281,7 @@ public class HotelTests {
 		int n = 4;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -306,7 +306,7 @@ public class HotelTests {
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);

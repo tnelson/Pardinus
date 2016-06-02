@@ -9,6 +9,7 @@ import kodkod.ast.operator.*;
 import kodkod.instance.*;
 import kodkod.engine.*;
 import kodkod.engine.Solver.TSolutionIterator;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.satlab.SATFactory;
 
@@ -219,14 +220,16 @@ public final class OwnGranpa {
 		ws.put("Int", 1);
 		ws.put("String", 1);
 
-		Solver solver = new Solver();
-		solver.options().setSolver(SATFactory.externalPMaxYices("/Users/nmm/Documents/Work/Programming/AlloyExplore/kodextension/lib/yices-1.0.38/bin/yices", "owngrandpa.wcnf", 2000, "-d","-e","-ms","-mw",""+2000));
-//		solver.options().setSolver(SATFactory.PMaxSAT4J);
-		solver.options().setBitwidth(1);
-		solver.options().setSymmetryBreaking(0);
-		solver.options().setNoOverflow(true);
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setSolver(SATFactory.externalPMaxYices("/Users/nmm/Documents/Work/Programming/AlloyExplore/kodextension/lib/yices-1.0.38/bin/yices", "owngrandpa.wcnf", 2000, "-d","-e","-ms","-mw",""+2000));
+//		opt.setSolver(SATFactory.PMaxSAT4J);
+		opt.setBitwidth(1);
+		opt.setSymmetryBreaking(0);
+		opt.setNoOverflow(true);
+		Solver solver = new Solver(opt);
 		TSolutionIterator sols = (TSolutionIterator) solver.solveAll(family,bounds);
-		solver.options().setTargetMode(TMode.CLOSE);
+		opt.setTargetMode(TMode.CLOSE);
 		Solution sol = sols.next(ws);
 		//System.out.println(sol.stats());
 		System.out.println(sol);

@@ -27,6 +27,7 @@ import java.util.NoSuchElementException;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DProblemExecutor;
@@ -48,7 +49,7 @@ import kodkod.instance.Bounds;
  * @author nmm, ejp
  *
  */
-public class DecomposedKodkodSolver implements DecomposedSolver<Options>, BoundedSolver<Options> {
+public class DecomposedKodkodSolver implements DecomposedSolver<ExtendedOptions>, BoundedSolver<ExtendedOptions> {
 
 	/** the regular Kodkod solver used in the parallelization */
 	final private Solver solver1, solver2;
@@ -57,7 +58,7 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 	private DProblemExecutor executor;
 
 	/** the decomposed problem options */
-	final private Options options;
+	final private ExtendedOptions options;
 
 	/**
 	 * Constructs a new decomposed solver built over a standard Kodkod
@@ -71,12 +72,12 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 	 *             if the solver is not incremental.
 	 */
 	public DecomposedKodkodSolver() {
-		this.options = new Options();
+		this.options = new ExtendedOptions();
 		this.solver1 = new Solver((Options) options.configOptions());
 		this.solver2 = new Solver(options);
 	}
 	
-	public DecomposedKodkodSolver(Options options) {
+	public DecomposedKodkodSolver(ExtendedOptions options) {
 		this.options = options;
 		this.solver1 = new Solver((Options) options.configOptions());
 		this.solver2 = new Solver(options);
@@ -107,9 +108,9 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 	public Solution solve(Formula f1, Formula f2, Bounds b1, Bounds b2) throws InterruptedException {
 		if (!options.configOptions().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
-		if (options.getMode() == DMode.STATS)
+		if (options.decomposedMode() == DMode.STATS)
 			executor = new StatsExecutor(f1, f2, b1, b2, solver1, solver2, options.threads());
-		else if (options.getMode() == DMode.HYBRID)
+		else if (options.decomposedMode() == DMode.HYBRID)
 			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver1, solver2, options.threads(), true);
 		else
 			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver1, solver2, options.threads(), false);
@@ -146,7 +147,7 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 	}
 
 	@Override
-	public Options options() {
+	public ExtendedOptions options() {
 		return options;
 	}
 
@@ -165,10 +166,10 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, Options options, Solver solver1, Solver solver2) {
-			if (options.getMode() == DMode.STATS)
+		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, ExtendedOptions options, Solver solver1, Solver solver2) {
+			if (options.decomposedMode() == DMode.STATS)
 				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads());
-			else if (options.getMode() == DMode.HYBRID)
+			else if (options.decomposedMode() == DMode.HYBRID)
 				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads(), true);
 			else
 				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads(), false);

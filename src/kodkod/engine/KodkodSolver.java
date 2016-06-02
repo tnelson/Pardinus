@@ -59,8 +59,8 @@ public interface KodkodSolver extends BoundedSolver<Options> { // pt.uminho.hasl
 	 * Returns the Options object used by this solver.
 	 * @return this.options
 	 */
-	@Override // pt.uminho.haslab: solver hierarchy
-	public Options options() ;
+//	@Override // pt.uminho.haslab: solver hierarchy
+//	public Options options() ;
 	
 	/**
 	 * Attempts to satisfy the given {@code formula} and {@code bounds} with respect to 
@@ -78,9 +78,9 @@ public interface KodkodSolver extends BoundedSolver<Options> { // pt.uminho.hasl
 	 * be skolemized, or it can be skolemized but {@code this.options.skolemDepth} is insufficiently large
 	 * @throws AbortedException  this solving task was aborted  
 	 */
-	@Override // pt.uminho.haslab: solver hierarchy
-	public Solution solve(Formula formula, Bounds bounds) 
-	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
+//	@Override // pt.uminho.haslab: solver hierarchy
+//	public Solution solve(Formula formula, Bounds bounds) 
+//	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
 	
 //	/**
 //	 * Attempts to find a set of solutions to the given {@code formula} and {@code bounds} with respect to 
@@ -107,7 +107,7 @@ public interface KodkodSolver extends BoundedSolver<Options> { // pt.uminho.hasl
 	/**
 	 * Releases the resources, if any, associated with this solver.
 	 */
-	@Override // pt.uminho.haslab: solver hierarchy
-	public void free();
+//	@Override // pt.uminho.haslab: solver hierarchy
+//	public void free();
 	
 }

@@ -42,7 +42,7 @@ import kodkod.util.ints.Ints;
  * @author Emina Torlak
  * @changed nmm (removed final modifier, constructor by copy)
  */
-public class Options implements Cloneable, BoundedOptions, DecomposedOptions<SATFactory>, TemporalOptions<SATFactory>, TargetOptions<SATFactory> { 
+public class Options implements Cloneable, BoundedOptions { 
 	private Reporter reporter = new AbstractReporter(){};
 	private SATFactory solver = SATFactory.DefaultSAT4J;
 	private int symmetryBreaking = 20;
@@ -78,15 +78,15 @@ public class Options implements Cloneable, BoundedOptions, DecomposedOptions<SAT
 	 * @param options the options to be copied.
 	 */
 	public Options(Options options) {
-		this.setSolver(options.solver);
-		this.setReporter(options.reporter);
-		this.setBitwidth(options.bitwidth);
-		this.setIntEncoding(options.intEncoding);
-		this.setSharing(sharing);
-		this.setSymmetryBreaking(options.symmetryBreaking);
-		this.setSkolemDepth(options.skolemDepth);
-		this.setLogTranslation(options.logTranslation);
-		this.setCoreGranularity(options.coreGranularity);		
+		this.setSolver(options.solver());
+		this.setReporter(options.reporter());
+		this.setBitwidth(options.bitwidth());
+		this.setIntEncoding(options.intEncoding());
+		this.setSharing(sharing());
+		this.setSymmetryBreaking(options.symmetryBreaking());
+		this.setSkolemDepth(options.skolemDepth());
+		this.setLogTranslation(options.logTranslation());
+		this.setCoreGranularity(options.coreGranularity());		
 	}
 	
 	/**
@@ -408,103 +408,5 @@ public class Options implements Cloneable, BoundedOptions, DecomposedOptions<SAT
 		abstract IntRange range(int bitwidth) ;
 	}
 	
-
-	// pt.uminho.haslab: target-oriented solving
-	
-	// pt.uminho.haslab
-	private TMode target_mode = TMode.DEFAULT;
-	private boolean runTarget = false;
-	
-	// pt.uminho.haslab
-	@Override
-	public TMode getTargetMode() {
-		return target_mode;
-	}
-	
-	// pt.uminho.haslab
-	@Override
-	public void setTargetMode(TMode mode) {
-		target_mode = mode;
-	}
-	
-	// pt.uminho.haslab
-	@Override
-	public boolean isRunTarget() {
-		return runTarget;
-	}
-
-	// pt.uminho.haslab
-	@Override
-	public void runTarget(boolean runTarget) {
-		this.runTarget = runTarget;
-	}
-	
-	// pt.uminho.haslab: decomposed solving
-	
-	// pt.uminho.haslab
-	private int threads = 4;
-
-	// pt.uminho.haslab
-	private DMode mode = DMode.PARALLEL;
-	private PardinusOptions<SATFactory> configOptions = this;
-
-	/**
-	 * Sets the number of threads that will be launched in parallel.
-	 * @param threads
-	 */
-	// pt.uminho.haslab
-	@Override
-	public void setThreads(int threads) {
-		this.threads = threads;
-	}
-
-	// pt.uminho.haslab
-	@Override
-	public int threads() {
-		return threads;
-	}
-
-	// pt.uminho.haslab
-	@Override
-	public DMode getMode() {
-		return mode;
-	}
-
-	// pt.uminho.haslab
-	@Override
-	public void setMode(DMode mode) {
-		this.mode = mode;
-	}
-	
-	@Override
-	public void setConfigOptions(PardinusOptions<SATFactory> opt) {
-		configOptions = opt;		
-	}
-
-	@Override
-	public PardinusOptions<SATFactory> configOptions() {
-		return configOptions;
-	}
-	
-	// pt.uminho.haslab: temporal solving
-	
-	// pt.uminho.haslab
-	private int trace_length;
-
-	
-	// pt.uminho.haslab
-	@Override
-	public void setTraceLength(int trace_length) {
-		this.trace_length = trace_length;
-	}
-
-	// pt.uminho.haslab
-	@Override
-	public int traceLength() {
-		return trace_length;
-	}
-
-
-
 	
 }

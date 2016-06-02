@@ -1,7 +1,6 @@
 package kodkod.engine.ltl2fol;
 
 import kodkod.ast.*;
-import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.ast.visitor.ReturnVisitor;
 import static kodkod.ast.operator.FormulaOperator.AND;

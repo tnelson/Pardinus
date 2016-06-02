@@ -116,7 +116,7 @@ public final class RunTestModel {
 
 		long t1 = System.currentTimeMillis();
 
-		psolver.options().setMode(selected_mode);
+		psolver.options().setDecomposedMode(selected_mode);
 		switch (selected_mode) {
 		case BATCH:
 			solution = go_batch(b1, b2, f1, f2);

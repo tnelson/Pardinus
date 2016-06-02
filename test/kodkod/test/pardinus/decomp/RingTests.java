@@ -26,7 +26,7 @@ public class RingTests {
 
 		psolver.options().setSymmetryBreaking(20);
 		psolver.options().setSolver(SATFactory.Glucose);
-		psolver.options().setMode(DMode.PARALLEL);
+		psolver.options().setDecomposedMode(DMode.PARALLEL);
 		psolver.options().setThreads(4);
 		
 	}
@@ -174,7 +174,7 @@ public class RingTests {
 		int t = 20;
 		Variant1 v1 = Variant1.BADLIVENESS;
 		Variant2 v2 = Variant2.VARIABLE;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name(),v2.name()};
 		DModel model = new RingP(args);
@@ -199,7 +199,7 @@ public class RingTests {
 		int t = 20;
 		Variant1 v1 = Variant1.BADLIVENESS;
 		Variant2 v2 = Variant2.VARIABLE;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name(),v2.name()};
 		DModel model = new RingP(args);
@@ -225,7 +225,7 @@ public class RingTests {
 		int t = 20;
 		Variant1 v1 = Variant1.GOODLIVENESS;
 		Variant2 v2 = Variant2.VARIABLE;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 	
 		String[] args = new String[]{n+"",t+"",v1.name(),v2.name()};
 		DModel model = new RingP(args);
@@ -249,7 +249,7 @@ public class RingTests {
 		int t = 20;
 		Variant1 v1 = Variant1.GOODSAFETY;
 		Variant2 v2 = Variant2.VARIABLE;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 		
 		String[] args = new String[]{n+"",t+"",v1.name(),v2.name()};
 		DModel model = new RingP(args);
@@ -273,7 +273,7 @@ public class RingTests {
 		int t = 20;
 		Variant1 v1 = Variant1.GOODLIVENESS;
 		Variant2 v2 = Variant2.VARIABLE;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 	
 		String[] args = new String[]{n+"",t+"",v1.name(),v2.name()};
 		DModel model = new RingP(args);
@@ -297,7 +297,7 @@ public class RingTests {
 		int t = 20;
 		Variant1 v1 = Variant1.GOODSAFETY;
 		Variant2 v2 = Variant2.VARIABLE;
-		psolver.options().setMode(DMode.HYBRID);
+		psolver.options().setDecomposedMode(DMode.HYBRID);
 	
 		String[] args = new String[]{n+"",t+"",v1.name(),v2.name()};
 		DModel model = new RingP(args);

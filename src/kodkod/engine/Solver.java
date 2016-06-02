@@ -35,6 +35,7 @@ import java.util.NoSuchElementException;
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
@@ -199,8 +200,8 @@ public final class Solver implements KodkodSolver {
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
-		if (options.isRunTarget()) 
-			return new TSolutionIterator(formula, bounds, options);
+		if (options instanceof ExtendedOptions && ((ExtendedOptions) options).runTarget()) 
+			return new TSolutionIterator(formula, bounds, (ExtendedOptions) options);
 		else return new SolutionIterator(formula, bounds, options);
 		
 	}
@@ -430,13 +431,13 @@ public final class Solver implements KodkodSolver {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
-		private Options opt; // pt.uminho.haslab: TO mode
+		private ExtendedOptions opt; // pt.uminho.haslab: TO mode
 		private Map<String, Integer> weights; // pt.uminho.haslab: signature weights
 		
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		TSolutionIterator(Formula formula, Bounds bounds, Options options) {
+		TSolutionIterator(Formula formula, Bounds bounds, ExtendedOptions options) {
 			if (!options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");			
 			this.translTime = System.currentTimeMillis();
@@ -485,7 +486,7 @@ public final class Solver implements KodkodSolver {
 		 * @return current solution
 		 */
 		private Solution nextNonTrivialSolution() {
-			final TMode mode = opt.getTargetMode();
+			final TMode mode = opt.targetMode();
 			final Translation.Whole transl = translation;
 
 			final SATSolver cnf = transl.cnf();
@@ -541,7 +542,7 @@ public final class Solver implements KodkodSolver {
 			catch(Exception e) {throw e; }
 
 
-			transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+			opt.reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();
@@ -606,7 +607,7 @@ public final class Solver implements KodkodSolver {
 				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes);
 				
 				final long startTransl = System.currentTimeMillis();
-				translation = Translator.translate(formula, newBounds, transl.options());
+				translation = Translator.translate(formula, newBounds, opt);
 				translTime += System.currentTimeMillis() - startTransl;
 			} 
 			return sol;
@@ -619,12 +620,12 @@ public final class Solver implements KodkodSolver {
 		 * @param weights the signature weights
 		 */
 		public Solution next(Map<String, Integer> weights) {
-			if (translation.options().getTargetMode() != TMode.DEFAULT) {
-				if (!(translation.options().solver().instance() instanceof TargetSATSolver))
-					throw new AbortedException("Selected solver ("+translation.options().solver()+") does not have support for targets.");				
+			if (opt.targetMode() != TMode.DEFAULT) {
+				if (!(opt.solver().instance() instanceof TargetSATSolver))
+					throw new AbortedException("Selected solver ("+opt.solver()+") does not have support for targets.");				
 				if (weights != null) {
-					if (!(translation.options().solver().instance() instanceof WTargetSATSolver))
-						throw new AbortedException("Selected solver ("+translation.options().solver()+") does not have support for targets with weights.");				
+					if (!(opt.solver().instance() instanceof WTargetSATSolver))
+						throw new AbortedException("Selected solver ("+opt.solver()+") does not have support for targets with weights.");				
 				}
 			}
 			this.weights = weights;

@@ -8,9 +8,9 @@ public interface DecomposedOptions<S extends PrimitiveFactory<?>> extends Pardin
 
 	public int threads();
 
-	public DMode getMode();
+	public DMode decomposedMode();
 
-	public void setMode(DMode mode);
+	public void setDecomposedMode(DMode mode);
 
 	/**
 	 * Sets specific options to the configuration solver. Unless this method is
