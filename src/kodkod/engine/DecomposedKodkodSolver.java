@@ -108,7 +108,7 @@ public class DecomposedKodkodSolver implements DecomposedSolver<ExtendedOptions>
 	public Solution solve(Formula f1, Formula f2, Bounds b1, Bounds b2) throws InterruptedException {
 		if (!options.configOptions().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
-		if (options.decomposedMode() == DMode.STATS)
+		if (options.decomposedMode() == DMode.EXHAUSTIVE)
 			executor = new StatsExecutor(f1, f2, b1, b2, solver1, solver2, options.threads());
 		else if (options.decomposedMode() == DMode.HYBRID)
 			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver1, solver2, options.threads(), true);
@@ -167,7 +167,7 @@ public class DecomposedKodkodSolver implements DecomposedSolver<ExtendedOptions>
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
 		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, ExtendedOptions options, Solver solver1, Solver solver2) {
-			if (options.decomposedMode() == DMode.STATS)
+			if (options.decomposedMode() == DMode.EXHAUSTIVE)
 				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads());
 			else if (options.decomposedMode() == DMode.HYBRID)
 				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads(), true);

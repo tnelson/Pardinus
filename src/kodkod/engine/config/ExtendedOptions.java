@@ -24,14 +24,15 @@ package kodkod.engine.config;
 import kodkod.engine.satlab.SATFactory;
 
 /**
- * @author nmm 
+ * @author nmm
  */
-public class ExtendedOptions extends Options implements Cloneable, BoundedOptions, DecomposedOptions<SATFactory>, TemporalOptions<SATFactory>, TargetOptions<SATFactory> { 
+public class ExtendedOptions extends Options implements Cloneable, BoundedOptions, DecomposedOptions<SATFactory>,
+		TemporalOptions<SATFactory>, TargetOptions<SATFactory> {
 
 	public ExtendedOptions() {
 		super();
 	}
-	
+
 	public ExtendedOptions(ExtendedOptions options) {
 		super(options);
 		this.setTargetMode(options.targetMode());
@@ -41,25 +42,25 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 		this.setConfigOptions(options.configOptions());
 		this.setTraceLength(options.traceLength());
 	}
-	
+
 	// pt.uminho.haslab: target-oriented solving
-	
+
 	// pt.uminho.haslab
 	private TMode target_mode = TMode.DEFAULT;
 	private boolean runTarget = false;
-	
+
 	// pt.uminho.haslab
 	@Override
 	public TMode targetMode() {
 		return target_mode;
 	}
-	
+
 	// pt.uminho.haslab
 	@Override
 	public void setTargetMode(TMode mode) {
 		target_mode = mode;
 	}
-	
+
 	// pt.uminho.haslab
 	@Override
 	public boolean runTarget() {
@@ -71,18 +72,19 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 	public void setRunTarget(boolean runTarget) {
 		this.runTarget = runTarget;
 	}
-	
+
 	// pt.uminho.haslab: decomposed solving
-	
+
 	// pt.uminho.haslab
 	private int threads = 4;
 
 	// pt.uminho.haslab
-	private DMode mode = DMode.PARALLEL;
+	private DMode mode = DMode.BATCH;
 	private PardinusOptions<SATFactory> configOptions = this;
 
 	/**
 	 * Sets the number of threads that will be launched in parallel.
+	 * 
 	 * @param threads
 	 */
 	// pt.uminho.haslab
@@ -108,23 +110,22 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 	public void setDecomposedMode(DMode mode) {
 		this.mode = mode;
 	}
-	
+
 	@Override
 	public void setConfigOptions(PardinusOptions<SATFactory> opt) {
-		configOptions = opt;		
+		configOptions = opt;
 	}
 
 	@Override
 	public PardinusOptions<SATFactory> configOptions() {
 		return configOptions;
 	}
-	
-	// pt.uminho.haslab: temporal solving
-	
-	// pt.uminho.haslab
-	private int trace_length;
 
-	
+	// pt.uminho.haslab: temporal solving
+
+	// pt.uminho.haslab
+	private int trace_length = 20;
+
 	// pt.uminho.haslab
 	@Override
 	public void setTraceLength(int trace_length) {
@@ -137,7 +138,4 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 		return trace_length;
 	}
 
-
-
-	
 }

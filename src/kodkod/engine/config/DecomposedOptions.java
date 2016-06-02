@@ -25,7 +25,7 @@ public interface DecomposedOptions<S extends PrimitiveFactory<?>> extends Pardin
 	public PardinusOptions<S> configOptions();
 
 	public enum DMode {
-		BATCH, PARALLEL, HYBRID, INCREMENTAL, STATS;
+		BATCH, PARALLEL, HYBRID, INCREMENTAL, EXHAUSTIVE;
 	}
 
 }

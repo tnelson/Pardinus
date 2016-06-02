@@ -73,22 +73,22 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 * representation.
 	 * 
 	 * @param timeRels
-	 *            the relations representing the time trace, {Time,init,end,next,nextt,loop}.
+	 *            the relations representing the time trace, {Time,init,end,next,loop,nextt}.
 	 * @param loop
 	 *            the relation representing the possible trace loop.
 	 */
 	public LTL2FOLTranslator(Relation [] timeRels, Map<String,Relation> relations) {
 		super(new HashSet<Node>());
 		this.relations = relations;
-		this.next = timeRels[4];
+		this.next = timeRels[5];
 		this.init = timeRels[1];
 
 		Formula order = timeRels[3].totalOrder(timeRels[0], timeRels[1], timeRels[2]);
-		Formula loopDecl = timeRels[5].partialFunction(timeRels[2], timeRels[0]);
-		Expression nextDecl = timeRels[3].union(timeRels[5]);
-		Formula nextFnct = timeRels[4].eq(nextDecl);
+		Formula loopDecl = timeRels[4].partialFunction(timeRels[2], timeRels[0]);
+		Expression nextDecl = timeRels[3].union(timeRels[4]);
+		Formula nextFnct = timeRels[5].eq(nextDecl);
 		structural = Formula.and(order, loopDecl, nextFnct);
-		infinite = timeRels[5].one();
+		infinite = timeRels[4].one();
 
 		resetPostVariables();
 		pushVariable();
