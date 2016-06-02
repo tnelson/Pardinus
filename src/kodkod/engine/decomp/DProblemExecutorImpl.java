@@ -38,7 +38,7 @@ import kodkod.instance.Bounds;
 
 /**
  * A concretization of a decomposed problem executor designed to retrieve a
- * single SAT solution. Terminates once a SAT integrated / amalgatamted problem
+ * single SAT solution. Terminates once a SAT integrated / amalgamated problem
  * is found or when every configuration has been explored.
  * 
  * @see kodkod.engine.decomp.DProblemExecutor
@@ -66,8 +66,8 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 *
 	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
-	public DProblemExecutorImpl(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n, boolean it) {
-		super(new DMonitorImpl(), f1, f2, b1, b2, solver, n);
+	public DProblemExecutorImpl(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver1, Solver solver2, int n, boolean it) {
+		super(new DMonitorImpl(), f1, f2, b1, b2, solver1, solver2, n);
 		this.hybrid = it;
 	}
 
@@ -80,6 +80,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 */
 	@Override
 	public void end(DProblem sol) {
+		System.out.println(sol.sat());
 		if (Thread.currentThread().isInterrupted()) return;
 		try {
 			// if the amalgamated terminates...
@@ -154,7 +155,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			amalgamated_running = amalg;
 		}
 
-		Iterator<Solution> configs = solver.solveAll(formula1, bounds1);
+		Iterator<Solution> configs = solver1.solveAll(formula1, bounds1);
 		boolean first = true;
 
 		while (configs.hasNext() && !executor.isShutdown()) {

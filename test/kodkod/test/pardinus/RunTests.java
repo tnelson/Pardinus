@@ -16,8 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
+import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.decomp.DProblem;
 import kodkod.examples.pardinus.decomp.DiffEgP;
 import kodkod.examples.pardinus.decomp.DijkstraP;
 import kodkod.examples.pardinus.decomp.DiningP;
@@ -30,17 +32,10 @@ import kodkod.examples.pardinus.decomp.PeaceableP;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP;
 import kodkod.examples.pardinus.decomp.RingP;
 import kodkod.examples.pardinus.decomp.SpanP;
-import kodkod.examples.pardinus.decomp.FilesystemP.Variant;
-import kodkod.examples.pardinus.decomp.HandshakeP.Variant2;
-import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant1;
-import kodkod.pardinus.decomp.DProblem;
-import kodkod.pardinus.decomp.DSolver;
-import kodkod.pardinus.decomp.DOptions.Modes;
 
 public final class RunTests {
 
-	final static Solver solver = new Solver();
-	final static DSolver psolver = new DSolver(solver);
+	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver();
 
 	final static Map<Integer,List<DProblem>> stats = new HashMap<Integer,List<DProblem>> ();
 
@@ -55,7 +50,7 @@ public final class RunTests {
 	static private PrintWriter writer;
 	private static boolean ring, hotel, file, handshake, span, dijkstra, diffeg, netconfig, redblack, dining, peaceable, jobs, lift, avl;
 
-	private static List<Modes> modes = new ArrayList<Modes>();
+	private static List<DMode> modes = new ArrayList<DMode>();
 	private static List<Solvers> solvers = new ArrayList<Solvers>();
 
 	/**
@@ -74,12 +69,12 @@ public final class RunTests {
 		if(opts.contains("-sy")) solvers.add(Solvers.SYRUP);
 		if(opts.contains("-pl")) solvers.add(Solvers.PLINGELING);
 
-		if(opts.contains("-t")) modes.add(Modes.STATS);
-		if(opts.contains("-b")) modes.add(Modes.BATCH);
-		if(opts.contains("-s")) { modes.add(Modes.PARALLEL); threads = 1;}
-		if(opts.contains("-p")) modes.add(Modes.PARALLEL);
-		if(opts.contains("-h")) modes.add(Modes.HYBRID);
-		if(opts.contains("-i")) modes.add(Modes.INCREMENTAL);
+		if(opts.contains("-t")) modes.add(DMode.STATS);
+		if(opts.contains("-b")) modes.add(DMode.BATCH);
+		if(opts.contains("-s")) { modes.add(DMode.PARALLEL); threads = 1;}
+		if(opts.contains("-p")) modes.add(DMode.PARALLEL);
+		if(opts.contains("-h")) modes.add(DMode.HYBRID);
+		if(opts.contains("-i")) modes.add(DMode.INCREMENTAL);
 
 
 		if (opts.contains("--all")) {
@@ -203,43 +198,43 @@ public final class RunTests {
 
 		header.append("n\t");
 		if (solvers.contains(Solvers.MINISAT)) {
-			if (modes.contains(Modes.BATCH))
+			if (modes.contains(DMode.BATCH))
 				for (int i = 0; i < tries; i++)
 					header.append("M.B\tSat\t");
-			if (modes.contains(Modes.PARALLEL))
+			if (modes.contains(DMode.PARALLEL))
 				for (int i = 0; i < tries; i++)
 					header.append("M.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(Modes.HYBRID))
+			if (modes.contains(DMode.HYBRID))
 				for (int i = 0; i < tries; i++)
 					header.append("M.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(Modes.INCREMENTAL))
+			if (modes.contains(DMode.INCREMENTAL))
 				for (int i = 0; i < tries; i++)
 					header.append("M.I\tSat\t");
 		}
 
 		if (solvers.contains(Solvers.GLUCOSE)) {
-			if (modes.contains(Modes.BATCH))
+			if (modes.contains(DMode.BATCH))
 				for (int i = 0; i < tries; i++)
 					header.append("G.B\tSat\t");
-			if (modes.contains(Modes.PARALLEL))
+			if (modes.contains(DMode.PARALLEL))
 				for (int i = 0; i < tries; i++)
 					header.append("G.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(Modes.HYBRID))
+			if (modes.contains(DMode.HYBRID))
 				for (int i = 0; i < tries; i++)
 					header.append("G.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(Modes.INCREMENTAL))
+			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
 				for (int i = 0; i < tries; i++)
 					header.append("G.I\tSat\t");
 		}
 
 		if (solvers.contains(Solvers.SYRUP)) {
-			if (modes.contains(Modes.BATCH))
+			if (modes.contains(DMode.BATCH))
 				for (int i = 0; i < tries; i++)
 					header.append("S.B\tSat\t");
 		}
 
 		if (solvers.contains(Solvers.PLINGELING)) {
-			if (modes.contains(Modes.BATCH))
+			if (modes.contains(DMode.BATCH))
 				for (int i = 0; i < tries; i++)
 					header.append("P.B\tSat\t");
 		}
@@ -299,8 +294,8 @@ public final class RunTests {
 		System.arraycopy(model_args, 0, args, 3, model_args.length);
 		args[2] = threads+"";
 
-		if (modes.contains(Modes.STATS)) {
-			args[0] = Modes.STATS.name();
+		if (modes.contains(DMode.STATS)) {
+			args[0] = DMode.STATS.name();
 			args[1] = Solvers.GLUCOSE.name();
 			args[2] = "1";
 			runModelInstance(model,args,1);
@@ -309,7 +304,7 @@ public final class RunTests {
 		
 		if (solvers.contains(Solvers.MINISAT)) {
 			args[1] = Solvers.MINISAT.name();
-			for (Modes m : modes) {
+			for (DMode m : modes) {
 				args[0] = m.name();
 				runModelInstance(model,args,tries);
 			}
@@ -317,23 +312,23 @@ public final class RunTests {
 
 		if (solvers.contains(Solvers.GLUCOSE)) {
 			args[1] = Solvers.GLUCOSE.name();
-			for (Modes m : modes) {
+			for (DMode m : modes) {
 				args[0] = m.name();
 				runModelInstance(model,args,tries);
 			}
 		}
 
 		if (solvers.contains(Solvers.SYRUP)) {
-			if (modes.contains(Modes.BATCH)) {
-				args[0] = Modes.BATCH.name();
+			if (modes.contains(DMode.BATCH)) {
+				args[0] = DMode.BATCH.name();
 				args[1] = Solvers.SYRUP.name();
 				runModelInstance(model,args,tries);
 			}
 		}
 
 		if (solvers.contains(Solvers.PLINGELING)) {
-			if (modes.contains(Modes.BATCH)) {
-				args[0] = Modes.BATCH.name();
+			if (modes.contains(DMode.BATCH)) {
+				args[0] = DMode.BATCH.name();
 				args[1] = Solvers.PLINGELING.name();
 				runModelInstance(model,args,tries);
 			}

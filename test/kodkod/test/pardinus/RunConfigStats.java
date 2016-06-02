@@ -15,8 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
+import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.decomp.DProblem;
 import kodkod.examples.pardinus.decomp.DiffEgP;
 import kodkod.examples.pardinus.decomp.DijkstraP;
 import kodkod.examples.pardinus.decomp.DiningP;
@@ -30,18 +32,11 @@ import kodkod.examples.pardinus.decomp.PeaceableP;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP;
 import kodkod.examples.pardinus.decomp.RingP;
 import kodkod.examples.pardinus.decomp.SpanP;
-import kodkod.examples.pardinus.decomp.FilesystemP.Variant;
-import kodkod.examples.pardinus.decomp.HandshakeP.Variant2;
-import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant1;
-import kodkod.pardinus.decomp.DProblem;
-import kodkod.pardinus.decomp.DSolver;
-import kodkod.pardinus.decomp.DOptions.Modes;
 import kodkod.test.pardinus.RunTests.Solvers;
 
 public final class RunConfigStats {
 
-	final static Solver solver = new Solver();
-	final static DSolver psolver = new DSolver(solver);
+	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver();
 
 	final static Map<Integer,List<DProblem>> stats = new HashMap<Integer,List<DProblem>> ();
 
@@ -136,7 +131,7 @@ public final class RunConfigStats {
 		log.append("\n");
 
 		log.append("Modes: ");
-		log.append(Modes.STATS);
+		log.append(DMode.STATS);
 		log.append("\n");
 		
 		log.append("Threads: ");
@@ -195,7 +190,7 @@ public final class RunConfigStats {
 		String[] args = new String[model_args.length+2];
 		System.arraycopy(model_args, 0, args, 2, model_args.length);
 
-		args[0] = Modes.STATS.name();
+		args[0] = DMode.STATS.name();
 		args[1] = Solvers.GLUCOSE.name();
 		runModelInstance(model,args);
 	}

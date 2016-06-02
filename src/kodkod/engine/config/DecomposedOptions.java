@@ -11,13 +11,21 @@ public interface DecomposedOptions<S extends PrimitiveFactory<?>> extends Pardin
 	public DMode getMode();
 
 	public void setMode(DMode mode);
-	
+
+	/**
+	 * Sets specific options to the configuration solver. Unless this method is
+	 * called, the overall decomposed options are used by the configuration
+	 * solver. Once this method is called, changes to the decomposed options no
+	 * longer affect the configuration solver.
+	 * 
+	 * @param opt
+	 */
+	public void setConfigOptions(PardinusOptions<S> opt);
+
+	public PardinusOptions<S> configOptions();
+
 	public enum DMode {
-		BATCH, 
-		PARALLEL,
-		HYBRID,
-		INCREMENTAL,
-		STATS;
+		BATCH, PARALLEL, HYBRID, INCREMENTAL, STATS;
 	}
-	
+
 }

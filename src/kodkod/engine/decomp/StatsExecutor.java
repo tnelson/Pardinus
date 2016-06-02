@@ -54,8 +54,8 @@ public class StatsExecutor extends DProblemExecutor {
 	 *
 	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
-	public StatsExecutor(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n) {
-		super(new DMonitorImpl(), f1, f2, b1, b2, solver, n);
+	public StatsExecutor(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver1, Solver solver2, int n) {
+		super(new DMonitorImpl(), f1, f2, b1, b2, solver1, solver2, n);
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 */
 	@Override
 	public void run() {
-		Iterator<Solution> configs = solver.solveAll(formula1, bounds1);
+		Iterator<Solution> configs = solver1.solveAll(formula1, bounds1);
 		while (configs.hasNext() && !executor.isShutdown()) {
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();

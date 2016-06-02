@@ -9,28 +9,27 @@ import java.util.Iterator;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.IncrementalSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.decomp.DModel;
+import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
-import kodkod.pardinus.decomp.DModel;
-import kodkod.pardinus.decomp.DMonitor;
-import kodkod.pardinus.decomp.DSolver;
-import kodkod.pardinus.decomp.DOptions.Modes;
 import kodkod.test.pardinus.RunTests.Solvers;
 
 public final class RunTestModel {
 
-	final static Solver solver = new Solver();
-	final static DSolver psolver = new DSolver(solver);
+	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver();
 
 	static Solution solution = null;
 	static Iterator<Solution> solutions = null;
 
 	static int threads, sym = 20;
 	static Solvers selected_solver;
-	static Modes selected_mode;
+	static DMode selected_mode;
 
 	static DModel model;
 	
@@ -63,7 +62,7 @@ public final class RunTestModel {
 				.newInstance((Object) model_args);
 		
 		// the chosen partition mode
-		selected_mode = Modes.valueOf(args[1]);
+		selected_mode = DMode.valueOf(args[1]);
 		// the chosen solver
 		selected_solver = Solvers.valueOf(args[2]);
 
@@ -91,21 +90,21 @@ public final class RunTestModel {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 
-		solver.options().setBitwidth(model.getBitwidth());
-		solver.options().setSymmetryBreaking(sym);
+		psolver.options().setBitwidth(model.getBitwidth());
+		psolver.options().setSymmetryBreaking(sym);
 
 		switch (selected_solver) {
 		case GLUCOSE:
-			solver.options().setSolver(SATFactory.Glucose);
+			psolver.options().setSolver(SATFactory.Glucose);
 			break;
 		case MINISAT:
-			solver.options().setSolver(SATFactory.MiniSat);
+			psolver.options().setSolver(SATFactory.MiniSat);
 			break;
 		case PLINGELING:
-			solver.options().setSolver(SATFactory.plingeling());
+			psolver.options().setSolver(SATFactory.plingeling());
 			break;
 		case SYRUP:
-			solver.options().setSolver(SATFactory.syrup());
+			psolver.options().setSolver(SATFactory.syrup());
 			break;
 		default:
 			break;
@@ -153,7 +152,7 @@ public final class RunTestModel {
 //		log.append((t3 - t2));
 //		log.append("\t");
 		
-		if (selected_mode == Modes.PARALLEL || selected_mode == Modes.HYBRID) {
+		if (selected_mode == DMode.PARALLEL || selected_mode == DMode.HYBRID) {
 			log.append((t2 - t1));
 			log.append("\t");
 			log.append(solution.sat() ? "S" : "U");
@@ -163,7 +162,7 @@ public final class RunTestModel {
 //			log.append(getGenTime(psolver));
 //			log.append(psolution.getSolution().instance());
 		}
-		else if (selected_mode == Modes.STATS) {
+		else if (selected_mode == DMode.STATS) {
 			DMonitor mon = psolver.executor().monitor;
 
 			long tt = mon.getNumRuns();
@@ -212,7 +211,7 @@ public final class RunTestModel {
 		log = new StringBuilder();
 	}
 
-	private static long getConfigNum(DSolver psolver2) {
+	private static long getConfigNum(DecomposedKodkodSolver psolver2) {
 		DMonitor mon = psolver2.executor().monitor;
 		long counter = mon.getNumRuns();
 		if (counter != 0)
@@ -235,11 +234,12 @@ public final class RunTestModel {
 		for (Relation r : b2.relations()) {
 			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
 		}
+		Solver solver = new Solver(psolver.options());
 		return solver.solve(f1.and(f2), b3);
 	}
 
 	private static Solution go_incremental(Bounds b1, Bounds b2, Formula f1, Formula f2) {
-		IncrementalSolver isolver = IncrementalSolver.solver(solver.options());
+		IncrementalSolver isolver = IncrementalSolver.solver(psolver.options());
 
 		Bounds b3 = b1.clone();
 		for (Relation r : b2.relations()) {
@@ -253,4 +253,5 @@ public final class RunTestModel {
 		// return isolver.solve(f2,b2);
 	}
 
+	
 }

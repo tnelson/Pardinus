@@ -199,7 +199,7 @@ public final class Solver implements KodkodSolver {
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
-		if (!bounds.targets().isEmpty()) 
+		if (options.isRunTarget()) 
 			return new TSolutionIterator(formula, bounds, options);
 		else return new SolutionIterator(formula, bounds, options);
 		
@@ -430,18 +430,20 @@ public final class Solver implements KodkodSolver {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
-		private TMode mode; // pt.uminho.haslab: TO mode
+		private Options opt; // pt.uminho.haslab: TO mode
 		private Map<String, Integer> weights; // pt.uminho.haslab: signature weights
-
 		
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
 		TSolutionIterator(Formula formula, Bounds bounds, Options options) {
+			if (!options.configOptions().solver().maxsat())
+				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");			
 			this.translTime = System.currentTimeMillis();
 			this.translation = Translator.translate(formula, bounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.trivial = 0;
+			this.opt = options;
 		}
 		
 		/**
@@ -483,7 +485,7 @@ public final class Solver implements KodkodSolver {
 		 * @return current solution
 		 */
 		private Solution nextNonTrivialSolution() {
-
+			final TMode mode = opt.getTargetMode();
 			final Translation.Whole transl = translation;
 
 			final SATSolver cnf = transl.cnf();
@@ -493,7 +495,7 @@ public final class Solver implements KodkodSolver {
 			try {				
 				cnf.valueOf(1); // fails if no previous solution
 				final int[] notModel = new int[primaryVars];
-				if (mode != null && (mode.equals(TMode.CLOSE) || mode.equals(TMode.FAR))) {
+				if (mode.equals(TMode.CLOSE) || mode.equals(TMode.FAR)) {
 					TargetSATSolver tcnf = (TargetSATSolver) cnf;
 					tcnf.clearTargets();
 					// pt.uminho.haslab: if there are weights must iterate through the relations to find the literal's owner

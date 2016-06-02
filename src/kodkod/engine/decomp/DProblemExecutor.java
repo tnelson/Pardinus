@@ -49,7 +49,7 @@ abstract public class DProblemExecutor extends Thread {
 	protected final Formula formula1, formula2;
 
 	/** the underlying regular solver */
-	protected final Solver solver;
+	protected final Solver solver1, solver2;
 
 	/** the executor managing the launching of the threads 
 	 * TODO: replace by new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue) to manage LIFO
@@ -70,12 +70,13 @@ abstract public class DProblemExecutor extends Thread {
 	 * @param solver the solver that will solve the integrated problems.
 	 * @param n the number of parallel solver threads.
 	 */
-	public DProblemExecutor(DMonitor rep, Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver, int n) {
+	public DProblemExecutor(DMonitor rep, Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver1, Solver solver2, int n) {
 		this.formula1 = f1;
 		this.formula2 = f2;
 		this.bounds1 = b1; 
 		this.bounds2 = b2; 
-		this.solver = solver;
+		this.solver1 = solver1;
+		this.solver2 = solver2;
 		this.executor = Executors.newFixedThreadPool(n);
 		this.monitor = rep;
 	}

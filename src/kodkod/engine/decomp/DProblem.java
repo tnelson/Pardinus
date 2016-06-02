@@ -47,7 +47,7 @@ public class DProblem extends Thread {
 	public DProblem(DProblemExecutor executor, Formula formula, Bounds bnds) {
 		this.executor = executor;
 		if (this.executor != null) {
-			solver = executor.solver;
+			solver = executor.solver2;
 			this.bounds = bnds;
 			this.formula = formula;
 		} else {
@@ -59,7 +59,7 @@ public class DProblem extends Thread {
 
 	protected DProblem(DProblemExecutor manager, Formula formula, Bounds bnds, Iterator<Solution> sols) {
 		this.executor = manager;
-		this.solver = manager.solver;
+		this.solver = manager.solver2;
 		this.bounds = bnds;
 		this.formula = formula;
 		this.solutions = sols;

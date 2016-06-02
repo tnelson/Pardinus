@@ -412,17 +412,31 @@ public class Options implements Cloneable, BoundedOptions, DecomposedOptions<SAT
 	// pt.uminho.haslab: target-oriented solving
 	
 	// pt.uminho.haslab
-	private TMode target_mode;
-
+	private TMode target_mode = TMode.DEFAULT;
+	private boolean runTarget = false;
 	
 	// pt.uminho.haslab
+	@Override
 	public TMode getTargetMode() {
 		return target_mode;
 	}
 	
 	// pt.uminho.haslab
+	@Override
 	public void setTargetMode(TMode mode) {
 		target_mode = mode;
+	}
+	
+	// pt.uminho.haslab
+	@Override
+	public boolean isRunTarget() {
+		return runTarget;
+	}
+
+	// pt.uminho.haslab
+	@Override
+	public void runTarget(boolean runTarget) {
+		this.runTarget = runTarget;
 	}
 	
 	// pt.uminho.haslab: decomposed solving
@@ -432,44 +446,65 @@ public class Options implements Cloneable, BoundedOptions, DecomposedOptions<SAT
 
 	// pt.uminho.haslab
 	private DMode mode = DMode.PARALLEL;
+	private PardinusOptions<SATFactory> configOptions = this;
 
 	/**
 	 * Sets the number of threads that will be launched in parallel.
 	 * @param threads
 	 */
 	// pt.uminho.haslab
+	@Override
 	public void setThreads(int threads) {
 		this.threads = threads;
 	}
 
 	// pt.uminho.haslab
+	@Override
 	public int threads() {
 		return threads;
 	}
 
 	// pt.uminho.haslab
+	@Override
 	public DMode getMode() {
 		return mode;
 	}
 
 	// pt.uminho.haslab
+	@Override
 	public void setMode(DMode mode) {
 		this.mode = mode;
+	}
+	
+	@Override
+	public void setConfigOptions(PardinusOptions<SATFactory> opt) {
+		configOptions = opt;		
+	}
+
+	@Override
+	public PardinusOptions<SATFactory> configOptions() {
+		return configOptions;
 	}
 	
 	// pt.uminho.haslab: temporal solving
 	
 	// pt.uminho.haslab
 	private int trace_length;
+
 	
 	// pt.uminho.haslab
+	@Override
 	public void setTraceLength(int trace_length) {
 		this.trace_length = trace_length;
 	}
 
 	// pt.uminho.haslab
+	@Override
 	public int traceLength() {
 		return trace_length;
 	}
+
+
+
 	
 }

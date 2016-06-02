@@ -85,6 +85,7 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 		public SATSolver instance() { 
 			return new PMaxSAT4J(org.sat4j.maxsat.SolverFactory.newDefault()); 
 		}
+		public boolean maxsat() { return true; }
 		public String toString() { return "PMaxSAT4J"; }
 	};
 	
@@ -121,6 +122,7 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 		public SATSolver instance() {
 			return new PMaxYicesNative();
 		}
+		public boolean maxsat() { return true; }
 		public String toString() { return "PMaxYicesNative"; }
 	};
 	
@@ -342,7 +344,8 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 					}
 				}
 			}
-			
+			public boolean maxsat() { return true; }
+			public boolean incremental() { return false; }
 			public String toString() {
 				return (new File(executable)).getName();
 			}
@@ -373,6 +376,11 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 	 */
 	public boolean incremental() {
 		return true;
+	}
+
+	// pt.uminho.haslab
+	public boolean maxsat() {
+		return false;
 	}
 
 }

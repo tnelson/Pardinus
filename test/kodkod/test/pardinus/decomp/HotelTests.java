@@ -3,33 +3,38 @@ package kodkod.test.pardinus.decomp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import kodkod.ast.Formula;
+import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
+import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.Options;
+import kodkod.engine.config.TargetOptions.TMode;
+import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.HotelP;
 import kodkod.examples.pardinus.decomp.HotelP.Variant;
 import kodkod.instance.Bounds;
-import kodkod.pardinus.decomp.DModel;
-import kodkod.pardinus.decomp.DOptions.Modes;
-import kodkod.pardinus.decomp.DSolver;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class HotelTests {
-	Solver solver;
-	DSolver psolver;
+	DecomposedKodkodSolver psolver;
+	Options opt, opt2;
 	
 	@Before 
 	public void method() throws InterruptedException {
-		
-		solver = new Solver();
-		psolver = new DSolver(solver);
 
-		solver.options().setSymmetryBreaking(20);
-		solver.options().setSolver(SATFactory.Glucose);
-		psolver.options().setMode(Modes.PARALLEL);
-		psolver.options().setThreads(4);
+		opt = new Options();
+		opt.setSymmetryBreaking(20);
+		opt.setSolver(SATFactory.Glucose);
+		opt.setMode(DMode.PARALLEL);
+		opt.setThreads(4);
+		opt2 = new Options(opt);
+		opt2.runTarget(true);
+		opt2.setTargetMode(TMode.FAR);
+		opt2.setSolver(SATFactory.PMaxSAT4J);
+		opt.setConfigOptions(opt2);
+		psolver = new DecomposedKodkodSolver(opt);
 		
 	}
 	
@@ -42,7 +47,8 @@ public class HotelTests {
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
 
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
@@ -64,8 +70,9 @@ public class HotelTests {
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -86,8 +93,9 @@ public class HotelTests {
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -108,8 +116,9 @@ public class HotelTests {
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -130,8 +139,9 @@ public class HotelTests {
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -152,8 +162,9 @@ public class HotelTests {
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -170,13 +181,14 @@ public class HotelTests {
 		int n = 3;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setMode(Modes.HYBRID);
+		psolver.options().setMode(DMode.HYBRID);
 		
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -194,13 +206,14 @@ public class HotelTests {
 		int n = 4;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setMode(Modes.HYBRID);
+		psolver.options().setMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -218,13 +231,14 @@ public class HotelTests {
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setMode(Modes.HYBRID);
+		psolver.options().setMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -242,13 +256,14 @@ public class HotelTests {
 		int n = 3;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setMode(Modes.HYBRID);
+		psolver.options().setMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -266,13 +281,14 @@ public class HotelTests {
 		int n = 4;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setMode(Modes.HYBRID);
+		psolver.options().setMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -290,13 +306,14 @@ public class HotelTests {
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setMode(Modes.HYBRID);
+		psolver.options().setMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
 
-		solver.options().setBitwidth(model.getBitwidth());
-
+		opt.setBitwidth(model.getBitwidth());
+		opt2.setBitwidth(model.getBitwidth());
+		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();

@@ -51,7 +51,7 @@ import kodkod.instance.Bounds;
 public class DecomposedKodkodSolver implements DecomposedSolver<Options>, BoundedSolver<Options> {
 
 	/** the regular Kodkod solver used in the parallelization */
-	final public Solver solver;
+	final private Solver solver1, solver2;
 
 	/** a manager for the decomposed solving process */
 	private DProblemExecutor executor;
@@ -70,30 +70,16 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 	 * @throws IllegalArgumentException
 	 *             if the solver is not incremental.
 	 */
-	public DecomposedKodkodSolver(Solver solver) {
-		if (!solver.options().solver().incremental())
-			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
-		this.options = solver.options();
-		this.solver = solver;
+	public DecomposedKodkodSolver() {
+		this.options = new Options();
+		this.solver1 = new Solver((Options) options.configOptions());
+		this.solver2 = new Solver(options);
 	}
-
-	/**
-	 * Constructs a new decomposed solver built over a standard Kodkod
-	 * {@link kodkod.engine.Solver solver} given defined decomposed solving
-	 * options.
-	 * 
-	 * @param solver
-	 *            the regular solver over which the decomposed solver is built.
-	 * @param opt
-	 *            the options for the decomposed solver.
-	 * @throws IllegalArgumentException
-	 *             if the solver is not incremental.
-	 */
-	public DecomposedKodkodSolver(Solver solver, Options opt) {
-		if (solver.options().solver().incremental())
-			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
-		this.options = opt;
-		this.solver = solver;
+	
+	public DecomposedKodkodSolver(Options options) {
+		this.options = options;
+		this.solver1 = new Solver((Options) options.configOptions());
+		this.solver2 = new Solver(options);
 	}
 
 	/**
@@ -119,12 +105,14 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 	 */
 	@Override
 	public Solution solve(Formula f1, Formula f2, Bounds b1, Bounds b2) throws InterruptedException {
+		if (!options.configOptions().solver().incremental())
+			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 		if (options.getMode() == DMode.STATS)
-			executor = new StatsExecutor(f1, f2, b1, b2, solver, options.threads());
+			executor = new StatsExecutor(f1, f2, b1, b2, solver1, solver2, options.threads());
 		else if (options.getMode() == DMode.HYBRID)
-			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver, options.threads(), true);
+			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver1, solver2, options.threads(), true);
 		else
-			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver, options.threads(), false);
+			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver1, solver2, options.threads(), false);
 		executor.start();
 		Solution sol = executor.waitUntil();
 		executor.terminate();
@@ -168,7 +156,7 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
-		return new DSolutionIterator(formula1, formula2, bounds1, bounds2, options, solver); 
+		return new DSolutionIterator(formula1, formula2, bounds1, bounds2, options, solver1, solver2); 
 	}
 	
 	private static class DSolutionIterator implements Iterator<Solution> {
@@ -177,13 +165,13 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Options>, Bounde
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, Options options, Solver solver) {
+		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, Options options, Solver solver1, Solver solver2) {
 			if (options.getMode() == DMode.STATS)
-				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver, options.threads());
+				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads());
 			else if (options.getMode() == DMode.HYBRID)
-				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver, options.threads(), true);
+				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads(), true);
 			else
-				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver, options.threads(), false);
+				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads(), false);
 			executor.start();
 		}
 		
