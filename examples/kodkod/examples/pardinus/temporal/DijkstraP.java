@@ -56,8 +56,6 @@ public class DijkstraP implements DModel {
         int times  = Integer.valueOf(args[2]);
         this.var = Variant.valueOf(args[3]);
 
-
-
         Formula formula = finalFormula();
         Bounds var6 = bounds();
 		ExtendedOptions options = new ExtendedOptions();
@@ -134,7 +132,7 @@ public class DijkstraP implements DModel {
      * </pre>
      */
     public Formula isFree(Expression m) {
-        return m.join(holds).no();
+        return m.join(holds.transpose()).no();
     }
 
 
@@ -273,7 +271,7 @@ public class DijkstraP implements DModel {
         final Decls d = p.oneOf(Process).and(m.oneOf(Mutex));
         final Formula f3 = grabMutex(p, m).forSome(d);
         final Formula f4 = releaseMutex(p, m).forSome(d);
-        return initial().and(((f1.and(f2)).or(f3).or(f4)).always());/*TEMPORAL OP*/
+        return initial().and(((f1.and(f2)).or(f3.or(f4))).always());/*TEMPORAL OP*/
     }
 
 
@@ -333,7 +331,7 @@ public class DijkstraP implements DModel {
      * @return he showDijkstra predicate
      */
     public Formula showDijkstra() {
-        return declarations().and(grabOrRelease()).and(deadlock()).and(waits.some());
+        return declarations().and(grabOrRelease()).and(deadlock()).and(waits.some().eventually());
     }
 
 
@@ -385,24 +383,24 @@ public class DijkstraP implements DModel {
 
 
     public static void main(String[] args) {
-        DijkstraP model = new DijkstraP(new String[]{"2","2","15","SAT"});
+        DijkstraP model = new DijkstraP(new String[]{"3","3","5","SAT"});
 
-        Bounds b1 = model.temporalFormula.getStaticBounds();
-        Bounds b2 = model.temporalFormula.getDynamicBounds();
-        Formula f1 = model.temporalFormula.getStaticFormula();
-        Formula f2 = model.temporalFormula.getDynamicFormula();
-
-        Bounds b3 = b1.clone();
-        for (Relation r : b2.relations()) {
-            b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
-        }
-        Solver solver = new Solver();
-        solver.options().setSolver(SATFactory.DefaultSAT4J);
-        Solution sol = solver.solve(f1.and(f2), b3);
-
-        System.out.println(f2);
-
-        System.out.println(sol);
+		Bounds b1 = model.temporalFormula.getStaticBounds();
+		Bounds b2 = model.temporalFormula.getDynamicBounds();
+		Formula f1 = model.temporalFormula.getStaticFormula();
+		Formula f2 = model.temporalFormula.getDynamicFormula();
+		
+		Bounds b3 = b1.clone();
+		for (Relation r : b2.relations()) {
+			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
+		}
+		Solver solver = new Solver();
+		solver.options().setSolver(SATFactory.Glucose);
+		Solution sol = solver.solve(f1.and(f2), b3);
+		
+		System.out.println(f2);
+		
+		System.out.println(sol);
         return;
     }
 
