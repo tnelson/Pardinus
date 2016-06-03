@@ -53,7 +53,7 @@ public class Instance implements Cloneable { // pt.uminho.haslab: removed final
 	private final SparseSequence<TupleSet> ints;
 	private final Universe universe;
 	
-	private Instance(Universe u, Map<Relation, TupleSet> tuples, SparseSequence<TupleSet> ints) {
+	protected Instance(Universe u, Map<Relation, TupleSet> tuples, SparseSequence<TupleSet> ints) {
 		this.universe = u;
 		this.tuples = tuples;
 		this.ints = ints;
