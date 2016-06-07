@@ -26,6 +26,8 @@ import kodkod.ast.*;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.decomp.DModel;
+import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
@@ -38,11 +40,7 @@ import java.util.List;
 /**
  * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
-public class RingP {
-
-	public int getBitwidth() {
-		return 1;
-	}
+public class RingP implements DModel {
 
 	public enum Variant1 {
 		BADLIVENESS, GOODLIVENESS, GOODSAFETY;
@@ -65,6 +63,8 @@ public class RingP {
 	// partition 2 relations
 	private VarRelation toSend, elected;
 
+	private TemporalFormulaSlicer slicer;
+
 	public RingP(String args[]) {
 		this.n_ps = Integer.valueOf(args[0]);
 		this.variant = Variant1.valueOf(args[1]);
@@ -82,6 +82,7 @@ public class RingP {
 		toSend = VarRelation.binary("toSend");
 		elected = VarRelation.unary("elected");
 
+		slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
 	}
 
 	/**
@@ -384,6 +385,37 @@ public class RingP {
 		b.bound(elected, pb);
 
 		return b;
+	}
+
+	@Override
+	public Bounds bounds1() {
+		return slicer.getStaticBounds();
+	}
+
+	@Override
+	public Bounds bounds2() {
+		return slicer.getDynamicBounds();
+	}
+
+	@Override
+	public Formula partition1() {
+		return Formula.and(slicer.getStaticFormulas());
+	}
+
+	@Override
+	public Formula partition2() {
+		return Formula.and(slicer.getDynamicFormulas());
+	}
+
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getBitwidth() {
+		return 1;
 	}
 
 	public static void main(String[] args) {

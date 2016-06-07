@@ -31,6 +31,8 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.decomp.DModel;
+import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
@@ -43,7 +45,7 @@ import java.util.List;
 /**
  * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
-public class HotelP {
+public class HotelP implements DModel {
 
 	private int n;
 	final private Variant variant;
@@ -55,6 +57,8 @@ public class HotelP {
 	public enum Variant {
 		INTERVENES, NOINTERVENES;
 	}
+
+	private TemporalFormulaSlicer slicer;
 
 	public HotelP(String[] args) {
 		this.n = Integer.valueOf(args[0]);
@@ -73,10 +77,7 @@ public class HotelP {
 		occupant = VarRelation.nary("FrontDesk.occupant", 2);
 		gkeys = VarRelation.nary("Guest.gkeys", 2);
 
-	}
-	
-	public int getBitwidth() {
-		return 1;
+		slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
 	}
 
 	public Formula finalFormula() {
@@ -351,19 +352,49 @@ public class HotelP {
 		b.bound(current, rb.product(kb));
 		b.bound(gkeys, gb.product(kb));
 		return b;
-
 	}
 
-    public static void main(String[] args) {
-		HotelP model = new HotelP(new String[]{"3","NOINTERVENES"});
-		
+	@Override
+	public Bounds bounds1() {
+		return slicer.getStaticBounds();
+	}
+
+	@Override
+	public Bounds bounds2() {
+		return slicer.getDynamicBounds();
+	}
+
+	@Override
+	public Formula partition1() {
+		return Formula.and(slicer.getStaticFormulas());
+	}
+
+	@Override
+	public Formula partition2() {
+		return Formula.and(slicer.getDynamicFormulas());
+	}
+
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getBitwidth() {
+		return 1;
+	}
+
+	public static void main(String[] args) {
+		HotelP model = new HotelP(new String[] { "3", "NOINTERVENES" });
+
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		Solver solver = new Solver(opt);
-	
-		Solution sol = solver.solve(model.finalFormula(),model.bounds());
-		
+
+		Solution sol = solver.solve(model.finalFormula(), model.bounds());
+
 		System.out.println(sol);
 		return;
 	}

@@ -31,6 +31,8 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.decomp.DModel;
+import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
@@ -43,7 +45,7 @@ import java.util.List;
 /**
  * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
-public class SpanP {
+public class SpanP implements DModel {
 
 	final private Relation Root, Process_rem, Level, adjacent;
 	final private Relation level_first, level_next, level_last;
@@ -56,6 +58,8 @@ public class SpanP {
 	public enum Variant {
 		V1, V2, V3;
 	}
+
+	private TemporalFormulaSlicer slicer;
 
 	public SpanP(String args[]) {
 
@@ -73,6 +77,8 @@ public class SpanP {
 
 		n_ps = Integer.valueOf(args[0]);
 		var = Variant.valueOf(args[1]);
+
+		slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
 	}
 
 	public Formula staticPart() {
@@ -322,6 +328,37 @@ public class SpanP {
 		return b;
 	}
 
+	@Override
+	public Bounds bounds1() {
+		return slicer.getStaticBounds();
+	}
+
+	@Override
+	public Bounds bounds2() {
+		return slicer.getDynamicBounds();
+	}
+
+	@Override
+	public Formula partition1() {
+		return Formula.and(slicer.getStaticFormulas());
+	}
+
+	@Override
+	public Formula partition2() {
+		return Formula.and(slicer.getDynamicFormulas());
+	}
+
+	@Override
+	public String shortName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getBitwidth() {
+		return 1;
+	}
+
 	public static void main(String[] args) {
 		SpanP model = new SpanP(new String[] { "2", "V3" });
 
@@ -335,4 +372,5 @@ public class SpanP {
 		System.out.println(sol);
 		return;
 	}
+
 }
