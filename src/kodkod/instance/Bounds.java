@@ -60,7 +60,7 @@ import kodkod.util.ints.TreeSequence;
  * @author Emina Torlak
  * @modified nmm, tmg (added targets and weights)
  **/
-public final class Bounds implements Cloneable {
+public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	private final TupleFactory factory;
 	private final Map<Relation, TupleSet> lowers, uppers;
 	private final SparseSequence<TupleSet> intbounds;
