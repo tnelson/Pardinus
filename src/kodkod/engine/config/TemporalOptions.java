@@ -4,8 +4,8 @@ import kodkod.engine.PrimitiveFactory;
 
 public interface TemporalOptions<S extends PrimitiveFactory<?>> extends PardinusOptions<S> {
 
-	public void setTraceLength(int trace_length);
+	public void setMaxTraceLength(int trace_length);
 
-	public int traceLength();
+	public int maxTraceLength();
 
 }

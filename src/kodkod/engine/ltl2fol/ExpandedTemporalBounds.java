@@ -29,115 +29,167 @@ import kodkod.instance.*;
 import java.util.*;
 
 /**
- * This class creates new bounds with based on the old bounds(without temporal
- * references). The temporal relations' bounds are filed with the Time atoms
- * created in this class based on the number of times defined by the user.
+ * An extension to the regular Kodkod {@link Bounds bounds} that stores
+ * information regarding its origin from bounds over {@link VarRelation variable
+ * relations}. Translates {@link VarRelation variable relation} bounds into its
+ * standard representation, by appending the {@link TemporalTranslator#TIME time
+ * sig} to the bound. The bounds of static relations should remain unchanged.
+ * The temporal options will define the maximum size of the trace. It will also
+ * store the mapping of the variable relations into their expanded versions
  *
- * @author Eduardo Pessoa, nmm
- *
+ * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
-public class VarBoundsConversor {
-	private Bounds oldBounds;
+public class ExpandedTemporalBounds extends Bounds {
 
+	/**
+	 * The number of distinguished states in the trace.
+	 */
 	private int numberOfTimes;
 
-	private Universe universe;
-	private TupleFactory tupleFactory;
-	private Bounds staticBounds, dynamicBounds;
-	private Relation[] timedRelations;
+	/**
+	 * The originally static relations.
+	 */
+	private Set<Relation> staticRelations;
+
+	/**
+	 * A mapping that identifies the variable relations that were extended into
+	 * static relations.
+	 */
 	private Map<String, Relation> extendedVarRelations;
 
-	public VarBoundsConversor(Bounds oldBounds, int numberOfTimes, Relation[] time) {
-		this.oldBounds = oldBounds;
+	public ExpandedTemporalBounds(Bounds oldBounds, int numberOfTimes) {
+		super(createUniverse(oldBounds, numberOfTimes));
+		this.staticRelations = new HashSet<Relation>();
 		this.numberOfTimes = numberOfTimes;
-		this.timedRelations = time;
-		this.extendedVarRelations = new HashMap<String,Relation>();
-		this.createUniverse();
-		this.bounding();
-	}
-
-	public Bounds getDynamicBounds() {
-		return dynamicBounds;
-	}
-
-	public Bounds getStaticBounds() {
-		return staticBounds;
+		this.extendedVarRelations = new HashMap<String, Relation>();
+		this.expand(oldBounds);
 	}
 
 	/**
-	 * Expands the old bounds by converting the variable bounds into regular
-	 * bounds with a Time atom appended.
+	 * The set of static relations that were extended from variable relations,
+	 * plus the constant relations representing the trace.
+	 * 
+	 * @return the extended and trace relations.
 	 */
-	private void bounding() {
-		TupleSet tupleSetTime = this.tupleFactory.range(this.tupleFactory.tuple(new Object[] { "Time0" }),
-				this.tupleFactory.tuple(new Object[] { "Time" + (this.numberOfTimes - 1) }));
-		for (Relation r : this.oldBounds.relations()) {
+	public Set<Relation> getDynamicRelations() {
+		Set<Relation> dynamicRelations = new HashSet<Relation>(extendedVarRelations.values());
+
+		dynamicRelations.add(TemporalTranslator.TIME);
+		dynamicRelations.add(TemporalTranslator.INIT);
+		dynamicRelations.add(TemporalTranslator.END);
+		dynamicRelations.add(TemporalTranslator.NEXT);
+		dynamicRelations.add(TemporalTranslator.LOOP);
+		dynamicRelations.add(TemporalTranslator.TRACE);
+
+		return dynamicRelations;
+	}
+
+	/**
+	 * The static relations resulting from the extension of the variable
+	 * relations.
+	 * 
+	 * @return a mapping from the relations names into their expanded version.
+	 */
+	public Map<String, Relation> getExtendedVarRelations() {
+		return extendedVarRelations;
+	}
+
+	/**
+	 * The set of static relations that were already static.
+	 * 
+	 * @return the originally static relations.
+	 */
+	public Set<Relation> getStaticRelations() {
+		return staticRelations;
+	}
+
+	/**
+	 * Expands the old bounds by converting the bounds over variable relations
+	 * into regular bounds with {@link TemporalTranslator#TIME temporal} atoms
+	 * appended. It also bounds the constant variables representing the trace.
+	 * 
+	 * @param oldBounds
+	 *            the bounds with variable relations to be expanded.
+	 */
+	private void expand(Bounds oldBounds) {
+		TupleSet tupleSetTime = universe().factory().range(
+				universe().factory().tuple(new Object[] { TemporalTranslator.TIMEATOM + "0" }),
+				universe().factory().tuple(new Object[] { TemporalTranslator.TIMEATOM + (this.numberOfTimes - 1) }));
+		for (Relation r : oldBounds.relations()) {
 			if (r instanceof VarRelation) {
-				this.makeNewTuplesFromOldBounds((VarRelation) r, tupleSetTime);
+				this.makeNewTuplesFromOldBounds(oldBounds, (VarRelation) r, tupleSetTime);
 			} else {
-				this.makeNewTuplesFromOldBounds(r);
+				this.makeNewTuplesFromOldBounds(oldBounds, r);
 			}
 		}
 
-		dynamicBounds.bound(timedRelations[0], tupleSetTime);// Time
-		dynamicBounds.bound(timedRelations[1], tupleSetTime);// init
-		dynamicBounds.bound(timedRelations[2], tupleSetTime);// end
-		dynamicBounds.bound(timedRelations[3], tupleSetTime.product(tupleSetTime));// next
-		dynamicBounds.bound(timedRelations[4], tupleSetTime.product(tupleSetTime));// loop
-		dynamicBounds.bound(timedRelations[5], tupleSetTime.product(tupleSetTime));// nextt
+		super.bound(TemporalTranslator.TIME, tupleSetTime);
+		super.bound(TemporalTranslator.INIT, tupleSetTime);
+		super.bound(TemporalTranslator.END, tupleSetTime);
+		super.bound(TemporalTranslator.NEXT, tupleSetTime.product(tupleSetTime));
+		super.bound(TemporalTranslator.LOOP, tupleSetTime.product(tupleSetTime));
+		super.bound(TemporalTranslator.TRACE, tupleSetTime.product(tupleSetTime));
 	}
 
-	/*-------------------------*/
-
 	/**
-	 * Create a new universe by adding numberOfTimes Time atoms.
+	 * Create a new universe by duplicating the original one and creating a
+	 * given number of {@link TemporalTranlator#TIME time} atoms.
+	 *
+	 * @param oldBounds
+	 *            the original bounds.
+	 * @param numberOfTimes
+	 *            the number of time atoms.
+	 * @return a new universe with the atoms of the original one plus the time
+	 *         ones.
 	 */
-	private void createUniverse() {
-		ArrayList<Object> localArrayList = new ArrayList<Object>();
-		Iterator<Object> it = this.oldBounds.universe().iterator();
+	private static Universe createUniverse(Bounds oldBounds, int numberOfTimes) {
+		List<Object> newAtoms = new ArrayList<Object>();
+		Iterator<Object> it = oldBounds.universe().iterator();
 		while (it.hasNext()) {
-			localArrayList.add(it.next());
+			newAtoms.add(it.next());
 		}
 
-		for (int i = 0; i < this.numberOfTimes; i++) {
-			localArrayList.add("Time" + i);
+		for (int i = 0; i < numberOfTimes; i++) {
+			newAtoms.add(TemporalTranslator.TIMEATOM + i);
 		}
 
-		this.universe = new Universe(localArrayList);
-		this.tupleFactory = this.universe.factory();
-		this.dynamicBounds = new Bounds(this.universe);
-		this.staticBounds = new Bounds(this.universe);
+		return new Universe(newAtoms);
 	}
 
 	/**
 	 * Converts the existing bounds of a variable relation into ones with the
-	 * current universe, appending the Time atoms.
+	 * current universe, appending the {@link TemporalTranlator#TIME time}
+	 * atoms.
 	 * 
+	 * @param oldBounds
+	 *            the original bounds.
 	 * @param relation
-	 *            the variable relation whose bounds are to be converted
-	 * @param tupleSetTime
-	 *            the time atoms in the universe
+	 *            the variable relation whose bounds are to be expanded.
+	 * @param timeAtoms
+	 *            the time atoms in the universe.
 	 */
-	private void makeNewTuplesFromOldBounds(VarRelation relation, TupleSet tupleSetTime) {
+	private void makeNewTuplesFromOldBounds(Bounds oldBounds, VarRelation relation, TupleSet timeAtoms) {
 		TupleSet tupleSetL = convert(oldBounds.lowerBounds().get(relation));
 		TupleSet tupleSetU = convert(oldBounds.upperBounds().get(relation));
 
-		dynamicBounds.bound(getRelation(relation), tupleSetL.product(tupleSetTime),
-				tupleSetU.product(tupleSetTime));
+		super.bound(getExpandedRelation(relation), tupleSetL.product(timeAtoms), tupleSetU.product(timeAtoms));
 	}
 
 	/**
 	 * Converts the existing bounds of a static relation into ones with the
 	 * current universe.
 	 * 
+	 * @param oldBounds
+	 *            the original bounds.
 	 * @param relation
-	 *            the static relation whose bounds are to be converted
+	 *            the variable relation whose bounds are to be expanded.
 	 */
-	private void makeNewTuplesFromOldBounds(Relation relation) {
+	private void makeNewTuplesFromOldBounds(Bounds oldBounds, Relation relation) {
 		TupleSet tupleSetL = convert(oldBounds.lowerBounds().get(relation));
 		TupleSet tupleSetU = convert(oldBounds.upperBounds().get(relation));
 
-		staticBounds.bound(relation, tupleSetL, tupleSetU);
+		staticRelations.add(relation);
+		super.bound(relation, tupleSetL, tupleSetU);
 	}
 
 	/**
@@ -149,7 +201,7 @@ public class VarBoundsConversor {
 	 * @return the converted tuple set
 	 */
 	private TupleSet convert(TupleSet ts) {
-		TupleSet tupleSet = this.tupleFactory.noneOf(ts.arity());
+		TupleSet tupleSet = universe().factory().noneOf(ts.arity());
 		Iterator<Tuple> itr = ts.iterator();
 		while (itr.hasNext()) {
 			Tuple t = itr.next();
@@ -157,20 +209,21 @@ public class VarBoundsConversor {
 			for (int i = 0; i < t.arity(); i++) {
 				l.add(t.atom(i));
 			}
-			tupleSet.add(this.tupleFactory.tuple(l));
+			tupleSet.add(universe().factory().tuple(l));
 		}
 		return tupleSet;
 	}
 
 	/**
-	 * Returns the static relation corresponding to the extension of a variable
-	 * relation. Creates it first time.
+	 * Returns the a static relation corresponding to the extension of a
+	 * variable relation, by increasing its arity by 1. Creates it if being
+	 * called for the first time.
 	 * 
-	 * @param name
 	 * @param v
-	 * @return
+	 *            the variable relation to be expanded.
+	 * @return the expanded version.
 	 */
-	private Relation getRelation(VarRelation v) {
+	private Relation getExpandedRelation(VarRelation v) {
 		Relation e = extendedVarRelations.get(v.name());
 		if (e == null) {
 			Relation varRelation = Relation.nary(v.name(), v.arity() + 1);
@@ -180,15 +233,5 @@ public class VarBoundsConversor {
 			return e;
 		}
 	}
-	
-	/**
-	 * The relations resulting from the extension of the variable relations.
-	 * 
-	 * @return
-	 */
-	Map<String, Relation> getExtendedVarRelations() {
-		return extendedVarRelations;
-	}
-
 
 }

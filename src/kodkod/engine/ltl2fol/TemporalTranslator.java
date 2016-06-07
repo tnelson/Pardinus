@@ -1,114 +1,153 @@
+/* 
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package kodkod.engine.ltl2fol;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
+import java.util.HashSet;
 
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.Formula;
+import kodkod.ast.Node;
 import kodkod.ast.Relation;
+import kodkod.ast.TempExpression;
+import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
+import kodkod.ast.visitor.AbstractDetector;
 import kodkod.engine.config.TemporalOptions;
 import kodkod.instance.Bounds;
 
 /**
- * Created by Eduardo Pessoa on 20/03/16.
+ * Translates temporal {@link Formula formulas} and {@link Bounds bounds}, with
+ * respect to given {@link TemporalOptions temporal options}.
+ *
+ * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
-public class TemporalFormulaExtension {
+public class TemporalTranslator {
 
-    private Relation Time = Relation.unary("Time");
-    private Relation init = Relation.unary("init");
-    private Relation end = Relation.unary("end");
-    private Relation next = Relation.binary("next");
+    /** Relations representing the trace constants. **/
+    public static Relation TIME = Relation.unary("Time");
+    public static Relation INIT = Relation.unary("init");
+    public static Relation END = Relation.unary("end");
+    public static Relation NEXT = Relation.binary("next");
+    public static Relation TRACE = Relation.binary("trace");
+    public static Relation LOOP = Relation.binary("loop");
 
-    private Relation nextt = Relation.binary("nextt");
-    private Relation loop = Relation.nary("loop", 2);
-    
-    private Relation[] timeList;
-    public Map<String,Relation> varExtendedRelationsList;
+    /** The name assigned to {@link #TIME time} atoms. */
+    public static String TIMEATOM = "Time";
 
-    private Formula formula;
-
-    //final types
-
-    private Formula nnfFormula;
-
-    private Formula dynamicFormula;
-    private Formula dynamicFormulaExpanded;
-
-    private Formula staticFormula;
-
-    private Set<Relation> dynamicRelations;
-    private Set<Relation> staticRelations;
-
-    private Bounds dynamicBounds;
-    private Bounds staticBounds;
-
-    public TemporalFormulaExtension(Formula f, Bounds bounds, TemporalOptions<?> options){
-        this.formula=f;
-        this.negativeNormalForm();
-        this.formulaSlicing();
-        this.putTimeInList();
-        VarBoundsConversor bounding = new VarBoundsConversor(bounds,options.traceLength(),timeList);
-        varExtendedRelationsList = bounding.getExtendedVarRelations();
-        this.temporalFormulaExtension();
-        this.staticBounds = bounding.getStaticBounds();
-        this.dynamicBounds = bounding.getDynamicBounds();
-
-//        p("DYNAMIC PART: \n"+this.dynamicFormulaExpanded+"\n"+bounding.getDynamicBounds().toString());
-//        p("\n\nSTATIC PART: \n"+this.staticFormula.toString()+"\n"+bounding.getStaticBounds().toString());
-
+    /**
+     * Translates {@link VarRelation variable relation} bounds into its standard
+     * representation, by appending the {@link #TIME time sig} to the bound. The
+     * bounds of static relations should remain unchanged. The temporal options
+     * will define the maximum size of the trace. The returned temporal bounds
+     * also store the mapping of the variable relations into their expanded
+     * static version.
+     * 
+     * @param bounds
+     *            the bounds to be expanded.
+     * @param options
+     *            the temporal options.
+     * @return the expanded variable bounds and the mapping between the old and
+     *         new sigs.
+     */
+    public static ExpandedTemporalBounds translate(Bounds bounds,
+	    TemporalOptions<?> options) {
+	ExpandedTemporalBounds tbounds = new ExpandedTemporalBounds(bounds,
+		options.maxTraceLength());
+	return tbounds;
     }
 
-    public void negativeNormalForm(){
-        NNFReplacer nnf = new NNFReplacer();
-        this.nnfFormula = this.formula.accept(nnf);
+    /**
+     * Converts an LTL temporal formula into its FOL static representation,
+     * provided the previous expansion of the bounds and temporal options. The
+     * formula is previously converted into negative normal form to guarantee
+     * the correct translation of the temporal operators.
+     * 
+     * @param formula
+     *            the temporal formula to be expanded.
+     * @param bounds
+     *            the expanded bounds.
+     * @param options
+     *            the temporal options.
+     * @return the static version of the temporal formula.
+     */
+    public static Formula translate(Formula formula, ExpandedTemporalBounds bounds,
+	    TemporalOptions<?> options) {
+	if (isTemporal(bounds))
+	    throw new UnsupportedOperationException(
+		    "Variable bounds must be previously expanded: " + bounds);
+	NNFReplacer nnf = new NNFReplacer();
+	Formula nnfFormula = formula.accept(nnf);
+
+	LTL2FOLTranslator addTimeToFormula = new LTL2FOLTranslator(
+		bounds.getExtendedVarRelations());
+	Formula result = addTimeToFormula.translate(nnfFormula);
+
+	return result;
     }
 
-    public void formulaSlicing(){
-        SlicingDynamicFormulas slicingDynamicFormulas =  new SlicingDynamicFormulas();
-        this.nnfFormula.accept(slicingDynamicFormulas);
-        this.dynamicFormula = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-        this.staticFormula = Formula.and(slicingDynamicFormulas.getStaticFormulas());
-        this.dynamicRelations =  slicingDynamicFormulas.getDynamicRelations();
-        this.staticRelations =  slicingDynamicFormulas.getStaticRelations();
+    /**
+     * Checks whether an AST node has temporal constructs.
+     * 
+     * @param node
+     *            the node to be checked.
+     * @return whether the node has temporal constructs.
+     */
+    public static boolean isTemporal(Node node) {
+	AbstractDetector det = new AbstractDetector(new HashSet<Node>()) {
+	    @Override
+	    public Boolean visit(UnaryTempFormula tempFormula) {
+		return cache(tempFormula, true);
+	    }
+
+	    @Override
+	    public Boolean visit(BinaryTempFormula tempFormula) {
+		return cache(tempFormula, true);
+	    }
+
+	    @Override
+	    public Boolean visit(TempExpression tempExpr) {
+		return cache(tempExpr, true);
+	    }
+
+	    @Override
+	    public Boolean visit(Relation relation) {
+		return cache(relation, relation instanceof VarRelation);
+	    }
+	};
+	return (boolean) node.accept(det);
     }
 
-
-    public void temporalFormulaExtension(){
-        LTL2FOLTranslator addTimeToFormula = new LTL2FOLTranslator(timeList,varExtendedRelationsList);
-        Formula result = addTimeToFormula.convert(dynamicFormula);
-        this.dynamicFormulaExpanded = result;
+    /**
+     * Checks whether a set of bounds binds variable relations.
+     * 
+     * @param bounds
+     *            the bounds to be checked.
+     * @return whether the bounds bind variable relations.
+     */
+    public static boolean isTemporal(Bounds bounds) {
+	for (Relation r : bounds.relations())
+	    if (r instanceof VarRelation)
+		return true;
+	return false;
     }
-
-    public void putTimeInList(){
-        this.timeList = new Relation[6];
-        this.timeList[0] = Time;
-        this.timeList[1] = init;
-        this.timeList[2] = end;
-        this.timeList[3] = next;
-        this.timeList[4] = loop;
-        this.timeList[5] = nextt;
-        this.dynamicRelations.addAll(Arrays.asList(this.timeList));
-    }
-
-    public Bounds getDynamicBounds() {
-        return dynamicBounds;
-    }
-
-    public Bounds getStaticBounds() {
-        return staticBounds;
-    }
-
-    public Formula getStaticFormula() {
-        return staticFormula;
-    }
-
-    public Formula getDynamicFormula() {
-        return dynamicFormulaExpanded;
-    }
-
-    public static void p(String name) {
-        System.out.println(name);
-    }
-
-
 }

@@ -27,9 +27,11 @@ import java.util.Set;
 import kodkod.ast.Relation;
 import kodkod.engine.bool.BooleanConstant;
 import kodkod.engine.config.Options;
+import kodkod.engine.ltl2fol.ExpandedTemporalBounds;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -159,7 +161,12 @@ public abstract class Translation {
 	 */
 	public final Instance interpret() {
 		final SATSolver solver = cnf();
-		final Instance instance = new Instance(bounds.universe());
+		// pt.uminho.haslab
+		final Instance instance;
+		if (bounds instanceof ExpandedTemporalBounds)
+			instance = new TemporalInstance(bounds.universe(),((ExpandedTemporalBounds) bounds()).getExtendedVarRelations());
+		else
+			instance = new Instance(bounds.universe());
 		final TupleFactory f = bounds.universe().factory();
 		for(IndexedEntry<TupleSet> entry : bounds.intBounds()) {
 			instance.add(entry.index(), entry.value());

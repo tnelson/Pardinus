@@ -43,10 +43,15 @@ import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.visitor.AbstractReplacer;
 
 /**
- * @author nmm, ejp
+ * Converts an LTL temporal formula into its negated normal form (NNF), by
+ * propagating negations down LTL and FOL quantifiers.
+ * 
+ * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
+//TODO: build on top of Kodkod's FormulaFlattener?
 public class NNFReplacer extends AbstractReplacer {
 
+	/** Whether the current node is in a negated context. */
 	private boolean negated = false;
 
 	public NNFReplacer() {
@@ -55,23 +60,27 @@ public class NNFReplacer extends AbstractReplacer {
 
 	@Override
 	public Formula visit(IntComparisonFormula intComparisonFormula) {
-		if (negated) return intComparisonFormula.not();
-		else return intComparisonFormula;
+		if (negated)
+			return intComparisonFormula.not();
+		else
+			return intComparisonFormula;
 	}
 
 	@Override
 	public Formula visit(QuantifiedFormula quantifiedFormula) {
-		if(negated){
+		if (negated) {
 			switch (quantifiedFormula.quantifier()) {
-			case ALL: return quantifiedFormula.formula().accept(this).forSome(quantifiedFormula.decls());
-			case SOME: return quantifiedFormula.formula().accept(this).forAll(quantifiedFormula.decls());
+			case ALL:
+				return quantifiedFormula.formula().accept(this).forSome(quantifiedFormula.decls());
+			case SOME:
+				return quantifiedFormula.formula().accept(this).forAll(quantifiedFormula.decls());
 			default:
 				negated = !negated;
 				Formula temp = quantifiedFormula.accept(this);
 				negated = !negated;
 				return temp.not();
 			}
-		}else {
+		} else {
 			Formula f = quantifiedFormula.formula().accept(this);
 			return (QuantifiedFormula) f.quantify(quantifiedFormula.quantifier(), quantifiedFormula.decls());
 		}
@@ -80,8 +89,8 @@ public class NNFReplacer extends AbstractReplacer {
 	@Override
 	public Formula visit(NaryFormula naryFormula) {
 		Formula[] arrayOfFormula = new Formula[naryFormula.size()];
-		if(negated) {
-			switch(naryFormula.op()) {
+		if (negated) {
+			switch (naryFormula.op()) {
 			case AND:
 				for (int j = 0; j < arrayOfFormula.length; j++) {
 					Formula localFormula2 = naryFormula.child(j);
@@ -117,14 +126,15 @@ public class NNFReplacer extends AbstractReplacer {
 	public Formula visit(BinaryFormula binaryFormula) {
 		Formula left_t, right_t, left_f, right_f;
 		if (negated) {
-			switch(binaryFormula.op()) {
+			switch (binaryFormula.op()) {
 			case IMPLIES: // !(a => b) = !(!a || b) = a && !b
 				right_f = binaryFormula.right().accept(this);
 				negated = !negated;
 				left_t = binaryFormula.left().accept(this);
 				negated = !negated;
 				return left_t.and(right_f);
-			case IFF: // !(a <=> b) = !( (a | !b) & (!a | b)) = !(a | !b) | !(! a | b) = (!a & b) | (a & !b)
+			case IFF: // !(a <=> b) = !( (a | !b) & (!a | b)) = !(a | !b) | !(!
+						// a | b) = (!a & b) | (a & !b)
 				negated = !negated;
 				left_t = binaryFormula.left().accept(this);
 				right_t = binaryFormula.right().accept(this);
@@ -145,17 +155,17 @@ public class NNFReplacer extends AbstractReplacer {
 				left_t = binaryFormula.left().accept(this);
 				right_t = binaryFormula.right().accept(this);
 				negated = !negated;
-				return left_t.compose(binaryFormula.op(),right_t).not();
+				return left_t.compose(binaryFormula.op(), right_t).not();
 			}
 		} else {
-			switch(binaryFormula.op()) {
+			switch (binaryFormula.op()) {
 			case IMPLIES: // (a => b) = (!a || b)
 				right_t = binaryFormula.right().accept(this);
 				negated = !negated;
 				left_f = binaryFormula.left().accept(this);
 				negated = !negated;
 				return left_f.or(right_t);
-			case IFF: // (a <=> b) = ((a | !b) & (!a | b)) 
+			case IFF: // (a <=> b) = ((a | !b) & (!a | b))
 				left_t = binaryFormula.left().accept(this);
 				right_t = binaryFormula.right().accept(this);
 				negated = !negated;
@@ -166,7 +176,7 @@ public class NNFReplacer extends AbstractReplacer {
 			default:
 				left_t = binaryFormula.left().accept(this);
 				right_t = binaryFormula.right().accept(this);
-				return left_t.compose(binaryFormula.op(),right_t);
+				return left_t.compose(binaryFormula.op(), right_t);
 			}
 		}
 
@@ -182,45 +192,59 @@ public class NNFReplacer extends AbstractReplacer {
 
 	@Override
 	public Formula visit(ConstantFormula constantFormula) {
-		if (negated) return constantFormula.not();
-		else return constantFormula;
+		if (negated)
+			return constantFormula.not();
+		else
+			return constantFormula;
 	}
 
 	@Override
 	public Formula visit(ComparisonFormula comparisonFormula) {
-		if (negated) return comparisonFormula.not();
-		else return comparisonFormula;
+		if (negated)
+			return comparisonFormula.not();
+		else
+			return comparisonFormula;
 	}
 
 	@Override
 	public Formula visit(MultiplicityFormula multiplicityFormula) {
-		if (negated) return multiplicityFormula.not();
-		else return multiplicityFormula;
+		if (negated)
+			return multiplicityFormula.not();
+		else
+			return multiplicityFormula;
 	}
 
 	@Override
 	public Formula visit(RelationPredicate relationPredicate) {
-		if (negated) return relationPredicate.not();
-		else return relationPredicate;
+		if (negated)
+			return relationPredicate.not();
+		else
+			return relationPredicate;
 	}
 
 	@Override
 	public Formula visit(UnaryTempFormula unaryTempFormula) {
 		if (negated) {
-			switch(unaryTempFormula.op()) {
-			case ALWAYS: return unaryTempFormula.formula().accept(this).eventually();
-			case EVENTUALLY: return unaryTempFormula.formula().accept(this).always();
-			case HISTORICALLY: return unaryTempFormula.formula().accept(this).once();
-			case ONCE: return unaryTempFormula.formula().accept(this).historically();
-			case NEXT: return unaryTempFormula.formula().accept(this).next();
-			case PREVIOUS: return unaryTempFormula.formula().accept(this).previous();
-			default: 
+			switch (unaryTempFormula.op()) {
+			case ALWAYS:
+				return unaryTempFormula.formula().accept(this).eventually();
+			case EVENTUALLY:
+				return unaryTempFormula.formula().accept(this).always();
+			case HISTORICALLY:
+				return unaryTempFormula.formula().accept(this).once();
+			case ONCE:
+				return unaryTempFormula.formula().accept(this).historically();
+			case NEXT:
+				return unaryTempFormula.formula().accept(this).next();
+			case PREVIOUS:
+				return unaryTempFormula.formula().accept(this).previous();
+			default:
 				negated = !negated;
 				Formula temp = unaryTempFormula.formula().accept(this);
 				negated = !negated;
 				return temp.compose(unaryTempFormula.op()).not();
 			}
-		} else{
+		} else {
 			Formula f = unaryTempFormula.formula().accept(this);
 			return f.compose(unaryTempFormula.op());
 		}
@@ -229,21 +253,22 @@ public class NNFReplacer extends AbstractReplacer {
 	@Override
 	public Formula visit(BinaryTempFormula binaryTempFormula) {
 		if (negated) {
-			switch(binaryTempFormula.op()) {
-			case UNTIL: return binaryTempFormula.left().accept(this).release(binaryTempFormula.right().accept(this));
-			case RELEASE: return binaryTempFormula.left().accept(this).until(binaryTempFormula.right().accept(this));
-			default: 
+			switch (binaryTempFormula.op()) {
+			case UNTIL:
+				return binaryTempFormula.left().accept(this).release(binaryTempFormula.right().accept(this));
+			case RELEASE:
+				return binaryTempFormula.left().accept(this).until(binaryTempFormula.right().accept(this));
+			default:
 				negated = !negated;
 				Formula temp1 = binaryTempFormula.left().accept(this);
 				Formula temp2 = binaryTempFormula.right().accept(this);
 				negated = !negated;
-				return temp1.compose(binaryTempFormula.op(),temp2).not();
+				return temp1.compose(binaryTempFormula.op(), temp2).not();
 			}
-		}else{
+		} else {
 			Formula left = binaryTempFormula.left().accept(this);
 			Formula right = binaryTempFormula.right().accept(this);
-			return left.compose(binaryTempFormula.op(),right);
+			return left.compose(binaryTempFormula.op(), right);
 		}
 	}
 }
-

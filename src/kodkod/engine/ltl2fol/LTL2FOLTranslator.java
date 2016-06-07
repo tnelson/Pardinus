@@ -35,95 +35,116 @@ import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryTempFormula;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.TemporalOperator;
-import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.AbstractReplacer;
 
 /**
  * Translates an LTL temporal formula into its standard Kodkod FOL
- * representation.
+ * representation. Assumes that the variable relations have been previously
+ * expanded into its static version. To do so, it explicitly introduces the time
+ * elements into the formula, converting the temporal operators into time
+ * quantifiers and applying the time variable to variable relations. Since
+ * global temporal quantifications force the trace to be infinite, the formula
+ * must be in negative normal form to guarantee a correct translation.
  * 
- * @author Eduardo Pessoa, nmm
+ * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
 public class LTL2FOLTranslator extends AbstractReplacer {
 
-	/** the relations representing the explicit time trace. */
-	private Relation next, init;
-
-	/** the formula forcing the time trace to be infinite. */
-	private Formula infinite, structural;
+	/**
+	 * The constraint forcing the time trace to be infinite. Forces the loop to
+	 * exist.
+	 */
+	private final Formula infinite = TemporalTranslator.LOOP.one();
 
 	/**
-	 * handle the depth of nested post operators within the current temporal
-	 * formula.
+	 * Variables to handle the depth of nested post operators within the current
+	 * temporal formula.
 	 */
 	private int currentPostDepth, maxPostDepth;
 
 	/**
-	 * the relations resulting from the extension of the variable relations.
-	 * TODO: should this translation be performed here or when the bounds are
-	 * converted?
+	 * The relations resulting from the extension of the variable relations.
+	 * Should be provided to the constructor.
 	 */
-	private Map<String, Relation> relations;
+	private final Map<String, Relation> expandedRelations;
 
 	/**
 	 * Translates an LTL temporal formula into its standard Kodkod FOL
-	 * representation.
+	 * representation, given the extension of the variable relations.
 	 * 
-	 * @param timeRels
-	 *            the relations representing the time trace, {Time,init,end,next,loop,nextt}.
-	 * @param loop
-	 *            the relation representing the possible trace loop.
+	 * @param relations
+	 *            the expanded static versions of the variable relations.
 	 */
-	public LTL2FOLTranslator(Relation [] timeRels, Map<String,Relation> relations) {
+	public LTL2FOLTranslator(Map<String, Relation> expandedRelations) {
 		super(new HashSet<Node>());
-		this.relations = relations;
-		this.next = timeRels[5];
-		this.init = timeRels[1];
-
-		Formula order = timeRels[3].totalOrder(timeRels[0], timeRels[1], timeRels[2]);
-		Formula loopDecl = timeRels[4].partialFunction(timeRels[2], timeRels[0]);
-		Expression nextDecl = timeRels[3].union(timeRels[4]);
-		Formula nextFnct = timeRels[5].eq(nextDecl);
-		structural = Formula.and(order, loopDecl, nextFnct);
-		infinite = timeRels[4].one();
-
-		resetPostVariables();
-		pushVariable();
+		this.expandedRelations = expandedRelations;
 	}
 
 	/**
-	 * Converts a LTL temporal formula into a regular Kodkod FOL formula. Uses
+	 * Converts an LTL temporal formula into a regular Kodkod FOL formula. Uses
 	 * the visitor to convert and adds any trace constraint left at the top
-	 * level. This is the main method that should be called to convert temporal
-	 * formulas.
+	 * level to handle nested post operators. It also adds the constraints that
+	 * define the structure of the time relation constants. This is the main
+	 * method that should be called to convert temporal formulas. The formula
+	 * should be in negative normal form in order for the temporal quantifiers
+	 * to be correctly translated.
 	 * 
 	 * @param tempFormula
 	 *            the LTL formula to be converted.
 	 * @return the resulting FOL formula.
 	 */
-	public Formula convert(Formula tempFormula) {
+	public Formula translate(Formula tempFormula) {
+		Formula order = TemporalTranslator.NEXT.totalOrder(TemporalTranslator.TIME, TemporalTranslator.INIT,
+				TemporalTranslator.END);
+		Formula loopDecl = TemporalTranslator.LOOP.partialFunction(TemporalTranslator.END, TemporalTranslator.TIME);
+		Expression nextDecl = TemporalTranslator.NEXT.union(TemporalTranslator.LOOP);
+		Formula nextFnct = TemporalTranslator.TRACE.eq(nextDecl);
+		Formula structural = Formula.and(order, loopDecl, nextFnct);
+
+		resetPostVariables();
+		pushVariable();
+
 		Formula result = tempFormula.accept(this).and(structural);
 		if (maxPostDepth > 0)
-			return forceNextExists(init, maxPostDepth).and(result);
+			return forceNextExists(TemporalTranslator.INIT, maxPostDepth).and(result);
 		else
 			return result;
+	}
+
+	/**
+	 * Converts an LTL temporal expression into a regular Kodkod FOL expression
+	 * in a concrete time step, counting from the
+	 * {@link TemporalTranslator#INIT initial} time. Uses the visitor to
+	 * convert. This is the main method that should be called to convert
+	 * temporal expressions.
+	 * 
+	 * @param tempExpression
+	 *            the LTL expression to be converted.
+	 * @return the resulting FOL formula.
+	 */
+	public Expression convert(Expression tempExpression, int state) {
+		resetPostVariables();
+		pushVariable(state);
+
+		Expression result = tempExpression.accept(this);
+
+		return result;
 	}
 
 	@Override
 	public Expression visit(Relation relation) {
 		maxPostDepth = currentPostDepth > maxPostDepth ? currentPostDepth : maxPostDepth;
-		if (isTemporal(relation))
-			return relations.get(relation.name()).join(getVariable());
+		if (TemporalTranslator.isTemporal(relation))
+			return expandedRelations.get(relation.name()).join(getVariable());
 		else
 			return relation;
 	}
 
 	@Override
 	public Formula visit(RelationPredicate relationPredicate) {
-		if (isTemporal(relationPredicate))
+		if (TemporalTranslator.isTemporal(relationPredicate))
 			return relationPredicate.toConstraints().accept(this);
 		else
 			return relationPredicate;
@@ -223,21 +244,27 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable r = getVariableUntil(true);
 		Variable l = getVariableUntil(false);
 		Formula nfleft;
+		// TODO: wrong, should use next rather than nextt
 		if (postDepthLeft > 0) {
-			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l
-					.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure()).intersection(
-							next.closure().join(r))));
+			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l.oneOf(getVariableLastQuantificationUntil(
+					false).join(TemporalTranslator.TRACE.reflexiveClosure()).intersection(
+					TemporalTranslator.TRACE.closure().join(r))));
 		} else {
-			nfleft = left.forAll(l.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure())
-					.intersection(next.closure().join(r))));
+			nfleft = left.forAll(l.oneOf(getVariableLastQuantificationUntil(false).join(
+					TemporalTranslator.TRACE.reflexiveClosure()).intersection(
+					TemporalTranslator.TRACE.closure().join(r))));
 		}
 
 		if (postDepthRight > 0) {
-			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft).forSome(
-					r.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure())));
+			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft)
+					.forSome(
+							r.oneOf(getVariableLastQuantificationUntil(false).join(
+									TemporalTranslator.TRACE.reflexiveClosure())));
 		} else {
-			return right.and(nfleft).forSome(
-					r.oneOf(getVariableLastQuantificationUntil(false).join(next.reflexiveClosure())));
+			return right.and(nfleft)
+					.forSome(
+							r.oneOf(getVariableLastQuantificationUntil(false).join(
+									TemporalTranslator.TRACE.reflexiveClosure())));
 		}
 	}
 
@@ -250,22 +277,26 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfright;
 
 		alw = infinite.and(always.forAll(v.oneOf(getVariableLastQuantificationRelease(false, true).join(
-				next.reflexiveClosure()))));
+				TemporalTranslator.TRACE.reflexiveClosure()))));
 
 		if (rightFormula > 0) {
 			nfleft = (forceNextExists(l, rightFormula).and(right)).forAll(l.oneOf(getVariableLastQuantificationRelease(
-					false, true).join(next.reflexiveClosure()).intersection(next.reflexiveClosure().join(r))));
+					false, true).join(TemporalTranslator.TRACE.reflexiveClosure()).intersection(
+					TemporalTranslator.TRACE.reflexiveClosure().join(r))));
 		} else {
 			nfleft = right.forAll(l.oneOf(getVariableLastQuantificationRelease(false, true).join(
-					next.reflexiveClosure()).intersection(next.reflexiveClosure().join(r))));
+					TemporalTranslator.TRACE.reflexiveClosure()).intersection(
+					TemporalTranslator.TRACE.reflexiveClosure().join(r))));
 		}
 
 		if (leftFormula > 0) {
 			nfright = (forceNextExists(r, leftFormula).and(left)).and(nfleft).forSome(
-					r.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure())));
+					r.oneOf(getVariableLastQuantificationRelease(false, true).join(
+							TemporalTranslator.TRACE.reflexiveClosure())));
 		} else {
 			nfright = left.and(nfleft).forSome(
-					r.oneOf(getVariableLastQuantificationRelease(false, true).join(next.reflexiveClosure())));
+					r.oneOf(getVariableLastQuantificationRelease(false, true).join(
+							TemporalTranslator.TRACE.reflexiveClosure())));
 		}
 		return alw.or(nfright);
 	}
@@ -276,29 +307,30 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		switch (op) {
 		case ALWAYS:
 			v = (Variable) getVariable();
-			return infinite.and(e.forAll(v.oneOf(quantification.join(next.reflexiveClosure()))));
+			return infinite.and(e.forAll(v.oneOf(quantification.join(TemporalTranslator.TRACE.reflexiveClosure()))));
 		case EVENTUALLY:
 			v = (Variable) getVariable();
 			if (posts > 0) {
-				return forceNextExists(v, posts).and(e).forSome(v.oneOf(quantification.join(next.reflexiveClosure())));
+				return forceNextExists(v, posts).and(e).forSome(
+						v.oneOf(quantification.join(TemporalTranslator.TRACE.reflexiveClosure())));
 			} else {
-				return e.forSome(v.oneOf(quantification.join(next.reflexiveClosure())));
+				return e.forSome(v.oneOf(quantification.join(TemporalTranslator.TRACE.reflexiveClosure())));
 			}
 		case HISTORICALLY:
 			v = (Variable) getVariable();
 			if (posts > 0) {
 				return forceNextExists(v, posts).and(e).forAll(
-						v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
+						v.oneOf(quantification.join(TemporalTranslator.TRACE.transpose().reflexiveClosure())));
 			} else {
-				return e.forAll(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
+				return e.forAll(v.oneOf(quantification.join(TemporalTranslator.TRACE.transpose().reflexiveClosure())));
 			}
 		case ONCE:
 			v = (Variable) getVariable();
 			if (posts > 0) {
 				return forceNextExists(v, posts).and(e).forSome(
-						v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
+						v.oneOf(quantification.join(TemporalTranslator.TRACE.transpose().reflexiveClosure())));
 			} else {
-				return e.forSome(v.oneOf(quantification.join(next.transpose().reflexiveClosure())));
+				return e.forSome(v.oneOf(quantification.join(TemporalTranslator.TRACE.transpose().reflexiveClosure())));
 			}
 		case NEXT:
 		case PREVIOUS:
@@ -314,9 +346,9 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	}
 
 	private Formula forceNextExists(Expression exp, int x) {
-		Expression e = exp.join(next);
+		Expression e = exp.join(TemporalTranslator.TRACE);
 		for (int i = 1; i < x; i++) {
-			e = e.join(next);
+			e = e.join(TemporalTranslator.TRACE);
 		}
 		return e.some();
 	}
@@ -363,23 +395,39 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	private void pushVariable() {
 		if (!thereAreVariables()) {
-			variables.add(init);
+			variables.add(TemporalTranslator.INIT);
 			return;
 		}
 
 		switch (getOperator()) {
 		case NEXT:
 		case POST:
-			variables.add(getVariable().join(next));
+			variables.add(getVariable().join(TemporalTranslator.TRACE));
 			break;
 		case PREVIOUS:
-			variables.add(getVariable().join(next.transpose()));
+			variables.add(getVariable().join(TemporalTranslator.TRACE.transpose()));
 			break;
 		default:
 			Variable v = Variable.unary("t" + totalVariablesIt);
 			variables.add(v);
 			totalVariablesIt++;
 		}
+	}
+
+	/**
+	 * Used to initialize the translation at a time other than the initial one.
+	 * 
+	 * @param state
+	 *            the step of the trace in which to start the translation.
+	 */
+	private void pushVariable(int state) {
+		if (!thereAreVariables()) {
+			Expression s = TemporalTranslator.INIT;
+			for (int i = 0; i < state; i++)
+				s = s.join(TemporalTranslator.TRACE);
+			variables.add(s);
+		} else
+			throw new UnsupportedOperationException("vars");
 	}
 
 	private void popVariable() {
@@ -439,34 +487,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 				return (Variable) variables.get(variables.size() - 2);
 			}
 		}
-	}
-
-	/**
-	 * Checks whether an AST node has temporal constructs.
-	 * 
-	 * @param n
-	 *            the node to be checked.
-	 * @return whether n has temporal constructs.
-	 */
-	private final boolean isTemporal(Node n) {
-		AbstractDetector det = new AbstractDetector(new HashSet<Node>()) {
-			public Boolean visit(UnaryTempFormula tempFormula) {
-				return cache(tempFormula, true);
-			}
-
-			public Boolean visit(BinaryTempFormula tempFormula) {
-				return cache(tempFormula, true);
-			}
-
-			public Boolean visit(TempExpression tempExpr) {
-				return cache(tempExpr, true);
-			}
-
-			public Boolean visit(Relation relation) {
-				return cache(relation, relation instanceof VarRelation);
-			}
-		};
-		return (boolean) n.accept(det);
 	}
 
 }

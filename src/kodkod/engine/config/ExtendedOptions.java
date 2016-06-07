@@ -40,7 +40,7 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 		this.setThreads(options.threads());
 		this.setDecomposedMode(options.decomposedMode());
 		this.setConfigOptions(options.configOptions());
-		this.setTraceLength(options.traceLength());
+		this.setMaxTraceLength(options.maxTraceLength());
 	}
 
 	// pt.uminho.haslab: target-oriented solving
@@ -128,13 +128,13 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 
 	// pt.uminho.haslab
 	@Override
-	public void setTraceLength(int trace_length) {
+	public void setMaxTraceLength(int trace_length) {
 		this.trace_length = trace_length;
 	}
 
 	// pt.uminho.haslab
 	@Override
-	public int traceLength() {
+	public int maxTraceLength() {
 		return trace_length;
 	}
 

@@ -132,7 +132,7 @@ public final class RunTestModel {
 		case INCREMENTAL:
 			solution = go_incremental(b1, b2, f1, f2);
 			break;
-		case STATS:
+		case EXHAUSTIVE:
 			psolver.options().setThreads(threads);
 			solution = psolver.solve(f1, f2, b1, b2);
 			break;
@@ -162,7 +162,7 @@ public final class RunTestModel {
 //			log.append(getGenTime(psolver));
 //			log.append(psolution.getSolution().instance());
 		}
-		else if (selected_mode == DMode.STATS) {
+		else if (selected_mode == DMode.EXHAUSTIVE) {
 			DMonitor mon = psolver.executor().monitor;
 
 			long tt = mon.getNumRuns();

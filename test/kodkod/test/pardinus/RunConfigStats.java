@@ -131,7 +131,7 @@ public final class RunConfigStats {
 		log.append("\n");
 
 		log.append("Modes: ");
-		log.append(DMode.STATS);
+		log.append(DMode.EXHAUSTIVE);
 		log.append("\n");
 		
 		log.append("Threads: ");
@@ -190,7 +190,7 @@ public final class RunConfigStats {
 		String[] args = new String[model_args.length+2];
 		System.arraycopy(model_args, 0, args, 2, model_args.length);
 
-		args[0] = DMode.STATS.name();
+		args[0] = DMode.EXHAUSTIVE.name();
 		args[1] = Solvers.GLUCOSE.name();
 		runModelInstance(model,args);
 	}

@@ -1,15 +1,46 @@
+/* 
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package kodkod.engine.ltl2fol;
 
 import kodkod.ast.*;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.ast.visitor.ReturnVisitor;
+import kodkod.instance.Bounds;
 import static kodkod.ast.operator.FormulaOperator.AND;
 
 import java.util.*;
 
-
+/**
+ * Slices a temporal {@link Formula formula} into a static and a dynamic
+ * component, the former containing constraints without temporal operators and
+ * without references to variable relations. The formula should be provided in
+ * negative normal form in order to optimize the slicing.
+ * 
+ * @author Eduardo Pessoa
+ * @modified nmm (pt.uminho.haslab)
+ */
 // TODO: use Kodkod's FormulaFlattener to retrieve the top-level conjuncts
-public class SlicingDynamicFormulas extends AbstractReplacer implements
+public class TemporalFormulaSlicer extends AbstractReplacer implements
 		ReturnVisitor<Expression, Formula, Decls, IntExpression> {
 
 	private enum Context {
@@ -19,28 +50,29 @@ public class SlicingDynamicFormulas extends AbstractReplacer implements
 	private boolean varRelation = false;
 	private List<Formula> dynamicFormulas;
 	private List<Formula> staticFormulas;
+	private Bounds dynamicBounds;
+	private Bounds staticBounds;
 	private Context context;
 
-	private Set<Relation> dynamicRelations;
-	private Set<Relation> staticRelations;
-	private Set<Relation> temporalRelationsList;
-
-	public SlicingDynamicFormulas() {
+	public TemporalFormulaSlicer(Formula formula, Bounds bounds) {
 		super(new HashSet<Node>());
 		this.dynamicFormulas = new ArrayList<Formula>();
 		this.staticFormulas = new ArrayList<Formula>();
 		this.context = Context.formulaExpansion;
-		this.dynamicRelations = new HashSet<Relation>();
-		this.staticRelations = new HashSet<Relation>();
-		this.temporalRelationsList = new HashSet<Relation>();
+		formula.accept(this);
+		splitBounds(bounds);
 	}
 
-	public Set<Relation> getDynamicRelations() {
-		return dynamicRelations;
-	}
-
-	public Set<Relation> getStaticRelations() {
-		return staticRelations;
+	private void splitBounds(Bounds bounds) {
+		// TODO: targets will be lost
+		staticBounds = new Bounds(bounds.universe());
+		dynamicBounds = new Bounds(bounds.universe());
+		for (Relation r : bounds.relations()) {
+			if (r instanceof VarRelation)
+				dynamicBounds.bound(r, bounds.lowerBound(r), bounds.upperBound(r));
+			else
+				staticBounds.bound(r, bounds.lowerBound(r), bounds.upperBound(r));
+		}
 	}
 
 	public List<Formula> getDynamicFormulas() {
@@ -50,10 +82,18 @@ public class SlicingDynamicFormulas extends AbstractReplacer implements
 	public List<Formula> getStaticFormulas() {
 		return staticFormulas;
 	}
+	
+	public Bounds getDynamicBounds() {
+		return dynamicBounds;
+	}
+
+	public Bounds getStaticBounds() {
+		return staticBounds;
+	}
+
 
 	@Override
 	public Expression visit(Relation relation) {
-		this.temporalRelationsList.add(relation);
 		if (relation instanceof VarRelation) {
 			this.varRelation = true;
 		}
@@ -71,15 +111,12 @@ public class SlicingDynamicFormulas extends AbstractReplacer implements
 					arrayOfFormula[j] = ((Formula) localFormula2.accept(this));
 				} else {
 					context = Context.formulaAnalysis;
-					this.temporalRelationsList = new HashSet<Relation>();
 					arrayOfFormula[j] = ((Formula) localFormula2.accept(this));
 					context = Context.formulaExpansion;
 					if (varRelation) {
 						this.varRelation = false;
 						this.dynamicFormulas.add(arrayOfFormula[j]);
-						this.dynamicRelations.addAll(this.temporalRelationsList);
 					} else {
-						this.staticRelations.addAll(this.temporalRelationsList);
 						this.staticFormulas.add(arrayOfFormula[j]);
 					}
 				}
@@ -101,15 +138,12 @@ public class SlicingDynamicFormulas extends AbstractReplacer implements
 				left = binaryFormula.left().accept(this);
 			} else {
 				context = Context.formulaAnalysis;
-				this.temporalRelationsList = new HashSet<Relation>();
 				left = binaryFormula.left().accept(this);
 				context = Context.formulaExpansion;
 				if (varRelation) {
-					this.dynamicRelations.addAll(this.temporalRelationsList);
 					this.varRelation = false;
 					this.dynamicFormulas.add(left);
 				} else {
-					this.staticRelations.addAll(this.temporalRelationsList);
 					this.staticFormulas.add(left);
 				}
 			}
@@ -119,15 +153,12 @@ public class SlicingDynamicFormulas extends AbstractReplacer implements
 				right = binaryFormula.right().accept(this);
 			} else {
 				context = Context.formulaAnalysis;
-				this.temporalRelationsList = new HashSet<Relation>();
 				right = binaryFormula.right().accept(this);
 				context = Context.formulaExpansion;
 				if (varRelation) {
 					this.varRelation = false;
 					this.dynamicFormulas.add(right);
-					this.dynamicRelations.addAll(this.temporalRelationsList);
 				} else {
-					this.staticRelations.addAll(this.temporalRelationsList);
 					this.staticFormulas.add(right);
 				}
 			}
