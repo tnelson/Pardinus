@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +29,10 @@ import kodkod.engine.bool.BooleanMatrix;
 import kodkod.engine.bool.Int;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.Translator;
+import kodkod.engine.ltl2fol.LTL2FOLTranslator;
+import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Instance;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 
 /**
@@ -48,6 +52,7 @@ import kodkod.instance.TupleSet;
  * @specfield options: Options
  * @specfield instance: Instance
  * @author Emina Torlak
+ * @modified nmm
  */
 public final class Evaluator {
 	private final Instance instance;
@@ -99,6 +104,7 @@ public final class Evaluator {
 	 * a relation not mapped by this.instance
 	 */
 	public boolean evaluate(Formula formula){
+		// TODO: convert the potentially temporal expression into a FOL expression at state 0
 		if (formula == null) throw new NullPointerException("formula");
 		return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
@@ -113,9 +119,19 @@ public final class Evaluator {
 	 * a relation not mapped by this.instance
 	 */
 	public TupleSet evaluate(Expression expression){
+		// TODO: convert the potentially temporal expression into a FOL expression at state 0
 		if (expression == null) throw new NullPointerException("expression");
 		final BooleanMatrix sol = Translator.evaluate(expression,instance,options);
 		return instance.universe().factory().setOf(expression.arity(), sol.denseIndices());
+	}
+	
+	// pt.uminho.haslab
+	public TupleSet evaluate(Expression expression, int state){
+		if (expression == null) throw new NullPointerException("expression");
+		LTL2FOLTranslator t = new LTL2FOLTranslator(((TemporalInstance) instance).getMaps());
+		Expression e1 = t.convert(expression, state);
+		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
+		return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 	}
 	
 	/**
@@ -128,11 +144,22 @@ public final class Evaluator {
 	 * a relation not mapped by this.instance
 	 */
 	public int evaluate(IntExpression intExpr) {
+		// TODO: convert the potentially temporal expression into a FOL expression at state 0
 		if (intExpr == null) throw new NullPointerException("intexpression");
 		final Int sol = Translator.evaluate(intExpr, instance, options);
 		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]
 		return sol.value();
 	}
+	
+	// pt.uminho.haslab
+	public int evaluate(IntExpression intExpr, int state) {
+		// TODO: convert the potentially temporal expression into a FOL expression at state
+		if (intExpr == null) throw new NullPointerException("intexpression");
+		final Int sol = Translator.evaluate(intExpr, instance, options);
+		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]
+		return sol.value();
+	}
+
 
 	/** Returns whether overflow was detected during evaluation */ // [AM]
 	public boolean wasOverflow() { 

@@ -38,11 +38,15 @@ import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.TargetOptions.TMode;
+import kodkod.engine.config.TemporalOptions;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationLog;
 import kodkod.engine.fol2sat.Translator;
 import kodkod.engine.fol2sat.UnboundLeafException;
+import kodkod.engine.ltl2fol.LTL2FOLTranslator;
+import kodkod.engine.ltl2fol.TemporalTranslator;
+import kodkod.engine.ltl2fol.ExpandedTemporalBounds;
 import kodkod.engine.satlab.SATAbortedException;
 import kodkod.engine.satlab.SATProver;
 import kodkod.engine.satlab.SATSolver;
@@ -145,9 +149,11 @@ public final class Solver implements KodkodSolver {
 		final long startTransl = System.currentTimeMillis();
 		
 		try {			
-			System.out.println("Ping1");
+			if (TemporalTranslator.isTemporal(formula)) { // pt.uminho.haslab
+				bounds = TemporalTranslator.translate(bounds, (TemporalOptions<?>) options);
+				formula = TemporalTranslator.translate(formula, (ExpandedTemporalBounds) bounds, (TemporalOptions<?>) options); 
+			}
 			final Translation.Whole translation = Translator.translate(formula, bounds, options);
-			System.out.println("Ping2");
 			final long endTransl = System.currentTimeMillis();
 			
 			if (translation.trivial())
@@ -303,6 +309,10 @@ public final class Solver implements KodkodSolver {
 		 */
 		SolutionIterator(Formula formula, Bounds bounds, Options options) {
 			this.translTime = System.currentTimeMillis();
+			if (TemporalTranslator.isTemporal(formula)) { // pt.uminho.haslab
+				bounds = TemporalTranslator.translate(bounds, (TemporalOptions<?>) options);
+				formula = TemporalTranslator.translate(formula, (ExpandedTemporalBounds) bounds, (TemporalOptions<?>) options); 
+			}
 			this.translation = Translator.translate(formula, bounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.trivial = 0;
@@ -441,6 +451,10 @@ public final class Solver implements KodkodSolver {
 			if (!options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");			
 			this.translTime = System.currentTimeMillis();
+			if (TemporalTranslator.isTemporal(formula)) { // pt.uminho.haslab
+				bounds = TemporalTranslator.translate(bounds, (TemporalOptions<?>) options);
+				formula = TemporalTranslator.translate(formula, (ExpandedTemporalBounds) bounds, (TemporalOptions<?>) options); 
+			}
 			this.translation = Translator.translate(formula, bounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.trivial = 0;
