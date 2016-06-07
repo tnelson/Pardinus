@@ -1,3 +1,25 @@
+/* 
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package kodkod.examples.pardinus.temporal;
 
 import kodkod.ast.Expression;
@@ -9,8 +31,6 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.decomp.DModel;
-import kodkod.engine.ltl2fol.TemporalFormulaExtension;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
@@ -20,9 +40,12 @@ import kodkod.instance.Universe;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HotelP implements DModel {
+/**
+ * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
+ */
+public class HotelP {
 
-	private int n, t;
+	private int n;
 	final private Variant variant;
 
 	private final Relation key, key_first, key_last, key_next;
@@ -33,12 +56,9 @@ public class HotelP implements DModel {
 		INTERVENES, NOINTERVENES;
 	}
 
-	private TemporalFormulaExtension temporalFormula;
-
 	public HotelP(String[] args) {
 		this.n = Integer.valueOf(args[0]);
-		this.variant = Variant.valueOf(args[2]);
-		this.t = Integer.valueOf(args[1]);
+		this.variant = Variant.valueOf(args[1]);
 
 		key = Relation.unary("Key");
 		guest = Relation.unary("Guest");
@@ -53,30 +73,8 @@ public class HotelP implements DModel {
 		occupant = VarRelation.nary("FrontDesk.occupant", 2);
 		gkeys = VarRelation.nary("Guest.gkeys", 2);
 
-		Formula formula = finalFormula();
-		Bounds var6 = bounds();
-		ExtendedOptions options = new ExtendedOptions();
-		options.setTraceLength(t);
-		temporalFormula = new TemporalFormulaExtension(formula, var6, options);
 	}
-
-	public Bounds bounds1() {
-		return this.temporalFormula.getStaticBounds();
-	}
-
-	public Bounds bounds2() {
-		return this.temporalFormula.getDynamicBounds();
-	}
-
-	public Formula partition1() {
-		return this.temporalFormula.getStaticFormula();
-	}
-
-	public Formula partition2() {
-		return this.temporalFormula.getDynamicFormula();
-
-	}
-
+	
 	public int getBitwidth() {
 		return 1;
 	}
@@ -356,29 +354,15 @@ public class HotelP implements DModel {
 
 	}
 
-	@Override
-	public String shortName() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
     public static void main(String[] args) {
-		HotelP model = new HotelP(new String[]{"3","4","INTERVENES"});
+		HotelP model = new HotelP(new String[]{"3","NOINTERVENES"});
 		
-		Bounds b1 = model.temporalFormula.getStaticBounds();
-		Bounds b2 = model.temporalFormula.getDynamicBounds();
-		Formula f1 = model.temporalFormula.getStaticFormula();
-		Formula f2 = model.temporalFormula.getDynamicFormula();
-		
-		Bounds b3 = b1.clone();
-		for (Relation r : b2.relations()) {
-			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
-		}
-		Solver solver = new Solver();
-		solver.options().setSolver(SATFactory.Glucose);
-		Solution sol = solver.solve(f1.and(f2), b3);
-		
-		System.out.println(f2);
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setSolver(SATFactory.Glucose);
+		opt.setMaxTraceLength(10);
+		Solver solver = new Solver(opt);
+	
+		Solution sol = solver.solve(model.finalFormula(),model.bounds());
 		
 		System.out.println(sol);
 		return;
