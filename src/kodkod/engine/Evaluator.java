@@ -32,7 +32,6 @@ import kodkod.engine.fol2sat.Translator;
 import kodkod.engine.ltl2fol.LTL2FOLTranslator;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Instance;
-import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 
 /**
@@ -104,9 +103,11 @@ public final class Evaluator {
 	 * a relation not mapped by this.instance
 	 */
 	public boolean evaluate(Formula formula){
-		// TODO: convert the potentially temporal expression into a FOL expression at state 0
 		if (formula == null) throw new NullPointerException("formula");
-		return (Translator.evaluate(formula, instance, options)).booleanValue();
+		if (TemporalTranslator.isTemporal(formula)) { // pt.uminho.haslab
+			return (Translator.evaluate(LTL2FOLTranslator.translate(formula), instance, options)).booleanValue();
+		} else
+			return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
 	
 	/**
@@ -119,17 +120,13 @@ public final class Evaluator {
 	 * a relation not mapped by this.instance
 	 */
 	public TupleSet evaluate(Expression expression){
-		// TODO: convert the potentially temporal expression into a FOL expression at state 0
-		if (expression == null) throw new NullPointerException("expression");
-		final BooleanMatrix sol = Translator.evaluate(expression,instance,options);
-		return instance.universe().factory().setOf(expression.arity(), sol.denseIndices());
+		return evaluate(expression, 0);
 	}
 	
 	// pt.uminho.haslab
 	public TupleSet evaluate(Expression expression, int state){
 		if (expression == null) throw new NullPointerException("expression");
-		LTL2FOLTranslator t = new LTL2FOLTranslator(((TemporalInstance) instance).getMaps());
-		Expression e1 = t.convert(expression, state);
+		Expression e1 = LTL2FOLTranslator.convert(expression, state);
 		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
 		return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 	}
@@ -172,5 +169,19 @@ public final class Evaluator {
 	 */
 	public String toString() {
 		return options + "\n" + instance;
+	}
+
+	public int steps() {
+		final BooleanMatrix sol = Translator.evaluate(TemporalTranslator.LAST,instance,options);
+		TupleSet ts = instance.universe().factory().setOf(1, sol.denseIndices());	
+		System.out.println("steps: "+sol.denseIndices()+", "+ts);
+		return -1;
+	}
+
+	public int loop() {
+		final BooleanMatrix sol = Translator.evaluate(TemporalTranslator.LOOP,instance,options);
+		TupleSet ts = instance.universe().factory().setOf(1, sol.denseIndices());	
+		System.out.println("loop: "+sol.denseIndices()+", "+ts);
+		return -1;
 	}
 }

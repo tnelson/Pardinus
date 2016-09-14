@@ -31,10 +31,10 @@ import kodkod.instance.Bounds;
 /** 
  * @author nmm
  */
-public interface DecomposedSolver<O extends DecomposedOptions<?>> extends PardinusSolver<O> { 
+public interface DecomposedSolver<B extends Bounds, O extends DecomposedOptions<?>> extends PardinusSolver<B,O> { 
 
-	public Solution solve(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2) throws InterruptedException;
+	public Solution solve(Formula formula1, Formula formula2, B bounds1, B bounds2) throws InterruptedException;
 	
-	public Iterator<Solution> solveAll(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2);
+	public Iterator<Solution> solveAll(Formula formula1, Formula formula2, B bounds1, B bounds2);
 
 }

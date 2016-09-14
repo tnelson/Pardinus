@@ -101,7 +101,7 @@ import kodkod.instance.Universe;
  * 
  * @author Emina Torlak 
  */
-public final class IncrementalSolver implements KodkodSolver {
+public final class IncrementalSolver implements KodkodSolver<Bounds, Options> {
 	private final Options options;
 	private Translation.Incremental translation;
 	private Boolean outcome;

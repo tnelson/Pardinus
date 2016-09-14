@@ -32,7 +32,7 @@ import kodkod.instance.Instance;
  * @specfield bounds: Bounds // the bounds on the formula
  * @author Emina Torlak
  */
-public final class Solution {
+public class Solution { // pt.uminho.haslab: removed final
 	private final Outcome outcome;
 	private final Statistics stats;
 	private final Instance instance;
@@ -44,7 +44,7 @@ public final class Solution {
 	 * @requires outcome != null && stats != null
 	 * @requires outcome = SATISFIABLE || TRIVIALLY_SATISFIABLE => instance != null
 	 */
-	private Solution(Outcome outcome, Statistics stats, Instance instance, Proof proof) {
+	protected Solution(Outcome outcome, Statistics stats, Instance instance, Proof proof) { // pt.uminho.haslab: protected
 		assert outcome != null && stats != null;
 		this.outcome = outcome;
 		this.stats = stats;

@@ -33,11 +33,11 @@ import kodkod.instance.Bounds;
  * @author nmm
  *
  */
-public interface PardinusSolver<O extends PardinusOptions<?>> {
+public interface PardinusSolver<B extends Bounds, O extends PardinusOptions<?>> {
 
-	public PardinusOptions<?> options();
+	public O options();
 
-	public Solution solve(Formula formula, Bounds bounds);
+	public Solution solve(Formula formula, B bounds);
 
 	public void free();
 

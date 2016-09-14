@@ -30,6 +30,7 @@ import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.instance.Bounds;
+import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntSet;
 
 /**
@@ -73,6 +74,8 @@ public final class ConsoleReporter implements Reporter {
 	 */
 	public void detectingSymmetries(Bounds bounds){
 		System.out.println("detecting symmetries ...");
+		System.out.println(bounds.universe());
+		System.out.println(bounds);
 	}
 	
 	/**
@@ -81,6 +84,7 @@ public final class ConsoleReporter implements Reporter {
 	 */
 	public void detectedSymmetries(Set<IntSet> parts) {
 		System.out.println("detected " + parts.size() + " equivalence classes of atoms ...");
+		System.out.println(parts.toString());
 	}
 	
 	/**

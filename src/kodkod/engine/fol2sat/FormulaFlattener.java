@@ -202,12 +202,12 @@ final class FormulaFlattener extends AbstractVoidVisitor {
 	
 	// pt.uminho.haslab
 	public final void visit(BinaryTempFormula tempFormula) {
-		throw new UnsupportedOperationException("Temporal skolemizer.");
+		throw new UnsupportedOperationException("Temporal flatenner.");
 	}
 
 	// pt.uminho.haslab
 	public final void visit(UnaryTempFormula tempFormula) {
-		throw new UnsupportedOperationException("Temporal skolemizer.");
+		throw new UnsupportedOperationException("Temporal flatenner.");
 	}
 	
 	/**

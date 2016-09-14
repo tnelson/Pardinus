@@ -53,7 +53,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(10);
+	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(200);
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -80,7 +80,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 */
 	@Override
 	public void end(DProblem sol) {
-		System.out.println(sol.sat());
+//		System.out.println(sol.getSolution().outcome()+"");
 		if (Thread.currentThread().isInterrupted()) return;
 		try {
 			// if the amalgamated terminates...
@@ -99,7 +99,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 				} else
 					running.incrementAndGet();
 			} 
-			// if a integrated terminates...
+			// if an integrated terminates...
 			else {
 				// if it is sat...
 				if (sol.sat()) {
@@ -162,7 +162,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			// collects a batch of configurations
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();
-
+//				System.out.println("Config: "+config.instance());
 				if (config.unsat()) {
 					// when there is no configuration no solver will ever
 					// callback so it must be terminated here

@@ -40,6 +40,7 @@ import kodkod.ast.IntExpression;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
+import kodkod.ast.VarRelation;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.engine.bool.BooleanAccumulator;
 import kodkod.engine.bool.BooleanConstant;
@@ -54,6 +55,7 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -150,7 +152,7 @@ public final class Translator {
 	public static Translation.Whole translate(Formula formula, Bounds bounds, Options options)  {
 		return (Translation.Whole) (new Translator(formula,bounds,options)).translate();
 	}
-	
+
 	/**
 	 * Translates the given formula using the specified bounds and options in such a way 
 	 * that the resulting translation can be extended with additional formulas and bounds, subject to 
@@ -612,7 +614,7 @@ public final class Translator {
 			final Map<Relation, IntSet> varUsage = interpreter.vars();
 			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula)circuit, maxPrimaryVar, options.solver());
 			// pt.uminho.haslab-: add the targets to the SAT problem
-			if (!bounds.targets().isEmpty()) doTargets(bounds, interpreter, cnf);
+			if (!bounds.targets().isEmpty()) doTargets(bounds, interpreter, cnf); // pt.uminho.haslab
 
 			interpreter = null; // enable gc
 
@@ -665,8 +667,8 @@ public final class Translator {
 					Bool2CNFTranslator.translateIncremental(outcome, options.solver()));
 		} else {
 			return new Translation.Whole(completeBounds(), options, 
-					Bool2CNFTranslator.translate(outcome, options.solver()), 
-					(Map<Relation,IntSet>)Collections.EMPTY_MAP, 0, log);
+						Bool2CNFTranslator.translate(outcome, options.solver()), 
+						(Map<Relation,IntSet>)Collections.EMPTY_MAP, 0, log);
 		}
 	}
 	

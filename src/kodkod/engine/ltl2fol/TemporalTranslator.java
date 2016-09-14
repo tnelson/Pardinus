@@ -32,122 +32,107 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.VarRelation;
 import kodkod.ast.visitor.AbstractDetector;
-import kodkod.engine.config.TemporalOptions;
 import kodkod.instance.Bounds;
+import kodkod.instance.TemporalBounds;
 
 /**
- * Translates temporal {@link Formula formulas} and {@link Bounds bounds}, with
- * respect to given {@link TemporalOptions temporal options}.
+ * Translates temporal problems, i.e., formulas with
+ * {@link kodkod.ast.operator.TemporalOperator temporal operators} and bounds
+ * over {@link kodkod.ast.VarRelation variable relations}, into regular Kodkod
+ * static problems, i.e., standard {@link kodkod.ast.Formula formulas} and
+ * {@link kodkod.instance.Bounds bounds}, following the provided
+ * {@link kodkod.engine.config.TemporalOptions temporal options}.
+ *
+ * Relations are introduced to explicitly model the (bounded) temporal trace,
+ * and variable relations are expanded to static ones that refer to that trace.
  *
  * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
  */
 public class TemporalTranslator {
 
-    /** Relations representing the trace constants. **/
-    public static Relation TIME = Relation.unary("Time");
-    public static Relation INIT = Relation.unary("init");
-    public static Relation END = Relation.unary("end");
-    public static Relation NEXT = Relation.binary("next");
-    public static Relation TRACE = Relation.binary("trace");
-    public static Relation LOOP = Relation.binary("loop");
+	/** The name assigned to {@link #STATE state} atoms. */
+	public static String STATEATOM = "Time";
 
-    /** The name assigned to {@link #TIME time} atoms. */
-    public static String TIMEATOM = "Time";
+	/** Relations representing the explicit trace of the temporal problem. **/
+	public static Relation STATE = Relation.unary(STATEATOM);
+	public static Relation FIRST = Relation.unary("first");
+	public static Relation LAST = Relation.unary("last");
+	public static Relation PREFIX = Relation.binary("prefix");
+	public static Relation TRACE = Relation.binary("trace");
+	public static Relation LOOP = Relation.binary("loop");
 
-    /**
-     * Translates {@link VarRelation variable relation} bounds into its standard
-     * representation, by appending the {@link #TIME time sig} to the bound. The
-     * bounds of static relations should remain unchanged. The temporal options
-     * will define the maximum size of the trace. The returned temporal bounds
-     * also store the mapping of the variable relations into their expanded
-     * static version.
-     * 
-     * @param bounds
-     *            the bounds to be expanded.
-     * @param options
-     *            the temporal options.
-     * @return the expanded variable bounds and the mapping between the old and
-     *         new sigs.
-     */
-    public static ExpandedTemporalBounds translate(Bounds bounds,
-	    TemporalOptions<?> options) {
-	ExpandedTemporalBounds tbounds = new ExpandedTemporalBounds(bounds,
-		options.maxTraceLength());
-	return tbounds;
-    }
+	/**
+	 * Translates {@link kodkod.instance.TemporalBounds temporal bound} into
+	 * standard bounds by expanding the bound trace over
+	 * {@link kodkod.ast.VarRelation variable relations} by appending the
+	 * {@link #STATE state sig} to the bound. The bounds of static relations
+	 * should remain unchanged. The temporal options will define the maximum
+	 * size of the trace.
+	 * 
+	 * @see TemporalBoundsExpander
+	 * 
+	 * @param bounds
+	 *            the temporal bounds to be expanded.
+	 * @param traceLength
+	 *            the trace length.
+	 * @return the temporal bounds expanded into standard bounds.
+	 */
+	public static Bounds translate(TemporalBounds bounds, int traceLength) {
+		return TemporalBoundsExpander.expand(bounds, traceLength);
+	}
 
-    /**
-     * Converts an LTL temporal formula into its FOL static representation,
-     * provided the previous expansion of the bounds and temporal options. The
-     * formula is previously converted into negative normal form to guarantee
-     * the correct translation of the temporal operators.
-     * 
-     * @param formula
-     *            the temporal formula to be expanded.
-     * @param bounds
-     *            the expanded bounds.
-     * @param options
-     *            the temporal options.
-     * @return the static version of the temporal formula.
-     */
-    public static Formula translate(Formula formula, ExpandedTemporalBounds bounds,
-	    TemporalOptions<?> options) {
-	if (isTemporal(bounds))
-	    throw new UnsupportedOperationException(
-		    "Variable bounds must be previously expanded: " + bounds);
-	NNFReplacer nnf = new NNFReplacer();
-	Formula nnfFormula = formula.accept(nnf);
+	/**
+	 * Converts an LTL temporal formula into its FOL static representation,
+	 * provided the temporal options. The formula is previously converted into
+	 * negative normal form (NNF) to guarantee the correct translation of the
+	 * temporal operators. The {@link kodkod.ast.VarRelation variable relations}
+	 * contain themselves their representation into the expanded static shape.
+	 * 
+	 * @see LTL2FOLTranslator
+	 * 
+	 * @param formula
+	 *            the temporal formula to be expanded.
+	 * @return the static version of the temporal formula.
+	 */
+	public static Formula translate(Formula formula) {
+		NNFReplacer nnf = new NNFReplacer();
+		Formula nnfFormula = formula.accept(nnf);
 
-	LTL2FOLTranslator addTimeToFormula = new LTL2FOLTranslator(
-		bounds.getExtendedVarRelations());
-	Formula result = addTimeToFormula.translate(nnfFormula);
+		return LTL2FOLTranslator.translate(nnfFormula);
+	}
 
-	return result;
-    }
+	/**
+	 * Checks whether an AST node has temporal constructs, i.e., occurrences of
+	 * {@link kodkod.ast.operator.TemporalOperator temporal operations} or
+	 * {@link kodkod.ast.VarRelation variable relations}.
+	 * 
+	 * @param node
+	 *            the node to be checked.
+	 * @return whether the node has temporal constructs.
+	 */
+	public static boolean isTemporal(Node node) {
+		AbstractDetector det = new AbstractDetector(new HashSet<Node>()) {
+			@Override
+			public Boolean visit(UnaryTempFormula tempFormula) {
+				return cache(tempFormula, true);
+			}
 
-    /**
-     * Checks whether an AST node has temporal constructs.
-     * 
-     * @param node
-     *            the node to be checked.
-     * @return whether the node has temporal constructs.
-     */
-    public static boolean isTemporal(Node node) {
-	AbstractDetector det = new AbstractDetector(new HashSet<Node>()) {
-	    @Override
-	    public Boolean visit(UnaryTempFormula tempFormula) {
-		return cache(tempFormula, true);
-	    }
+			@Override
+			public Boolean visit(BinaryTempFormula tempFormula) {
+				return cache(tempFormula, true);
+			}
 
-	    @Override
-	    public Boolean visit(BinaryTempFormula tempFormula) {
-		return cache(tempFormula, true);
-	    }
+			@Override
+			public Boolean visit(TempExpression tempExpr) {
+				return cache(tempExpr, true);
+			}
 
-	    @Override
-	    public Boolean visit(TempExpression tempExpr) {
-		return cache(tempExpr, true);
-	    }
+			@Override
+			public Boolean visit(Relation relation) {
+				return cache(relation, relation instanceof VarRelation);
+			}
+		};
+		return (boolean) node.accept(det);
+	}
 
-	    @Override
-	    public Boolean visit(Relation relation) {
-		return cache(relation, relation instanceof VarRelation);
-	    }
-	};
-	return (boolean) node.accept(det);
-    }
-
-    /**
-     * Checks whether a set of bounds binds variable relations.
-     * 
-     * @param bounds
-     *            the bounds to be checked.
-     * @return whether the bounds bind variable relations.
-     */
-    public static boolean isTemporal(Bounds bounds) {
-	for (Relation r : bounds.relations())
-	    if (r instanceof VarRelation)
-		return true;
-	return false;
-    }
 }

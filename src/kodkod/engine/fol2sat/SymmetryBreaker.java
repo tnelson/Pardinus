@@ -47,6 +47,7 @@ import kodkod.engine.bool.Operator;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntIterator;
@@ -64,6 +65,7 @@ import kodkod.util.ints.Ints;
  * @author Emina Torlak
  */
 final class SymmetryBreaker {
+	private final Bounds aux; // pt.uminho.haslab
 	private final Bounds bounds;
 	private final Set<IntSet> symmetries;
 	private final int usize;
@@ -79,12 +81,23 @@ final class SymmetryBreaker {
 	 * @ensures this.bounds' = bounds && this.symmetries' = SymmetryDetector.partition(bounds) && no this.broken'
 	 **/
 	SymmetryBreaker(Bounds bounds, Reporter reporter) {
-		this.bounds = bounds;
-		this.usize = bounds.universe().size();
-		reporter.detectingSymmetries(bounds);
-		this.symmetries = SymmetryDetector.partition(bounds);
+		Bounds b3;
+		if (bounds instanceof DecompBounds) {
+			b3 = bounds.clone();
+			aux = ((DecompBounds) bounds).bounds2.clone();
+			for (Relation r : aux.relations()) {
+				b3.bound(r, aux.lowerBound(r), aux.upperBound(r));
+			}
+		} else {
+			b3 = bounds;
+			aux = new Bounds(bounds.universe());
+		}
+		
+		this.bounds = b3; // pt.uminho.pt
+		this.usize = b3.universe().size();
+		reporter.detectingSymmetries(b3);
+		this.symmetries = SymmetryDetector.partition(b3);
 		reporter.detectedSymmetries(symmetries);
-//		System.out.println(symmetries);
 	}
 	
 	/**
@@ -180,6 +193,7 @@ final class SymmetryBreaker {
 					RelationParts rparts = rIter.next();
 					Relation r = rparts.relation;
 					
+					if (aux.relations().contains(r)) continue; // pt.uminho.haslab
 					if (!rparts.representatives.contains(sym.min())) continue;  // r does not range over sym
 					
 					BooleanMatrix m = interpreter.interpret(r);

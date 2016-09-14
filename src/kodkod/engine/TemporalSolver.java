@@ -22,19 +22,28 @@
  */
 package kodkod.engine;
 
-import kodkod.engine.config.BoundedOptions;
-import kodkod.engine.config.PardinusOptions;
-import kodkod.instance.Bounds;
+import java.util.Iterator;
+
+import kodkod.ast.Formula;
+import kodkod.engine.config.TemporalOptions;
+import kodkod.instance.TemporalBounds;
 
 /**
- * An interface for bounded relational constraint solvers. These essentially
- * represent the standard Kodkod solvers, whose interface is preserved for
- * historical reasons. These differ from general solver interface by considering
- * more refined options.
+ * The interface that should be implemented by model finders that expect to
+ * solve temporal problems, i.e., formulas with
+ * {@link kodkod.ast.operator.TemporalOperator temporal operators} and bounds
+ * over {@link kodkod.ast.VarRelation variable relations}.
  * 
- * @author nmm
+ * @author nmm (pt.uminho.haslab)
  *
+ * @param <O>
+ *            the options containing
+ *            {@link kodkod.engine.config.TemporalOptions temporal options}.
  */
-public interface BoundedSolver<B extends Bounds, O extends BoundedOptions> extends PardinusSolver<B,O> {
-	
+public interface TemporalSolver<O extends TemporalOptions<?>> extends PardinusSolver<TemporalBounds, O> {
+
+	public Solution solve(Formula formula, TemporalBounds bounds);
+
+	public Iterator<Solution> solveAll(Formula formula, TemporalBounds bounds);
+
 }

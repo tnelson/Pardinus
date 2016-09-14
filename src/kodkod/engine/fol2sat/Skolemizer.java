@@ -60,6 +60,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.Quantifier;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.engine.bool.BooleanMatrix;
@@ -483,14 +484,33 @@ abstract class Skolemizer extends AbstractReplacer {
 		return source(cache(bf,ret),bf);
 	}
 	
-	// pt.uminho.haslab
-	public final Formula visit(BinaryTempFormula tempFormula) {
-		throw new UnsupportedOperationException("Temporal skolemizer.");
+	// pt.uminho.haslab: assuming non-skolemizable
+	public final Formula visit(BinaryTempFormula tf) {
+		Formula ret = lookup(tf);
+		if (ret!=null) return ret;
+		final TemporalOperator op = tf.op();
+		final int oldDepth = skolemDepth;
+		skolemDepth = -1;
+		final Formula left, right;
+		left = tf.left().accept(this);
+		right = tf.right().accept(this);
+		skolemDepth = oldDepth;
+		ret = (left==tf.left()&&right==tf.right()) ? tf : left.compose(op, right);
+		return source(cache(tf,ret),tf);
 	}
 
-	// pt.uminho.haslab
-	public final Formula visit(UnaryTempFormula tempFormula) {
-		throw new UnsupportedOperationException("Temporal skolemizer.");
+	// pt.uminho.haslab: assuming non-skolemizable
+	public final Formula visit(UnaryTempFormula tf) {
+		Formula ret = lookup(tf);
+		if (ret!=null) return ret;
+		final TemporalOperator op = tf.op();
+		final int oldDepth = skolemDepth;
+		skolemDepth = -1;
+		final Formula sub;
+		sub = tf.formula().accept(this);
+		skolemDepth = oldDepth;
+		ret = (sub==tf.formula()) ? tf : sub.compose(op);
+		return source(cache(tf,ret),tf);
 	}
 
 	/**

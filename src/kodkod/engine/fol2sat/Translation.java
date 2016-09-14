@@ -1,5 +1,6 @@
 /* 
- * Kodkod -- Copyright (c) 2005-2012, Emina Torlak
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +26,12 @@ import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.Relation;
+import kodkod.ast.VarRelation;
 import kodkod.engine.bool.BooleanConstant;
 import kodkod.engine.config.Options;
-import kodkod.engine.ltl2fol.ExpandedTemporalBounds;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
-import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -65,6 +65,7 @@ import kodkod.util.ints.Ints;
  * @see Incremental
  * 
  * @author Emina Torlak
+ * @modified nmm (pt.uminho.haslab): store temporal translation information.
  */
 public abstract class Translation {
 
@@ -159,14 +160,11 @@ public abstract class Translation {
 	 * @throws IllegalStateException  this.solver.solve() has not been called or the outcome of the last call 
 	 *        was not <code>true</code>.
 	 */
-	public final Instance interpret() {
+	public Instance interpret() { // pt.uminho.haslab: removed final
 		final SATSolver solver = cnf();
-		// pt.uminho.haslab
-		final Instance instance;
-		if (bounds instanceof ExpandedTemporalBounds)
-			instance = new TemporalInstance(bounds.universe(),((ExpandedTemporalBounds) bounds()).getExtendedVarRelations());
-		else
-			instance = new Instance(bounds.universe());
+		
+		final Instance instance = new Instance(bounds.universe());
+			
 		final TupleFactory f = bounds.universe().factory();
 		for(IndexedEntry<TupleSet> entry : bounds.intBounds()) {
 			instance.add(entry.index(), entry.value());
@@ -208,7 +206,7 @@ public abstract class Translation {
      * 
 	 * @author Emina Torlak
 	 */
-	public static final class Whole extends Translation {
+	public static class Whole extends Translation { // pt.uminho.haslab: remove final
 		private final SATSolver solver;
 		private final Map<Relation, IntSet> primaryVarUsage;
 		private final TranslationLog log;

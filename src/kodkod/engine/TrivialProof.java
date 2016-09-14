@@ -324,12 +324,12 @@ final class TrivialProof extends Proof {
 		
 		// pt.uminho.haslab
 		public final void visit(BinaryTempFormula tempFormula) {
-			throw new UnsupportedOperationException("Temporal skolemizer.");
+			throw new UnsupportedOperationException("Temporal trivial.");
 		}
 
 		// pt.uminho.haslab
 		public final void visit(UnaryTempFormula tempFormula) {
-			throw new UnsupportedOperationException("Temporal skolemizer.");
+			throw new UnsupportedOperationException("Temporal trivial.");
 		}
 		
 		/**

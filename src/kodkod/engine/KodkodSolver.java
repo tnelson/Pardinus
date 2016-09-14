@@ -25,9 +25,8 @@ package kodkod.engine;
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
+import kodkod.engine.config.BoundedOptions;
 import kodkod.engine.config.Options;
-import kodkod.engine.fol2sat.HigherOrderDeclException;
-import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 
@@ -53,7 +52,7 @@ import kodkod.instance.Instance;
  * @author Emina Torlak 
  * @modified nmm
  */
-public interface KodkodSolver extends BoundedSolver<Options> { // pt.uminho.haslab: solver hierarchy
+public interface KodkodSolver<B extends Bounds, O extends BoundedOptions> extends BoundedSolver<B,O> { // pt.uminho.haslab: solver hierarchy
 
 	/**
 	 * Returns the Options object used by this solver.

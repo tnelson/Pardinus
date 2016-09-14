@@ -23,6 +23,7 @@
 package kodkod.engine;
 
 import kodkod.engine.config.UnboundedOptions;
+import kodkod.instance.Bounds;
 
 /**
  * An interface for unbounded relational constraint solvers. These essentially
@@ -33,6 +34,6 @@ import kodkod.engine.config.UnboundedOptions;
  * @author nmm
  *
  */
-public interface UnboundedSolver<O extends UnboundedOptions> extends PardinusSolver<O> {
+public interface UnboundedSolver<B extends Bounds, O extends UnboundedOptions> extends PardinusSolver<B,O> {
 	
 }
