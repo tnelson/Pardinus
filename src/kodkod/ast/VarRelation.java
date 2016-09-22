@@ -22,8 +22,6 @@
  */
 package kodkod.ast;
 
-import java.io.Serializable;
-
 /**
  * Temporal relation class
  * @author Eduardo Pessoa, nmm
