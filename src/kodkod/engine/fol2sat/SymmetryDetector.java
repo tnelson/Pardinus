@@ -1,24 +1,24 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package kodkod.engine.fol2sat;
 
@@ -58,7 +58,6 @@ public final class SymmetryDetector {
 	private final List<IntSet> parts;
 	private final int usize;
 	
-	
 	/**
 	 * Constructs a new SymmetryDetector for the given bounds.
 	 * @ensures this.bounds' = bounds
@@ -66,14 +65,12 @@ public final class SymmetryDetector {
 	private SymmetryDetector(Bounds bounds) {
 		this.bounds = bounds;
 		this.usize = bounds.universe().size();
-
 		//	start with the maximum partition -- the whole universe.
 		this.parts = new LinkedList<IntSet>();
 		final IntSet set = Ints.bestSet(usize);
 		for(int i = 0; i < usize; i++) { set.add(i); }
 		this.parts.add(set);
 	}
-	
 	
 	/**
 	 * Returns the coarsest sound partition of {@code bounds.universe} into symmetry classes. 
@@ -99,7 +96,6 @@ public final class SymmetryDetector {
 		assert parts.size()==detector.parts.size(); // sanity check
 		return parts;
 	}
-	
 	
 	/**
 	 * Partitions this.bounds.universe into sets of equivalent atoms.
@@ -179,8 +175,6 @@ public final class SymmetryDetector {
 		});
 		return sorted;
 	}
-	
-	
 	
 	/**
 	 * Refines the atomic partitions in this.parts based on the contents of the given tupleset, 

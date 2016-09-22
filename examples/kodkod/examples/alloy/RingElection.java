@@ -33,6 +33,7 @@ import kodkod.instance.Universe;
  * 
  * pred init (t: Time) {all p: Process | p.toSend.t = p}
  * 
+<<<<<<< HEAD
  * pred step (t, t�: Time, p: Process) { 
  *  let from = p.toSend, to = p.succ.toSend |
  *   some id: from.t { 
@@ -45,6 +46,20 @@ import kodkod.instance.Universe;
  *  init (TO/first ()) 
  *  all t: Time - TO/last() | let t� = TO/next (t) | 
  *   all p: Process | step (t, t�, p) or step (t, t�, succ.p) or skip (t, t�, p) }
+=======
+ * pred step (t, t': Time, p: Process) { 
+ *  let from = p.toSend, to = p.succ.toSend |
+ *   some id: from.t { 
+ *    from.t' = from.t - id 
+ *    to.t' = to.t + (id - PO/prevs(p.succ)) } }
+ * 
+ * pred skip (t, t': Time, p: Process) {p.toSend.t = p.toSend.t'}
+ * 
+ * fact Traces { 
+ *  init (TO/first ()) 
+ *  all t: Time - TO/last() | let t' = TO/next (t) | 
+ *   all p: Process | step (t, t', p) or step (t, t', succ.p) or skip (t, t', p) }
+>>>>>>> a0c724011a8ad303dd19125007511072899b771e
  * 
  * fact DefineElected { 
  *  no elected.TO/first() 
@@ -53,12 +68,21 @@ import kodkod.instance.Universe;
  * 
  * 
  * pred progress () { 
+<<<<<<< HEAD
  *  all t: Time - TO/last() | let t� = TO/next (t) | 
  *   some Process.toSend.t => some p: Process | not skip (t, t�, p) }
  * 
  * assert AtLeastOneElected { progress () => some elected.Time }
  * 
  * pred looplessPath () {no disj t, t�: Time | toSend.t = toSend.t�}
+=======
+ *  all t: Time - TO/last() | let t' = TO/next (t) | 
+ *   some Process.toSend.t => some p: Process | not skip (t, t', p) }
+ * 
+ * assert AtLeastOneElected { progress () => some elected.Time }
+ * 
+ * pred looplessPath () {no disj t, t': Time | toSend.t = toSend.t'}
+>>>>>>> a0c724011a8ad303dd19125007511072899b771e
  * 
  * assert AtMostOneElected {lone elected.Time}
  * 
@@ -128,11 +152,19 @@ public final class RingElection {
 	 * Returns the step predicate.
 	 * @return
 	 * <pre>
+<<<<<<< HEAD
 	 * pred step (t, t�: Time, p: Process) { 
 	 *  let from = p.toSend, to = p.succ.toSend |
 	 *   some id: from.t { 
 	 *    from.t� = from.t - id 
 	 *    to.t� = to.t + (id - PO/prevs(p.succ)) } }
+=======
+	 * pred step (t, t': Time, p: Process) { 
+	 *  let from = p.toSend, to = p.succ.toSend |
+	 *   some id: from.t { 
+	 *    from.t' = from.t - id 
+	 *    to.t' = to.t + (id - PO/prevs(p.succ)) } }
+>>>>>>> a0c724011a8ad303dd19125007511072899b771e
 	 * </pre>  
 	 */
 	public Formula step(Expression t1, Expression t2, Expression p) {
@@ -148,7 +180,11 @@ public final class RingElection {
 	
 	/**
 	 * Returns the skip predicate
+<<<<<<< HEAD
 	 * @return <pre>pred skip (t, t�: Time, p: Process) {p.toSend.t = p.toSend.t�}<pre>
+=======
+	 * @return <pre>pred skip (t, t': Time, p: Process) {p.toSend.t = p.toSend.t'}<pre>
+>>>>>>> a0c724011a8ad303dd19125007511072899b771e
 	 */
 	public Formula skip(Expression t1, Expression t2, Expression p) {
 		return p.join(toSend).join(t1).eq(p.join(toSend).join(t2));
@@ -159,8 +195,13 @@ public final class RingElection {
 	 * @return <pre>
 	 * fact Traces { 
 	 *  init (TO/first ()) 
+<<<<<<< HEAD
 	 *  all t: Time - TO/last() | let t� = TO/next (t) | 
 	 *   all p: Process | step (t, t�, p) or step (t, t�, succ.p) or skip (t, t�, p) }
+=======
+	 *  all t: Time - TO/last() | let t' = TO/next (t) | 
+	 *   all p: Process | step (t, t', p) or step (t, t', succ.p) or skip (t, t', p) }
+>>>>>>> a0c724011a8ad303dd19125007511072899b771e
 	 *  </pre>
 	 */
 	public Formula traces() {
@@ -195,8 +236,13 @@ public final class RingElection {
 	 * Returns the progress predicate.
 	 * @return <pre>
 	 * pred progress () { 
+<<<<<<< HEAD
 	 *  all t: Time - TO/last() | let t� = TO/next (t) | 
 	 *   some Process.toSend.t => some p: Process | not skip (t, t�, p) }
+=======
+	 *  all t: Time - TO/last() | let t' = TO/next (t) | 
+	 *   some Process.toSend.t => some p: Process | not skip (t, t', p) }
+>>>>>>> a0c724011a8ad303dd19125007511072899b771e
 	 * </pre>  
 	 */
 	public Formula progress() {
@@ -209,12 +255,16 @@ public final class RingElection {
 	
 	/**
 	 * Returns the looplessPath predicate
+<<<<<<< HEAD
 	 * @return <pre>pred looplessPath () {no disj t, t�: Time | toSend.t = toSend.t�}</pre>
+=======
+	 * @return <pre>pred looplessPath () {no disj t, t': Time | toSend.t = toSend.t'}</pre>
+>>>>>>> a0c724011a8ad303dd19125007511072899b771e
 	 */
 	public Formula looplessPath() {
 		final Variable t1 = Variable.unary("t");
 		final Variable t2 = Variable.unary("t'");
-		// all t, t': Time | some t&t' || !(toSend.t = toSend.t�)
+		// all t, t': Time | some t&t' || !(toSend.t = toSend.t')
 		final Formula f1 = t1.intersection(t2).some().or(toSend.join(t1).eq(toSend.join(t2)).not());
 		return f1.forAll(t1.oneOf(Time).and(t2.oneOf(Time)));
 	}

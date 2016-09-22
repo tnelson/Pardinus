@@ -1,24 +1,24 @@
-/* 
- * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+/*
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak 
  * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package kodkod.ast;
 
@@ -28,6 +28,7 @@ import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
 import static kodkod.ast.operator.Quantifier.ALL;
 import static kodkod.ast.operator.Quantifier.SOME;
+
 import static kodkod.ast.operator.TemporalOperator.ALWAYS;
 import static kodkod.ast.operator.TemporalOperator.EVENTUALLY;
 import static kodkod.ast.operator.TemporalOperator.HISTORICALLY;
@@ -37,6 +38,7 @@ import static kodkod.ast.operator.TemporalOperator.PREVIOUS;
 import static kodkod.ast.operator.TemporalOperator.RELEASE;
 import static kodkod.ast.operator.TemporalOperator.UNTIL;
 
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -44,6 +46,7 @@ import java.util.Iterator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Quantifier;
 import kodkod.ast.operator.TemporalOperator;
+
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.util.collections.Containers;
 
@@ -120,7 +123,6 @@ public abstract class Formula extends Node {
     public final Formula compose(TemporalOperator op, Formula formula) {
     	return new BinaryTempFormula(this, op, formula);
     }
-    
     
     /**
      * Returns the conjunction of the given formulas.  The effect of this method is the
@@ -309,7 +311,6 @@ public abstract class Formula extends Node {
         return new NotFormula(this);
     }
     
-    
     /**
      * Temporal operators methods.
      * pt.uminho.haslab
@@ -347,8 +348,6 @@ public abstract class Formula extends Node {
         return new UnaryTempFormula(PREVIOUS, this);
     }
 
-
-    
     /**
      * Accepts the given visitor and returns the result.
      * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)

@@ -23,8 +23,6 @@ package kodkod.engine.fol2sat;
 
 import kodkod.ast.Variable;
 
-
-
 /** 
  * Represents a  variable binding environment as a 
  * map from a {@link kodkod.ast.Variable variable} to a 

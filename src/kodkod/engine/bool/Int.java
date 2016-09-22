@@ -27,7 +27,6 @@ import java.util.List;
 import kodkod.ast.Variable;
 import kodkod.engine.fol2sat.Environment;
 
-
 /**
 * An integer represented using {@link kodkod.engine.bool.BooleanValue boolean values}
 * and a given {@link kodkod.engine.config.Options.IntEncoding integer encoding}.

@@ -9,3 +9,4 @@ This repository includes the source code for the Pardinus solver, an extension t
 * Support for unbounded relational model finding (planned).
 
 Pardinus is open-source and available under the [MIT license](LICENSE), as is Kodkod. However, the implementation relies on third-party SAT solvers ([SAT4J](http://www.sat4j.org), [MiniSat](http://minisat.se), [Glucose](http://www.labri.fr/perso/lsimon/glucose/), and [(P)Lingeling](http://fmv.jku.at/lingeling/)), some of which are released under stricter licenses. Please see the solver licenses for details.
+

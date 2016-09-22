@@ -21,9 +21,6 @@
  */
 package kodkod.ast.operator;
 
-
-
-
 /**
  * Enumerates unary (~, ^, *), binary (+, &, ++, ->, -, .) and nary (+, &, ++, ->) expression operators.
  * @specfield op: (int->lone Expression) -> Expression
@@ -49,8 +46,6 @@ public enum ExprOperator {
     /** Reflexive transitive closure (*) operator. */
     REFLEXIVE_CLOSURE 	{ public String toString() { return "*";} };
   	
-
- 
     static final int unary = TRANSPOSE.index() | CLOSURE.index() | REFLEXIVE_CLOSURE.index();
     
     static final int binary = ~unary;

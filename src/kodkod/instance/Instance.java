@@ -1,24 +1,24 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package kodkod.instance;
 
@@ -32,7 +32,6 @@ import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
 import kodkod.util.ints.SparseSequence;
 import kodkod.util.ints.TreeSequence;
-
 
 /**
  * Represents a model (an instance) of a relational formula, which is a mapping
@@ -53,7 +52,7 @@ public class Instance implements Cloneable { // pt.uminho.haslab: removed final
 	private final SparseSequence<TupleSet> ints;
 	private final Universe universe;
 	
-	protected Instance(Universe u, Map<Relation, TupleSet> tuples, SparseSequence<TupleSet> ints) {
+	protected Instance(Universe u, Map<Relation, TupleSet> tuples, SparseSequence<TupleSet> ints) { // pt.uminho.haslab: protected
 		this.universe = u;
 		this.tuples = tuples;
 		this.ints = ints;
@@ -132,7 +131,6 @@ public class Instance implements Cloneable { // pt.uminho.haslab: removed final
 			throw new IllegalArgumentException("s.universe!=this.universe");
 		if (relation.arity()!=s.arity())
 			throw new IllegalArgumentException("relation.arity!=s.arity");
-
 		tuples.put(relation, s.clone().unmodifiableView());
 	}
 
