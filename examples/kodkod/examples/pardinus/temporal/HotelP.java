@@ -28,13 +28,15 @@ import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
+import kodkod.engine.Evaluator;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
+import kodkod.engine.TemporalKodkodSolver;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
+import kodkod.instance.TemporalBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -77,7 +79,7 @@ public class HotelP implements DModel {
 		occupant = VarRelation.nary("FrontDesk.occupant", 2);
 		gkeys = VarRelation.nary("Guest.gkeys", 2);
 
-		slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
+		// slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
 	}
 
 	public Formula finalFormula() {
@@ -318,7 +320,7 @@ public class HotelP implements DModel {
 		return checkout;
 	}
 
-	public Bounds bounds() {
+	public TemporalBounds bounds() {
 		final List<String> atoms = new ArrayList<String>(3 * n);
 		for (int i = 0; i < n; i++) {
 			atoms.add("Key" + i);
@@ -333,7 +335,7 @@ public class HotelP implements DModel {
 		Universe u = new Universe(atoms);
 
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final TemporalBounds b = new TemporalBounds(u);
 
 		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n - 1)));
 		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
@@ -386,16 +388,29 @@ public class HotelP implements DModel {
 	}
 
 	public static void main(String[] args) {
-		HotelP model = new HotelP(new String[] { "3", "NOINTERVENES" });
+		HotelP model = new HotelP(new String[] { "3", "INTERVENES" });
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
-		Solver solver = new Solver(opt);
-
-		Solution sol = solver.solve(model.finalFormula(), model.bounds());
-
+		TemporalKodkodSolver solver = new TemporalKodkodSolver(opt);
+		TemporalBounds tbmpbound = model.bounds();
+		Solution sol = solver.solveAll(model.finalFormula(), tbmpbound).next();
 		System.out.println(sol);
+		if (sol.sat()) {
+			Evaluator eval = new Evaluator(sol.instance(), opt);
+			System.out.println(eval.evaluate(model.occupant, 0));
+			System.out.println(eval.evaluate(model.occupant, 1));
+			System.out.println(eval.evaluate(model.occupant, 2));
+			System.out.println(eval.evaluate(model.occupant, 3));
+			System.out.println(eval.evaluate(model.occupant, 4));
+			System.out.println(eval.evaluate(model.occupant, 5));
+			System.out.println(eval.evaluate(model.occupant, 6));
+			System.out.println(eval.evaluate(model.occupant, 7));
+			System.out.println(eval.evaluate(model.occupant, 8));
+			System.out.println(eval.evaluate(model.occupant, 9));
+			System.out.println(eval.evaluate((model.occupant.no()).next()));
+		}
 		return;
 	}
 }

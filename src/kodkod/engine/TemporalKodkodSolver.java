@@ -67,7 +67,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * @modified nmm, tmg (pt.uminho.haslab): extended to temporal and
  *           target-oriented model finding
  */
-public final class TemporalKokdodSolver implements KodkodSolver<TemporalBounds, ExtendedOptions>,
+public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, ExtendedOptions>,
 		TemporalSolver<ExtendedOptions> {
 	private final ExtendedOptions options;
 
@@ -76,7 +76,7 @@ public final class TemporalKokdodSolver implements KodkodSolver<TemporalBounds, 
 	 * 
 	 * @ensures this.options' = new Options()
 	 */
-	public TemporalKokdodSolver() {
+	public TemporalKodkodSolver() {
 		this.options = new ExtendedOptions();
 	}
 
@@ -87,7 +87,7 @@ public final class TemporalKokdodSolver implements KodkodSolver<TemporalBounds, 
 	 * @throws NullPointerException
 	 *             options = null
 	 */
-	public TemporalKokdodSolver(ExtendedOptions options) {
+	public TemporalKodkodSolver(ExtendedOptions options) {
 		if (options == null)
 			throw new NullPointerException();
 		this.options = options;

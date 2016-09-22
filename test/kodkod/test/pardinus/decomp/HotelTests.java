@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import kodkod.ast.Formula;
 import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
+import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.TargetOptions.TMode;
@@ -30,10 +31,13 @@ public class HotelTests {
 		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
 		opt2 = new ExtendedOptions(opt);
-		opt2.setRunTarget(true);
-		opt2.setTargetMode(TMode.FAR);
-		opt2.setSolver(SATFactory.PMaxSAT4J);
+		opt2.setRunTarget(false);
+		opt2.setReporter(new ConsoleReporter());
+
+//		opt2.setTargetMode(TMode.FAR);
+//		opt2.setSolver(SATFactory.PMaxSAT4J);
 		opt.setConfigOptions(opt2);
+		opt.setReporter(new ConsoleReporter());
 		psolver = new DecomposedKodkodSolver(opt);
 		
 	}

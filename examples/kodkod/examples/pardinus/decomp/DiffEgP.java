@@ -181,7 +181,7 @@ public class DiffEgP implements DModel {
 
 	@Override
 	public Formula partition2() {
-		return runPol();
+		return runPol().and(decls());
 	}
 
 	@Override

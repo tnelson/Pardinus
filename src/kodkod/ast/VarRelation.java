@@ -22,6 +22,8 @@
  */
 package kodkod.ast;
 
+import java.io.Serializable;
+
 /**
  * Temporal relation class
  * @author Eduardo Pessoa, nmm
@@ -29,9 +31,12 @@ package kodkod.ast;
 
 public class VarRelation extends Relation {
 
+	public final Relation expanded;
+	
     public VarRelation(String s, int i) {
         super(s, i);
-    }
+        expanded = Relation.nary(s, i + 1);
+	}
 
     public static VarRelation nary(String paramString, int paramInt) {
         return new VarRelation(paramString, paramInt);

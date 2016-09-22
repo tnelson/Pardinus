@@ -37,56 +37,74 @@ import kodkod.util.ints.IntSet;
 import kodkod.util.ints.SparseSequence;
 import kodkod.util.ints.TreeSequence;
 
-
 /**
- * <p>A Bounds object maps a {@link kodkod.ast.Relation relation} <i>r</i> to two
- * {@link kodkod.instance.TupleSet sets of tuples}, <i>rL</i> and <i>rU</i>, which represent the lower and upper
- * bounds on the {@link kodkod.instance.Tuple set of tuples} to which an {@link kodkod.instance.Instance instance}
- * based on these bounds may map <i>r</i>.  The set <i>rL</i> represents all the tuples
- * that a given relation <i>must</i> contain.  The set <i>rU</i> represents all the tuples
- * that a relation <i>may</i> contain.  All bounding sets range over the same {@link kodkod.instance.Universe universe}.   
+ * <p>
+ * A Bounds object maps a {@link kodkod.ast.Relation relation} <i>r</i> to two
+ * {@link kodkod.instance.TupleSet sets of tuples}, <i>rL</i> and <i>rU</i>,
+ * which represent the lower and upper bounds on the
+ * {@link kodkod.instance.Tuple set of tuples} to which an
+ * {@link kodkod.instance.Instance instance} based on these bounds may map
+ * <i>r</i>. The set <i>rL</i> represents all the tuples that a given relation
+ * <i>must</i> contain. The set <i>rU</i> represents all the tuples that a
+ * relation <i>may</i> contain. All bounding sets range over the same
+ * {@link kodkod.instance.Universe universe}.
  * </p>
- * <p>A Bounds object also maps integers to singleton tupleset that represent them.  A tupleset may represent more than
- * one integer, but an integer is represented by at most one tupleset.  </p>
+ * <p>
+ * A Bounds object also maps integers to singleton tupleset that represent them.
+ * A tupleset may represent more than one integer, but an integer is represented
+ * by at most one tupleset.
+ * </p>
+ * 
  * @specfield universe: Universe
  * @specfield relations: set Relation
  * @specfield intBound: int -> lone TupleSet
  * @specfield lowerBound: relations -> one TupleSet
  * @specfield upperBound: relations -> one TupleSet
- * @invariant all i: intBound.TupleSet | intBound[i].size() = 1 && intBound[i].arity() = 1
- * @invariant lowerBound[relations].universe = upperBound[relations].universe = universe
- * @invariant all r: relations | lowerBound[r].arity = upperBound[r].arity = r.arity
- * @invariant all r: relations | lowerBound[r].tuples in upperBound[r].tuples       
+ * @invariant all i: intBound.TupleSet | intBound[i].size() = 1 &&
+ *            intBound[i].arity() = 1
+ * @invariant lowerBound[relations].universe = upperBound[relations].universe =
+ *            universe
+ * @invariant all r: relations | lowerBound[r].arity = upperBound[r].arity =
+ *            r.arity
+ * @invariant all r: relations | lowerBound[r].tuples in upperBound[r].tuples
  * @author Emina Torlak
- * @modified nmm, tmg (added targets and weights)
+ * @modified nmm, tmg (pt.uminho.haslab): added targets and weights, support for
+ *           extended bounds
  **/
 public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	private final TupleFactory factory;
 	private final Map<Relation, TupleSet> lowers, uppers;
 	private final SparseSequence<TupleSet> intbounds;
 	private final Set<Relation> relations;
-	private final Map<Relation, TupleSet> targets; 	// pt.uminho.haslab: the targets set to each relation
-	private final Map<Relation, Integer> weights; 	// pt.uminho.haslab: the weights set to each relation
+	private final Map<Relation, TupleSet> targets; // pt.uminho.haslab: the
+													// targets set to each
+													// relation
+	private final Map<Relation, Integer> weights; // pt.uminho.haslab: the
+													// weights set to each
+													// relation
 
-	
 	/**
 	 * Constructs a Bounds object with the given factory and mappings.
 	 */
-	// pt.uminho.haslab: constructor considers targets and weights
-	private Bounds(TupleFactory factory, Map<Relation, TupleSet> lower, Map<Relation, TupleSet> upper, Map<Relation, TupleSet> target, Map<Relation, Integer> weights, SparseSequence<TupleSet> intbounds) {
+	// pt.uminho.haslab: constructor considers targets and weights, protected
+	protected Bounds(TupleFactory factory, Map<Relation, TupleSet> lower, Map<Relation, TupleSet> upper,
+			Map<Relation, TupleSet> target, Map<Relation, Integer> weights, SparseSequence<TupleSet> intbounds) {
 		this.factory = factory;
 		this.lowers = lower;
 		this.uppers = upper;
 		this.intbounds = intbounds;
 		this.relations = relations(lowers, uppers);
-		this.weights = weights;	// pt.uminho.haslab
-		this.targets = target;	// pt.uminho.haslab
+		this.weights = weights; // pt.uminho.haslab
+		this.targets = target; // pt.uminho.haslab
 	}
 
 	/**
 	 * Constructs new Bounds over the given universe.
-	 * @ensures this.universe' = universe && no this.relations' && no this.intBound'
-	 * @throws NullPointerException  universe = null
+	 * 
+	 * @ensures this.universe' = universe && no this.relations' && no
+	 *          this.intBound'
+	 * @throws NullPointerException
+	 *             universe = null
 	 */
 	public Bounds(Universe universe) {
 		this.factory = universe.factory();
@@ -94,40 +112,59 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 		this.uppers = new LinkedHashMap<Relation, TupleSet>();
 		this.intbounds = new TreeSequence<TupleSet>();
 		this.relations = relations(lowers, uppers);
-		this.targets = new LinkedHashMap<Relation, TupleSet>();	// pt.uminho.haslab
-		this.weights = new LinkedHashMap<Relation, Integer>();	// pt.uminho.haslab
+		this.targets = new LinkedHashMap<Relation, TupleSet>(); // pt.uminho.haslab
+		this.weights = new LinkedHashMap<Relation, Integer>(); // pt.uminho.haslab
 	}
 
 	/**
-	 * Returns a set view of the relations mapped by the given lower/upper bounds.
+	 * Returns a set view of the relations mapped by the given lower/upper
+	 * bounds.
+	 * 
 	 * @requires lowers.keySet().equals(uppers.keySet())
-	 * @return a set view of the relations mapped by the given lower/upper bounds
+	 * @return a set view of the relations mapped by the given lower/upper
+	 *         bounds
 	 */
-	private static Set<Relation> relations(final Map<Relation, TupleSet> lowers, final Map<Relation, TupleSet> uppers) {
-		return new AbstractSet<Relation>() {
+	protected static <T extends Relation> Set<T> relations(final Map<T, TupleSet> lowers, final Map<T, TupleSet> uppers) { // pt.uminho.haslab:
+																															// protected,
+																															// polymorphic
+		return new AbstractSet<T>() {
 
-			public Iterator<Relation> iterator() {
-				return new Iterator<Relation>() {
-					final Iterator<Relation> itr = uppers.keySet().iterator();
-					Relation last = null;
-					public boolean hasNext() { return itr.hasNext(); }
-					public Relation next() { return last = itr.next(); }
+			public Iterator<T> iterator() {
+				return new Iterator<T>() {
+					final Iterator<T> itr = uppers.keySet().iterator();
+					T last = null;
+
+					public boolean hasNext() {
+						return itr.hasNext();
+					}
+
+					public T next() {
+						return last = itr.next();
+					}
+
 					public void remove() {
 						itr.remove();
-						lowers.remove(last);					
+						lowers.remove(last);
 					}
 				};
 			}
 
-			public int size() { return uppers.size(); }			
-			public boolean contains(Object key) { return uppers.containsKey(key); }
-
-			public boolean remove(Object key) { 
-				return (uppers.remove(key) != null) && (lowers.remove(key) != null); 
+			public int size() {
+				return uppers.size();
 			}
+
+			public boolean contains(Object key) {
+				return uppers.containsKey(key);
+			}
+
+			public boolean remove(Object key) {
+				return (uppers.remove(key) != null) && (lowers.remove(key) != null);
+			}
+
 			public boolean removeAll(Collection<?> c) {
 				return uppers.keySet().removeAll(c) && lowers.keySet().removeAll(c);
 			}
+
 			public boolean retainAll(Collection<?> c) {
 				return uppers.keySet().retainAll(c) && lowers.keySet().retainAll(c);
 			}
@@ -136,24 +173,29 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 
 	/**
 	 * Returns this.universe.
+	 * 
 	 * @return this.universe
 	 */
-	public Universe universe() { return factory.universe(); }
-
-	/**
-	 * Returns the set of all relations bound by this Bounds.
-	 * The returned set does not support the add operation.
-	 * It supports removal iff this is not an unmodifiable Bounds.
-	 * @return this.relations
-	 */
-	public Set<Relation> relations() { 
-		return relations; 
+	public Universe universe() {
+		return factory.universe();
 	}
 
 	/**
-	 * Returns the set of all integers bound by this Bounds.
-	 * The returned set does not support the add operation.
-	 * It supports removal iff this is not an unmodifiable Bounds.
+	 * Returns the set of all relations bound by this Bounds. The returned set
+	 * does not support the add operation. It supports removal iff this is not
+	 * an unmodifiable Bounds.
+	 * 
+	 * @return this.relations
+	 */
+	public Set<Relation> relations() {
+		return relations;
+	}
+
+	/**
+	 * Returns the set of all integers bound by this Bounds. The returned set
+	 * does not support the add operation. It supports removal iff this is not
+	 * an unmodifiable Bounds.
+	 * 
 	 * @return this.intBounds.TupleSet
 	 */
 	public IntSet ints() {
@@ -161,8 +203,9 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns the set of tuples that r must contain (the lower bound on r's contents).
-	 * If r is not mapped by this, null is returned.
+	 * Returns the set of tuples that r must contain (the lower bound on r's
+	 * contents). If r is not mapped by this, null is returned.
+	 * 
 	 * @return r in this.relations => lowerBound[r], null
 	 */
 	public TupleSet lowerBound(Relation r) {
@@ -170,7 +213,9 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns a map view of this.lowerBound.  The returned map is not modifiable.
+	 * Returns a map view of this.lowerBound. The returned map is not
+	 * modifiable.
+	 * 
 	 * @return a map view of this.lowerBound
 	 */
 	public Map<Relation, TupleSet> lowerBounds() {
@@ -178,8 +223,9 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns the set of tuples that r may contain (the upper bound on r's contents).
-	 * If r is not mapped by this, null is returned.
+	 * Returns the set of tuples that r may contain (the upper bound on r's
+	 * contents). If r is not mapped by this, null is returned.
+	 * 
 	 * @return r in this.relations => upperBound[r], null
 	 */
 	public TupleSet upperBound(Relation r) {
@@ -187,7 +233,9 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns a map view of this.upperBound.  The returned map is not modifiable.
+	 * Returns a map view of this.upperBound. The returned map is not
+	 * modifiable.
+	 * 
 	 * @return a map view of this.upperBound
 	 */
 	public Map<Relation, TupleSet> upperBounds() {
@@ -195,8 +243,9 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns the set of tuples representing the given integer.  If i is not
+	 * Returns the set of tuples representing the given integer. If i is not
 	 * mapped by this, null is returned.
+	 * 
 	 * @return this.intBound[i]
 	 */
 	public TupleSet exactBound(int i) {
@@ -204,8 +253,9 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns a sparse sequence view of this.intBound.  The returned sequence
-	 * is not modifiable.
+	 * Returns a sparse sequence view of this.intBound. The returned sequence is
+	 * not modifiable.
+	 * 
 	 * @return a sparse sequence view of this.intBound
 	 */
 	public SparseSequence<TupleSet> intBounds() {
@@ -213,26 +263,31 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * @throws IllegalArgumentException  arity != bound.arity
-	 * @throws IllegalArgumentException  bound.universe != this.universe
+	 * @throws IllegalArgumentException
+	 *             arity != bound.arity
+	 * @throws IllegalArgumentException
+	 *             bound.universe != this.universe
 	 */
-	private void checkBound(int arity, TupleSet bound) {
+	protected void checkBound(int arity, TupleSet bound) { // pt.uminho.haslab:
+															// protected
 		if (arity != bound.arity())
 			throw new IllegalArgumentException("bound.arity != r.arity");
 		if (!bound.universe().equals(factory.universe()))
-			throw new IllegalArgumentException("bound.universe != this.universe");	
+			throw new IllegalArgumentException("bound.universe != this.universe");
 	}
 
 	/**
-	 * Sets both the lower and upper bounds of the given relation to 
-	 * the given set of tuples. 
+	 * Sets both the lower and upper bounds of the given relation to the given
+	 * set of tuples.
 	 * 
 	 * @requires tuples.arity = r.arity && tuples.universe = this.universe
-	 * @ensures this.relations' = this.relations + r 
-	 *          this.lowerBound' = this.lowerBound' ++ r->tuples &&
-	 *          this.upperBound' = this.lowerBound' ++ r->tuples
-	 * @throws NullPointerException  r = null || tuples = null 
-	 * @throws IllegalArgumentException  tuples.arity != r.arity || tuples.universe != this.universe
+	 * @ensures this.relations' = this.relations + r this.lowerBound' =
+	 *          this.lowerBound' ++ r->tuples && this.upperBound' =
+	 *          this.lowerBound' ++ r->tuples
+	 * @throws NullPointerException
+	 *             r = null || tuples = null
+	 * @throws IllegalArgumentException
+	 *             tuples.arity != r.arity || tuples.universe != this.universe
 	 */
 	public void boundExactly(Relation r, TupleSet tuples) {
 		checkBound(r.arity(), tuples);
@@ -242,43 +297,52 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Sets the lower and upper bounds for the given relation. 
+	 * Sets the lower and upper bounds for the given relation.
 	 * 
-	 * @requires lower.tuples in upper.tuples && lower.arity = upper.arity = r.arity &&
-	 *           lower.universe = upper.universe = this.universe 
-	 * @ensures this.relations' = this.relations + r &&
-	 *          this.lowerBound' = this.lowerBound ++ r->lower &&
-	 *          this.upperBound' = this.upperBound ++ r->upper
-	 * @throws NullPointerException  r = null || lower = null || upper = null
-	 * @throws IllegalArgumentException  lower.arity != r.arity || upper.arity != r.arity
-	 * @throws IllegalArgumentException  lower.universe != this.universe || upper.universe != this.universe
-	 * @throws IllegalArgumentException  lower.tuples !in upper.tuples                               
+	 * @requires lower.tuples in upper.tuples && lower.arity = upper.arity =
+	 *           r.arity && lower.universe = upper.universe = this.universe
+	 * @ensures this.relations' = this.relations + r && this.lowerBound' =
+	 *          this.lowerBound ++ r->lower && this.upperBound' =
+	 *          this.upperBound ++ r->upper
+	 * @throws NullPointerException
+	 *             r = null || lower = null || upper = null
+	 * @throws IllegalArgumentException
+	 *             lower.arity != r.arity || upper.arity != r.arity
+	 * @throws IllegalArgumentException
+	 *             lower.universe != this.universe || upper.universe !=
+	 *             this.universe
+	 * @throws IllegalArgumentException
+	 *             lower.tuples !in upper.tuples
 	 */
 	public void bound(Relation r, TupleSet lower, TupleSet upper) {
 		if (!upper.containsAll(lower))
 			throw new IllegalArgumentException("lower.tuples !in upper.tuples");
-		if (upper.size()==lower.size()) { 
-			// upper.containsAll(lower) && upper.size()==lower.size() => upper.equals(lower)
+		if (upper.size() == lower.size()) {
+			// upper.containsAll(lower) && upper.size()==lower.size() =>
+			// upper.equals(lower)
 			boundExactly(r, lower);
 		} else {
 			checkBound(r.arity(), lower);
-			checkBound(r.arity(), upper);		
+			checkBound(r.arity(), upper);
 			lowers.put(r, lower.clone().unmodifiableView());
 			uppers.put(r, upper.clone().unmodifiableView());
 		}
 	}
 
 	/**
-	 * Makes the specified tupleset the upper bound on the contents of the given relation.  
-	 * The lower bound automatically becomen an empty tupleset with the same arity as
-	 * the relation. 
+	 * Makes the specified tupleset the upper bound on the contents of the given
+	 * relation. The lower bound automatically becomen an empty tupleset with
+	 * the same arity as the relation.
 	 * 
 	 * @requires upper.arity = r.arity && upper.universe = this.universe
-	 * @ensures this.relations' = this.relations + r 
-	 *          this.lowerBound' = this.lowerBound ++ r->{s: TupleSet | s.universe = this.universe && s.arity = r.arity && no s.tuples} && 
-	 *          this.upperBound' = this.upperBound ++ r->upper
-	 * @throws NullPointerException  r = null || upper = null 
-	 * @throws IllegalArgumentException  upper.arity != r.arity || upper.universe != this.universe
+	 * @ensures this.relations' = this.relations + r this.lowerBound' =
+	 *          this.lowerBound ++ r->{s: TupleSet | s.universe = this.universe
+	 *          && s.arity = r.arity && no s.tuples} && this.upperBound' =
+	 *          this.upperBound ++ r->upper
+	 * @throws NullPointerException
+	 *             r = null || upper = null
+	 * @throws IllegalArgumentException
+	 *             upper.arity != r.arity || upper.universe != this.universe
 	 */
 	public void bound(Relation r, TupleSet upper) {
 		checkBound(r.arity(), upper);
@@ -287,13 +351,17 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Makes the specified tupleset an exact bound on the relational value
-	 * that corresponds to the given integer.
+	 * Makes the specified tupleset an exact bound on the relational value that
+	 * corresponds to the given integer.
+	 * 
 	 * @requires ibound.arity = 1 && i.bound.size() = 1
 	 * @ensures this.intBound' = this.intBound' ++ i -> ibound
-	 * @throws NullPointerException  ibound = null
-	 * @throws IllegalArgumentException  ibound.arity != 1 || ibound.size() != 1
-	 * @throws IllegalArgumentException  ibound.universe != this.universe
+	 * @throws NullPointerException
+	 *             ibound = null
+	 * @throws IllegalArgumentException
+	 *             ibound.arity != 1 || ibound.size() != 1
+	 * @throws IllegalArgumentException
+	 *             ibound.universe != this.universe
 	 */
 	public void boundExactly(int i, TupleSet ibound) {
 		checkBound(1, ibound);
@@ -302,36 +370,40 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 		intbounds.put(i, ibound.clone().unmodifiableView());
 	}
 
-
 	/**
 	 * Returns an unmodifiable view of this Bounds object.
+	 * 
 	 * @return an unmodifiable view of his Bounds object.
 	 */
 	// pt.uminho.haslab: considers targets and weights
-	public Bounds unmodifiableView() { 	
-		return new Bounds(factory, unmodifiableMap(lowers), unmodifiableMap(uppers), unmodifiableMap(targets), unmodifiableMap(weights), unmodifiableSequence(intbounds));
+	public Bounds unmodifiableView() {
+		return new Bounds(factory, unmodifiableMap(lowers), unmodifiableMap(uppers), unmodifiableMap(targets),
+				unmodifiableMap(weights), unmodifiableSequence(intbounds));
 	}
 
 	/**
 	 * Returns a deep (modifiable) copy of this Bounds object.
+	 * 
 	 * @return a deep (modifiable) copy of this Bounds object.
 	 */
 	// pt.uminho.haslab: clone considers targets and weights
 	public Bounds clone() {
 		try {
-			return new Bounds(universe().factory(), new LinkedHashMap<Relation, TupleSet>(lowers),  	
-					new LinkedHashMap<Relation, TupleSet>(uppers), new LinkedHashMap<Relation, TupleSet>(targets), new LinkedHashMap<Relation, Integer>(weights), intbounds.clone());
+			return new Bounds(universe().factory(), new LinkedHashMap<Relation, TupleSet>(lowers),
+					new LinkedHashMap<Relation, TupleSet>(uppers), new LinkedHashMap<Relation, TupleSet>(targets),
+					new LinkedHashMap<Relation, Integer>(weights), intbounds.clone());
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
 		}
 	}
+
 	/**
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		final StringBuilder str = new StringBuilder();
 		str.append("relation bounds:");
-		for(Map.Entry<Relation, TupleSet> entry: lowers.entrySet()) {
+		for (Map.Entry<Relation, TupleSet> entry : lowers.entrySet()) {
 			str.append("\n ");
 			str.append(entry.getKey());
 			str.append(": [");
@@ -340,7 +412,7 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 			if (!upper.equals(entry.getValue())) {
 				str.append(", ");
 				str.append(upper);
-			} 
+			}
 			str.append("]");
 		}
 		str.append("\nint bounds: ");
@@ -350,17 +422,18 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns the set of tuples that are the target of r. r may be in this.relations and not have targets set.
-	 * If r is not mapped by this, null is returned.
-	 * pt.uminho.haslab
+	 * Returns the set of tuples that are the target of r. r may be in
+	 * this.relations and not have targets set. If r is not mapped by this, null
+	 * is returned. pt.uminho.haslab
 	 */
 	public TupleSet target(Relation r) {
 		return targets.get(r);
 	}
 
 	/**
-	 * Returns a map view of this.targets.  The returned map is not modifiable.
+	 * Returns a map view of this.targets. The returned map is not modifiable.
 	 * pt.uminho.haslab
+	 * 
 	 * @return a map view of this.targets
 	 */
 	public Map<Relation, TupleSet> targets() {
@@ -368,8 +441,8 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns the weight of r for TO runs. r may be in this.targets and not have weights set.
-	 * If r is not mapped by this, null is returned.
+	 * Returns the weight of r for TO runs. r may be in this.targets and not
+	 * have weights set. If r is not mapped by this, null is returned.
 	 * pt.uminho.haslab
 	 */
 	public Integer weight(Relation r) {
@@ -377,45 +450,44 @@ public class Bounds implements Cloneable { // pt.uminho.haslab: removed final
 	}
 
 	/**
-	 * Returns a map view of this.weights.  The returned map is not modifiable.
+	 * Returns a map view of this.weights. The returned map is not modifiable.
 	 * pt.uminho.haslab
+	 * 
 	 * @return a map view of this.weights
-	 */	public Map<Relation, Integer> weights() {
-		 return unmodifiableMap(weights);
-	 }
+	 */
+	public Map<Relation, Integer> weights() {
+		return unmodifiableMap(weights);
+	}
 
+	/**
+	 * Sets the target for the given relation. pt.uminho.haslab
+	 * 
+	 * @requires lower.tuples in target.tuples && target.tuples in upper.tuples
+	 *           && target.arity = r.arity && target.universe = this.universe &&
+	 *           r in this.relations
+	 */
+	public void setTarget(Relation r, TupleSet target) {
+		if (!relations().contains(r))
+			throw new IllegalArgumentException("r !in this.relations");
+		if (!upperBounds().get(r).containsAll(target))
+			throw new IllegalArgumentException("target.tuples !in upper.tuples");
+		// if (!lowerBounds().containsKey(r))
+		// throw new IllegalArgumentException("lower.tuples !in target.tuples");
+		if (!target.containsAll(lowerBounds().get(r)))
+			throw new IllegalArgumentException("lower.tuples !in target.tuples");
+		targets.put(r, target.clone().unmodifiableView());
+	}
 
-
-	 /**
-	  * Sets the target for the given relation.
-	  * pt.uminho.haslab
-	  * @requires lower.tuples in target.tuples && target.tuples in upper.tuples && target.arity = r.arity &&
-	  *           target.universe = this.universe && r in this.relations
-	  */
-	 public void setTarget(Relation r, TupleSet target) {
-		 if (!relations().contains(r))
-			 throw new IllegalArgumentException("r !in this.relations");
-		 if (!upperBounds().get(r).containsAll(target))
-			 throw new IllegalArgumentException("target.tuples !in upper.tuples");
-		 //				if (!lowerBounds().containsKey(r))
-		 //					throw new IllegalArgumentException("lower.tuples !in target.tuples");			
-		 if (!target.containsAll(lowerBounds().get(r)))
-			 throw new IllegalArgumentException("lower.tuples !in target.tuples");	
-		 targets.put(r, target.clone().unmodifiableView());
-	 }
-
-	 /**
-	  * Sets the weight for the given relation.
-	  * pt.uminho.haslab
-	  * @requires r in this.relations
-	  */	public void setWeight(Relation r, Integer weight) {
-		  //TODO: test range of weight
-		  if (!relations().contains(r))
-			  throw new IllegalArgumentException("r !in this.relations");
-		  weights.put(r, weight);
-	  }
-
-
-
+	/**
+	 * Sets the weight for the given relation. pt.uminho.haslab
+	 * 
+	 * @requires r in this.relations
+	 */
+	public void setWeight(Relation r, Integer weight) {
+		// TODO: test range of weight
+		if (!relations().contains(r))
+			throw new IllegalArgumentException("r !in this.relations");
+		weights.put(r, weight);
+	}
 
 }

@@ -46,7 +46,7 @@ import kodkod.util.ints.TreeSequence;
  * @invariant all i: tuples.TupleSet & int | ints[i].arity = 1 && ints[i].size() = 1 
  * 
  * @author Emina Torlak
- * @modified nmm
+ * @modified nmm (pt.uminho.haslab): supported for extended instances
  */
 public class Instance implements Cloneable { // pt.uminho.haslab: removed final
 	private final Map<Relation, TupleSet> tuples;
@@ -132,6 +132,7 @@ public class Instance implements Cloneable { // pt.uminho.haslab: removed final
 			throw new IllegalArgumentException("s.universe!=this.universe");
 		if (relation.arity()!=s.arity())
 			throw new IllegalArgumentException("relation.arity!=s.arity");
+
 		tuples.put(relation, s.clone().unmodifiableView());
 	}
 

@@ -23,44 +23,86 @@
 package kodkod.instance;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import kodkod.ast.Relation;
+import kodkod.ast.VarRelation;
+import kodkod.engine.Evaluator;
+import kodkod.engine.ltl2fol.TemporalTranslator;
+import kodkod.util.ints.TreeSequence;
 
 /**
- * Represents a temporal model (an instance) of a temporal relational formula,
- * which is a mapping from time instants to a mapping from
- * {@link kodkod.ast.Relation relations} and integers to
- * {@link kodkod.instance.TupleSet sets of tuples} drawn from a given
- * {@link kodkod.instance.Universe universe}. The methods inherited from regular
- * {@link kodkod.instance.Instance instances} act upon the initial state.
+ * Represents a temporal model (an instance) of a temporal relational problem
+ * containing {@link kodkod.ast.VarRelation variable relations} in the
+ * {@link kodkod.instance.TemporalBounds temporal bounds}. Although the instance
+ * is a solution to the expansion of the temporal problem into a regular static
+ * Kodkod problem, it should be interpreted as a trace, i.e., a mapping from
+ * states instances. The methods inherited from regular
+ * {@link kodkod.instance.Instance instances} act upon the expanded instance.
  * 
- * @author nmm
+ * @author nmm (pt.uminho.haslab)
  *
  */
 public class TemporalInstance extends Instance {
-	private final Map<String,Relation> expandedRelations;
-	
-	public TemporalInstance(Universe universe) {
-		super(universe);
-		if (universe == null)
-			throw new NullPointerException("universe=null");
-		this.expandedRelations = new HashMap<String, Relation>();
-	}
 
-	public TemporalInstance(Universe universe, Map<String, Relation> extendedVarRelations) {
-		super(universe);
-		if (universe == null)
-			throw new NullPointerException("universe=null");
-		this.expandedRelations = extendedVarRelations;
+	/**
+	 * Variables representing the shape of the trace of the solution.
+	 */
+	public final int loop, end;
+
+	/**
+	 * The original variable relations that gave rise to the expanded static
+	 * problem.
+	 */
+	private final Set<VarRelation> varrelations;
+
+	/**
+	 * Creates a new temporal instance from a static instance that is a solution
+	 * to the expansion of the temporal problem. The shape of the trace are
+	 * retrieved from the evaluation of the
+	 * {@link kodkod.engine.ltl2fol.TemporalTranslator#STATE time} relations. The
+	 * original variable relations are also considered since they contain
+	 * information regarding their expansion into the static problem.
+	 * 
+	 * @param instance
+	 *            the expanded static solution to the problem
+	 * @param varrelations
+	 *            the original variable relations
+	 */
+	public TemporalInstance(Instance instance, Set<VarRelation> varrelations) {
+		super(instance.universe(), new LinkedHashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
+		Evaluator eval = new Evaluator(instance);
+		String[] l = eval.evaluate(TemporalTranslator.LOOP).toString().split(TemporalTranslator.STATEATOM);
+		end = Integer.valueOf(l[1].substring(0, l[1].length() - 2));
+		loop = Integer.valueOf(l[2].substring(0, l[2].length() - 2));
+		this.varrelations = varrelations;
 	}
 
 	/**
-	 * Maps relation names to their expanded representation.
-	 * @return
+	 * {@inheritDoc}
+	 * 
+	 * @see java.lang.Object#toString()
 	 */
-	public Map<String, Relation> getMaps() {
-		return expandedRelations;
+	@Override
+	public String toString() {
+		Evaluator eval = new Evaluator(this);
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i <= end; i++) {
+			sb.append("\nrelations at " + i + ": ");
+			Map<Relation, TupleSet> map = new HashMap<Relation, TupleSet>();
+			for (Relation r : varrelations) {
+				TupleSet ts = eval.evaluate(r, i);
+				map.put(r, ts);
+			}
+			sb.append(map.toString());
+		}
+		sb.append("\nints: ");
+		sb.append(ints());
+		sb.append("\nloop: ");
+		sb.append(loop);
+		return sb.toString();
 	}
 
 }

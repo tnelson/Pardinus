@@ -186,7 +186,7 @@ public final class DiffEg {
 			final DiffEg model = new DiffEg();
 			final Solver solver = new Solver();
 			
-			final Formula f = model.runPol();
+			final Formula f = model.runPol().and(model.decls());
 			final Bounds b = model.bounds(n);
 			
 			System.out.println(f);
