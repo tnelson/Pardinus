@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ import kodkod.instance.TemporalBounds;
  * Relations are introduced to explicitly model the (bounded) temporal trace,
  * and variable relations are expanded to static ones that refer to that trace.
  *
- * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public class TemporalTranslator {
 

@@ -1,6 +1,5 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +48,6 @@ final class ExternalSolver implements SATSolver {
 	private final BitSet solution;
 	private volatile Boolean sat;
 	private volatile int vars, clauses;
-
 
 	/**
 	 * Constructs an ExternalSolver that will execute the specified binary
@@ -131,7 +129,7 @@ final class ExternalSolver implements SATSolver {
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
 	 */
-	public boolean addClause(int[] lits) { // pt.uminho.haslab
+	public boolean addClause(int[] lits) {
 		clauses++;
 		if (buffer.length()>capacity) 
 			flush();

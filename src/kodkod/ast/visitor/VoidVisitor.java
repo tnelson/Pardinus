@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@
  */
 package kodkod.ast.visitor;
 
-import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
+import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ComparisonFormula;
 import kodkod.ast.Comprehension;
 import kodkod.ast.ConstantExpression;
@@ -49,16 +49,16 @@ import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.SumExpression;
 import kodkod.ast.TempExpression;
-import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
+import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 
 /** 
  * A visitor that visits every node in the AST.
  *
  * @author Emina Torlak  
- * @modified Eduardo Pessoa, nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public interface VoidVisitor {
 
@@ -185,16 +185,19 @@ public interface VoidVisitor {
      */
     public void visit(RelationPredicate predicate);
     
-    // pt.uminho.haslab
+    /** 
+	 * Visits the given unary temporal formula.
+	 **/ 
+    // [HASLab]   
     public void visit(UnaryTempFormula temporalFormula);
-
-    // pt.uminho.haslab
+    /** 
+	 * Visits the given binary temporal formula.
+	 **/ 
+    // [HASLab]
     public void visit(BinaryTempFormula temporalFormula);
-
-    // pt.uminho.haslab
+    /** 
+	 * Visits the given temporal expression.
+	 **/ 
+    // [HASLab]
     public void visit(TempExpression temporalExpr);
-
-//    // pt.uminho.haslab
-//    public void visit(VarRelation relation);
-
 }

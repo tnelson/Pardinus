@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,33 @@
  */
 package kodkod.ast;
 
-
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
 /** 
- * @author Eduardo Pessoa, nmm
+ * An temporal {@link kodkod.ast.Expression expression} with one child.
+ * 
+ * @specfield expression: Expression
+ * @specfield op: TemporalOperator
+ * @invariant op.unary()
+ * @invariant children = 0->Expression
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public final class TempExpression extends Expression {
-    private final Expression expression;
+	private final Expression expression;
     private final TemporalOperator op;
     private final int arity;
     
     /**  
+     * Constructs a new unary temporal expression: expression op
+     * 
+     * @ensures this.expression' = expression && this.op' = op
+     * @throws NullPointerException  expression = null || op = null
+     * @throws IllegalArgumentException  op not in {PRIME}
      */
     TempExpression(TemporalOperator op, Expression child) {
-        if (!(op == TemporalOperator.POST)) {
+        if (!(op == TemporalOperator.PRIME)) {
             throw new IllegalArgumentException("Not a temporal operator: " + op);
         }
         this.expression = child;
@@ -91,6 +101,6 @@ public final class TempExpression extends Expression {
      *  post operator toString.
 	 */ 
     public String toString() {
-    	return expression.toString()+op.toString(); //pt.uminho.haslab: postfix 
+    	return expression.toString()+op.toString();
     }   
 }

@@ -74,7 +74,7 @@ import kodkod.ast.visitor.VoidVisitor;
  * Pretty-prints Kodkod nodes.
  * 
  * @author Emina Torlak
- * @modified Eduardo Pessoa, nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public final class PrettyPrinter {
 
@@ -226,9 +226,6 @@ public final class PrettyPrinter {
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
 		public void visit(Relation node) { append(node); }
 
-//		// pt.uminho.haslab
-//		public void visit(VarRelation node) { append(node); }
-
 		/** @ensures this.tokens' = concat[ this.tokens, node ] */
 		public void visit(Variable node) { append(node); }
 
@@ -340,17 +337,23 @@ public final class PrettyPrinter {
 			visitChild(node.expression(), parenthesize(node.expression()));
 		}
 		
-		// pt.uminho.haslab
+		/** @ensures appends the given op and child to this.tokens; the child is 
+		 * parenthesized if it's an instance of binary expression or an if expression. **/
+		// [HASLab]
+		public void visit(UnaryTempFormula node) { 
+			keyword(node.op());
+			visitChild(node.formula(), parenthesize(node.op(), node.formula()));
+		}
+		
+		/** @ensures appends the given op and child to this.tokens; the child is 
+		 * parenthesized if it's an instance of binary expression or an if expression. **/
+		// [HASLab]
 		public void visit(TempExpression node) { 
-			visitChild(node.expression(), parenthesize(node.expression()));
-			append(node.op());
+			keyword(node.op());
+			visitChild(node.expression(), parenthesize(node.op(), node.expression()));
 		}
 
-		// pt.uminho.haslab
-		public void visit(UnaryTempFormula node) { 
-			append(node.op());
-			visitChild(node.formula(), parenthesize(node.formula()));
-		}
+
 
 		/*--------------BINARY NODES---------------*/
 		
@@ -410,8 +413,17 @@ public final class PrettyPrinter {
 			         ((BinaryFormula)child).op()!=op));
 		}
 
-		// pt.uminho.haslab
+		/** @return true if the given temporal formula needs to be parenthesized, 
+		 * assumed to be always */
+		// [HASLab]
 		private boolean parenthesize(TemporalOperator op, Formula child) { 
+			return true;
+		}
+		
+		/** @return true if the given temporal expression needs to be parenthesized, 
+		 * assumed to be always */
+		// [HASLab]
+		private boolean parenthesize(TemporalOperator op, Expression child) { 
 			return true;
 		}
 
@@ -444,7 +456,8 @@ public final class PrettyPrinter {
 			visitChild(node.right(), parenthesize(node.right()));
 		}
 		
-		// pt.uminho.haslab
+		/** @ensures appends the tokenization of the given node to this.tokens */
+		// [HASLab]
 		public void visit(BinaryTempFormula node) {
 			final TemporalOperator op = node.op();
 			final boolean pleft = parenthesize(op, node.left());
@@ -746,9 +759,6 @@ public final class PrettyPrinter {
 		
 		public void visit(Relation relation) { visit(relation, relation.name()); }
 
-//		// pt.uminho.haslab
-//		public void visit(VarRelation relation) { visit(relation, relation.name()); }
-
 		public void visit(Variable variable) { visit(variable, variable.name()); }	
 		public void visit(ConstantExpression constExpr) { visit(constExpr, constExpr.name()); }
 		
@@ -762,11 +772,11 @@ public final class PrettyPrinter {
 		public void visit(UnaryExpression unaryExpr) { 
 			visit(unaryExpr, unaryExpr.op(), unaryExpr.expression()); 
 		}
-		// pt.uminho.haslab
+		// [HASLab]
 		public void visit(TempExpression tempExpr) {
 			visit(tempExpr, tempExpr.op(), tempExpr.expression()); 
 		}
-		// pt.uminho.haslab
+		// [HASLab]
 		public void visit(UnaryTempFormula tempFormula) {
 			visit(tempFormula, tempFormula.op(), tempFormula.formula()); 
 		}
@@ -798,7 +808,7 @@ public final class PrettyPrinter {
 		}
 		public void visit(NaryFormula formula) { visit(formula, formula.op(), formula.iterator()); }
 		public void visit(BinaryFormula binFormula) { visit(binFormula, binFormula.op(), binFormula.left(), binFormula.right()); }
-		// pt.uminho.haslab
+		// [HASLab]
 		public void visit(BinaryTempFormula tempFormula) { visit(tempFormula, tempFormula.op(), tempFormula.left(), tempFormula.right()); }
 		public void visit(NotFormula not) { visit(not, "not", not.formula()); }
 		public void visit(ConstantFormula constant) { visit(constant, constant.booleanValue()); }

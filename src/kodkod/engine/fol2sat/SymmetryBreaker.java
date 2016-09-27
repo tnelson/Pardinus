@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,9 +64,10 @@ import kodkod.util.ints.Ints;
  * @specfield symmetries: set IntSet 
  * @specfield broken: set RelationPredicate 
  * @author Emina Torlak
+ * @modified Nuno Macedo // [HASLab] decomposed model finding
  */
 final class SymmetryBreaker {
-	private final Bounds aux; // pt.uminho.haslab
+	private final Bounds aux; // [HASLab]
 	private final Bounds bounds;
 	private final Set<IntSet> symmetries;
 	private final int usize;
@@ -83,7 +84,7 @@ final class SymmetryBreaker {
 	 **/
 	SymmetryBreaker(Bounds bounds, Reporter reporter) {
 		Bounds b3;
-		if (bounds instanceof DecompBounds) {
+		if (bounds instanceof DecompBounds) { // [HASLab]
 			b3 = bounds.clone();
 			aux = ((DecompBounds) bounds).bounds2.clone();
 			for (Relation r : aux.relations()) {
@@ -94,7 +95,7 @@ final class SymmetryBreaker {
 			aux = new Bounds(bounds.universe());
 		}
 		
-		this.bounds = b3; // pt.uminho.pt
+		this.bounds = b3; // [HASLab]
 		this.usize = b3.universe().size();
 		reporter.detectingSymmetries(b3);
 		this.symmetries = SymmetryDetector.partition(b3);
@@ -194,7 +195,7 @@ final class SymmetryBreaker {
 					RelationParts rparts = rIter.next();
 					Relation r = rparts.relation;
 					
-					if (aux.relations().contains(r)) continue; // pt.uminho.haslab
+					if (aux.relations().contains(r)) continue; // [HASLab]
 					if (!rparts.representatives.contains(sym.min())) continue;  // r does not range over sym
 					
 					BooleanMatrix m = interpreter.interpret(r);

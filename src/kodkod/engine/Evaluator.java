@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ import kodkod.instance.TupleSet;
  * @specfield options: Options
  * @specfield instance: Instance
  * @author Emina Torlak
- * @modified nmm
+ * @modified Nuno Macedo // [HASLab] temporal model finding
  */
 public final class Evaluator {
 	private final Instance instance;
@@ -104,14 +104,14 @@ public final class Evaluator {
 	 */
 	public boolean evaluate(Formula formula){
 		if (formula == null) throw new NullPointerException("formula");
-		if (TemporalTranslator.isTemporal(formula)) { // pt.uminho.haslab
+		if (TemporalTranslator.isTemporal(formula)) { // [HASLab]
 			return (Translator.evaluate(LTL2FOLTranslator.translate(formula), instance, options)).booleanValue();
 		} else
 			return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
 	
 	/**
-	 * Evaluates the specified expession with respect to the relation-tuple mappings 
+	 * Evaluates the specified expression with respect to the relation-tuple mappings 
 	 * given by this.instance and using this.options.
 	 * @return  {@link kodkod.instance.TupleSet set} of tuples to which the expression evaluates given the
 	 * mappings in this.instance and the options in this.options.
@@ -119,11 +119,21 @@ public final class Evaluator {
 	 * @throws kodkod.engine.fol2sat.UnboundLeafException  the expression contains an undeclared variable or
 	 * a relation not mapped by this.instance
 	 */
+	// [HASLab] evaluate to instant 0
 	public TupleSet evaluate(Expression expression){
 		return evaluate(expression, 0);
 	}
-	
-	// pt.uminho.haslab
+
+	/**
+	 * Evaluates the specified expression at an instant with respect to the relation-tuple mappings 
+	 * given by this.instance and using this.options.
+	 * @return  {@link kodkod.instance.TupleSet set} of tuples to which the expression evaluates given the
+	 * mappings in this.instance and the options in this.options.
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  the expression contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException  the expression contains an undeclared variable or
+	 * a relation not mapped by this.instance
+	 */
+	// [HASLab]
 	public TupleSet evaluate(Expression expression, int state){
 		if (expression == null) throw new NullPointerException("expression");
 		Expression e1 = LTL2FOLTranslator.convert(expression, state);
@@ -141,16 +151,25 @@ public final class Evaluator {
 	 * a relation not mapped by this.instance
 	 */
 	public int evaluate(IntExpression intExpr) {
-		// TODO: convert the potentially temporal expression into a FOL expression at state 0
+		// TODO: [HASLab] convert the potentially temporal expression into a FOL expression at state 0
 		if (intExpr == null) throw new NullPointerException("intexpression");
 		final Int sol = Translator.evaluate(intExpr, instance, options);
 		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]
 		return sol.value();
 	}
 	
-	// pt.uminho.haslab
+	/**
+	 * Evaluates the specified int expression at a given instant with respect to the relation-tuple mappings 
+	 * given by this.instance and using this.options.
+	 * @return  the integer to which the expression evaluates given the
+	 * mappings in this.instance and the options in this.options.
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  intExpr contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException  intExpr contains an undeclared variable or
+	 * a relation not mapped by this.instance
+	 */
+	// [HASLab]
 	public int evaluate(IntExpression intExpr, int state) {
-		// TODO: convert the potentially temporal expression into a FOL expression at state
+		// TODO: [HASLab] convert the potentially temporal expression into a FOL expression at state
 		if (intExpr == null) throw new NullPointerException("intexpression");
 		final Int sol = Translator.evaluate(intExpr, instance, options);
 		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]

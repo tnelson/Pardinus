@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,6 +89,7 @@ import kodkod.util.nodes.Nodes;
  * @specfield interpreter: LeafInterpreter // the interpreter used for translation	 
  * @specfield env: Environment<BooleanMatrix> // current environment
  * @author Emina Torlak
+ * @modified Nuno Macedo // [HASLab] temporal model finding
  */
 abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, BooleanValue, Object, Int> {
 	
@@ -328,11 +329,6 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		}
 		return ret;
 	}
-
-//	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
-//	public final BooleanMatrix visit(VarRelation relation) {
-//		throw new UnsupportedOperationException("Temporal relation: "+relation);
-//	}
 
 	/**
 	 * Returns this.interpreter.interpret(constExpr).
@@ -1091,17 +1087,17 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		return cache(intComp, ret);
 	}
 	
-	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
+	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanValue visit(UnaryTempFormula temporalFormula) {
 		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
 	}
 
-	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
+	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanValue visit(BinaryTempFormula temporalFormula) {
 		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
 	}
 
-	// pt.uminho.haslab: should be converted into standard Kodkod before FOL translation
+	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanMatrix visit(TempExpression temporalExpr) {
 		throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
 	}

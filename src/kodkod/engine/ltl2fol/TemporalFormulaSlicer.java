@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,24 @@
  */
 package kodkod.engine.ltl2fol;
 
-import kodkod.ast.*;
+import static kodkod.ast.operator.FormulaOperator.AND;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+import kodkod.ast.BinaryFormula;
+import kodkod.ast.Decls;
+import kodkod.ast.Expression;
+import kodkod.ast.Formula;
+import kodkod.ast.IntExpression;
+import kodkod.ast.NaryFormula;
+import kodkod.ast.Node;
+import kodkod.ast.Relation;
+import kodkod.ast.VarRelation;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.instance.Bounds;
-import static kodkod.ast.operator.FormulaOperator.AND;
-
-import java.util.*;
 
 /**
  * Slices a temporal {@link Formula formula} into a static and a dynamic
@@ -36,8 +47,7 @@ import java.util.*;
  * without references to variable relations. The formula should be provided in
  * negative normal form in order to optimize the slicing.
  * 
- * @author Eduardo Pessoa
- * @modified nmm (pt.uminho.haslab)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 // TODO: use Kodkod's FormulaFlattener to retrieve the top-level conjuncts
 public class TemporalFormulaSlicer extends AbstractReplacer implements

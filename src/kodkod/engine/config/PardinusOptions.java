@@ -1,15 +1,71 @@
+/* 
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package kodkod.engine.config;
 
 import kodkod.engine.PrimitiveFactory;
 
+/**
+ * The fundamental options, required by every model finding problem. Must be
+ * provided a {@link kodkod.engine.PrimitiveSolver primitive solver} factory
+ * (e.g., a SAT solver) that will be deployed to solve the problem.
+ * 
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
+ *
+ * @param <S>
+ *            the {@link kodkod.engine.PrimitiveSolver primitive solver}
+ *            factory.
+ */
 public interface PardinusOptions<F extends PrimitiveFactory<?>> {
 
+	/**
+	 * Returns a primitive solver factory used to generate
+	 * {@link kodkod.engine.PrimitiveSolver primitive solvers}.
+	 * 
+	 * @return a primitive solver factory
+	 */
 	public F solver();
 
-	public Reporter reporter();
-	
-	public void setReporter(Reporter reporter);
-	
+	/**
+	 * Sets the primitive solver factory used to generate
+	 * {@link kodkod.engine.PrimitiveSolver primitive solvers}.
+	 * 
+	 * @param solver the primitive solver factory
+	 */
 	public void setSolver(F solver);
+
+	/**
+	 * Returns a reporter.
+	 * 
+	 * @return a reporter
+	 */
+	public Reporter reporter();
+
+	/**
+	 * Sets the reporters.
+	 * 
+	 * @param reporter
+	 *            a reporter.
+	 */
+	public void setReporter(Reporter reporter);
 
 }

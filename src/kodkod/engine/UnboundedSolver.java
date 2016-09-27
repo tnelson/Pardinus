@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,9 @@ import kodkod.engine.config.UnboundedOptions;
 import kodkod.instance.Bounds;
 
 /**
- * An interface for unbounded relational constraint solvers. These essentially
- * represent the standard Kodkod solvers, whose interface is preserved for
- * historical reasons. These differ from general solver interface by considering
- * more refined options.
+ * An interface for unbounded relational constraint solvers.
  * 
- * @author nmm
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
  */
 public interface UnboundedSolver<B extends Bounds, O extends UnboundedOptions> extends PardinusSolver<B,O> {

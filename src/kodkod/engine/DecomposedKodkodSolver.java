@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,9 @@ import java.util.NoSuchElementException;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.Options;
 import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.Options;
 import kodkod.engine.decomp.DProblemExecutor;
 import kodkod.engine.decomp.DProblemExecutorImpl;
 import kodkod.engine.decomp.StatsExecutor;
@@ -46,10 +46,10 @@ import kodkod.instance.Bounds;
  * solvers} that are deployed in parallel. The solver returns a
  * {@link kodkod.engine.decomp.DProblem decomposed solution} that can be iterated.
  * 
- * @author nmm, ejp
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  *
  */
-public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,ExtendedOptions>, BoundedSolver<Bounds,ExtendedOptions> {
+public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,BoundedExtendedOptions>, BoundedSolver<Bounds,BoundedExtendedOptions> {
 
 	/** the regular Kodkod solver used in the parallelization */
 	final private Solver solver1, solver2;
@@ -58,7 +58,7 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,ExtendedO
 	private DProblemExecutor executor;
 
 	/** the decomposed problem options */
-	final private ExtendedOptions options;
+	final private BoundedExtendedOptions options;
 
 	/**
 	 * Constructs a new decomposed solver built over a standard Kodkod
@@ -72,12 +72,12 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,ExtendedO
 	 *             if the solver is not incremental.
 	 */
 	public DecomposedKodkodSolver() {
-		this.options = new ExtendedOptions();
+		this.options = new BoundedExtendedOptions();
 		this.solver1 = new Solver((Options) options.configOptions());
 		this.solver2 = new Solver(options);
 	}
 	
-	public DecomposedKodkodSolver(ExtendedOptions options) {
+	public DecomposedKodkodSolver(BoundedExtendedOptions options) {
 		this.options = options;
 		this.solver1 = new Solver((Options) options.configOptions());
 		this.solver2 = new Solver(options);
@@ -147,13 +147,13 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,ExtendedO
 	}
 
 	@Override
-	public ExtendedOptions options() {
+	public BoundedExtendedOptions options() {
 		return options;
 	}
 
 	@Override
 	public Iterator<Solution> solveAll(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2) {
-		// nmm: this was commented, why?
+		// [HASLab] this was commented, why?
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
@@ -166,7 +166,7 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,ExtendedO
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, ExtendedOptions options, Solver solver1, Solver solver2) {
+		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, BoundedExtendedOptions options, Solver solver1, Solver solver2) {
 			if (options.decomposedMode() == DMode.EXHAUSTIVE)
 				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads());
 			else if (options.decomposedMode() == DMode.HYBRID)

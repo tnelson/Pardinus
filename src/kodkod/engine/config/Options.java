@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,9 @@ import kodkod.util.ints.Ints;
  * @specfield logTranslation: [0..2] // log translation events, default is 0 (no logging)
  * @specfield coreGranularity: [0..3] // unsat core granularity, default is 0 (only top-level conjuncts are considered)
  * @author Emina Torlak
- * @changed nmm (removed final modifier, constructor by copy)
+ * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
+// [HASLab] bounded options, copy constructor
 public class Options implements Cloneable, BoundedOptions { 
 	private Reporter reporter = new AbstractReporter(){};
 	private SATFactory solver = SATFactory.DefaultSAT4J;
@@ -78,6 +79,7 @@ public class Options implements Cloneable, BoundedOptions {
 	 * Constructs an Options object by copy.
 	 * @param options the options to be copied.
 	 */
+	// [HASLab]
 	public Options(Options options) {
 		this.setSolver(options.solver());
 		this.setReporter(options.reporter());
@@ -91,19 +93,21 @@ public class Options implements Cloneable, BoundedOptions {
 	}
 	
 	/**
-	 * Returns the value of the solver options.
+	 * {@inheritDoc}
 	 * The default is SATSolver.DefaultSAT4J.
 	 * @return this.solver
 	 */
+	@Override
 	public SATFactory solver() {
 		return solver;
 	}
 	
 	/**
-	 * Sets the solver option to the given value.
+	 * {@inheritDoc}
 	 * @ensures this.solver' = solver
 	 * @throws NullPointerException  solver = null
 	 */
+	@Override
 	public void setSolver(SATFactory solver) {
 		if (solver==null)
 			throw new NullPointerException();
@@ -111,19 +115,21 @@ public class Options implements Cloneable, BoundedOptions {
 	}
 	
 	/**
-	 * Returns this.reporter.
+	 * {@inheritDoc}
 	 * @return this.reporter
 	 */
+	@Override
 	public Reporter reporter() {
 		return reporter;
 	}
 	
 	/**
-	 * Sets this.reporter to the given reporter.
+	 * {@inheritDoc}
 	 * @requires reporter != null
 	 * @ensures this.reporter' = reporter
 	 * @throws NullPointerException  reporter = null
 	 */
+	@Override
 	public void setReporter(Reporter reporter) {
 		if (reporter==null)
 			throw new NullPointerException();
@@ -131,9 +137,13 @@ public class Options implements Cloneable, BoundedOptions {
 	}
 		
 
-	/** Returns the noOverflow flag */ // [AM]
+	/** {@inheritDoc} */ 
+	// [AM]
+	@Override
 	public boolean noOverflow()                   { return noOverflow; }
-	/** Sets the noOverflow flag */ // [AM]
+	/** {@inheritDoc} */ 
+	// [AM]	
+	@Override
 	public void setNoOverflow(boolean noOverflow) { this.noOverflow = noOverflow; }
 
 	
@@ -148,45 +158,42 @@ public class Options implements Cloneable, BoundedOptions {
 
 	
 	/**
-	 * Returns the integer encoding that will be used for translating {@link kodkod.ast.IntExpression int nodes}.
-	 * The default is BINARY representation, which allows negative numbers.  UNARY representation is best suited to
-	 * problems with small scopes, in which cardinalities are only compared (and possibly added to each other or
-	 * non-negative numbers).   
+	 * {@inheritDoc}
 	 * @return this.intEncoding
 	 */
+	@Override
 	public IntEncoding intEncoding() { 
 		return intEncoding;
 	}
 	
 	/**
-	 * Sets the intEncoding option to the given value.
+	 * {@inheritDoc}
 	 * @ensures this.intEncoding' = encoding
 	 * @throws NullPointerException  encoding = null
 	 * @throws IllegalArgumentException  this.bitwidth is not a valid bitwidth for the specified encoding
 	 */
+	@Override
 	public void setIntEncoding(IntEncoding encoding) {
 		if (encoding.maxAllowedBitwidth()<bitwidth) throw new IllegalArgumentException();
 		this.intEncoding = encoding;
 	}
 	
 	/**
-	 * Returns the size of the integer representation.  For example, if this.intEncoding is 
-	 * BINARY and this.bitwidth = 5 (the default), then all operations will yield 
-	 * one of the five-bit numbers in the range [-16..15].  If this.intEncoding is UNARY and
-	 * this.bitwidth = 5, then all operations will yield one of the numbers in the
-	 * range [0..5].  
+	 * {@inheritDoc}
 	 * @return this.bitwidth
 	 */
+	@Override
 	public int bitwidth() {
 		return bitwidth;
 	}
 	
 	/**
-	 * Sets this.bitwidth to the given value.
+	 * {@inheritDoc}
 	 * @ensures this.bitwidth' = bitwidth
 	 * @throws IllegalArgumentException  bitwidth < 1
 	 * @throws IllegalArgumentException  this.intEncoding==BINARY && bitwidth > 32
 	 */
+	@Override
 	public void setBitwidth(int bitwidth) {
 		checkRange(bitwidth, 1, intEncoding.maxAllowedBitwidth());
 		this.bitwidth = bitwidth;
@@ -203,25 +210,20 @@ public class Options implements Cloneable, BoundedOptions {
 	}
 	
 	/**
-	 * Returns the 'amount' of symmetry breaking to perform.
-	 * If a non-symmetric solver is chosen for this.solver,
-	 * this value controls the maximum length of the generated
-	 * lex-leader symmetry breaking predicate.  In general, 
-	 * the higher this value, the more symmetries will be broken.  But 
-	 * setting the value too high may have the opposite effect 
-	 * and slow down the solving.  The default
-	 * value for this property is 20.  
+	 * {@inheritDoc}
 	 * @return this.symmetryBreaking
 	 */
+	@Override
 	public int symmetryBreaking() {
 		return symmetryBreaking;
 	}
 	
 	/**
-	 * Sets the symmetryBreaking option to the given value.
+	 * {@inheritDoc}
 	 * @ensures this.symmetryBreaking' = symmetryBreaking
 	 * @throws IllegalArgumentException  symmetryBreaking !in [0..Integer.MAX_VALUE]
 	 */
+	@Override
 	public void setSymmetryBreaking(int symmetryBreaking) {
 		checkRange(symmetryBreaking, 0, Integer.MAX_VALUE);
 		this.symmetryBreaking = symmetryBreaking;
@@ -248,72 +250,61 @@ public class Options implements Cloneable, BoundedOptions {
 	}
 	
 	/**
-	 * Returns the depth to which existential quantifiers are skolemized.
-	 * A negative depth  means that no skolemization is performed.
-	 * The default depth of 0 means that only existentials that are not nested
-	 * within a universal quantifiers are skolemized.  A depth of 1 means that 
-	 * existentials nested within a single universal are also skolemized, etc.
+	 * {@inheritDoc}
 	 * @return this.skolemDepth
 	 */
+	@Override
 	public int skolemDepth() {
 		return skolemDepth;
 	}
 	
 	/**
+	 * {@inheritDoc}
 	 * Sets the skolemDepth to the given value. 
 	 * @ensures this.skolemDepth' = skolemDepth
 	 */
+	@Override
 	public void setSkolemDepth(int skolemDepth) {
 		this.skolemDepth = skolemDepth;
 	}
 	
 	/**
-	 * Returns the translation logging level (0, 1, or 2), where 0
-	 * means logging is not performed, 1 means only the translations of 
-	 * top level formulas are logged, and 2 means all formula translations
-	 * are logged.  This is necessary for determining which formulas occur in the unsat core of an 
-	 * unsatisfiable formula.  Logging is off by default, since 
-	 * it incurs a non-trivial time overhead.
+	 * {@inheritDoc}
 	 * @return this.logTranslation
 	 */
+	@Override
 	public int logTranslation() {
 		return logTranslation;
 	}
 	
 	/**
-	 * Sets the translation logging level.   
+	 * {@inheritDoc}
 	 * @requires logTranslation in [0..2]
 	 * @ensures this.logTranslation' = logTranslation  
 	 * @throws IllegalArgumentException  logTranslation !in [0..2]
 	 */
+	@Override
 	public void setLogTranslation(int logTranslation) {
 		checkRange(logTranslation, 0, 2);
 		this.logTranslation = logTranslation;
 	}
 	
 	/**
-	 * Returns the core granularity level.  The default is 0, which means that  top-level
-	 * conjuncts of the input formula are used as "roots" for the purposes of core minimization and extraction.  Granularity
-	 * of 1 means that the top-level conjuncts of the input formula's negation normal form (NNF) are
-	 * used as roots; granularity of 2 means that the top-level conjuncts of the formula's skolemized
-	 * NNF (SNNF) are used as roots; and, finally, a granularity of 3 means that the universal quantifiers of the formula's
-	 * SNNF are broken up and that the resulting top-level conjuncts are then used as roots for core minimization and extraction.
-	 * 
-	 * <p>Note that the finer granularity (that is, a larger value of this.coreGranularity) will provide better information at 
-	 * the cost of slower core extraction and, in particular, minimization.</p>
-	 * 
+	 * {@inheritDoc}
 	 * @return this.coreGranularity
 	 */
+	@Override
 	public int coreGranularity() { 
 		return coreGranularity;
 	}
 	
 	/**
-	 * Sets the core granularity level.  
+	 * {@inheritDoc}
 	 * @requires coreGranularity in [0..3]
 	 * @ensures this.coreGranularity' = coreGranularity  
 	 * @throws IllegalArgumentException  coreGranularity !in [0..3]
 	 */
+	@Override
 	public void setCoreGranularity(int coreGranularity) { 
 		checkRange(coreGranularity, 0, 3);
 		this.coreGranularity = coreGranularity;
@@ -325,6 +316,7 @@ public class Options implements Cloneable, BoundedOptions {
 	 * and {@linkplain #solver()} factory objects as this Options. 
 	 * @return a shallow copy of this Options object.
 	 */
+	@Override
 	public Options clone() {
 		final Options c = new Options();
 		c.setSolver(solver);
@@ -345,6 +337,7 @@ public class Options implements Cloneable, BoundedOptions {
 	 * Returns a string representation of this Options object.
 	 * @return a string representation of this Options object.
 	 */
+	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		b.append("Options:");

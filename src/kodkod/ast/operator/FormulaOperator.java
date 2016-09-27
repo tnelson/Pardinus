@@ -21,8 +21,6 @@
  */
 package kodkod.ast.operator;
 
-
-
 /**
  * Enumerates binary (&&, ||, =>, <=>) and nary (&&, ||) logical operators. 
  * @specfield op: (int->lone Formula) -> Formula
@@ -32,7 +30,7 @@ public enum FormulaOperator {
     /** Logical AND operator. */      
     AND  		{ public String toString() { return "&&"; } },
     /** Logical OR operator. */      
-    OR 		{ public String toString() { return "||"; } },
+    OR 			{ public String toString() { return "||"; } },
     /** Logical bi-implication operator. */
     IFF 		{ public String toString() { return "<=>"; } },
     /** Logical implication operator. */      

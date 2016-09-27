@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,18 @@
 package kodkod.engine;
 
 import kodkod.engine.config.BoundedOptions;
-import kodkod.engine.config.PardinusOptions;
 import kodkod.instance.Bounds;
 
 /**
  * An interface for bounded relational constraint solvers. These essentially
- * represent the standard Kodkod solvers, whose interface is preserved for
- * historical reasons. These differ from general solver interface by considering
- * more refined options.
+ * represent the standard {@link kodkod.engine.KodkodSolver Kodkod solvers},
+ * whose interface is preserved for historical reasons. These differ from
+ * general solver interface by considering more refined options.
  * 
- * @author nmm
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
  */
-public interface BoundedSolver<B extends Bounds, O extends BoundedOptions> extends PardinusSolver<B,O> {
-	
+public interface BoundedSolver<B extends Bounds, O extends BoundedOptions>
+		extends PardinusSolver<B, O> {
+
 }

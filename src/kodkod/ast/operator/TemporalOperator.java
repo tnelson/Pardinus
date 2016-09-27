@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,31 @@
 package kodkod.ast.operator;
 
 /**
- * Temporal Operators class
- * @author  Eduardo Pessoa, nmm.
+ * Enumerates unary (always, eventually, next, historically, once, previous, ') and 
+ * binary (release, until) temporal operators. 
+ * @specfield op: (int->lone Formula) -> Formula
+ * @invariant all args: seq Formula, out: Formula | args->out in op => (out.children = args && out.op = this)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public enum TemporalOperator {
-    /** Universal quantifier. */
-    ALWAYS  { public String toString() { return "always"; }},
-    /** Existential quantifier. */
-    EVENTUALLY { public String toString() { return "eventually"; }},
-
-    NEXT { public String toString() { return "next"; }},
-
-    HISTORICALLY  { public String toString() { return "historically"; }},
-    /** Existential quantifier. */
-    ONCE { public String toString() { return "once"; }},
-
-    PREVIOUS { public String toString() { return "previous"; }},
-
-    UNTIL { public String toString() { return "until"; }},
-
-    RELEASE { public String toString() { return "release"; }},
-
-    POST 	{ public String toString() { return "'";} };
+    /** Next unary temporal operator. */
+    NEXT 			{ public String toString() { return "next"; }},
+    /** Always unary temporal operator. */
+    ALWAYS  		{ public String toString() { return "always"; }},
+    /** Eventually unary temporal operator. */
+    EVENTUALLY 		{ public String toString() { return "eventually"; }},
+    /** Previous unary temporal operator. */
+    PREVIOUS 		{ public String toString() { return "previous"; }},
+    /** Historically unary temporal operator. */
+    HISTORICALLY  	{ public String toString() { return "historically"; }},
+    /** Once unary temporal operator. */
+    ONCE 			{ public String toString() { return "once"; }},
+    /** Until binary temporal operator. */
+    UNTIL 			{ public String toString() { return "until"; }},
+    /** Release binary temporal operator. */
+    RELEASE 		{ public String toString() { return "release"; }},
+    /** Priming temporal operator. */
+    PRIME 			{ public String toString() { return "'";} };
   	
     static final int binary = UNTIL.index() | RELEASE.index();
 

@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,9 @@ package kodkod.engine.fol2sat;
 
 import static kodkod.engine.fol2sat.FormulaFlattener.flatten;
 import static kodkod.engine.fol2sat.Skolemizer.skolemize;
+import static kodkod.util.collections.Containers.setDifference;
 import static kodkod.util.nodes.AnnotatedNode.annotate;
 import static kodkod.util.nodes.AnnotatedNode.annotateRoots;
-import static kodkod.util.collections.Containers.setDifference;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -40,7 +40,6 @@ import kodkod.ast.IntExpression;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
-import kodkod.ast.VarRelation;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.engine.bool.BooleanAccumulator;
 import kodkod.engine.bool.BooleanConstant;
@@ -51,11 +50,11 @@ import kodkod.engine.bool.BooleanValue;
 import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
 import kodkod.engine.config.Options;
+import kodkod.engine.config.TargetOptions;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -67,7 +66,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * respect to given {@link Bounds bounds} (or {@link Instance instances}) and {@link Options}.
  * 
  * @author Emina Torlak 
- * @modified tmg, nmm (targets and weigths translation) 
+ * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 public final class Translator {
 	
@@ -613,8 +612,9 @@ public final class Translator {
 		} else {
 			final Map<Relation, IntSet> varUsage = interpreter.vars();
 			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula)circuit, maxPrimaryVar, options.solver());
-			// pt.uminho.haslab-: add the targets to the SAT problem
-			if (!bounds.targets().isEmpty()) doTargets(bounds, interpreter, cnf); // pt.uminho.haslab
+			// [HASLab] add the targets to the SAT problem
+			if (options instanceof TargetOptions<?> && ((TargetOptions<?>) options).runTarget()) 
+				doTargets(bounds, interpreter, cnf);
 
 			interpreter = null; // enable gc
 
@@ -622,7 +622,13 @@ public final class Translator {
 		}
 	}
 
-	// pt.uminho.haslab+: add the targets to the SAT problem
+	/**
+	 * Add the targets to the SAT problem.
+	 * @param bounds
+	 * @param interpreter
+	 * @param cnf
+	 */
+	// [HASLab]
 	private void doTargets(Bounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
 		for (Relation r : bounds.targets().keySet()) {
 			Integer w = bounds.weight(r);

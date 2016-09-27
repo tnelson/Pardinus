@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,7 @@ import kodkod.instance.Bounds;
  * defined by a pair of bounds, a pair of formulas and the solver that will be launched
  * in parallel. It is also defined by the number of threads that will be launched.
  * 
- * @author nmm, ejp
- *
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  */
 abstract public class DProblemExecutor extends Thread {
 

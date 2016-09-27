@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak 
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@ import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
 import static kodkod.ast.operator.Quantifier.ALL;
 import static kodkod.ast.operator.Quantifier.SOME;
-
 import static kodkod.ast.operator.TemporalOperator.ALWAYS;
 import static kodkod.ast.operator.TemporalOperator.EVENTUALLY;
 import static kodkod.ast.operator.TemporalOperator.HISTORICALLY;
@@ -38,7 +37,6 @@ import static kodkod.ast.operator.TemporalOperator.PREVIOUS;
 import static kodkod.ast.operator.TemporalOperator.RELEASE;
 import static kodkod.ast.operator.TemporalOperator.UNTIL;
 
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -46,7 +44,6 @@ import java.util.Iterator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Quantifier;
 import kodkod.ast.operator.TemporalOperator;
-
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.util.collections.Containers;
 
@@ -55,7 +52,7 @@ import kodkod.util.collections.Containers;
  * all methods in this class throw a NullPointerException when given
  * null arguments.
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class Formula extends Node {
 	
@@ -119,7 +116,12 @@ public abstract class Formula extends Node {
     	return new BinaryFormula(this, op, formula);
     }
     
-    // pt.uminho.haslab
+    /**
+     * Returns the composition of this and the specified formula using the
+     * given binary temporal operator.
+     * @return {f: Formula | f.left = this and f.right = formula and f.op = op }
+     */
+    // [HASLab]
     public final Formula compose(TemporalOperator op, Formula formula) {
     	return new BinaryTempFormula(this, op, formula);
     }
@@ -212,9 +214,11 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Temporal operators compose
-     * pt.uminho.haslab
+     * Returns the composition of the given formulas using the given temporal operator. 
+     * @requires formulas.length = 2 => op.binary(), formulas.length = 1 => op.unary()
+     * @return formulas.length=1 => formulas.iterator().next() else {e: Expression | e.children = formulas.toArray() and e.op = this }
      */
+    // [HASLab]
     public static Formula compose(TemporalOperator op, Collection<? extends Formula> formulas) { 
     	switch(formulas.size()) { 
     	case 0 :  throw new IllegalArgumentException("Expected at least one argument: " + formulas);
@@ -227,24 +231,31 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Temporal operators compose
-     * pt.uminho.haslab
+     * Returns the composition of the given formulas using the given temporal operator. 
+     * @requires formulas.length = 2 => op.binary(), formulas.length = 1 => op.unary()
+     * @return formulas.length=1 => formulas[0] else {e: Expression | e.children = formulas and e.op = this }
      */
+    // [HASLab]
     public static Formula compose(TemporalOperator op,  Formula...formulas) { 
     	switch(formulas.length) { 
     	case 0 :  throw new IllegalArgumentException("Expected at least one argument: " + Arrays.toString(formulas));
     	case 1 :  return new UnaryTempFormula(op, formulas[0]);
-    	case 2 :
-    		return new BinaryTempFormula(formulas[0], op, formulas[1]);
+    	case 2 :  return new BinaryTempFormula(formulas[0], op, formulas[1]);
     	default : throw new IllegalArgumentException("Expected unary or binary formula: " + Arrays.toString(formulas));
     	}
     }
     
-    // pt.uminho.haslab
-    public final Formula compose(TemporalOperator op) {
+    /**
+     * Returns the formula that results from applying the given temporal unary operator
+     * to this.  
+     * @requires op.unary()
+     * @return {e: Expression | e.formula = this && e.op = this }
+     * @throws IllegalArgumentException  this.arity != 1
+     */
+    // [HASLab]
+    public final Formula apply(TemporalOperator op) {
     	return new UnaryTempFormula(op, this);
     }
-
 
     /**
      * Returns a formula that represents a universal quantification of this
@@ -312,40 +323,83 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Temporal operators methods.
-     * pt.uminho.haslab
+     * Returns this quantified with next.  The effect of this method is the same
+     * as calling this.apply(NEXT).
+     * @return this.apply(NEXT)
      */
-    public final Formula always() {
-        return new UnaryTempFormula(ALWAYS, this);
-    }
-
-    public final Formula eventually() {
-        return new UnaryTempFormula(EVENTUALLY, this);
-    }
-
-    public final Formula until(Formula f) {
-        return new BinaryTempFormula(this, UNTIL, f);
-    }
-
-    public final Formula release(Formula f)
-    {
-        return new BinaryTempFormula(this, RELEASE, f);
-    }
-
+    // [HASLab]
     public final Formula next() {
-        return new UnaryTempFormula(NEXT, this);
+        return apply(NEXT);
+    }
+    
+    /**
+     * Returns this quantified with always.  The effect of this method is the same
+     * as calling this.apply(ALWAYS).
+     * @return this.apply(ALWAYS)
+     */
+    // [HASLab]
+    public final Formula always() {
+        return apply(ALWAYS);
     }
 
-    public final Formula historically() {
-        return new UnaryTempFormula(HISTORICALLY, this);
+    /**
+     * Returns this quantified with eventually.  The effect of this method is the same
+     * as calling this.apply(EVENTUALLY).
+     * @return this.apply(EVENTUALLY)
+     */
+    // [HASLab]
+    public final Formula eventually() {
+        return apply(EVENTUALLY);
     }
-
-    public final Formula once() {
-        return new UnaryTempFormula(ONCE, this);
-    }
-
+    
+    /**
+     * Returns this quantified with previous.  The effect of this method is the same
+     * as calling this.apply(PREVIOUS).
+     * @return this.apply(PREVIOUS)
+     */
+    // [HASLab]
     public final Formula previous() {
-        return new UnaryTempFormula(PREVIOUS, this);
+        return apply(PREVIOUS);
+    }
+    
+    /**
+     * Returns this quantified with historically.  The effect of this method is the same
+     * as calling this.apply(HISTORICALLY).
+     * @return this.apply(HISTORICALLY)
+     */
+    // [HASLab]
+    public final Formula historically() {
+        return apply(HISTORICALLY);
+    }
+
+    /**
+     * Returns this quantified with once.  The effect of this method is the same
+     * as calling this.apply(ONCE).
+     * @return this.apply(ONCE)
+     */
+    // [HASLab]
+    public final Formula once() {
+        return apply(ONCE);
+    }
+
+    /**
+     * Composes this and the specified formula with until.  The effect
+     * of this method is the same as calling this.compose(UNTIL, formula).
+     * @return this.compose(UNTIL, formula)
+     */
+    // [HASLab]
+    public final Formula until(Formula formula) {
+        return compose(UNTIL, formula);
+    }
+
+    /**
+     * Composes this and the specified formula with release.  The effect
+     * of this method is the same as calling this.compose(RELEASE, formula).
+     * @return this.compose(RELEASE, formula)
+     */
+    // [HASLab]
+    public final Formula release(Formula formula) {
+        return compose(RELEASE, formula);
     }
 
     /**

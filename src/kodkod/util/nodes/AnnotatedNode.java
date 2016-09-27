@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ import kodkod.util.collections.Stack;
  *                                            // which they were derived by some transformation process
  *                                            // (e.g. skolemization, predicate inlining)                                     
  * @author Emina Torlak
- * @modified nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */ 
 public final class AnnotatedNode<N extends Node> {
 	private final N node;
@@ -177,10 +177,6 @@ public final class AnnotatedNode<N extends Node> {
 			public void visit(Relation relation) {
 				relations.add(relation);
 			}
-//			// pt.uminho.haslab
-//			public void visit(VarRelation relation) {
-//				relations.add(relation);
-//			}
 		};
 		node.accept(visitor);
 		return relations;
@@ -466,11 +462,19 @@ public final class AnnotatedNode<N extends Node> {
 		public void visit(QuantifiedFormula quantFormula) {
 			visited(quantFormula);
 		}
-		// pt.uminho.haslab
+		/**
+		 * Calls visited(tempFormula); tempFormula's children are not top-level formulas
+		 * so they are not visited.
+		 */
+		// [HASLab]
 		public void visit(UnaryTempFormula tempFormula) {
 			visited(tempFormula);
 		}
-		// pt.uminho.haslab
+		/**
+		 * Calls visited(tempFormula); tempFormula's children are not top-level formulas
+		 * so they are not visited.
+		 */
+		// [HASLab]
 		public void visit(BinaryTempFormula tempFormula) {
 			visited(tempFormula);
 		}

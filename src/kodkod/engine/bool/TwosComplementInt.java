@@ -44,6 +44,7 @@ import kodkod.util.collections.Containers;
  * Integers are represented in little-endian (least significant bit first) order.
  * @author Emina Torlak
  */
+@SuppressWarnings("rawtypes")
 final class TwosComplementInt extends Int {
 	private final BooleanValue[] bits;
 	

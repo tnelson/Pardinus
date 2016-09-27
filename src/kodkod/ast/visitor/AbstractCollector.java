@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ import kodkod.ast.Variable;
  * @specfield cache: Node -> lone Set<T>
  * @specfield cached in cache.Node
  * @author Emina Torlak
- * @modified Eduardo Pessoa, nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractCollector<T> implements
 		ReturnVisitor<Set<T>, Set<T>, Set<T>, Set<T>> {
@@ -188,12 +188,6 @@ public abstract class AbstractCollector<T> implements
 	public Set<T> visit(Relation relation) {
 		return Collections.EMPTY_SET;
 	}
-
-//	@SuppressWarnings("unchecked")
-//	// pt.uminho.haslab
-//	public Set<T> visit(VarRelation relation) {
-//		return Collections.EMPTY_SET;
-//	}
 
 	/**
 	 * Returns Collections.EMPTY_SET
@@ -599,7 +593,14 @@ public abstract class AbstractCollector<T> implements
 		return cache(pred,ret);
 	}
 
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(temporalFormula) and returns the cached value, if any.  
+	 * If no cached value exists, visit the child, caches its return value and returns it. 
+	 * @return let x = lookup(temporalFormula) | 
+	 *          x != null => x,  
+	 *          cache(temporalFormula, temporalFormula.formula.accept(this)) 
+	 **/ 
+    // [HASLab]
 	public Set<T> visit(UnaryTempFormula temporalFormula) {
 		Set<T> ret = lookup(temporalFormula);
 		if (ret!=null) return ret;
@@ -608,7 +609,15 @@ public abstract class AbstractCollector<T> implements
 		return cache(temporalFormula, ret);
 	}
 
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(temporalFormula) and returns the cached value, if any.  
+	 * If no cached value exists, visits each child, caches the
+	 * union of the children's return values and returns it. 
+	 * @return let x = lookup(temporalFormula) | 
+	 *          x != null => x,  
+	 *          cache(temporalFormula, temporalFormula.left.accept(this) + temporalFormula.right.accept(this)) 
+	 **/ 
+    // [HASLab]
 	public Set<T> visit(BinaryTempFormula temporalFormula) {
 		Set<T> ret = lookup(temporalFormula);
 		if (ret!=null) return ret;		
@@ -618,7 +627,14 @@ public abstract class AbstractCollector<T> implements
 		return cache(temporalFormula, ret);
 	}
 	
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(tempExpr) and returns the cached value, if any.  
+	 * If no cached value exists, visit the child, caches its return value and returns it. 
+	 * @return let x = lookup(tempExpr) | 
+	 *          x != null => x,  
+	 *          cache(tempExpr, tempExpr.formula.accept(this)) 
+	 **/ 
+    // [HASLab]
 	public Set<T> visit(TempExpression tempExpr) {
 		Set<T> ret = lookup(tempExpr);
 		if (ret!=null) return ret;

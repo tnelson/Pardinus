@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,27 @@ import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
-
 /**
- * Temporal formula class
- * @author Eduardo Pessoa, nmm
- * pt.uminho.haslab
+ * A temporal {@link kodkod.ast.Formula formula} with two children.
+ * 
+ * @specfield left: Formula
+ * @specfield right: Formula
+ * @specfield op: TemporalOperator
+ * @invariant children = 0->left + 1->right
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public final class BinaryTempFormula extends Formula {
-    private final TemporalOperator op;
-
+	private final TemporalOperator op;
     private final Formula left;
     private final Formula right;
 
+    /**  
+     * Constructs a new temporal binary formula:  left op right
+     * 
+     * @ensures this.left' = left && this.right' = right &&  this.op' = op
+     * @throws NullPointerException  left = null || right = null || op = null
+     * @throws IllegalArgumentException  op.arity != 2
+     */
     BinaryTempFormula(Formula left, TemporalOperator op, Formula right) {
         if (!op.binary()) {
             throw new IllegalArgumentException("Not a unary operator: " + op);
@@ -51,20 +60,44 @@ public final class BinaryTempFormula extends Formula {
         this.op = op;
     }
 
+    /**
+     * Returns the left child of this.
+     * @return this.left
+     */
     public Formula left() { return left; }
 
+    /**
+     * Returns the right child of this.
+     * @return this.right
+     */
     public Formula right() { return right; }
 
+    /**
+     * Returns the operator of this.
+     * @return this.op
+     */
     public TemporalOperator op() { return op; }
 
+    /**
+     * {@inheritDoc}
+     * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
     public <E, F, D, I> F accept(ReturnVisitor<E, F, D, I> visitor) {
         return visitor.visit(this);
     }
 
+    /**
+     * {@inheritDoc}
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
     public void accept(VoidVisitor visitor) {
         visitor.visit(this);
     }
 
+    /**
+     * {@inheritDoc}
+     * @see kodkod.ast.Node#toString()
+     */
     public String toString() {
         return  "(" + this.left+" " + this.op + " "+ this.right + ")";
     }

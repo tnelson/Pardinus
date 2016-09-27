@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,7 @@ import kodkod.ast.Variable;
  * Implements a depth first traversal of the kodkod AST.  
  *
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, mnn
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractVoidVisitor implements VoidVisitor {
 	
@@ -102,9 +102,6 @@ public abstract class AbstractVoidVisitor implements VoidVisitor {
 	 * Does nothing.
 	 */
 	public void visit(Relation relation) {}
-
-//	// pt.uminho.haslab
-//	public void visit(VarRelation relation) {}
 
 	/**
 	 * Does nothing.
@@ -369,21 +366,36 @@ public abstract class AbstractVoidVisitor implements VoidVisitor {
 		}
 	}
 
-	// pt.uminho.haslab
+	/**
+	 * Visits the formula  if
+	 * this.visited(temporalFormula) returns false.  Otherwise does nothing.
+	 * @ensures temporalFormula.expression.accept(this)
+	 **/ 
+    // [HASLab]
 	public void visit(UnaryTempFormula temporalFormula) {
 		if (visited(temporalFormula)) return;
 		temporalFormula.formula().accept(this);
 		
 	}
 
-	// pt.uminho.haslab
+	/**
+	 * Visits the left and right children  if
+	 * this.visited(temporalFormula) returns false.  Otherwise does nothing.
+	 * @ensures temporalFormula.left.accept(this) && temporalFormula.right.accept(this)
+	 **/ 
+    // [HASLab]
 	public void visit(BinaryTempFormula temporalFormula) {
 		if (visited(temporalFormula)) return;
 		temporalFormula.left().accept(this);
 		temporalFormula.right().accept(this);
 	}
 
-	// pt.uminho.haslab
+	/**
+	 * Visits the expression  if
+	 * this.visited(temporalExpr) returns false.  Otherwise does nothing.
+	 * @ensures temporalFormula.expression.accept(this)
+	 **/ 
+    // [HASLab]
 	public void visit(TempExpression temporalExpr) {
 		if (visited(temporalExpr)) return;
 		temporalExpr.expression().accept(this);

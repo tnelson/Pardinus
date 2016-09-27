@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak 
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@ import static kodkod.ast.operator.ExprOperator.DIFFERENCE;
 import static kodkod.ast.operator.ExprOperator.INTERSECTION;
 import static kodkod.ast.operator.ExprOperator.JOIN;
 import static kodkod.ast.operator.ExprOperator.OVERRIDE;
-import static kodkod.ast.operator.TemporalOperator.POST;
 import static kodkod.ast.operator.ExprOperator.PRODUCT;
 import static kodkod.ast.operator.ExprOperator.REFLEXIVE_CLOSURE;
 import static kodkod.ast.operator.ExprOperator.TRANSPOSE;
@@ -40,6 +39,7 @@ import static kodkod.ast.operator.Multiplicity.LONE;
 import static kodkod.ast.operator.Multiplicity.NO;
 import static kodkod.ast.operator.Multiplicity.ONE;
 import static kodkod.ast.operator.Multiplicity.SOME;
+import static kodkod.ast.operator.TemporalOperator.PRIME;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,7 +50,6 @@ import kodkod.ast.operator.ExprCompOperator;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
-
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.util.collections.Containers;
 
@@ -63,7 +62,7 @@ import kodkod.util.collections.Containers;
  * @invariant arity > 0
  *
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class Expression extends Node {
 	
@@ -283,6 +282,16 @@ public abstract class Expression extends Node {
     }
     
     /**
+     * Returns the primed version of this.  The effect of this 
+     * method is the same
+     * as calling this.apply(PRIME).
+     * @return this.apply(PRIME)
+     */
+    public final Expression prime() {
+    	return apply(PRIME);
+    }
+    
+    /**
      * Returns the expression that results from applying the given unary operator
      * to this.  
      * @requires op.unary()
@@ -293,7 +302,14 @@ public abstract class Expression extends Node {
     	return new UnaryExpression(op, this);
     }
 
-    // pt.uminho.haslab
+    /**
+     * Returns the expression that results from applying the given unary temporal operator
+     * to this.  
+     * @requires op.unary()
+     * @return {e: Expression | e.expression = this && e.op = this }
+     * @throws IllegalArgumentException  this.arity != 1
+     */
+    // [HASLab]
     public final Expression apply(TemporalOperator op) {
     	return new TempExpression(op, this);
     }
@@ -397,12 +413,6 @@ public abstract class Expression extends Node {
     public final Formula lone() {
         return apply(LONE);
     }
-    
-    /**
-     * Post operator (Unary Operator).
-     * pt.uminho.haslab
-     */
-    public final Expression post() {return apply(POST);}
     
     /**
      * Returns the formula that results from applying the specified multiplicity to

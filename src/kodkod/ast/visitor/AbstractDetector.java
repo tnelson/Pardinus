@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,7 @@ import kodkod.ast.Variable;
  * @specfield cache: Node -> lone Boolean
  * @specfield cached in cache.Node
  * @author Emina Torlak
- * @modified Eduardo Pessoa, nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractDetector implements ReturnVisitor<Boolean, Boolean, Boolean, Boolean> {
 	protected final Map<Node, Boolean> cache;
@@ -159,9 +159,6 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean, Boolean
 	 * @return FALSE
 	 */
 	public Boolean visit(Relation relation) { return Boolean.FALSE; }
-
-//	// pt.uminho.haslab
-//	public Boolean visit(VarRelation relation) { return Boolean.FALSE; }
 
 	/**
 	 * Returns FALSE.
@@ -486,19 +483,41 @@ public abstract class AbstractDetector implements ReturnVisitor<Boolean, Boolean
 		return cache(predicate, false);
 	}
 	
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(temporalFormula) and returns the cached value, if any.  
+	 * If no cached value exists, visit the child, caches its return value and returns it. 
+	 * @return let x = lookup(temporalFormula) | 
+	 *          x != null => x,  
+	 *          cache(temporalFormula, temporalFormula.formula.accept(this)) 
+	 **/ 
+    // [HASLab]
 	public Boolean visit(UnaryTempFormula temporalFormula) {
 		final Boolean ret = lookup(temporalFormula);
 		return (ret!=null) ? ret : cache(temporalFormula, temporalFormula.formula().accept(this));
 	}
 
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(temporalFormula) and returns the cached value, if any.  
+	 * If no cached value exists, visits each child, caches the
+	 * disjunction of the children's return values and returns it. 
+	 * @return let x = lookup(temporalFormula) | 
+	 *          x != null => x,  
+	 *          cache(temporalFormula, temporalFormula.left.accept(this) || temporalFormula.right.accept(this)) 
+	 **/ 
+    // [HASLab]
 	public Boolean visit(BinaryTempFormula tempFormula) {
 		final Boolean ret = lookup(tempFormula);
 		return (ret!=null) ? ret : cache(tempFormula, tempFormula.left().accept(this) || tempFormula.right().accept(this));
 	}
 
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(tempExpr) and returns the cached value, if any.  
+	 * If no cached value exists, visit the child, caches its return value and returns it. 
+	 * @return let x = lookup(tempExpr) | 
+	 *          x != null => x,  
+	 *          cache(tempExpr, tempExpr.formula.accept(this)) 
+	 **/ 
+    // [HASLab]
 	public Boolean visit(TempExpression tempExpr) {
 		final Boolean ret = lookup(tempExpr);
 		return (ret!=null) ? ret : cache(tempExpr, tempExpr.expression().accept(this));

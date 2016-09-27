@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ import kodkod.ast.operator.Multiplicity;
  * @specfield cache: Node ->lone Node
  * @invariant cached in cache.Node
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, nmm
+ * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractReplacer implements ReturnVisitor<Expression, Formula, Decls, IntExpression> {
 	protected final Map<Node,Node> cache;
@@ -180,12 +180,6 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression, Form
 		final Expression ret = lookup(relation);
 		return ret==null ? cache(relation,relation) : ret; 
 	}
-	
-//	// pt.uminho.haslab
-//	public Expression visit(VarRelation relation) { 
-//		final Expression ret = lookup(relation);
-//		return ret==null ? cache(relation,relation) : ret; 
-//	}
 	
 	/** 
 	 * Calls lookup(variable) and returns the cached value, if any.  
@@ -657,16 +651,32 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression, Form
 		return cache(pred,ret);
 	}
 	
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(temporalFormula) and returns the cached value, if any.  
+	 * If a replacement has not been cached, visits the formula's 
+	 * child.  If nothing changes, the argument is cached and
+	 * returned, otherwise a replacement formula is cached and returned.
+	 * @return { u: UnaryTempFormula | u.op = temporalFormula.op &&
+	 * 								   u.child = child.accept(this) }
+	 **/ 
+    // [HASLab]
 	public Formula visit(UnaryTempFormula temporalFormula) {
 		Formula ret = lookup(temporalFormula);
 		if (ret!=null) return ret;
 		final Formula child = temporalFormula.formula().accept(this);
-		ret = (child==temporalFormula.formula()) ? temporalFormula : child.compose(temporalFormula.op());
+		ret = (child==temporalFormula.formula()) ? temporalFormula : child.apply(temporalFormula.op());
 		return cache(temporalFormula,ret);
 	}
 
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(temporalFormula) and returns the cached value, if any.  
+	 * If a replacement has not been cached, visits the formula's 
+	 * children.  If nothing changes, the argument is cached and
+	 * returned, otherwise a replacement formula is cached and returned.
+	 * @return { b: BinaryTempFormula | b.left = temporalFormula.left.accept(this) &&
+	 *                              	b.right = temporalFormula.right.accept(this) && b.op = temporalFormula.op }
+	 **/ 
+    // [HASLab]
 	public Formula visit(BinaryTempFormula temporalFormula) {
 		Formula ret = lookup(temporalFormula);
 		if (ret!=null) return ret;
@@ -678,7 +688,15 @@ public abstract class AbstractReplacer implements ReturnVisitor<Expression, Form
 		return cache(temporalFormula,ret);
 	}
 
-	// pt.uminho.haslab
+	/** 
+	 * Calls lookup(tempExpr) and returns the cached value, if any.  
+	 * If a replacement has not been cached, visits the expression's 
+	 * children.  If nothing changes, the argument is cached and
+	 * returned, otherwise a replacement expression is cached and returned.
+	 * @return { t: TempExpression | t.op = tempExpr.op &&
+	 *                               t.expression = tempExpr.expression.accept(this) }
+	 **/ 
+    // [HASLab]
 	public Expression visit(TempExpression tempExpr) {
 		Expression ret = lookup(tempExpr);
 		if (ret!=null) return ret;

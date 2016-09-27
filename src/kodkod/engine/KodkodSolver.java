@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,9 @@ package kodkod.engine;
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
-import kodkod.engine.config.BoundedOptions;
 import kodkod.engine.config.Options;
+import kodkod.engine.fol2sat.HigherOrderDeclException;
+import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 
@@ -50,16 +51,18 @@ import kodkod.instance.Instance;
  * 
  * @specfield options: Options 
  * @author Emina Torlak 
- * @modified nmm
+ * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
-public interface KodkodSolver<B extends Bounds, O extends BoundedOptions> extends BoundedSolver<B,O> { // pt.uminho.haslab: solver hierarchy
+// [HASLab] bounded solver
+public interface KodkodSolver<B extends Bounds, O extends Options> extends BoundedSolver<B,O> {
 
 	/**
 	 * Returns the Options object used by this solver.
 	 * @return this.options
 	 */
-//	@Override // pt.uminho.haslab: solver hierarchy
-//	public Options options() ;
+	// [HASLab] solver hierarchy
+	@Override
+	public O options() ;
 	
 	/**
 	 * Attempts to satisfy the given {@code formula} and {@code bounds} with respect to 
@@ -77,9 +80,10 @@ public interface KodkodSolver<B extends Bounds, O extends BoundedOptions> extend
 	 * be skolemized, or it can be skolemized but {@code this.options.skolemDepth} is insufficiently large
 	 * @throws AbortedException  this solving task was aborted  
 	 */
-//	@Override // pt.uminho.haslab: solver hierarchy
-//	public Solution solve(Formula formula, Bounds bounds) 
-//	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
+	@Override
+	// [HASLab] solver hierarchy
+	public Solution solve(Formula formula, B bounds) 
+	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
 	
 //	/**
 //	 * Attempts to find a set of solutions to the given {@code formula} and {@code bounds} with respect to 
@@ -106,7 +110,7 @@ public interface KodkodSolver<B extends Bounds, O extends BoundedOptions> extend
 	/**
 	 * Releases the resources, if any, associated with this solver.
 	 */
-//	@Override // pt.uminho.haslab: solver hierarchy
-//	public void free();
+	@Override
+	public void free();
 	
 }

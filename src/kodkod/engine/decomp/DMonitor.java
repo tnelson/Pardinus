@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,9 @@ package kodkod.engine.decomp;
 
 import kodkod.engine.Solution;
 import kodkod.engine.Statistics;
-
+/**
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
+ */
 public interface DMonitor {
 
 	public void newConfig(Solution config);

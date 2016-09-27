@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,41 +25,51 @@ package kodkod.engine.decomp;
 import kodkod.ast.Formula;
 import kodkod.instance.Bounds;
 
+/**
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
+ */
 public interface DModel {
 
 	/**
 	 * Bounds of the first partition.
+	 * 
 	 * @return
 	 */
 	public Bounds bounds1();
 
 	/**
 	 * Bounds of the second partition.
+	 * 
 	 * @requires bounds1().relations() & bounds2.requires() = empty
 	 * @return
 	 */
 	public Bounds bounds2();
 
 	/**
-	 * Formula for the first partition. Formula must refer to every relation in bounds1().
- 	 * @requires partition1().relations() = bounds1().relations()
+	 * Formula for the first partition. Formula must refer to every relation in
+	 * bounds1().
+	 * 
+	 * @requires partition1().relations() = bounds1().relations()
 	 * @return
 	 */
 	public Formula partition1();
-	
+
 	/**
 	 * Formula for the second partition.
+	 * 
 	 * @return
 	 */
 	public Formula partition2();
 
 	/**
 	 * The bits required to encode the model.
- 	 * @requires partition2().relations() in bounds1().relations() + bounds2().relations() 
+	 * 
+	 * @requires partition2().relations() in bounds1().relations() +
+	 *           bounds2().relations()
 	 * @return
 	 */
 	public int getBitwidth();
-	
+
 	public String shortName();
-	
+
 }

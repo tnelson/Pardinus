@@ -24,16 +24,21 @@ package kodkod.engine.config;
 import kodkod.engine.satlab.SATFactory;
 
 /**
- * @author nmm
+ * An implementation of options for bounded problems with every Pardinus
+ * functionality (temporal, decomposed, target-oriented). Inherits from regular
+ * Kodkod options (bounded).
+ * 
+ * @author Nuno Macedo // [HASLab] model finding hierarchy, target-oriented, temporal and decomposed model finding
  */
-public class ExtendedOptions extends Options implements Cloneable, BoundedOptions, DecomposedOptions<SATFactory>,
-		TemporalOptions<SATFactory>, TargetOptions<SATFactory> {
+public class BoundedExtendedOptions extends Options implements BoundedOptions,
+		DecomposedOptions<SATFactory>, TemporalOptions<SATFactory>,
+		TargetOptions<SATFactory> {
 
-	public ExtendedOptions() {
+	public BoundedExtendedOptions() {
 		super();
 	}
 
-	public ExtendedOptions(ExtendedOptions options) {
+	public BoundedExtendedOptions(BoundedExtendedOptions options) {
 		super(options);
 		this.setTargetMode(options.targetMode());
 		this.setRunTarget(options.runTarget());
@@ -43,42 +48,34 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 		this.setMaxTraceLength(options.maxTraceLength());
 	}
 
-	// pt.uminho.haslab: target-oriented solving
+	// target-oriented solving
 
-	// pt.uminho.haslab
 	private TMode target_mode = TMode.DEFAULT;
 	private boolean runTarget = false;
 
-	// pt.uminho.haslab
 	@Override
 	public TMode targetMode() {
 		return target_mode;
 	}
 
-	// pt.uminho.haslab
 	@Override
 	public void setTargetMode(TMode mode) {
 		target_mode = mode;
 	}
 
-	// pt.uminho.haslab
 	@Override
 	public boolean runTarget() {
 		return runTarget;
 	}
 
-	// pt.uminho.haslab
 	@Override
 	public void setRunTarget(boolean runTarget) {
 		this.runTarget = runTarget;
 	}
 
-	// pt.uminho.haslab: decomposed solving
-
-	// pt.uminho.haslab
+	// decomposed solving
 	private int threads = 4;
 
-	// pt.uminho.haslab
 	private DMode mode = DMode.BATCH;
 	private PardinusOptions<SATFactory> configOptions = this;
 
@@ -87,25 +84,21 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 	 * 
 	 * @param threads
 	 */
-	// pt.uminho.haslab
 	@Override
 	public void setThreads(int threads) {
 		this.threads = threads;
 	}
 
-	// pt.uminho.haslab
 	@Override
 	public int threads() {
 		return threads;
 	}
 
-	// pt.uminho.haslab
 	@Override
 	public DMode decomposedMode() {
 		return mode;
 	}
 
-	// pt.uminho.haslab
 	@Override
 	public void setDecomposedMode(DMode mode) {
 		this.mode = mode;
@@ -121,18 +114,15 @@ public class ExtendedOptions extends Options implements Cloneable, BoundedOption
 		return configOptions;
 	}
 
-	// pt.uminho.haslab: temporal solving
+	// temporal solving
 
-	// pt.uminho.haslab
 	private int trace_length = 20;
 
-	// pt.uminho.haslab
 	@Override
 	public void setMaxTraceLength(int trace_length) {
 		this.trace_length = trace_length;
 	}
 
-	// pt.uminho.haslab
 	@Override
 	public int maxTraceLength() {
 		return trace_length;

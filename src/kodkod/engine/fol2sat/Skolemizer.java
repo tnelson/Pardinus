@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,6 +75,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * Skolemizes existential quantifiers, up to a given
  * number of nestings (within universal quantifiers).
  * @author Emina Torlak
+ * @modified Nuno Macedo // [HASLab] temporal model finding
  */
 abstract class Skolemizer extends AbstractReplacer {
 
@@ -485,7 +486,12 @@ abstract class Skolemizer extends AbstractReplacer {
 		return source(cache(bf,ret),bf);
 	}
 	
-	// pt.uminho.haslab: assuming non-skolemizable
+	/**
+	 * If not cached, visits the formula's children with appropriate settings
+	 * for the negated flag and the skolemDepth parameter.
+	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.BinaryTempFormula)
+	 */
+	// [HASLab]
 	public final Formula visit(BinaryTempFormula tf) {
 		Formula ret = lookup(tf);
 		if (ret!=null) return ret;
@@ -500,7 +506,12 @@ abstract class Skolemizer extends AbstractReplacer {
 		return source(cache(tf,ret),tf);
 	}
 
-	// pt.uminho.haslab: assuming non-skolemizable
+	/**
+	 * If not cached, visits the formula's child with appropriate settings for
+	 * the negated flag and the skolemDepth parameter.
+	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.UnaryTempFormula)
+	 */
+	// [HASLab]
 	public final Formula visit(UnaryTempFormula tf) {
 		Formula ret = lookup(tf);
 		if (ret!=null) return ret;
@@ -510,7 +521,7 @@ abstract class Skolemizer extends AbstractReplacer {
 		final Formula sub;
 		sub = tf.formula().accept(this);
 		skolemDepth = oldDepth;
-		ret = (sub==tf.formula()) ? tf : sub.compose(op);
+		ret = (sub==tf.formula()) ? tf : sub.apply(op);
 		return source(cache(tf,ret),tf);
 	}
 

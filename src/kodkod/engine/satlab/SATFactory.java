@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,11 @@ import org.sat4j.minisat.SolverFactory;
  * and the <a href="http://www.cs.chalmers.se/Cs/Research/FormalMethods/MiniSat/">MiniSat</a> 
  * solver by Niklas E&eacute;n and Niklas S&ouml;rensson.
  * @author Emina Torlak
- * @modified nmm
+ * @modified Nuno Macedo // [HASLab] model finding hierarchy, syrup
+ * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
-public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.uminho.haslab: generic interface
+// [HASLab] primitive solver factory
+public abstract class SATFactory implements PrimitiveFactory<SATSolver> { 
 	
 	/**
 	 * Constructs a new instance of SATFactory.
@@ -80,21 +82,17 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 		public String toString() { return "DefaultSAT4J"; }
 	};
 	
-	// pt.uminho.haslab
+	/**
+	 * The factory that produces instances of the default PMax-SAT sat4j solver.
+	 * @see org.sat4j.maxsat.SolverFactory#newDefault()
+	 */
+	// [HASLab]
 	public static final SATFactory PMaxSAT4J = new SATFactory() { 
 		public SATSolver instance() { 
 			return new PMaxSAT4J(org.sat4j.maxsat.SolverFactory.newDefault()); 
 		}
 		public boolean maxsat() { return true; }
 		public String toString() { return "PMaxSAT4J"; }
-	};
-	
-	// pt.uminho.haslab
-	public static final SATFactory IncrementalSAT4J = new SATFactory() { 
-		public SATSolver instance() { 
-			return new IncrementalSAT4J(SolverFactory.instance().defaultSolver()); 
-		}
-		public String toString() { return "IncrementalSAT4J"; }
 	};
 	
 	/**
@@ -108,24 +106,6 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 		}
 		public String toString() { return "LightSAT4J"; }
 	};
-	
-	// pt.uminho.haslab
-	public static final SATFactory Yices = new SATFactory() {
-		public SATSolver instance() {
-			return new Yices();
-		}
-		public String toString() { return "Yices"; }
-	};
-	
-	// pt.uminho.haslab
-	public static final SATFactory PMaxYices = new SATFactory() {
-		public SATSolver instance() {
-			return new PMaxYicesNative();
-		}
-		public boolean maxsat() { return true; }
-		public String toString() { return "PMaxYicesNative"; }
-	};
-	
 	
 	/**
 	 * The factory that produces instances of Niklas E&eacute;n and Niklas S&ouml;rensson's
@@ -227,21 +207,50 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 	
 	}
 	
-	// pt.uminho.haslab
+	/**
+	 * Returns a SATFactory that produces SATSolver wrappers for Syrup. This is
+	 * a parallel solver that is invoked as an external program rather than via
+	 * the Java Native Interface. As a result, it cannot be used incrementally.
+	 */
+	// [HASLab]
 	public static final SATFactory syrup() {
-		
 		final String executable = findStaticLibrary("glucose-syrup");
 		return externalFactory(executable==null ? "glucose-syrup" : executable, 
 				null, "-verb=0");
 	
 	}
 	
-	// pt.uminho.haslab
+	/**
+	 * The factory that produces instances of the yices solver.
+	 */
+	// [HASLab]
+	public static final SATFactory Yices = new SATFactory() {
+		public SATSolver instance() {
+			return new Yices();
+		}
+		public String toString() { return "Yices"; }
+	};
+
+	/**
+	 * The factory that produces instances of the default PMax-SAT yices solver.
+	 */
+	// [HASLab]	
+	public static final SATFactory PMaxYices = new SATFactory() {
+		public SATSolver instance() {
+			return new PMaxYicesNative();
+		}
+		public boolean maxsat() { return true; }
+		public String toString() { return "PMaxYicesNative"; }
+	};
+
+	/**
+	 * The factory that produces instances of the default PMax-SAT yices solver
+	 * as an external program (rather than through JNI).
+	 */
+	// [HASLab]	
 	public static final SATFactory yicesExternal() {
-		
 		final String executable = findStaticLibrary("yices");
 		return externalPMaxYices(executable==null ? "yices" : executable, null, 2000, "-d","-e","-ms","-mw",""+2000);
-	
 	}
 	
 	/**
@@ -325,8 +334,12 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 		};
 	}
 	
-	// Yices does not follow standard WCNF output format
-	// pt.uminho.haslab
+	/**
+	 * Returns a SATFactory that produces  SATSolver wrappers for the external
+	 * Yices SAT solver, since it does not follow standard WCNF output format.
+	 * @return  SATFactory that produces SATSolver wrappers for Yices
+	 */
+	// [HASLab]
 	public static final SATFactory externalPMaxYices(final String executable, final String cnf, final int max, final String... options) {
 		return new SATFactory() {
 			@Override
@@ -376,8 +389,13 @@ public abstract class SATFactory implements PrimitiveFactory<SATSolver> { // pt.
 	public boolean incremental() {
 		return true;
 	}
-
-	// pt.uminho.haslab
+	
+	/**
+	 * Returns true if the solvers returned by this.instance() are Max-SAT,
+	 * i.e., soft clauses and weights can added to the solver.
+	 * @return true if the solvers returned by this.instance() are Max-SAT
+	 */
+	// [HASLab]
 	public boolean maxsat() {
 		return false;
 	}

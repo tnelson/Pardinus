@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,17 +27,28 @@ import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
 /**
- * Temporal formula class
- * @author Eduardo Pessoa, nmm
- * pt.uminho.haslab
+ * An temporal {@link kodkod.ast.Formula formula} with one child.
+ * 
+ * @specfield formula: Formula
+ * @specfield op: TemporalOperator
+ * @invariant op.unary()
+ * @invariant children = 0->formula
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public final class UnaryTempFormula extends Formula {
     private final Formula formula;
     private final TemporalOperator temporalOperator;
 
+    /**  
+     * Constructs a new unary temporal formula: op formula
+     * 
+     * @ensures this.expression' = expression && this.op' = op
+     * @throws NullPointerException  expression = null || op = null
+     * @throws IllegalArgumentException  op.arity != 1 || op in {PRIME}
+     */
     UnaryTempFormula(TemporalOperator op, Formula child) {
-        if (!op.unary()) {
-            throw new IllegalArgumentException("Not a unary operator: " + op);
+        if (!op.unary() || op == TemporalOperator.PRIME) {
+            throw new IllegalArgumentException("Not a unary formula operator: " + op);
         }
         if (op == null || child == null) {
             throw new NullPointerException("null arg");
@@ -46,18 +57,38 @@ public final class UnaryTempFormula extends Formula {
         this.temporalOperator = op;
     }
 
+    /**
+     * Returns this.formula.
+     * @return this.formula
+     */
     public Formula formula() { return formula; }
 
+    /**
+     * Returns this.op.
+     * @return this.op
+     */
     public TemporalOperator op() { return temporalOperator; }
 
+    /**
+     * {@inheritDoc}
+     * @see kodkod.ast.Formula#accept(kodkod.ast.visitor.ReturnVisitor)
+     */
     public <E, F, D, I> F accept(ReturnVisitor<E, F, D, I> visitor) {
         return visitor.visit(this);
     }
 
+    /**
+     * {@inheritDoc}
+     * @see kodkod.ast.Node#accept(kodkod.ast.visitor.VoidVisitor)
+     */
     public void accept(VoidVisitor visitor) {
         visitor.visit(this);
     }
 
+    /**
+     * {@inheritDoc}
+     * @see kodkod.ast.Node#toString()
+     */
     public String toString() {
     	return this.temporalOperator + "(" + formula + ")";
     }

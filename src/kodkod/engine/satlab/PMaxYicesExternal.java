@@ -1,23 +1,24 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- *
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package kodkod.engine.satlab;
 
@@ -36,15 +37,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
-
 /**
- * An implementation of a wrapper for an external SAT solver, 
- * executed in a separate process.
- * @author tmg
+ * An implementation of a wrapper for an external Yices SAT solver, executed in
+ * a separate process. Adapted from {@link kodkod.engine.satlab.ExternalSolver}
+ * because Yices does not follow the standard wcnf format. Also extends support
+ * for targets.
+ * 
+ * @author Tiago Guimarães // [HASLab] target-oriented model finding
  */
-final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab: extended to support weighted TO
+final class PMaxYicesExternal implements WTargetSATSolver {
 	private StringBuilder buffer = new StringBuilder();
 	private final int capacity = 8192;
 	private final boolean deleteTemp;
@@ -55,8 +56,8 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 	private volatile Boolean sat;
 	private volatile int vars, clauses;
 	private final int max;
-	private Map<Integer,Integer> softclauses = new HashMap<Integer,Integer>();  // pt.uminho.haslab
-	private List<int[]> hardclauses = new ArrayList<int[]>();  // pt.uminho.haslab
+	private Map<Integer,Integer> softclauses = new HashMap<Integer,Integer>();  // [HASLab]
+	private List<int[]> hardclauses = new ArrayList<int[]>();  // [HASLab]
 	
 	/**
 	 * Constructs an ExternalSolver that will execute the specified binary
@@ -120,7 +121,6 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * Clauses are added to a buffer instead of directly to the SAT because it 
 	 * must be reconstructed at each iteration to update the targets.
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
@@ -142,7 +142,6 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#addTarget(int)
 	 */
 	public boolean addTarget(int lit) {
@@ -151,7 +150,6 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#addWeight(int,int)
 	 */	
 	public boolean addWeight(int lit, int weight) {
@@ -194,7 +192,6 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#numberOfTargets()
 	 */
 	public int numberOfTargets() {
@@ -239,7 +236,7 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 		}
 		buffer.append("\n");
 		
-		// pt.uminho.haslab: add the target variables as soft clauses
+		// [HASLab] add the target variables as soft clauses
 		for (Integer i : softclauses.keySet()) {
 			if (buffer.length()>capacity) 
 				flush();
@@ -249,7 +246,7 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 			buffer.append(" ");
 			buffer.append("0\n");
 		}
-		// pt.uminho.haslab: add the problem variables as hard clauses
+		// [HASLab] add the problem variables as hard clauses
 		for (int[] is : hardclauses) {
 			if (buffer.length()>capacity) 
 				flush();
@@ -380,7 +377,6 @@ final class PMaxYicesExternal implements WTargetSATSolver { // pt.uminho.haslab:
 
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#clearTargets(int)
 	 */	
 	public boolean clearTargets() {

@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ import java.util.Set;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
@@ -61,15 +61,13 @@ import kodkod.util.nodes.PrettyPrinter;
  * A temporal solver relying on Kodkod.
  * 
  * The solver is responsible by iteratively increasing the bounded trace length
- * up to the maximum defined in the options.
+ * up to the maximum defined in the options. Adapted from {@link kodkod.engine.Solver}.
  * 
- * @author Emina Torlak
- * @modified nmm, tmg (pt.uminho.haslab): extended to temporal and
- *           target-oriented model finding
+ * @author Nuno Macedo // [HASLab] target-oriented and temporal model finding
  */
-public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, ExtendedOptions>,
-		TemporalSolver<ExtendedOptions> {
-	private final ExtendedOptions options;
+public final class TemporalKodkodSolver implements BoundedSolver<TemporalBounds, BoundedExtendedOptions>,
+		TemporalSolver<BoundedExtendedOptions> {
+	private final BoundedExtendedOptions options;
 
 	/**
 	 * Constructs a new Solver with the default options.
@@ -77,7 +75,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 	 * @ensures this.options' = new Options()
 	 */
 	public TemporalKodkodSolver() {
-		this.options = new ExtendedOptions();
+		this.options = new BoundedExtendedOptions();
 	}
 
 	/**
@@ -87,7 +85,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 	 * @throws NullPointerException
 	 *             options = null
 	 */
-	public TemporalKodkodSolver(ExtendedOptions options) {
+	public TemporalKodkodSolver(BoundedExtendedOptions options) {
 		if (options == null)
 			throw new NullPointerException();
 		this.options = options;
@@ -99,7 +97,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 	 * 
 	 * @return this.options
 	 */
-	public ExtendedOptions options() {
+	public BoundedExtendedOptions options() {
 		return options;
 	}
 
@@ -111,7 +109,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 	public void free() {
 	}
 
-	// pt.uminho.haslab
+	// [HASLab]
 	public Solution solve(Formula formula, TemporalBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
@@ -156,12 +154,12 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 		if (Options.isDebug())
 			flushFormula(formula, bounds); // [AM]
 
-		// nmm: this was commented, why?
+		// [HASLab] this was commented, why?
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 
-		if (options instanceof ExtendedOptions && options.runTarget())
-			return new TSolutionIterator(formula, bounds, options); // pt.uminho.haslab
+		if (options instanceof BoundedExtendedOptions && options.runTarget())
+			return new TSolutionIterator(formula, bounds, options); // [HASLab]
 		else
 			return new SolutionIterator(formula, bounds, options);
 	}
@@ -189,14 +187,14 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 		return options.toString();
 	}
 
-	// pt.uminho.haslab
+	// [HASLab]
 	private static Solution sat(Translation.Whole translation, Statistics stats, Set<VarRelation> varrelations) {
 		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(), varrelations));
 		translation.cnf().free();
 		return sol;
 	}
 
-	// pt.uminho.haslab
+	// [HASLab]
 	private static Solution unsat(Translation.Whole translation, Statistics stats) {
 		final SATSolver cnf = translation.cnf();
 		final TranslationLog log = translation.log();
@@ -209,7 +207,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 		}
 	}
 
-	// pt.uminho.haslab
+	// [HASLab]
 	private static Solution trivial(Translation.Whole translation, long translTime, Set<VarRelation> varrelations) {
 		final Statistics stats = new Statistics(0, 0, 0, translTime, 0);
 		final Solution sol;
@@ -237,20 +235,19 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 	/**
 	 * An iterator over all solutions of a model.
 	 * 
-	 * @author Emina Torlak
+	 * @author Nuno Macedo // [HASLab] temporal model finding
 	 */
-	// pt.uminho.haslab-: remove final
-	private static class SolutionIterator implements Iterator<Solution> {
-		protected Translation.Whole translation; // pt.uminho.haslab-: protected
-		private final Formula extformula; // pt.uminho.haslab-: protected
+	private final static class SolutionIterator implements Iterator<Solution> {
+		private Translation.Whole translation;
+		private final Formula extformula; 
 		private long translTime;
 		private int trivial;
 		private final TemporalBounds tempBounds;
-		private final ExtendedOptions opt; // pt.uminho.haslab: temporal
+		private final BoundedExtendedOptions opt; // [HASLab] temporal
 		private int current_trace = 1;
 		private boolean incremented = false;
 
-		SolutionIterator(Formula formula, TemporalBounds bounds, ExtendedOptions options) { // pt.uminho.haslab
+		SolutionIterator(Formula formula, TemporalBounds bounds, BoundedExtendedOptions options) { // [HASLab]
 			this.translTime = System.currentTimeMillis();
 			Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
 			this.extformula = TemporalTranslator.translate(formula);
@@ -431,18 +428,19 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 
 	}
 
-	// pt.uminho.haslab+
+	/**
+	 * A target-oriented iterator over all solutions of a model, adapted from {@link SolutionIterator}.
+	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented, temporal model finding
+	 */
 	public static class TSolutionIterator implements Iterator<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
-		private int trivial;
-		private final ExtendedOptions opt; // pt.uminho.haslab: TO mode
-		private Map<String, Integer> weights; // pt.uminho.haslab: signature
-												// weights
+		private final BoundedExtendedOptions opt; // [HASLab] TO mode
+		private Map<String, Integer> weights; // [HASLab] signature weights
 		private final TemporalBounds tempBounds;
 		private final Formula extformula;
 
-		TSolutionIterator(Formula formula, TemporalBounds bounds, ExtendedOptions options) { // pt.uminho.haslab
+		TSolutionIterator(Formula formula, TemporalBounds bounds, BoundedExtendedOptions options) { // [HASLab]
 			if (!options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");
 			this.translTime = System.currentTimeMillis();
@@ -450,7 +448,6 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 			this.extformula = TemporalTranslator.translate(formula);
 			this.translation = Translator.translate(extformula, extbounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
-			this.trivial = 0;
 			this.opt = options;
 			this.tempBounds = bounds;
 		}
@@ -472,12 +469,12 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 		public Solution next() {
 			if (!hasNext())
 				throw new NoSuchElementException();
-			// TODO pt.uminho.haslab: trivial solutions not yet supported in TO
+			// TODO [HASLab]: trivial solutions not yet supported in TO
 			if (translation.trivial())
 				throw new RuntimeException("Trivial problems with targets not yet supported.");
 			else
 				try {
-					return nextNonTrivialSolution();
+					return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution();
 				} catch (SATAbortedException sae) {
 					translation.cnf().free();
 					throw new AbortedException(sae);
@@ -521,7 +518,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 
 				cnf = transl.cnf();
 				primaryVars = transl.numPrimaryVariables();
-				// pt.uminho.haslab: add the targets to generate the following
+				// [HASLab] add the targets to generate the following
 				// solution due to the architecture of Alloy, targets are added
 				// directly
 				// to the SAT rather than through the bounds
@@ -531,7 +528,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 					if (mode.equals(TMode.CLOSE) || mode.equals(TMode.FAR)) {
 						TargetSATSolver tcnf = (TargetSATSolver) cnf;
 						tcnf.clearTargets();
-						// pt.uminho.haslab: if there are weights must iterate
+						// [HASLab] if there are weights must iterate
 						// through the relations to find the literal's owner
 						if (weights != null) {
 							WTargetSATSolver wcnf = (WTargetSATSolver) cnf;
@@ -549,7 +546,7 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 										// add the negation of the current model
 										// to the solver
 										notModel[i - 1] = cnf.valueOf(i) ? -i : i;
-										// pt.uminho.haslab: add current model
+										// [HASLab] add current model
 										// as weighted target
 										if (mode == TMode.CLOSE)
 											wcnf.addWeight(cnf.valueOf(i) ? i : -i, w);
@@ -559,14 +556,14 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 								}
 							}
 						}
-						// pt.uminho.haslab: if there are no weights may simply
+						// [HASLab] if there are no weights may simply
 						// iterate literals
 						else {
 							for (int i = 1; i <= primaryVars; i++) {
 								// add the negation of the current model to the
 								// solver
 								notModel[i - 1] = cnf.valueOf(i) ? -i : i;
-								// pt.uminho.haslab: add current model as target
+								// [HASLab] add current model as target
 								if (mode == TMode.CLOSE)
 									tcnf.addTarget(cnf.valueOf(i) ? i : -i);
 								if (mode == TMode.FAR)
@@ -626,60 +623,18 @@ public final class TemporalKodkodSolver implements KodkodSolver<TemporalBounds, 
 		 * @return current solution
 		 */
 		private Solution nextTrivialSolution() {
-			final Translation.Whole transl = this.translation;
-			// this also frees up solver resources, if unsat
-			final Solution sol = trivial(transl, translTime, tempBounds.varRelations());
-
-			if (sol.instance() == null) {
-				translation = null; // unsat, no more solutions
-			} else {
-				trivial++;
-
-				final Bounds bounds = transl.bounds();
-				final Bounds newBounds = bounds.clone();
-				final List<Formula> changes = new ArrayList<Formula>();
-
-				for (Relation r : bounds.relations()) {
-					final TupleSet lower = bounds.lowerBound(r);
-
-					if (lower != bounds.upperBound(r)) { // r may change
-						if (lower.isEmpty()) {
-							changes.add(r.some());
-						} else {
-							final Relation rmodel = Relation.nary(r.name() + "_" + trivial, r.arity());
-							newBounds.boundExactly(rmodel, lower);
-							changes.add(r.eq(rmodel).not());
-						}
-					}
-				}
-
-				// nothing can change => there can be no more solutions (besides
-				// the current trivial one).
-				// note that transl.formula simplifies to the constant true with
-				// respect to
-				// transl.bounds, and that newBounds is a superset of
-				// transl.bounds.
-				// as a result, finding the next instance, if any, for
-				// transl.formula.and(Formula.or(changes))
-				// with respect to newBounds is equivalent to finding the next
-				// instance of Formula.or(changes) alone.
-				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes);
-
-				final long startTransl = System.currentTimeMillis();
-				translation = Translator.translate(formula, newBounds, opt);
-				translTime += System.currentTimeMillis() - startTransl;
-			}
-			return sol;
+			throw new UnsupportedOperationException("Trivial target-oriented next not yet supported.");
 		}
 
 		/**
-		 * Calculates the next TO solutions with weights. pt.uminho.haslab
+		 * Calculates the next TO solutions with weights.
 		 * 
 		 * @param i
 		 *            the TO mode
 		 * @param weights
 		 *            the signature weights
 		 */
+		// [HASLab]
 		public Solution next(Map<String, Integer> weights) {
 			if (opt.targetMode() != TMode.DEFAULT) {
 				if (!(opt.solver().instance() instanceof TargetSATSolver))

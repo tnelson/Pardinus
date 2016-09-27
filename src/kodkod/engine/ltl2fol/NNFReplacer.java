@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ import kodkod.ast.visitor.AbstractReplacer;
  * Converts an LTL temporal formula into its negated normal form (NNF), by
  * propagating negations down LTL and FOL quantifiers.
  * 
- * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 //TODO: build on top of Kodkod's FormulaFlattener?
 public class NNFReplacer extends AbstractReplacer {
@@ -242,11 +242,11 @@ public class NNFReplacer extends AbstractReplacer {
 				negated = !negated;
 				Formula temp = unaryTempFormula.formula().accept(this);
 				negated = !negated;
-				return temp.compose(unaryTempFormula.op()).not();
+				return temp.apply(unaryTempFormula.op()).not();
 			}
 		} else {
 			Formula f = unaryTempFormula.formula().accept(this);
-			return f.compose(unaryTempFormula.op());
+			return f.apply(unaryTempFormula.op());
 		}
 	}
 

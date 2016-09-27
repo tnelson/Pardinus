@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ import kodkod.util.ints.Ints;
  * <code>{ s0, ..., sn }</code>. 
  * 
  * @author Emina Torlak
- * @modified nmm, tmg (added targets and weights)
+ * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 public final class SymmetryDetector {
 	private final Bounds bounds;
@@ -134,36 +134,16 @@ public final class SymmetryDetector {
 	 * sorted in the order of increasing size.
 	 */    
 	private TupleSet[] sort(Bounds bounds) {
-		if (!bounds.targets().isEmpty()) sortT(bounds); 	// pt.uminho.haslab-
 		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
 		for(Relation r : bounds.relations()) {
 			final TupleSet lower = bounds.lowerBound(r);
 			final TupleSet upper = bounds.upperBound(r);
-			if (!lower.isEmpty() && lower.size()<upper.size()) { sets.add(lower); }
-			if (!upper.isEmpty()) {	sets.add(upper); }
-		}
-
-		final TupleSet[] sorted = sets.toArray(new TupleSet[sets.size()]);
-		Arrays.sort(sorted, new Comparator<TupleSet>(){
-			public int compare(TupleSet o1, TupleSet o2) {
-				return o1.size() - o2.size();
-			}
-		});
-		return sorted;
-	}
-	
-	// pt.uminho.haslab+
-	// TODO pt.uminho.haslab: consider weights?
-	private TupleSet[] sortT(Bounds bounds) {
-		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
-		for(Relation r : bounds.relations()) {
-			final TupleSet lower = bounds.lowerBound(r);
-			final TupleSet upper = bounds.upperBound(r);
-			final TupleSet target = bounds.target(r); 	// pt.uminho.haslab: consider targets
+			final TupleSet target = bounds.target(r); // [HASLab]
 			if (!lower.isEmpty() && lower.size()<upper.size()) { sets.add(lower); }
 			if (!upper.isEmpty()) {	sets.add(upper); }
 
-			// pt.uminho.haslab: consider targets
+			// [HASLab] consider targets
+			// TODO: should check if running in target-oriented mode
 			if (target != null && !target.isEmpty()) { sets.add(target); }
 		}
 

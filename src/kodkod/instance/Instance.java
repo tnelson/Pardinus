@@ -1,6 +1,6 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,14 +45,16 @@ import kodkod.util.ints.TreeSequence;
  * @invariant all i: tuples.TupleSet & int | ints[i].arity = 1 && ints[i].size() = 1 
  * 
  * @author Emina Torlak
- * @modified nmm (pt.uminho.haslab): supported for extended instances
+ * @modified Nuno Macedo // [HASLab] temporal model finding
  */
-public class Instance implements Cloneable { // pt.uminho.haslab: removed final
+// [HASLab] removed final
+public class Instance implements Cloneable {
 	private final Map<Relation, TupleSet> tuples;
 	private final SparseSequence<TupleSet> ints;
 	private final Universe universe;
 	
-	protected Instance(Universe u, Map<Relation, TupleSet> tuples, SparseSequence<TupleSet> ints) { // pt.uminho.haslab: protected
+	// [HASLab] protected constructor
+	protected Instance(Universe u, Map<Relation, TupleSet> tuples, SparseSequence<TupleSet> ints) {
 		this.universe = u;
 		this.tuples = tuples;
 		this.ints = ints;

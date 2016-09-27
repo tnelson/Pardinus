@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@ import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.ltl2fol.TemporalTranslator;
-import kodkod.util.ints.TreeSequence;
 
 /**
  * Represents a temporal model (an instance) of a temporal relational problem
@@ -42,8 +41,7 @@ import kodkod.util.ints.TreeSequence;
  * states instances. The methods inherited from regular
  * {@link kodkod.instance.Instance instances} act upon the expanded instance.
  * 
- * @author nmm (pt.uminho.haslab)
- *
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 public class TemporalInstance extends Instance {
 

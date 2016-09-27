@@ -1,23 +1,24 @@
-/* 
+/*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- *
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package kodkod.engine.satlab;
 
@@ -37,19 +38,20 @@ import org.sat4j.specs.IVecInt;
 import org.sat4j.specs.IteratorInt;
 
 /**
- * A wrapper class that provides access to the basic funcionality of the MiniSAT
- * solvers (org.sat4j.specs.ISolver) from CRIL.
+ * A wrapper class that provides access to the basic functionality of the
+ * PMax-SAT SAT4J solver (org.sat4j.pb.IPBSolver), adapted from
+ * {@link kodkod.engine.satlab.SAT4J}.
  * 
- * @author tmg, nmm
+ * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
-final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extended to support weighted TO
+final class PMaxSAT4J implements WTargetSATSolver { 
 	private WeightedMaxSatDecorator solver;
 	private IOptimizationProblem optproblem;
 	private ReadOnlyIVecInt wrapper;
 	private Boolean sat;
 	private int vars, clauses;
-	private Set<int[]> hardclauses = new HashSet<int[]>();  // pt.uminho.haslab
-	private Map<Integer,Integer> softclauses = new HashMap<Integer,Integer>();  // pt.uminho.haslab
+	private Set<int[]> hardclauses = new HashSet<int[]>();  
+	private Map<Integer,Integer> softclauses = new HashMap<Integer,Integer>();
 	/**
 	 * Constructs a wrapper for the given instance of ISolver.
 	 * 
@@ -85,7 +87,6 @@ final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extende
 	
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#numberOfTargets()
 	 */
 	public int numberOfTargets() {
@@ -106,7 +107,6 @@ final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extende
 
 	/**
 	 * {@inheritDoc}
- 	 * pt.uminho.haslab
 	 * Clauses are added to a buffer instead of directly to the SAT because it 
 	 * must be reconstructed at each iteration to update the targets.
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
@@ -119,7 +119,6 @@ final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extende
 
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#addTarget(int)
 	 */
 	public boolean addTarget(int lit) {
@@ -128,7 +127,6 @@ final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extende
 
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#addWeight(int,int)
 	 */	
 	public boolean addWeight(int lit, int weight) {
@@ -150,10 +148,10 @@ final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extende
 		solver.newVar(vars);
 		solver.setTimeout(1000);
 		try {
-			// pt.uminho.haslab: add the target variables as soft clauses
+			// add the target variables as soft clauses
 			for (Integer x : softclauses.keySet()) 
 				solver.addSoftClause(softclauses.get(x),wrapper.wrap(new int[] { x }));
-			// pt.uminho.haslab: add the problem variables as hard clauses
+			// add the problem variables as hard clauses
 			for (int[] x : hardclauses) 
 				solver.addHardClause(wrapper.wrap(x));
 		} catch (ContradictionException e) {
@@ -412,7 +410,6 @@ final class PMaxSAT4J implements WTargetSATSolver { // pt.uminho.haslab: extende
 	
 	/**
 	 * {@inheritDoc}
-	 * pt.uminho.haslab
 	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#clearTargets(int)
 	 */	
 	public boolean clearTargets() {
