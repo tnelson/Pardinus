@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
@@ -174,21 +174,21 @@ public class DijkstraP implements DModel {
 	public Formula grabMutex(Expression p, Expression m) {
 		final Formula f1 = isStalled(p).not().and(m.in(p.join(holds)).not());
 		final Formula isFree = isFree(m);
-		final Formula f2 = p.join(holds.post()).eq(p.join(holds).union(m));/*
+		final Formula f2 = p.join(holds.prime()).eq(p.join(holds).union(m));/*
 																			 * TEMPORAL
 																			 * OP
 																			 */
-		final Formula f3 = p.join(waits.post()).no();/* TEMPORAL OP */
+		final Formula f3 = p.join(waits.prime()).no();/* TEMPORAL OP */
 		final Formula f4 = isFree.implies(f2.and(f3));
-		final Formula f5 = p.join(holds.post()).eq(p.join(holds));/* TEMPORAL OP */
-		final Formula f6 = p.join(waits.post()).eq(m);/* TEMPORAL OP */
+		final Formula f5 = p.join(holds.prime()).eq(p.join(holds));/* TEMPORAL OP */
+		final Formula f6 = p.join(waits.prime()).eq(m);/* TEMPORAL OP */
 		final Formula f7 = isFree.not().implies(f5.and(f6));
 		final Variable otherProc = Variable.unary("otherProc");
-		final Formula f8 = otherProc.join(holds.post()).eq(otherProc.join(holds));/*
+		final Formula f8 = otherProc.join(holds.prime()).eq(otherProc.join(holds));/*
 																				 * TEMPORAL
 																				 * OP
 																				 */
-		final Formula f9 = otherProc.join(waits.post()).eq(otherProc.join(waits));/*
+		final Formula f9 = otherProc.join(waits.prime()).eq(otherProc.join(waits));/*
 																				 * TEMPORAL
 																				 * OP
 																				 */
@@ -223,32 +223,32 @@ public class DijkstraP implements DModel {
 	 */
 	public Formula releaseMutex(Expression p, Expression m) {
 		final Formula f1 = isStalled(p).not().and(m.in(p.join(holds)));
-		final Formula f2 = p.join(holds.post()).eq(p.join(holds).difference(m));/*
+		final Formula f2 = p.join(holds.prime()).eq(p.join(holds).difference(m));/*
 																				 * TEMPORAL
 																				 * OP
 																				 */
-		final Formula f3 = p.join(waits.post()).no();/* TEMPORAL OP */
+		final Formula f3 = p.join(waits.prime()).no();/* TEMPORAL OP */
 		final Expression cexpr = m.join((waits).transpose());
-		final Formula f4 = m.join(holds.post().transpose()).no();/* TEMPORAL OP */
-		final Formula f5 = m.join(waits.post().transpose()).no();/* TEMPORAL OP */
+		final Formula f4 = m.join(holds.prime().transpose()).no();/* TEMPORAL OP */
+		final Formula f5 = m.join(waits.prime().transpose()).no();/* TEMPORAL OP */
 		final Formula f6 = cexpr.no().implies(f4.and(f5));
 		final Variable lucky = Variable.unary("lucky");
-		final Formula f7 = m.join(waits.post().transpose()).eq(m.join(waits.transpose()).difference(lucky));/*
+		final Formula f7 = m.join(waits.prime().transpose()).eq(m.join(waits.transpose()).difference(lucky));/*
 																											 * TEMPORAL
 																											 * OP
 																											 */
-		final Formula f8 = m.join(holds.post().transpose()).eq(lucky);/*
+		final Formula f8 = m.join(holds.prime().transpose()).eq(lucky);/*
 																	 * TEMPORAL
 																	 * OP
 																	 */
 		final Formula f9 = f7.and(f8).forSome(lucky.oneOf(m.join(waits.transpose())));
 		final Formula f10 = cexpr.some().implies(f9);
 		final Variable mu = Variable.unary("mu");
-		final Formula f11 = mu.join(waits.post().transpose()).eq(mu.join(waits.transpose()));/*
+		final Formula f11 = mu.join(waits.prime().transpose()).eq(mu.join(waits.transpose()));/*
 																							 * TEMPORAL
 																							 * OP
 																							 */
-		final Formula f12 = mu.join(holds.post().transpose()).eq(mu.join(holds.transpose()));/*
+		final Formula f12 = mu.join(holds.prime().transpose()).eq(mu.join(holds.transpose()));/*
 																							 * TEMPORAL
 																							 * OP
 																							 */
@@ -275,8 +275,8 @@ public class DijkstraP implements DModel {
 	 * </pre>
 	 */
 	public Formula grabOrRelease() {
-		final Formula f1 = holds.post().eq(holds);/* TEMPORAL OP */
-		final Formula f2 = waits.post().eq(waits);/* TEMPORAL OP */
+		final Formula f1 = holds.prime().eq(holds);/* TEMPORAL OP */
+		final Formula f2 = waits.prime().eq(waits);/* TEMPORAL OP */
 		final Variable p = Variable.unary("p");
 		final Variable m = Variable.unary("m");
 		final Decls d = p.oneOf(Process).and(m.oneOf(Mutex));
@@ -320,7 +320,7 @@ public class DijkstraP implements DModel {
 	 */
 	public Formula grabbedInOrder() {
 		final Expression had = Process.join(holds);
-		final Expression have = Process.join(holds.post());/* TEMPORAL OP */
+		final Expression have = Process.join(holds.prime());/* TEMPORAL OP */
 		final Expression grabbed = have.difference(had);
 		return grabbed.some().implies(grabbed.in(had.join(mord.closure()))).always();/*
 																					 * TEMPORAL
@@ -421,7 +421,7 @@ public class DijkstraP implements DModel {
 	public static void main(String[] args) {
 		DijkstraP model = new DijkstraP(new String[] { "3", "3", "SAT" });
 
-		ExtendedOptions opt = new ExtendedOptions();
+		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		Solver solver = new Solver(opt);

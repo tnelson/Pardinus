@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Solution;
 import kodkod.engine.TemporalKodkodSolver;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
@@ -238,11 +238,11 @@ public class HotelP implements DModel {
 		Formula x581 = x583.or(x593);
 
 		Formula x576 = k.in(g.join(gkeys)); // k in g.keys.t
-		Formula x609 = (r.join(current.post())).eq(k);/* TEMPORAL OP */// r.current.t'
+		Formula x609 = (r.join(current.prime())).eq(k);/* TEMPORAL OP */// r.current.t'
 																		// = k
 
 		Variable r1 = Variable.unary("r'");
-		Formula x641 = (r1.join(current)).eq(r1.join(current.post()));/*
+		Formula x641 = (r1.join(current)).eq(r1.join(current.prime()));/*
 																	 * TEMPORAL
 																	 * OP
 																	 */
@@ -253,12 +253,12 @@ public class HotelP implements DModel {
 																	// =
 																	// x.current.t'
 
-		Formula x614 = gkeys.eq(gkeys.post());/* TEMPORAL OP */// gkeys.t =
+		Formula x614 = gkeys.eq(gkeys.prime());/* TEMPORAL OP */// gkeys.t =
 																// gkeys.t'
-		Formula x629 = (lastkey).eq(lastkey.post());/* TEMPORAL OP */// lastley.t
+		Formula x629 = (lastkey).eq(lastkey.prime());/* TEMPORAL OP */// lastley.t
 																		// =
 																		// lastkey.t'
-		Formula x647 = (occupant).eq(occupant.post()); /* TEMPORAL OP */// occupant.t
+		Formula x647 = (occupant).eq(occupant.prime()); /* TEMPORAL OP */// occupant.t
 																			// =
 																			// occupant.t'
 		Formula entry = Formula.compose(FormulaOperator.AND, x576, x581, x614, x629, x637, x647, x609);
@@ -266,13 +266,13 @@ public class HotelP implements DModel {
 	}
 
 	private Formula checkin(Variable r, Variable k, Variable g) {
-		Formula x398 = g.join(gkeys.post()).eq((g.join(gkeys)).union(k)); // g.keys.t'
+		Formula x398 = g.join(gkeys.prime()).eq((g.join(gkeys)).union(k)); // g.keys.t'
 																			// =
 																			// g.keys.t
 																			// +
 																			// k
 		Formula x407 = (r.join(occupant)).no(); // no r.occupant.t
-		Formula x411 = (lastkey.post()).eq((lastkey).override(r.product(k))); // lastkey.t'
+		Formula x411 = (lastkey.prime()).eq((lastkey).override(r.product(k))); // lastkey.t'
 																				// =
 																				// lastkey.t
 																				// ++
@@ -284,16 +284,16 @@ public class HotelP implements DModel {
 		Expression x420 = (((r.join(lastkey)).join(key_next.closure())).intersection(r.join(rkeys))).difference(x428);
 		Formula x419 = k.eq(x420); // k = (r.lastkey.t.next+ & r.keys) -
 									// (r.lastkey.t.next+ & r.keys).next+
-		Formula x439 = (occupant.post()).eq((occupant).union(r.product(g))); // occupant.t'
+		Formula x439 = (occupant.prime()).eq((occupant).union(r.product(g))); // occupant.t'
 																				// =
 																				// occupant.t
 																				// +
 																				// r
 																				// ->
 																				// g
-		Formula x447 = (current).eq(current.post()); // current.t = current.t'
+		Formula x447 = (current).eq(current.prime()); // current.t = current.t'
 		Variable g1 = Variable.unary("g1");
-		Formula x461 = (g1.join(gkeys)).eq(g1.join(gkeys.post()));
+		Formula x461 = (g1.join(gkeys)).eq(g1.join(gkeys.prime()));
 		Formula x457 = x461.forAll(g1.oneOf(guest.difference(g))); // all g1 :
 																	// Guest - g
 																	// |
@@ -306,16 +306,16 @@ public class HotelP implements DModel {
 
 	private Formula checkout(Variable g) {
 		Formula x337 = ((occupant).join(g)).some(); // some (occupant.t).g
-		Formula x343 = occupant.post().eq((occupant).difference(room.product(g))); // occupant.t'
+		Formula x343 = occupant.prime().eq((occupant).difference(room.product(g))); // occupant.t'
 																					// =
 																					// occupant.t
 																					// -
 																					// room
 																					// ->
 																					// g
-		Formula x351 = (current).eq(current.post()); // current.t = current.t'
-		Formula x352 = (gkeys).eq(gkeys.post()); // lastkey.t = lastkey.t'
-		Formula x353 = (lastkey).eq(lastkey.post()); // gkeys.t = gkeys.t'
+		Formula x351 = (current).eq(current.prime()); // current.t = current.t'
+		Formula x352 = (gkeys).eq(gkeys.prime()); // lastkey.t = lastkey.t'
+		Formula x353 = (lastkey).eq(lastkey.prime()); // gkeys.t = gkeys.t'
 		Formula checkout = x337.and(x343.and(x351)).and(x352).and(x353);
 		return checkout;
 	}
@@ -390,11 +390,12 @@ public class HotelP implements DModel {
 	public static void main(String[] args) {
 		HotelP model = new HotelP(new String[] { "3", "INTERVENES" });
 
-		ExtendedOptions opt = new ExtendedOptions();
+		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		TemporalKodkodSolver solver = new TemporalKodkodSolver(opt);
 		TemporalBounds tbmpbound = model.bounds();
+		System.out.println(tbmpbound.toString2());
 		Solution sol = solver.solveAll(model.finalFormula(), tbmpbound).next();
 		System.out.println(sol);
 		if (sol.sat()) {

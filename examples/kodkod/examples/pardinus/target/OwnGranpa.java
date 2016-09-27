@@ -9,7 +9,7 @@ import kodkod.ast.operator.*;
 import kodkod.instance.*;
 import kodkod.engine.*;
 import kodkod.engine.Solver.TSolutionIterator;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.satlab.SATFactory;
 
@@ -221,7 +221,7 @@ public final class OwnGranpa {
 		ws.put("String", 1);
 
 
-		ExtendedOptions opt = new ExtendedOptions();
+		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.externalPMaxYices("/Users/nmm/Documents/Work/Programming/AlloyExplore/kodextension/lib/yices-1.0.38/bin/yices", "owngrandpa.wcnf", 2000, "-d","-e","-ms","-mw",""+2000));
 //		opt.setSolver(SATFactory.PMaxSAT4J);
 		opt.setBitwidth(1);

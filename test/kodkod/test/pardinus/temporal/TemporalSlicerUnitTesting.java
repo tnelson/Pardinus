@@ -39,7 +39,7 @@ public class TemporalSlicerUnitTesting {
 		Formula localFormula2 = pord.totalOrder(Process, pfirst, plast);
 
 		Variable var3 = Variable.unary("p");
-		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 
 		Formula total = Formula.and(new Formula[] { localFormula2, succFunction, var4, var5, initial2 });
@@ -71,7 +71,7 @@ public class TemporalSlicerUnitTesting {
 		Formula localFormula1 = localFormula2.and(var4.and(var5));
 
 		Variable var3 = Variable.unary("p");
-		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 
 		Formula total = Formula.and(new Formula[] { localFormula1, initial2 });
@@ -100,7 +100,7 @@ public class TemporalSlicerUnitTesting {
 		Formula localFormula1 = localFormula2.and(var4.and(var5.and(succFunction)));
 
 		Variable var3 = Variable.unary("p");
-		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 
 		Formula total = Formula.and(new Formula[] { localFormula1, initial2 });
@@ -128,7 +128,7 @@ public class TemporalSlicerUnitTesting {
 		Formula localFormula1 = Formula.and(localFormula2, var4, var5, succFunction);
 
 		Variable var3 = Variable.unary("p");
-		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 
 		Formula total = Formula.and(new Formula[] { localFormula1, initial2 });
@@ -150,7 +150,7 @@ public class TemporalSlicerUnitTesting {
 		Formula var1 = succ1.in(Process.product(Process)).implies(
 				succ2.in(Process.product(Process)).and(succ.in(Process.product(Process))));
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.post()).lone())
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 		Formula var12 = succ2.in(Process.product(Process));
 		Formula third = Formula.and(var1, var12, initial);// second.and(var13);
@@ -165,7 +165,7 @@ public class TemporalSlicerUnitTesting {
 		Formula var5 = elected.in(Process);
 		Formula var4 = succ.in(Process.product(Process));
 		Formula localFormula2 = pord.totalOrder(Process, pfirst, plast);
-		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 
 		Formula total = Formula.and(new Formula[] { third1, localFormula2, succFunction, var4, var5, initial2 });
@@ -187,7 +187,7 @@ public class TemporalSlicerUnitTesting {
 		Formula var1 = succ1.in(Process.product(Process)).implies(
 				succ2.in(Process.product(Process)).and(succ.in(Process.product(Process))));
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.post()).lone())
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 		Formula var12 = succ2.in(Process.product(Process));
 		Formula third = Formula.and(var1, var12, initial);// second.and(var13);
@@ -205,7 +205,7 @@ public class TemporalSlicerUnitTesting {
 
 		// ----------------
 		Formula succFunction = pord.partialFunction(pfirst, plast);
-		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 
 		Formula total = Formula.and(new Formula[] { third1, var6, succFunction, initial2 });
@@ -226,7 +226,7 @@ public class TemporalSlicerUnitTesting {
 	public final void test7() {
 		Formula var1 = succ1.in(Process.product(Process));
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.post()).lone())
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 		Formula first = initial.and(var1);
 
@@ -249,7 +249,7 @@ public class TemporalSlicerUnitTesting {
 
 		Formula var4 = succ.in(Process.product(Process));
 		Formula localFormula2 = pord.totalOrder(Process, pfirst, plast);
-		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial2 = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).next();
 
 		Formula total = initial2.and(localFormula2.and(var4)).and(two);

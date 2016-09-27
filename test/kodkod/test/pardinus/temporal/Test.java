@@ -2,7 +2,7 @@ package kodkod.test.pardinus.temporal;
 
 import kodkod.ast.*;
 import kodkod.engine.TemporalKodkodSolver;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.instance.TemporalBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
@@ -32,7 +32,7 @@ public class Test {
 	public Test() {
 		Formula formula = finalFormula();
 		TemporalBounds bounds = bounds(3);
-		ExtendedOptions options = new ExtendedOptions();
+		BoundedExtendedOptions options = new BoundedExtendedOptions();
 		options.setMaxTraceLength(5);
 		TemporalKodkodSolver solver = new TemporalKodkodSolver(options);
 		solver.solve(formula, bounds);
@@ -61,7 +61,7 @@ public class Test {
 	}
 
 	public Formula skip(Expression p) {
-		return p.join(toSend.post()).eq(p.join(toSend));
+		return p.join(toSend.prime()).eq(p.join(toSend));
 	}
 
 	public Formula step(Expression p) {
@@ -70,8 +70,8 @@ public class Test {
 
 		final Variable id = Variable.unary("id");
 		final Expression prevs = (p.join(succ)).join((pord.transpose()).closure());
-		final Formula f1 = p.join(toSend.post()).eq(from.difference(id));
-		final Formula f2 = p.join(succ).join(toSend.post()).eq(to.union(id.difference(prevs)));
+		final Formula f1 = p.join(toSend.prime()).eq(from.difference(id));
+		final Formula f2 = p.join(succ).join(toSend.prime()).eq(to.union(id.difference(prevs)));
 		return f1.and(f2).forSome(id.oneOf(from));
 	}
 

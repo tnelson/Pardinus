@@ -96,7 +96,7 @@ public class TemporalTranslatorUnitTesting {
 	@Test
 	public final void simple_post_init() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = var3.in(toSend.post().join(var3)).and(var3.in(toSend.join(var3))).forAll(var3.oneOf(Process));
+		Formula initial = var3.in(toSend.prime().join(var3)).and(var3.in(toSend.join(var3))).forAll(var3.oneOf(Process));
 		String result = "(some (init . nextt) && (all p: one Process | ((p in ((toSend . (init . nextt)) . p)) && (p in ((toSend . init) . p)))))";
 
 		Formula f = LTL2FOLTranslator.translate(initial);
@@ -154,7 +154,7 @@ public class TemporalTranslatorUnitTesting {
 	@Test
 	public final void simple_post_always() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = var3.join(toSend.post()).eq(var3.join(toSend)).always();
+		Formula initial = var3.join(toSend.prime()).eq(var3.join(toSend)).always();
 		String result = "(one loop && (all t0: one (init . *nextt) | (some (t0 . nextt) && ((p . (toSend . (t0 . nextt))) = (p . (toSend . t0))))))";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
 
@@ -163,7 +163,7 @@ public class TemporalTranslatorUnitTesting {
 	@Test
 	public final void simple_post_next_always() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = var3.join(toSend.post()).eq(var3.join(toSend)).next().always();
+		Formula initial = var3.join(toSend.prime()).eq(var3.join(toSend)).next().always();
 		String result = "(one loop && (all t0: one (init . *nextt) | (some ((t0 . nextt) . nextt) && (some (t0 . nextt) && ((p . (toSend . ((t0 . nextt) . nextt))) = (p . (toSend . (t0 . nextt))))))))";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
 
@@ -172,7 +172,7 @@ public class TemporalTranslatorUnitTesting {
 	@Test
 	public final void simple_post_eventually() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = var3.join(toSend.post()).eq(var3.join(toSend)).eventually();
+		Formula initial = var3.join(toSend.prime()).eq(var3.join(toSend)).eventually();
 		String result = "(some t0: one (init . *nextt) | (some (t0 . nextt) && ((p . (toSend . (t0 . nextt))) = (p . (toSend . t0)))))";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
 
@@ -197,7 +197,7 @@ public class TemporalTranslatorUnitTesting {
 	@Test
 	public final void simple_release_post() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process));
 		String result = "(all p: one Process | ((one loop && (all t0: one (init . *nextt) | (some (t0 . nextt) && lone (Process . (toSend . (t0 . nextt)))))) || (some t1: one (init . *nextt) | ((((toSend . t1) . p) = ((toSend . t1) . p)) && (all t2: one ((init . *nextt) & (*nextt . t1)) | (some (t2 . nextt) && lone (Process . (toSend . (t2 . nextt)))))))))";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
@@ -315,7 +315,7 @@ public class TemporalTranslatorUnitTesting {
 	@Test
 	public final void simple_until1_always() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = Process.join(toSend).some().until(var3.in(toSend.post().join(var3)).always())
+		Formula initial = Process.join(toSend).some().until(var3.in(toSend.prime().join(var3)).always())
 				.and(var3.in(toSend.join(var3))).forAll(var3.oneOf(Process));
 		String result = "(all p: one Process | ((some t0: one (init . *nextt) | ((one loop && (all t1: one (t0 . *nextt) | (some (t1 . nextt) && (p in ((toSend . (t1 . nextt)) . p))))) && (all t2: one ((init . *nextt) & (^nextt . t0)) | some (Process . (toSend . t2))))) && (p in ((toSend . init) . p))))";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
@@ -323,14 +323,14 @@ public class TemporalTranslatorUnitTesting {
 
 	@Test
 	public final void nested_quantifiers() {
-		Formula initial = ((toSend.join(toSend.post())).post().in(toSend)).eventually();
+		Formula initial = ((toSend.join(toSend.prime())).prime().in(toSend)).eventually();
 		String result = "";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
 	}
 
 	@Test
 	public final void nested_quantifiers2() {
-		Formula initial = ((toSend.join(toSend.post())).post().in(toSend)).and(toSend.post().post().post().in(toSend))
+		Formula initial = ((toSend.join(toSend.prime())).prime().in(toSend)).and(toSend.prime().prime().prime().in(toSend))
 				.eventually();
 		String result = "";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
@@ -338,7 +338,7 @@ public class TemporalTranslatorUnitTesting {
 
 	@Test
 	public final void nested_quantifiers3() {
-		Formula initial = ((toSend.join(toSend.post())).post().in(toSend)).and(toSend.post().post().post().in(toSend));
+		Formula initial = ((toSend.join(toSend.prime())).prime().in(toSend)).and(toSend.prime().prime().prime().in(toSend));
 		String result = "";
 		assertEquals(LTL2FOLTranslator.translate(initial).toString(), result);
 	}

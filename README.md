@@ -7,7 +7,7 @@ This repository includes the source code for the Pardinus solver, an extension t
 * Target-oriented and weighted-target oriented model finding
 * Decomposed parallelized model finding
 * Model finding over temporal relational formulas
-* Support for unbounded relational model finding
+* Support for unbounded relational model finding (planned)
 
 Pardinus is developed at the High-Assurance Software Laboratory ([HASLab](http://haslab.di.uminho.pt)), from INESC TEC and University of Minho, and is led by Alcino Cunha and Nuno Macedo. It is used as a back-end for [Electrum Analyzer](), an extension to the Alloy Analyzer.
 
@@ -22,21 +22,25 @@ Pardinus can be built and run following the instructions from [Kodkod](https://g
 - Eduardo Pessoa, 2015 - 2016
 
 ## History
-### Pardinus (0.3.0) (September 2016) <!--- TRUST Workshop 16 -->
+### Pardinus (0.3.0) (September 2016) 
+<!--- TRUST Workshop 16 -->
 - Initial support for temporal model finding
-- Support for Electrum Analyzer 0.2
+- Support for [Electrum Analyzer 0.2]()
 
-### Pardinus (0.2.0) (April 2016) <!--- ASE16 submission -->
+### Pardinus (0.2.0) (April 2016) 
+<!--- ASE16 submission -->
 - Initial support for decomposed model finding
 - Support for Syrup (parallel Glucose)
 
-### Pardinus (0.1.1) (October 2014) <!--- FASE15 submission -->
+### Pardinus (0.1.1) (October 2014) 
+<!--- FASE15 submission -->
 - Support for weighted target-oriented model finding
 - Merged Alloy Analyzer's Kodkod 2.0 tweaks into Kodkod 2.1
 - Supported scenario exploration operations from [extended Alloy Analyzer](toalloy.jar)
 - Described in the FASE 15 [paper](http://dx.doi.org/10.1007/978-3-662-46675-9_20)
 
-### Pardinus (0.1.0) (October 2013) <!--- FASE14 submission -->
+### Pardinus (0.1.0) (October 2013) 
+<!--- FASE14 submission -->
 - Initial support for target-oriented model finding
 - Extended support to Max-SAT SAT4J and Yices
 - Described in the FASE 14 [paper](http://dx.doi.org/10.1007/978-3-642-54804-8_2)

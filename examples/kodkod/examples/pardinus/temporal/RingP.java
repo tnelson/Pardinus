@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@ package kodkod.examples.pardinus.temporal;
 import kodkod.ast.*;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
@@ -146,8 +146,8 @@ public class RingP implements DModel {
 		final Expression from = p.join(toSend);
 		final Expression to = p.join(succ).join(toSend);
 
-		final Expression fromPost = p.join(toSend.post());/* TEMPORAL OP */
-		final Expression toPost = p.join(succ).join(toSend.post());/*
+		final Expression fromPost = p.join(toSend.prime());/* TEMPORAL OP */
+		final Expression toPost = p.join(succ).join(toSend.prime());/*
 																	 * TEMPORAL
 																	 * OP
 																	 */
@@ -173,7 +173,7 @@ public class RingP implements DModel {
 	 *         <pre>
 	 */
 	public Formula skip(Expression p) {
-		return p.join(toSend).eq(p.join(toSend.post()));
+		return p.join(toSend).eq(p.join(toSend.prime()));
 	}/* TEMPORAL OP */
 
 	/**
@@ -227,7 +227,7 @@ public class RingP implements DModel {
 																			 */
 
 		final Expression comprehension = c.comprehension(p.oneOf(Process));
-		final Formula f2 = elected.post().eq(comprehension).always();/*
+		final Formula f2 = elected.prime().eq(comprehension).always();/*
 																	 * TEMPORAL
 																	 * OP
 																	 */
@@ -421,7 +421,7 @@ public class RingP implements DModel {
 	public static void main(String[] args) {
 		RingP model = new RingP(new String[] { "3", "BADLIVENESS", "STATIC" });
 
-		ExtendedOptions opt = new ExtendedOptions();
+		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		Solver solver = new Solver(opt);

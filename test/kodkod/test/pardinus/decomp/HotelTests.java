@@ -7,7 +7,7 @@ import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
@@ -20,17 +20,17 @@ import org.junit.Test;
 
 public class HotelTests {
 	DecomposedKodkodSolver psolver;
-	ExtendedOptions opt, opt2;
+	BoundedExtendedOptions opt, opt2;
 	
 	@Before 
 	public void method() throws InterruptedException {
 
-		opt = new ExtendedOptions();
+		opt = new BoundedExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
-		opt2 = new ExtendedOptions(opt);
+		opt2 = new BoundedExtendedOptions(opt);
 		opt2.setRunTarget(false);
 		opt2.setReporter(new ConsoleReporter());
 

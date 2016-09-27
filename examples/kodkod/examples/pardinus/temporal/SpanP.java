@@ -1,6 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2014-present, Nuno Macedo
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
@@ -104,8 +104,8 @@ public class SpanP implements DModel {
 	}
 
 	private Formula TRNop(Expression p) {
-		Formula x130 = p.join(level).eq(p.join(level.post())); /* TEMPORAL OP */
-		Formula x136 = p.join(parent).eq(p.join(parent.post()));/* TEMPORAL OP */
+		Formula x130 = p.join(level).eq(p.join(level.prime())); /* TEMPORAL OP */
+		Formula x136 = p.join(parent).eq(p.join(parent.prime()));/* TEMPORAL OP */
 		return x130.and(x136);
 	}
 
@@ -120,17 +120,17 @@ public class SpanP implements DModel {
 	private Formula TRAct(Expression p) {
 		Formula x173 = p.join(level).no();
 		Formula x178 = p.eq(Root);
-		Formula x180 = p.join(level.post()).eq(level_first);/* TEMPORAL OP */
-		Formula x184 = p.join(parent.post()).no();/* TEMPORAL OP */
+		Formula x180 = p.join(level.prime()).eq(level_first);/* TEMPORAL OP */
+		Formula x184 = p.join(parent.prime()).no();/* TEMPORAL OP */
 		Formula x179 = x180.and(x184);
 		Formula x177 = x178.implies(x179);
 		Variable x191 = Variable.unary("TRAct_adjProc");
 		Formula x195 = x191.join(level).some();
-		Formula x198 = p.join(level.post()).eq(x191.join(level).join(level_next));/*
+		Formula x198 = p.join(level.prime()).eq(x191.join(level).join(level_next));/*
 																				 * TEMPORAL
 																				 * OP
 																				 */
-		Formula x202 = p.join(parent.post()).eq(x191);/* TEMPORAL OP */
+		Formula x202 = p.join(parent.prime()).eq(x191);/* TEMPORAL OP */
 		Formula x193 = x195.and(x198).and(x202);
 		Formula x189 = x193.forSome(x191.oneOf(p.join(adjacent)));
 		Formula x187 = x178.not().implies(x189);
@@ -362,7 +362,7 @@ public class SpanP implements DModel {
 	public static void main(String[] args) {
 		SpanP model = new SpanP(new String[] { "2", "V3" });
 
-		ExtendedOptions opt = new ExtendedOptions();
+		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		Solver solver = new Solver(opt);

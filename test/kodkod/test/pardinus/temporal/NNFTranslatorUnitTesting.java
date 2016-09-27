@@ -284,7 +284,7 @@ public class NNFTranslatorUnitTesting {
 	@Test
 	public final void test34() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.post()).lone())
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).not();
 		String result = "(some p: one Process | (!((toSend . p) = (toSend . p)) until !lone (Process . toSend')))";
 		assertEquals(initial.accept(nnf).toString(), result);
@@ -293,7 +293,7 @@ public class NNFTranslatorUnitTesting {
 	@Test
 	public final void test35() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.post()).lone())
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).not();
 		String result = "(some p: one Process | (!((toSend . p) = (toSend . p)) release !lone (Process . toSend')))";
 		assertEquals(initial.accept(nnf).toString(), result);
@@ -302,8 +302,8 @@ public class NNFTranslatorUnitTesting {
 	@Test
 	public final void test36() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).and(Process.join(toSend.post()).one())
-				.until(Process.join(toSend.post()).lone()).forAll(var3.oneOf(Process)).not();
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).and(Process.join(toSend.prime()).one())
+				.until(Process.join(toSend.prime()).lone()).forAll(var3.oneOf(Process)).not();
 		String result = "(some p: one Process | ((!((toSend . p) = (toSend . p)) || !one (Process . toSend')) release !lone (Process . toSend')))";
 		assertEquals(initial.accept(nnf).toString(), result);
 	}
@@ -311,8 +311,8 @@ public class NNFTranslatorUnitTesting {
 	@Test
 	public final void test37() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).and(Process.join(toSend.post()).one())
-				.until(Process.join(toSend.post()).lone()).not();
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).and(Process.join(toSend.prime()).one())
+				.until(Process.join(toSend.prime()).lone()).not();
 		String result = "((!((toSend . p) = (toSend . p)) || !one (Process . toSend')) release !lone (Process . toSend'))";
 		assertEquals(initial.accept(nnf).toString(), result);
 	}
