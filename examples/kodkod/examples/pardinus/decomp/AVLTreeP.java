@@ -29,7 +29,6 @@ public class AVLTreeP implements DModel {
 		V2;
 	}
 
-	
 	public AVLTreeP(String[] args) {
 		Node = Relation.unary("Node");
 		Root = Relation.unary("Root");

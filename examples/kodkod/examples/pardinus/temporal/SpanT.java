@@ -43,9 +43,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class SpanP implements DModel {
+public class SpanT implements DModel {
 
 	final private Relation Root, Process_rem, Level, adjacent;
 	final private Relation level_first, level_next, level_last;
@@ -61,7 +61,7 @@ public class SpanP implements DModel {
 
 	private TemporalFormulaSlicer slicer;
 
-	public SpanP(String args[]) {
+	public SpanT(String args[]) {
 
 		Root = Relation.unary("this/Root");
 		Process_rem = Relation.unary("this/Process remainder");
@@ -360,7 +360,7 @@ public class SpanP implements DModel {
 	}
 
 	public static void main(String[] args) {
-		SpanP model = new SpanP(new String[] { "2", "V3" });
+		SpanT model = new SpanT(new String[] { "2", "V3" });
 
 		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);

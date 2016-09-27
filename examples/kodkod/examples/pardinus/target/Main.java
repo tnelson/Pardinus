@@ -2,6 +2,10 @@ package kodkod.examples.pardinus.target;
 
 import kodkod.engine.satlab.SATFactory;
 
+/**
+ * Target-oriented model finding tests.
+ * @author Tiago Guimarães, Alcino Cunha, Nuno Macedo // [HASLab] target-oriented model finding
+ */
 public class Main {
 
 	public static void main(String[] args) {
@@ -20,9 +24,6 @@ public class Main {
 		System.out.println("targets SAT4J");
 		Graph.graph(30, 3, SATFactory.PMaxSAT4J);
 		Graph.target(SATFactory.PMaxSAT4J);
-		System.out.println("targets Inc. SAT4J");
-		Graph.target(SATFactory.IncrementalSAT4J);
-		
 		
 		//test Cd2Rdbms
 		System.out.println("=============Cd2Rdbms=====================");

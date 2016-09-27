@@ -45,9 +45,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class HotelP implements DModel {
+public class HotelT implements DModel {
 
 	private int n;
 	final private Variant variant;
@@ -62,7 +62,7 @@ public class HotelP implements DModel {
 
 	private TemporalFormulaSlicer slicer;
 
-	public HotelP(String[] args) {
+	public HotelT(String[] args) {
 		this.n = Integer.valueOf(args[0]);
 		this.variant = Variant.valueOf(args[1]);
 
@@ -388,14 +388,14 @@ public class HotelP implements DModel {
 	}
 
 	public static void main(String[] args) {
-		HotelP model = new HotelP(new String[] { "3", "INTERVENES" });
+		HotelT model = new HotelT(new String[] { "3", "INTERVENES" });
 
 		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		TemporalKodkodSolver solver = new TemporalKodkodSolver(opt);
 		TemporalBounds tbmpbound = model.bounds();
-		System.out.println(tbmpbound.toString2());
+		System.out.println(tbmpbound.toString());
 		Solution sol = solver.solveAll(model.finalFormula(), tbmpbound).next();
 		System.out.println(sol);
 		if (sol.sat()) {

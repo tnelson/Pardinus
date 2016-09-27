@@ -13,6 +13,10 @@ import kodkod.engine.config.BoundedExtendedOptions;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.satlab.SATFactory;
 
+/**
+ * Target-oriented model finding example: own grampa.
+ * @author Tiago Guimarães, Alcino Cunha, Nuno Macedo // [HASLab] target-oriented model finding
+ */
 public final class OwnGranpa {
 
 	public static void main(String[] args) throws Exception {
@@ -34,7 +38,7 @@ public final class OwnGranpa {
 
 		Universe universe = new Universe(atomlist);
 		TupleFactory factory = universe.factory();
-		Bounds bounds = new Bounds(universe);
+		TargetBounds bounds = new TargetBounds(universe);
 
 		TupleSet _nxtupper = factory.noneOf(2);
 		bounds.boundExactly(_nxt, _nxtupper);

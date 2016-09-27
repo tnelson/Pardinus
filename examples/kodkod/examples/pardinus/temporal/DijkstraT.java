@@ -43,9 +43,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class DijkstraP implements DModel {
+public class DijkstraT implements DModel {
 	private final Relation Process, Mutex;
 	private final Relation mfirst, mlast, mord;
 
@@ -63,7 +63,7 @@ public class DijkstraP implements DModel {
 	/**
 	 * Creates an instance of Dijkstra example.
 	 */
-	public DijkstraP(String[] args) {
+	public DijkstraT(String[] args) {
 		Process = Relation.unary("Process");
 		Mutex = Relation.unary("Mutex");
 		mfirst = Relation.unary("mfirst");
@@ -419,7 +419,7 @@ public class DijkstraP implements DModel {
 	}
 
 	public static void main(String[] args) {
-		DijkstraP model = new DijkstraP(new String[] { "3", "3", "SAT" });
+		DijkstraT model = new DijkstraT(new String[] { "3", "3", "SAT" });
 
 		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);

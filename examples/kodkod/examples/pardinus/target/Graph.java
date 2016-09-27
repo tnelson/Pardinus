@@ -10,8 +10,7 @@ import kodkod.instance.*;
 
 /**
  * Target-oriented model finding example: graph coloring.
- * @author mac,tmg,nmm
- *
+ * @author Tiago Guimarães, Alcino Cunha, Nuno Macedo // [HASLab] target-oriented model finding
  */
 
 public final class Graph {
@@ -43,7 +42,7 @@ public final class Graph {
 			atoms.add("C" + i);
 		}
 		Universe universe = new Universe(atoms);
-		Bounds bounds = new Bounds(universe);
+		TargetBounds bounds = new TargetBounds(universe);
 		String lastN = "N" + (size-1);
 		String lastC = "C" + (size-1);
 		TupleFactory factory = universe.factory();
@@ -121,7 +120,7 @@ public final class Graph {
 			atoms.add("C" + i);
 		}
 		Universe universe = new Universe(atoms);
-		Bounds bounds = new Bounds(universe);
+		TargetBounds bounds = new TargetBounds(universe);
 		String lastN = "N" + (size-1);
 		String lastC = "C" + (size-1);
 		TupleFactory factory = universe.factory();

@@ -8,9 +8,14 @@ import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
+import kodkod.instance.TargetBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.Universe;
 
+/**
+ * Target-oriented model finding example: symmetry.
+ * @author Tiago Guimarães, Alcino Cunha, Nuno Macedo // [HASLab] target-oriented model finding
+ */
 public final class Simetria {
 	private Relation set;
 	
@@ -24,7 +29,7 @@ public final class Simetria {
 			atoms.add("A" + i);
 		}
 		Universe universe = new Universe(atoms);
-		Bounds bounds = new Bounds(universe);
+		TargetBounds bounds = new TargetBounds(universe);
 		TupleFactory factory = universe.factory();
 		bounds.bound(set,factory.range(factory.tuple("A0"),factory.tuple("A"+(size-1))));
 		bounds.setTarget(set, factory.range(factory.tuple("A0"), factory.tuple("A2")));

@@ -38,9 +38,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Eduardo Pessoa, nmm (pt.uminho.haslab)
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class RingP implements DModel {
+public class RingT implements DModel {
 
 	public enum Variant1 {
 		BADLIVENESS, GOODLIVENESS, GOODSAFETY;
@@ -65,7 +65,7 @@ public class RingP implements DModel {
 
 	private TemporalFormulaSlicer slicer;
 
-	public RingP(String args[]) {
+	public RingT(String args[]) {
 		this.n_ps = Integer.valueOf(args[0]);
 		this.variant = Variant1.valueOf(args[1]);
 		this.variable = Variant2.valueOf(args[2]);
@@ -419,7 +419,7 @@ public class RingP implements DModel {
 	}
 
 	public static void main(String[] args) {
-		RingP model = new RingP(new String[] { "3", "BADLIVENESS", "STATIC" });
+		RingT model = new RingT(new String[] { "3", "BADLIVENESS", "STATIC" });
 
 		BoundedExtendedOptions opt = new BoundedExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
