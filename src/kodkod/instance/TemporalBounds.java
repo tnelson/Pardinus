@@ -104,7 +104,7 @@ public class TemporalBounds extends Bounds {
 	private TemporalBounds(TupleFactory factory, Map<Relation, TupleSet> lower, Map<Relation, TupleSet> upper,
 			List<Map<VarRelation, TupleSet>> lowers, List<Map<VarRelation, TupleSet>> uppers,
 			SparseSequence<TupleSet> intbounds) {
-		super(factory, lower, upper, null, null, intbounds);
+		super(factory, lower, upper, intbounds);
 		this.uppers = uppers;
 		this.lowers = lowers;
 		this.relations = relations(lowers, uppers);

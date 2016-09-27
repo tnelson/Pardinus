@@ -35,6 +35,7 @@ import java.util.Set;
 
 import kodkod.ast.Relation;
 import kodkod.instance.Bounds;
+import kodkod.instance.TargetBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
@@ -138,13 +139,14 @@ public final class SymmetryDetector {
 		for(Relation r : bounds.relations()) {
 			final TupleSet lower = bounds.lowerBound(r);
 			final TupleSet upper = bounds.upperBound(r);
-			final TupleSet target = bounds.target(r); // [HASLab]
 			if (!lower.isEmpty() && lower.size()<upper.size()) { sets.add(lower); }
 			if (!upper.isEmpty()) {	sets.add(upper); }
 
 			// [HASLab] consider targets
-			// TODO: should check if running in target-oriented mode
-			if (target != null && !target.isEmpty()) { sets.add(target); }
+			if (bounds instanceof TargetBounds) {
+				final TupleSet target = ((TargetBounds) bounds).target(r);
+				if (target != null && !target.isEmpty()) { sets.add(target); }
+			}
 		}
 
 		final TupleSet[] sorted = sets.toArray(new TupleSet[sets.size()]);

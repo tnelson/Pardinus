@@ -60,8 +60,6 @@ import kodkod.util.ints.TreeSequence;
  * @specfield intBound: int -> lone TupleSet
  * @specfield lowerBound: relations -> one TupleSet
  * @specfield upperBound: relations -> one TupleSet
- * @specfield targets: relations -> lone TupleSet
- * @specfield weights: relations -> lone Int
  * @invariant all i: intBound.TupleSet | intBound[i].size() = 1 &&
  *            intBound[i].arity() = 1
  * @invariant lowerBound[relations].universe = upperBound[relations].universe =
@@ -70,8 +68,7 @@ import kodkod.util.ints.TreeSequence;
  *            r.arity
  * @invariant all r: relations | lowerBound[r].tuples in upperBound[r].tuples
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
- * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
+ * @modified Nuno Macedo // [HASLab] model finding hierarchy
  **/
 //[HASLab] removed final
 public class Bounds implements Cloneable {
@@ -79,24 +76,18 @@ public class Bounds implements Cloneable {
 	private final Map<Relation, TupleSet> lowers, uppers;
 	private final SparseSequence<TupleSet> intbounds;
 	private final Set<Relation> relations;
-	// [HASLab]
-	private final Map<Relation, TupleSet> targets;
-	private final Map<Relation, Integer> weights;
 	
 	/**
 	 * Constructs a Bounds object with the given factory and mappings.
 	 */
-	// [HASLab] target-oriented parameters, protected constructor
+	// [HASLab] protected constructor
 	protected Bounds(TupleFactory factory, Map<Relation, TupleSet> lower, Map<Relation, TupleSet> upper,
-			Map<Relation, TupleSet> target, Map<Relation, Integer> weights, SparseSequence<TupleSet> intbounds) {
+			 SparseSequence<TupleSet> intbounds) {
 		this.factory = factory;
 		this.lowers = lower;
 		this.uppers = upper;
 		this.intbounds = intbounds;
 		this.relations = relations(lowers, uppers);
-		// [HASLab]
-		this.weights = weights;
-		this.targets = target;
 	}
 
 	/**
@@ -113,9 +104,6 @@ public class Bounds implements Cloneable {
 		this.uppers = new LinkedHashMap<Relation, TupleSet>();
 		this.intbounds = new TreeSequence<TupleSet>();
 		this.relations = relations(lowers, uppers);
-		// [HASLab]
-		this.targets = new LinkedHashMap<Relation, TupleSet>();
-		this.weights = new LinkedHashMap<Relation, Integer>();
 	}
 
 	/**
@@ -264,49 +252,6 @@ public class Bounds implements Cloneable {
 	}
 
 	/**
-	 * Returns the set of tuples that are the target of r. r may be in
-	 * this.relations and not have targets set. If r is not mapped by this, null
-	 * is returned.
-	 * 
-	 * @return r in this.targets.TupleSet => targets[r], null
-	 */
-	// [HASLab]
-	public TupleSet target(Relation r) {
-		return targets.get(r);
-	}
-
-	/**
-	 * Returns a map view of this.targets. The returned map is not modifiable.
-	 * 
-	 * @return a map view of this.targets
-	 */
-	// [HASLab]
-	public Map<Relation, TupleSet> targets() {
-		return unmodifiableMap(targets);
-	}
-
-	/**
-	 * Returns the weight of r for TO runs. r may be in this.targets and not
-	 * have weights set. If r is not mapped by this, null is returned.
-	 * 
-	 * @return r in this.weights.Int => weights[r], null
-	 */
-	// [HASLab]
-	public Integer weight(Relation r) {
-		return weights.get(r);
-	}
-
-	/**
-	 * Returns a map view of this.weights. The returned map is not modifiable.
-	 * 
-	 * @return a map view of this.weights
-	 */
-	// [HASLab]
-	public Map<Relation, Integer> weights() {
-		return unmodifiableMap(weights);
-	}
-
-	/**
 	 * @throws IllegalArgumentException
 	 *             arity != bound.arity
 	 * @throws IllegalArgumentException
@@ -414,61 +359,12 @@ public class Bounds implements Cloneable {
 	}
 
 	/**
-	 * Sets the target for the given relation.
-	 * 
-	 * @requires target in this.upperBound[r] && this.lowerBound[r] in target
-	 *           && target.arity = r.arity && target.universe = this.universe &&
-	 *           r in this.relations
-	 * @ensures this.relations' = this.relations
-	 * 		    this.lowerBound' = this.lowerBound
-	 * 			this.upperBound' = this.upperBound
-	 * 			this.targets' = this.targets ++ r->target
-	 * 			this.weights' = this.weights
-	 * @throws NullPointerException r = null || target = null
-	 * @throws IllegalArgumentException 
-	 * 		target.arity != r.arity || upper.universe != this.universe || r !in this.relations || 
-	 * 		target !in this.upperBound[r] || this.lowerBound[r] !in target      
-	 */
-	// [HASLab]
-	public void setTarget(Relation r, TupleSet target) {
-		if (!relations().contains(r))
-			throw new IllegalArgumentException("r !in this.relations");
-		if (!upperBounds().get(r).containsAll(target))
-			throw new IllegalArgumentException("target.tuples !in upper.tuples");
-		if (!target.containsAll(lowerBounds().get(r)))
-			throw new IllegalArgumentException("lower.tuples !in target.tuples");
-		targets.put(r, target.clone().unmodifiableView());
-	}
-
-	/**
-	 * Sets the weight for the given relation.
-	 * 
-	 * @requires r in this.relations
-	 * @ensures this.relations' = this.relations
-	 * 		    this.lowerBound' = this.lowerBound
-	 * 			this.upperBound' = this.upperBound
-	 * 			this.targets' = this.targets
-	 * 			this.weights' = this.weights ++ r->weight
-	 * @throws NullPointerException r = null || weight = null
-	 * @throws IllegalArgumentException r !in this.relations
-	 */
-	// [HASLab]
-	public void setWeight(Relation r, Integer weight) {
-		// TODO: test range of weight
-		if (!relations().contains(r))
-			throw new IllegalArgumentException("r !in this.relations");
-		weights.put(r, weight);
-	}
-
-	/**
 	 * Returns an unmodifiable view of this Bounds object.
 	 * 
 	 * @return an unmodifiable view of his Bounds object.
 	 */
-	// [HASLab] target-oriented parameters
 	public Bounds unmodifiableView() {
-		return new Bounds(factory, unmodifiableMap(lowers), unmodifiableMap(uppers), unmodifiableMap(targets),
-				unmodifiableMap(weights), unmodifiableSequence(intbounds));
+		return new Bounds(factory, unmodifiableMap(lowers), unmodifiableMap(uppers), unmodifiableSequence(intbounds));
 	}
 
 	/**
@@ -476,12 +372,10 @@ public class Bounds implements Cloneable {
 	 * 
 	 * @return a deep (modifiable) copy of this Bounds object.
 	 */
-	// [HASLab] target-oriented parameters
 	public Bounds clone() {
 		try {
 			return new Bounds(universe().factory(), new LinkedHashMap<Relation, TupleSet>(lowers),
-					new LinkedHashMap<Relation, TupleSet>(uppers), new LinkedHashMap<Relation, TupleSet>(targets),
-					new LinkedHashMap<Relation, Integer>(weights), intbounds.clone());
+					new LinkedHashMap<Relation, TupleSet>(uppers), intbounds.clone());
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
 		}

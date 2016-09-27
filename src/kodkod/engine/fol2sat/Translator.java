@@ -50,12 +50,12 @@ import kodkod.engine.bool.BooleanValue;
 import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
 import kodkod.engine.config.Options;
-import kodkod.engine.config.TargetOptions;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
+import kodkod.instance.TargetBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntSet;
@@ -613,8 +613,8 @@ public final class Translator {
 			final Map<Relation, IntSet> varUsage = interpreter.vars();
 			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula)circuit, maxPrimaryVar, options.solver());
 			// [HASLab] add the targets to the SAT problem
-			if (options instanceof TargetOptions<?> && ((TargetOptions<?>) options).runTarget()) 
-				doTargets(bounds, interpreter, cnf);
+			if (bounds instanceof TargetBounds) 
+				doTargets((TargetBounds) bounds, interpreter, cnf);
 
 			interpreter = null; // enable gc
 
@@ -629,7 +629,7 @@ public final class Translator {
 	 * @param cnf
 	 */
 	// [HASLab]
-	private void doTargets(Bounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
+	private void doTargets(TargetBounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
 		for (Relation r : bounds.targets().keySet()) {
 			Integer w = bounds.weight(r);
 			if (w == null)

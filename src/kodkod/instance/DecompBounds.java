@@ -35,24 +35,27 @@ import kodkod.util.ints.SparseSequence;
 public class DecompBounds extends Bounds {
 
 	public Bounds bounds2;
-	
+
 	public DecompBounds(Bounds bounds1, Bounds bounds2) {
-		super(bounds1.universe().factory(),bounds1.lowerBounds(),bounds1.upperBounds(),bounds1.targets(),bounds1.weights(),bounds1.intBounds());
+		super(bounds1.universe().factory(), bounds1.lowerBounds(), bounds1
+				.upperBounds(), bounds1.intBounds());
 		this.bounds2 = bounds2;
 	}
-	
-	public DecompBounds(TupleFactory factory, LinkedHashMap<Relation, TupleSet> lowers,
-			LinkedHashMap<Relation, TupleSet> uppers, LinkedHashMap<Relation, TupleSet> targets,
-			LinkedHashMap<Relation, Integer> weights, SparseSequence<TupleSet> ints, Bounds bounds2) {
-		super(factory,lowers,uppers,targets,weights,ints);
+
+	public DecompBounds(TupleFactory factory,
+			LinkedHashMap<Relation, TupleSet> lowers,
+			LinkedHashMap<Relation, TupleSet> uppers,
+			SparseSequence<TupleSet> ints, Bounds bounds2) {
+		super(factory, lowers, uppers, ints);
 		this.bounds2 = bounds2;
 	}
 
 	public DecompBounds clone() {
 		try {
-			return new DecompBounds(universe().factory(), new LinkedHashMap<Relation, TupleSet>(lowerBounds()),
-					new LinkedHashMap<Relation, TupleSet>(upperBounds()), new LinkedHashMap<Relation, TupleSet>(targets()),
-					new LinkedHashMap<Relation, Integer>(weights()), intBounds().clone(), bounds2.clone());
+			return new DecompBounds(universe().factory(),
+					new LinkedHashMap<Relation, TupleSet>(lowerBounds()),
+					new LinkedHashMap<Relation, TupleSet>(upperBounds()),
+					intBounds().clone(), bounds2.clone());
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
 		}
