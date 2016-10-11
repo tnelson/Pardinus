@@ -1,4 +1,4 @@
-package kodkod.test.pardinus;
+package kodkod.test.pardinus.decomp;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,7 +32,7 @@ import kodkod.examples.pardinus.decomp.PeaceableP;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP;
 import kodkod.examples.pardinus.decomp.RingP;
 import kodkod.examples.pardinus.decomp.SpanP;
-import kodkod.test.pardinus.RunTests.Solvers;
+import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 public final class RunConfigStats {
 

@@ -2,10 +2,19 @@ package kodkod.test.pardinus.decomp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import kodkod.ast.Decl;
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
+import kodkod.engine.bool.BooleanFormula;
 import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.decomp.DModel;
@@ -14,6 +23,8 @@ import kodkod.examples.pardinus.decomp.RedBlackTreeP;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant1;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant2;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
+import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +46,53 @@ public class RedBlackTests {
 		opt2.setTargetMode(TMode.DEFAULT);
 		opt2.setSolver(SATFactory.PMaxSAT4J);
 		opt.setConfigOptions(opt2);
+		Reporter rep = new Reporter() {
+			@Override
+			public void translatingToCNF(BooleanFormula circuit) {
+			}
+			
+			@Override
+			public void translatingToBoolean(Formula formula, Bounds bounds) {
+				System.out.println("to bool: " + formula.toString() + ", "
+						+ bounds);
+			}
+			
+			@Override
+			public void solvingCNF(int primaryVars, int vars, int clauses) {
+			}
+			
+			@Override
+			public void skolemizing(Decl decl, Relation skolem,
+					List<Decl> context) {
+			}
+			
+			@Override
+			public void optimizingBoundsAndFormula() {
+			}
+			
+			@Override
+			public void generatingSBP() {
+			}
+			
+			@Override
+			public void detectingSymmetries(Bounds bounds) {
+			}
+			
+			@Override
+			public void detectedSymmetries(Set<IntSet> parts) {
+				System.out.println("symmetry: " + parts.toString());
+			}
+			
+			@Override
+			public void solvingConfig(Solution solution) {
+				System.out.println(solution.outcome()+": "
+						+ solution.instance().relationTuples().toString());
+			}
+		};
+		opt.setReporter(rep);
+		opt2.setReporter(rep);
 		psolver = new DecomposedKodkodSolver(opt);
+		
 		
 	}
 	
@@ -56,7 +113,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 5);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 5);
@@ -79,7 +136,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 14);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 14);
@@ -90,19 +147,20 @@ public class RedBlackTests {
 		int n = 5;
 		Variant1 v1 = Variant1.COUNTER;
 		Variant2 v2 = Variant2.V1;
-		
+
 		String[] args = new String[]{n+"",v1.name(),v2.name()};
 		DModel model = new RedBlackTreeP(args);
 
-		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setBitwidth(model.getBitwidth()+2);
+		opt2.setBitwidth(model.getBitwidth()+2);
 		
 		final Bounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		System.out.println(solution.instance());
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 42);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 42);
@@ -125,7 +183,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 132);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 132);
@@ -148,7 +206,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 5);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 5);
@@ -171,7 +229,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 14);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 14);
@@ -194,7 +252,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 42);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 42);
@@ -217,7 +275,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 132);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 132);
@@ -241,7 +299,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 5);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 6);
@@ -266,7 +324,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 14);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 14);
@@ -291,7 +349,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 42);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 42);
@@ -316,7 +374,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 132);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 132);
@@ -341,7 +399,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 5);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 6);
@@ -366,7 +424,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 14);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 14);
@@ -391,7 +449,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 42);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 42);
@@ -416,7 +474,7 @@ public class RedBlackTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 132);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 132);

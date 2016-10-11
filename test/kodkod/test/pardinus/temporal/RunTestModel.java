@@ -17,9 +17,10 @@ import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.decomp.DProblem;
 import kodkod.engine.satlab.SATFactory;
-import kodkod.examples.pardinus.temporal.DijkstraP;
+import kodkod.examples.pardinus.temporal.DijkstraT;
 import kodkod.instance.Bounds;
-import kodkod.test.pardinus.RunTests.Solvers;
+import kodkod.instance.DecompBounds;
+import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 
 public final class RunTestModel {
@@ -70,7 +71,7 @@ public final class RunTestModel {
 
 
 		String dijkstraArgs[] = {"4","5","10","SAT"};
-		DijkstraP dijkstraP = new DijkstraP(dijkstraArgs);
+		DijkstraT dijkstraP = new DijkstraT(dijkstraArgs);
 
 		//String spanArgs[] = {"4","10","V3"};
 		//SpanP spanP = new SpanP(spanArgs);
@@ -143,18 +144,18 @@ public final class RunTestModel {
 			break;
 		case PARALLEL:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1, f2, b1, b2);
+			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 			break;
 		case HYBRID:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1, f2, b1, b2);
+			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 			break;
 		case INCREMENTAL:
 			solution = go_incremental(b1, b2, f1, f2);
 			break;
 		case EXHAUSTIVE:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1, f2, b1, b2);
+			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 			break;
 		default:
 			break;

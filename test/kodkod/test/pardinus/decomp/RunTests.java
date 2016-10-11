@@ -1,4 +1,4 @@
-package kodkod.test.pardinus;
+package kodkod.test.pardinus.decomp;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,7 +42,7 @@ public final class RunTests {
 	static DProblem psolution = null;
 	static Solution solution = null;
 
-	static int tries, threads = 4;
+	static int tries, threads = 2;
 
 	static private StringBuilder log = new StringBuilder();
 	static private StringBuilder header = new StringBuilder();
@@ -363,8 +363,30 @@ public final class RunTests {
 
 		RingP.Variant2 s = RingP.Variant2.VARIABLE;
 //		for (RingP.Variant2 s : RingP.Variant2.values())
-			for (RingP.Variant1 v : RingP.Variant1.values()) {
-//				RingP.Variant1 v = RingP.Variant1.BADLIVENESS;
+//			for (RingP.Variant1 v : RingP.Variant1.values()) {
+				RingP.Variant1 v = RingP.Variant1.BADLIVENESS;
+				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
+				log.append(header);
+				flush();
+				for (int i = 1; i <= 12; i ++)  {
+					log.append(i+"\t"); flush();
+					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
+					log.append("\n"); flush();
+				}
+				log.append("\n");
+				
+				v = RingP.Variant1.GOODLIVENESS;
+				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
+				log.append(header);
+				flush();
+				for (int i = 1; i <= 4; i ++)  {
+					log.append(i+"\t"); flush();
+					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
+					log.append("\n"); flush();
+				}
+				log.append("\n");
+				
+				v = RingP.Variant1.GOODSAFETY;
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
@@ -374,7 +396,7 @@ public final class RunTests {
 					log.append("\n"); flush();
 				}
 				log.append("\n");
-			}
+//			}
 
 	}
 
@@ -412,7 +434,7 @@ public final class RunTests {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 11; i <= 11; i ++)  {
+			for (int i = 2; i <= 11; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -555,7 +577,7 @@ public final class RunTests {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 5; i <= 5; i ++)  {
+			for (int i = 1; i <= 7; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();

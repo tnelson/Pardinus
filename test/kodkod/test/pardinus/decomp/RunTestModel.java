@@ -1,4 +1,4 @@
-package kodkod.test.pardinus;
+package kodkod.test.pardinus.decomp;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,7 +18,8 @@ import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
-import kodkod.test.pardinus.RunTests.Solvers;
+import kodkod.instance.DecompBounds;
+import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 public final class RunTestModel {
 
@@ -123,18 +124,18 @@ public final class RunTestModel {
 			break;
 		case PARALLEL:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1, f2, b1, b2);
+			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 			break;
 		case HYBRID:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1, f2, b1, b2);
+			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 			break;
 		case INCREMENTAL:
 			solution = go_incremental(b1, b2, f1, f2);
 			break;
 		case EXHAUSTIVE:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1, f2, b1, b2);
+			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 			break;
 		default:
 			break;

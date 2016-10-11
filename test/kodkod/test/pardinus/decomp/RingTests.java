@@ -2,9 +2,17 @@ package kodkod.test.pardinus.decomp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+import java.util.Set;
+
+import kodkod.ast.Decl;
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
+import kodkod.engine.bool.BooleanFormula;
+import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
@@ -12,6 +20,8 @@ import kodkod.examples.pardinus.decomp.RingP;
 import kodkod.examples.pardinus.decomp.RingP.Variant1;
 import kodkod.examples.pardinus.decomp.RingP.Variant2;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
+import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +38,51 @@ public class RingTests {
 		psolver.options().setSolver(SATFactory.Glucose);
 		psolver.options().setDecomposedMode(DMode.PARALLEL);
 		psolver.options().setThreads(4);
+		
+		Reporter rep = new Reporter() {
+			@Override
+			public void translatingToCNF(BooleanFormula circuit) {
+			}
+			
+			@Override
+			public void translatingToBoolean(Formula formula, Bounds bounds) {
+				System.out.println("to bool: " + formula.toString() + ", "
+						+ bounds);
+			}
+			
+			@Override
+			public void solvingCNF(int primaryVars, int vars, int clauses) {
+			}
+			
+			@Override
+			public void skolemizing(Decl decl, Relation skolem,
+					List<Decl> context) {
+			}
+			
+			@Override
+			public void optimizingBoundsAndFormula() {
+			}
+			
+			@Override
+			public void generatingSBP() {
+			}
+			
+			@Override
+			public void detectingSymmetries(Bounds bounds) {
+			}
+			
+			@Override
+			public void detectedSymmetries(Set<IntSet> parts) {
+				System.out.println("symmetry: " + parts.toString());
+			}
+			
+			@Override
+			public void solvingConfig(Solution solution) {
+				System.out.println(solution.outcome()+": "
+						+ solution.instance().relationTuples().toString());
+			}
+		};
+		psolver.options().setReporter(rep);
 		
 	}
 	
@@ -48,7 +103,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() >= 200);
 	}
@@ -70,7 +125,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() >= 200);
 }
@@ -93,7 +148,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 8);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 8);
@@ -116,7 +171,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 8);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 8);
@@ -139,7 +194,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 24);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 24);
@@ -162,7 +217,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 24);
 		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 24);
@@ -186,7 +241,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 //		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 415);
 //		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 415);
@@ -211,7 +266,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 415);
 		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 415);
@@ -237,7 +292,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 8);
@@ -261,7 +316,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 8);
@@ -285,7 +340,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 24);
@@ -309,7 +364,7 @@ public class RingTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1, f2, b1, b2);
+		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
 		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
 		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 24);
