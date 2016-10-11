@@ -1,5 +1,5 @@
 /* 
- * Kodkod -- Copyright (c) 2005-2012, Emina Torlak
+ * Kodkod -- Copyright (c) 2005-present, Emina Torlak
  * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,24 +20,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.engine;
+package kodkod.engine.decomp;
 
 import java.util.Iterator;
 
+import kodkod.ast.BinaryFormula;
 import kodkod.ast.Formula;
+import kodkod.ast.NaryFormula;
+import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.config.DecomposedOptions;
-import kodkod.instance.DecompBounds;
 
 /**
- * 
- * @author Nuno Macedo // [HASLab] model finding hierarchy
- *
+ * @author Nuno Macedo // [HASLab] decomposed model finding
  */
-public interface DecomposedSolver<B extends DecompBounds, O extends DecomposedOptions<?>> extends PardinusSolver<B,O> { 
+public class DecompFormulaSlicer {
 
-	@Override
-	public Solution solve(Formula formula, B bounds);
+	public final Formula f1;
+	public final Formula f2;
 	
-	public Iterator<Solution> solveAll(Formula formula, B bounds);
+	public DecompFormulaSlicer(Formula formula, DecomposedOptions<?> options) {
+		// TODO: allow different slicing modes on options
+		if (formula instanceof BinaryFormula && ((BinaryFormula) formula).op() == FormulaOperator.AND) {
+			f1 = ((BinaryFormula) formula).left();
+			f2 = ((BinaryFormula) formula).right();
+		} else if (formula instanceof NaryFormula && ((NaryFormula) formula).op() == FormulaOperator.AND) {
+			Iterator<Formula> it = ((NaryFormula) formula).iterator();
+			f1 = it.next();
+			Formula aux = Formula.TRUE;
+			while (it.hasNext())
+				aux = aux.and(it.next());
+			f2 = aux;
+		} else if (formula == Formula.FALSE){
+			f1 = formula;
+			f2 = Formula.FALSE;
+		} else {
+			f1 = formula;
+			f2 = formula;
+		}
 
+	}
 }

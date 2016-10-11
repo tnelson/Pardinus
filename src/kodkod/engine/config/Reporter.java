@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import java.util.Set;
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.instance.Bounds;
 import kodkod.util.ints.IntSet;
@@ -46,6 +48,7 @@ import kodkod.util.ints.IntSet;
  * Some of these stages may not be executed, depending on the 
  * {@link Options options} used for analysis.  
  * @author Emina Torlak
+ * @modified Nuno Macedo // [HASLab] decomposed model finding
  */
 public interface Reporter {
 
@@ -86,7 +89,6 @@ public interface Reporter {
 	 */
 	public void generatingSBP();
 
-	
 	/**
 	 * Reports that the given (optimized)
 	 * circuit is being translated to CNF (stage 5 of the analysis).
@@ -99,4 +101,8 @@ public interface Reporter {
 	 * a sat solver (stage 7 of the analysis).
 	 */
 	public void solvingCNF(int primaryVars, int vars, int clauses);
+
+	// [HASLab]
+	public void solvingConfig(Solution solution);
+
 }

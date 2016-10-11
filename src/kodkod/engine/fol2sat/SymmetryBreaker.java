@@ -25,15 +25,20 @@ package kodkod.engine.fol2sat;
 import static kodkod.ast.RelationPredicate.Name.ACYCLIC;
 import static kodkod.ast.RelationPredicate.Name.TOTAL_ORDERING;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -67,7 +72,7 @@ import kodkod.util.ints.Ints;
  * @modified Nuno Macedo // [HASLab] decomposed model finding
  */
 final class SymmetryBreaker {
-	private final Bounds aux; // [HASLab]
+	private final Bounds relevant_bounds; // [HASLab]
 	private final Bounds bounds;
 	private final Set<IntSet> symmetries;
 	private final int usize;
@@ -83,22 +88,18 @@ final class SymmetryBreaker {
 	 * @ensures this.bounds' = bounds && this.symmetries' = SymmetryDetector.partition(bounds) && no this.broken'
 	 **/
 	SymmetryBreaker(Bounds bounds, Reporter reporter) {
-		Bounds b3;
-		if (bounds instanceof DecompBounds) { // [HASLab]
-			b3 = bounds.clone();
-			aux = ((DecompBounds) bounds).bounds2.clone();
-			for (Relation r : aux.relations()) {
-				b3.bound(r, aux.lowerBound(r), aux.upperBound(r));
-			}
-		} else {
-			b3 = bounds;
-			aux = new Bounds(bounds.universe());
-		}
-		
-		this.bounds = b3; // [HASLab]
-		this.usize = b3.universe().size();
-		reporter.detectingSymmetries(b3);
-		this.symmetries = SymmetryDetector.partition(b3);
+		// [HASLab] if the bounds are for a decomposed problem, the bounds of the 
+		// amalgamated problem should be considered when calculating symmetries.
+		// [HASLab] the original bounds are used to set the relevant relations,
+		// discarding irrelevant detected symmetries.
+		relevant_bounds = bounds;
+		if (bounds instanceof DecompBounds) 
+			bounds = ((DecompBounds) bounds).amalgamated();
+
+		this.bounds = bounds; 
+		this.usize = bounds.universe().size();
+		reporter.detectingSymmetries(bounds);
+		this.symmetries = SymmetryDetector.partition(bounds);
 		reporter.detectedSymmetries(symmetries);
 	}
 	
@@ -195,18 +196,58 @@ final class SymmetryBreaker {
 					RelationParts rparts = rIter.next();
 					Relation r = rparts.relation;
 					
-					if (aux.relations().contains(r)) continue; // [HASLab]
-					if (!rparts.representatives.contains(sym.min())) continue;  // r does not range over sym
+					// [HASLab] ignore symmetries that are not considered relevant (should 
+					// only occur on decomposed problems).
+					if (!relevant_bounds.relations().contains(r)) 
+						continue; 
+					
+					if (!rparts.representatives.contains(sym.min())) 
+						continue;  // r does not range over sym
 					
 					BooleanMatrix m = interpreter.interpret(r);
+					SortedMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanConstant>, Entry<Integer, BooleanConstant>>> aux = new TreeMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanConstant>, Entry<Integer, BooleanConstant>>>();
 					for(IndexedEntry<BooleanValue> entry : m) {
 						int permIndex = permutation(r.arity(), entry.index(), prevIndex, curIndex);
 						BooleanValue permValue = m.get(permIndex);
-						if (permIndex==entry.index() || atSameIndex(original, permValue, permuted, entry.value()))
+//						if (entry.value() instanceof BooleanConstant) {
+//							original.add(BooleanConstant.FALSE);
+//							permuted.add(BooleanConstant.TRUE);
+//							continue;
+//						}
+						// [HASLab]
+						if (permIndex==entry.index() || (!(permValue instanceof BooleanConstant) && atSameIndex(original, permValue, permuted, entry.value())))
 							continue;
 						
-						original.add(entry.value());
-						permuted.add(permValue);			
+						if (!(permValue instanceof BooleanConstant)) {
+							original.add(entry.value());
+							permuted.add(permValue);			
+						} else {
+							// [HASLab] when dealing with decomposed problems, symmetries may 
+							// refer to variables that are already bound, but must still be 
+							// considered when defining the predicate.
+							// [HASLab] this only relevant if entry != perm, in which case
+							// entry was the larger element, thus False => True
+							if (((BooleanConstant) entry.value()) != ((BooleanConstant) permValue)) {
+								Entry<Integer, BooleanConstant> e1 = new AbstractMap.SimpleEntry<Integer, BooleanConstant>(entry.index(),(BooleanConstant) entry.value());
+								Entry<Integer, BooleanConstant> e2 = new AbstractMap.SimpleEntry<Integer, BooleanConstant>(permIndex,(BooleanConstant) permValue);
+								aux.put(entry.index()>permIndex?permIndex:entry.index(), new AbstractMap.SimpleEntry<Entry<Integer, BooleanConstant>, Entry<Integer, BooleanConstant>>(e1,e2));
+
+							} 
+						}
+						
+						
+					}
+					for (Integer index : aux.keySet()) {
+						Entry<Integer, BooleanConstant> e1 = aux.get(index).getKey();
+						Entry<Integer, BooleanConstant> e2 = aux.get(index).getValue();
+						
+						if (e1.getKey() > e2.getKey() && !(e2.getValue() == BooleanConstant.TRUE)) {
+							original.add(e2.getValue());
+							permuted.add(e1.getValue());
+						} else if (e1.getKey() < e2.getKey() && !(e1.getValue() == BooleanConstant.TRUE)) {
+							original.add(e1.getValue());
+							permuted.add(e2.getValue());
+						}
 					}
 				}
 								
@@ -217,6 +258,7 @@ final class SymmetryBreaker {
 			}
 		}
 		symmetries.clear(); // no symmetries left to break (this is conservative)
+		
 		return factory.accumulate(sbp);
 	}
 	
@@ -247,12 +289,27 @@ final class SymmetryBreaker {
 		}
 		final Comparator<RelationParts> cmp = new Comparator<RelationParts>() {
 			public int compare(RelationParts o1, RelationParts o2) {
+				// [HASLab]
+//				if (bounds instanceof DecompBounds && !((DecompBounds) bounds).integrated) {
+				if (isToSolve(relevant_bounds, o1.relation) && !isToSolve(relevant_bounds, o2.relation))
+					return -1;
+				else if (isToSolve(relevant_bounds, o2.relation) && !isToSolve(relevant_bounds, o1.relation))
+					return 1;
+//				}
 				final int acmp = o1.relation.arity() - o2.relation.arity();
 				return acmp!=0 ? acmp : String.valueOf(o1.relation.name()).compareTo(String.valueOf(o2.relation.name()));
 			}
 		};
-		Collections.sort(relParts, cmp);
+		Collections.sort(relParts, cmp); // [HASLab]
 		return relParts;
+	}
+	
+	private boolean isToSolve(Bounds bounds, Relation r) {
+		if ((bounds instanceof DecompBounds) && (((DecompBounds) bounds).integrated))
+			return bounds.relations().contains(r) && bounds.lowerBound(r).size() == bounds.upperBound(r).size();
+		else 
+			return bounds.relations().contains(r);
+		
 	}
 	
 	/**
@@ -366,10 +423,18 @@ final class SymmetryBreaker {
 			
 			if (aggressive) {
 				bounds.bound(relation, bounds.universe().factory().setOf(2, reduced));
+				// [HASLab]
+				if (relevant_bounds instanceof DecompBounds) 
+					relevant_bounds.bound(relation, bounds.universe().factory().setOf(2, reduced));
+
 				return Formula.TRUE;
 			} else {
 				final Relation acyclicConst = Relation.binary("SYM_BREAK_CONST_"+acyclic.relation().name());
 				bounds.boundExactly(acyclicConst, bounds.universe().factory().setOf(2, reduced));
+				// [HASLab]
+				if (relevant_bounds instanceof DecompBounds) 
+					relevant_bounds.boundExactly(acyclicConst, bounds.universe().factory().setOf(2, reduced));
+				
 				return relation.in(acyclicConst);
 			}
 		}
@@ -428,6 +493,13 @@ final class SymmetryBreaker {
 					bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
 					bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
 					bounds.boundExactly(relation, f.setOf(2, ordering));
+					// [HASLab]
+					if (relevant_bounds instanceof DecompBounds) {
+						relevant_bounds.boundExactly(first, f.setOf(f.tuple(1, domain.min())));
+						relevant_bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
+						relevant_bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
+						relevant_bounds.boundExactly(relation, f.setOf(2, ordering));
+					}
 					
 					return Formula.TRUE;
 					
@@ -440,7 +512,13 @@ final class SymmetryBreaker {
 					bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
 					bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
 					bounds.boundExactly(relConst, f.setOf(2, ordering));
-					
+					// [HASLab]
+					if (relevant_bounds instanceof DecompBounds) {
+						relevant_bounds.boundExactly(firstConst, f.setOf(f.tuple(1, domain.min())));
+						relevant_bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
+						relevant_bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
+						relevant_bounds.boundExactly(relConst, f.setOf(2, ordering));
+					}
 					return Formula.and(first.eq(firstConst), last.eq(lastConst), ordered.eq(ordConst), relation.eq(relConst));
 //					return first.eq(firstConst).and(last.eq(lastConst)).and( ordered.eq(ordConst)).and( relation.eq(relConst));
 				}

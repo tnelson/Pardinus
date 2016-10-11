@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@ import java.util.Set;
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.instance.Bounds;
 import kodkod.util.ints.IntSet;
@@ -36,6 +38,7 @@ import kodkod.util.ints.IntSet;
  * A skeleton implementation of the {@link Reporter} interface.
  * The default implementation for each method has an empty body.s
  * @author Emina Torlak
+ * @modified Nuno Macedo // [HASLab] decomposed model finding
  */
 public abstract class AbstractReporter implements Reporter {
 
@@ -87,4 +90,7 @@ public abstract class AbstractReporter implements Reporter {
 	 */
 	public void translatingToCNF(BooleanFormula circuit) {}
 
+	// [HASLab]
+	public void solvingConfig(Solution solution) {}
+	
 }

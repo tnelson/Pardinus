@@ -49,6 +49,7 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
@@ -76,6 +77,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * @specfield options: Options 
  * @author Emina Torlak 
  * @modified Nuno Macedo // [HASLab] model finding hierarchy
+ * @modified Nuno Macedo // [HASLab] decomposed model finding
  * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 // [HASLab] solver hierarchy
@@ -195,7 +197,6 @@ public final class Solver implements KodkodSolver<Bounds,Options> {
 		
 	    if (Options.isDebug()) flushFormula(formula, bounds); // [AM] 	    
 
-		// [HASLab] this was commented, why?
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		
@@ -385,37 +386,68 @@ public final class Solver implements KodkodSolver<Bounds,Options> {
 		private Solution nextTrivialSolution() {
 			final Translation.Whole transl = this.translation;
 			
+			if (transl.bounds() instanceof DecompBounds && ((DecompBounds) transl.bounds()).integrated && !((DecompBounds) transl.bounds()).trivial_config) 
+				return nextNonTrivialSolution();
+				
 			final Solution sol = trivial(transl, translTime); // this also frees up solver resources, if unsat
-			
 			if (sol.instance()==null) {
 				translation = null; // unsat, no more solutions
 			} else {
 				trivial++;
 				
 				final Bounds bounds = transl.bounds();
-				final Bounds newBounds = bounds.clone();
+				final Bounds newBounds;  
+				// [HASLab] proper decomposed clone
+				if (bounds instanceof DecompBounds) 
+					newBounds= ((DecompBounds) bounds).clone();
+				else 
+					newBounds= bounds.clone();
 				final List<Formula> changes = new ArrayList<Formula>();
 
 				for(Relation r : bounds.relations()) {
 					final TupleSet lower = bounds.lowerBound(r); 
-					
-					if (lower != bounds.upperBound(r)) { // r may change
+					// [HASLab] if integrated problem, then fixed bounds (from the configuration) must also be part 
+					// of the disjunction (i.e., some a || some r || some b || some s).
+					// [HASLab] TODO: ambiguous if the integrated problem had fixed bounds itself; does it affect soundness??
+					if (lower != bounds.upperBound(r) || (bounds instanceof DecompBounds && ((DecompBounds) bounds).integrated)) { 
+						// r may change
 						if (lower.isEmpty()) { 
 							changes.add(r.some());
 						} else {
 							final Relation rmodel = Relation.nary(r.name()+"_"+trivial, r.arity());
 							newBounds.boundExactly(rmodel, lower);	
 							changes.add(r.eq(rmodel).not());
+
 						}
 					}
 				}
 				
+				// [HASLab] if dealing with decomposed problems at the configuration stage, every
+				// variable must occur in the formula, otherwise it will be disregarded by the 
+				// symmetry breaker.
+				List<Formula> changes2 = new ArrayList<Formula>();
+				if (bounds instanceof DecompBounds && !((DecompBounds) bounds).integrated)  {
+					for(Relation r : ((DecompBounds) bounds).amalgamated.relations()) {
+						final TupleSet lower = ((DecompBounds) bounds).amalgamated.lowerBound(r); 
+						if (lower.isEmpty()) { 
+							changes2.add(r.some());
+						} else {
+							final Relation rmodel = Relation.nary(r.name()+"_"+trivial, r.arity());
+							((DecompBounds) newBounds).amalgamated.boundExactly(rmodel, lower);	
+							changes2.add(r.eq(rmodel).not());
+						}
+					}
+				}
+				else changes2 = changes;
+//				
 				// nothing can change => there can be no more solutions (besides the current trivial one).
 				// note that transl.formula simplifies to the constant true with respect to 
 				// transl.bounds, and that newBounds is a superset of transl.bounds.
 				// as a result, finding the next instance, if any, for transl.formula.and(Formula.or(changes)) 
 				// with respect to newBounds is equivalent to finding the next instance of Formula.or(changes) alone.
-				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes);
+				// [HASLab] a disjunction between configuration and integrated problems is returned; should
+				// only differ for configuration problems.
+				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes).and(Formula.or(changes2));
 				
 				final long startTransl = System.currentTimeMillis();
 				translation = Translator.translate(formula, newBounds, transl.options());

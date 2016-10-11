@@ -49,11 +49,14 @@ import kodkod.engine.bool.BooleanMatrix;
 import kodkod.engine.bool.BooleanValue;
 import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
+import kodkod.engine.config.DecomposedOptions;
 import kodkod.engine.config.Options;
+import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 import kodkod.instance.Instance;
 import kodkod.instance.TargetBounds;
 import kodkod.instance.TupleSet;
@@ -66,6 +69,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * respect to given {@link Bounds bounds} (or {@link Instance instances}) and {@link Options}.
  * 
  * @author Emina Torlak 
+ * @modified Nuno Macedo // [HASLab] decomposed model finding
  * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 public final class Translator {
@@ -418,13 +422,31 @@ public final class Translator {
 	 * be skolemized, or it can be skolemized but this.options.skolemDepth < 0
 	 */
 	private Translation translate()   {
-		final AnnotatedNode<Formula> annotated = logging ? annotateRoots(originalFormula) : annotate(originalFormula);
+		final AnnotatedNode<Formula> annotated_ = logging ? annotateRoots(originalFormula) : annotate(originalFormula);
 		// Remove bindings for unused relations/ints if this is not an incremental translation.  If it is
 		// an incremental translation, we have to keep all bindings since they may be used later on.
+		Formula actual = null;
+		
 		if (!incremental) {
-			bounds.relations().retainAll(annotated.relations());
-			if (!annotated.usesInts()) bounds.ints().clear();
+			bounds.relations().retainAll(annotated_.relations());
+			if (!annotated_.usesInts()) bounds.ints().clear();
+			// [HASLab] if dealing with a decomposed problem, split the formula and 
+			// remove spurious variables;
+			if (bounds instanceof DecompBounds) {
+				DecompFormulaSlicer slicer = new DecompFormulaSlicer(originalFormula, (DecomposedOptions<?>) options);
+				DecompBounds dbnd = (DecompBounds) bounds;
+				if (!dbnd.integrated)
+					actual = slicer.f1;
+				else 
+					actual = slicer.f2;
+				dbnd.amalgamated.relations().retainAll(annotated_.relations());
+				if (!annotated_.usesInts()) dbnd.amalgamated.ints().clear();
+			} else {
+				actual = originalFormula;
+			}
 		}
+		final AnnotatedNode<Formula> annotated = logging ? annotateRoots(actual) : annotate(actual);
+
 		// Detect symmetries.
 		final SymmetryBreaker breaker = new SymmetryBreaker(bounds, options.reporter());
 		// Optimize formula and bounds by using symmetry information to tighten bounds and 
@@ -568,19 +590,23 @@ public final class Translator {
 			final TranslationLogger logger = options.logTranslation()==1 ? new MemoryLogger(annotated, bounds) : new FileLogger(annotated, bounds);
 			final BooleanAccumulator circuit = FOL2BoolTranslator.translate(annotated, interpreter, logger);
 			final TranslationLog log = logger.log();
-			if (circuit.isShortCircuited()) {
-				return trivial(circuit.op().shortCircuit(), log);
+			if (circuit.isShortCircuited()) { 
+				return trivial(circuit.op().shortCircuit(), log, annotated.relations());
 			} else if (circuit.size()==0) { 
-				return trivial(circuit.op().identity(), log);
+				return trivial(circuit.op().identity(), log, annotated.relations());
 			}
 			circuit.add(breaker.generateSBP(interpreter, options));
 			return toCNF((BooleanFormula)factory.accumulate(circuit), interpreter, log);
 		} else {
 			final BooleanValue circuit = (BooleanValue)FOL2BoolTranslator.translate(annotated, interpreter);
-			if (circuit.op()==Operator.CONST) {
-				return trivial((BooleanConstant)circuit, null);
+			if (circuit.op()==Operator.CONST) { 
+				return trivial((BooleanConstant)circuit, null, bounds.relations());
 			} 
-			return toCNF((BooleanFormula)factory.and(circuit, breaker.generateSBP(interpreter, options)), interpreter, null);
+			BooleanValue x = factory.and(circuit, breaker.generateSBP(interpreter, options)); // [HASLab]
+//			if (x.op()==Operator.CONST) { 
+//				return trivial((BooleanConstant)x, null, bounds.relations());
+//			} 
+			return toCNF((BooleanFormula)x, interpreter, null);
 		}
 	}
 	
@@ -657,6 +683,7 @@ public final class Translator {
 	 * Returns a whole or incremental translation, depending on the value of {@code this.incremental}, 
 	 * using the given trivial outcome, {@linkplain #completeBounds() completeBounds()}, {@code this.options}, 
 	 * and the given log.
+	 * @param set 
 	 * @ensures {@link #completeBounds()}
 	 * @return some t: Translation | 
 	 *           t.bounds = completeBounds() && t.originalBounds = this.originalBounds &&
@@ -665,7 +692,7 @@ public final class Translator {
 	 *           (outcome.booleanValue() => no t.solver.clauses else (one t.solver.clauses && no t.solver.clauses.literals))      
 	 **/
 	@SuppressWarnings("unchecked")
-	private Translation trivial(BooleanConstant outcome, TranslationLog log) {
+	private Translation trivial(BooleanConstant outcome, TranslationLog log, Set<Relation> set) {
 		if (incremental) {
 			return new Translation.Incremental(completeBounds(), options, 
 					SymmetryDetector.partition(originalBounds), 
@@ -674,7 +701,7 @@ public final class Translator {
 		} else {
 			return new Translation.Whole(completeBounds(), options, 
 						Bool2CNFTranslator.translate(outcome, options.solver()), 
-						(Map<Relation,IntSet>)Collections.EMPTY_MAP, 0, log);
+						Collections.EMPTY_MAP, 0, log);
 		}
 	}
 	
@@ -714,6 +741,16 @@ public final class Translator {
 				optimized.bound(r, original.lowerBound(r), original.upperBound(r));
 			}
 		}
+		
+		// [HASLab] consider the remainder bounds in decomposed problems.
+		if (optimized instanceof DecompBounds) {
+			for(Relation r : ((DecompBounds)original).amalgamated.relations()) {
+				if (!((DecompBounds)optimized).amalgamated.relations().contains(r)) {
+					((DecompBounds)optimized).amalgamated.bound(r, ((DecompBounds)original).amalgamated.lowerBound(r), ((DecompBounds)original).amalgamated.upperBound(r));
+				}
+			}
+		}
+		
 		return optimized;
 	}
 }

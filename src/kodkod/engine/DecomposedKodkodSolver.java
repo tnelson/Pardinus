@@ -33,7 +33,7 @@ import kodkod.engine.config.Options;
 import kodkod.engine.decomp.DProblemExecutor;
 import kodkod.engine.decomp.DProblemExecutorImpl;
 import kodkod.engine.decomp.StatsExecutor;
-import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 
 /**
  * A computational engine for solving relational satisfiability problems. Such a
@@ -49,7 +49,7 @@ import kodkod.instance.Bounds;
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  *
  */
-public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,BoundedExtendedOptions>, BoundedSolver<Bounds,BoundedExtendedOptions> {
+public class DecomposedKodkodSolver implements DecomposedSolver<DecompBounds,BoundedExtendedOptions>, BoundedSolver<DecompBounds,BoundedExtendedOptions> {
 
 	/** the regular Kodkod solver used in the parallelization */
 	final private Solver solver1, solver2;
@@ -105,18 +105,25 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,BoundedEx
 	 *             if the solving process is interrupted.
 	 */
 	@Override
-	public Solution solve(Formula f1, Formula f2, Bounds b1, Bounds b2) throws InterruptedException {
+	public Solution solve(Formula formula, DecompBounds bounds) {
 		if (!options.configOptions().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
+
 		if (options.decomposedMode() == DMode.EXHAUSTIVE)
-			executor = new StatsExecutor(f1, f2, b1, b2, solver1, solver2, options.threads());
+			executor = new StatsExecutor(formula, bounds, solver1, solver2, options.threads(), options.reporter());
 		else if (options.decomposedMode() == DMode.HYBRID)
-			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver1, solver2, options.threads(), true);
+			executor = new DProblemExecutorImpl(formula, bounds, solver1, solver2, options.threads(), true, options.reporter());
 		else
-			executor = new DProblemExecutorImpl(f1, f2, b1, b2, solver1, solver2, options.threads(), false);
+			executor = new DProblemExecutorImpl(formula, bounds, solver1, solver2, options.threads(), false, options.reporter());
 		executor.start();
-		Solution sol = executor.waitUntil();
-		executor.terminate();
+		Solution sol = null;
+		try {
+			sol = executor.waitUntil();
+			executor.terminate();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return sol;
 	}
 
@@ -135,29 +142,15 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,BoundedEx
 	public void free() {}
 
 	@Override
-	public Solution solve(Formula formula, Bounds bounds) {
-		Solution s = null;
-		try {
-			s = solve(formula, Formula.TRUE, bounds, new Bounds(bounds.universe()));
-		} catch (InterruptedException e) {
-			// Should throw AbortedException
-			e.printStackTrace();
-		}
-		return s;
-	}
-
-	@Override
 	public BoundedExtendedOptions options() {
 		return options;
 	}
 
 	@Override
-	public Iterator<Solution> solveAll(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2) {
-		// [HASLab] this was commented, why?
+	public Iterator<Solution> solveAll(Formula formula, DecompBounds bounds) {
 		if (!options.solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
-		
-		return new DSolutionIterator(formula1, formula2, bounds1, bounds2, options, solver1, solver2); 
+		return new DSolutionIterator(formula, bounds, options, solver1, solver2); 
 	}
 	
 	private static class DSolutionIterator implements Iterator<Solution> {
@@ -166,13 +159,13 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,BoundedEx
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		DSolutionIterator(Formula formula1, Formula formula2, Bounds bounds1, Bounds bounds2, BoundedExtendedOptions options, Solver solver1, Solver solver2) {
+		DSolutionIterator(Formula formula, DecompBounds bounds, BoundedExtendedOptions options, Solver solver1, Solver solver2) {
 			if (options.decomposedMode() == DMode.EXHAUSTIVE)
-				executor = new StatsExecutor(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads());
+				executor = new StatsExecutor(formula, bounds, solver1, solver2, options.threads(), options.reporter());
 			else if (options.decomposedMode() == DMode.HYBRID)
-				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads(), true);
+				executor = new DProblemExecutorImpl(formula, bounds, solver1, solver2, options.threads(), true, options.reporter());
 			else
-				executor = new DProblemExecutorImpl(formula1, formula2, bounds1, bounds2, solver1, solver2, options.threads(), false);
+				executor = new DProblemExecutorImpl(formula, bounds, solver1, solver2, options.threads(), false, options.reporter());
 			executor.start();
 		}
 		
@@ -180,7 +173,15 @@ public class DecomposedKodkodSolver implements DecomposedSolver<Bounds,BoundedEx
 		 * Returns true if there is another solution.
 		 * @see java.util.Iterator#hasNext()
 		 */
-		public boolean hasNext() {  return !executor.executor.isTerminated(); }
+		public boolean hasNext() {
+			try {
+				return executor.hasNext();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return false;
+		}
 		
 		/**
 		 * Returns the next solution if any.

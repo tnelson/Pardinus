@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import kodkod.ast.Formula;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 
 
 /**
@@ -42,10 +42,10 @@ import kodkod.instance.Bounds;
 abstract public class DProblemExecutor extends Thread {
 
 	/** the decomposed problem bounds */
-	protected final Bounds bounds1, bounds2;
+	protected final DecompBounds bounds;
 	
 	/** the decomposed problem formulas */
-	protected final Formula formula1, formula2;
+	protected final Formula formula;
 
 	/** the underlying regular solver */
 	protected final Solver solver1, solver2;
@@ -69,11 +69,9 @@ abstract public class DProblemExecutor extends Thread {
 	 * @param solver the solver that will solve the integrated problems.
 	 * @param n the number of parallel solver threads.
 	 */
-	public DProblemExecutor(DMonitor rep, Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver1, Solver solver2, int n) {
-		this.formula1 = f1;
-		this.formula2 = f2;
-		this.bounds1 = b1; 
-		this.bounds2 = b2; 
+	public DProblemExecutor(DMonitor rep, Formula formula, DecompBounds bounds, Solver solver1, Solver solver2, int n) {
+		this.formula = formula;
+		this.bounds = bounds; 
 		this.solver1 = solver1;
 		this.solver2 = solver2;
 		this.executor = Executors.newFixedThreadPool(n);
@@ -98,6 +96,13 @@ abstract public class DProblemExecutor extends Thread {
 	 * @throws InterruptedException if interrupted while waiting.
 	 */
 	public abstract Solution waitUntil() throws InterruptedException;
+
+	/**
+	 * 
+	 * @return
+	 * @throws InterruptedException
+	 */
+	public abstract boolean hasNext() throws InterruptedException;
 
 	/**
 	 * Terminates the thread executor and the running solvers.

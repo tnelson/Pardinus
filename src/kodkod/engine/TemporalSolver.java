@@ -42,6 +42,7 @@ import kodkod.instance.TemporalBounds;
  */
 public interface TemporalSolver<O extends TemporalOptions<?>> extends PardinusSolver<TemporalBounds, O> {
 
+	@Override
 	public Solution solve(Formula formula, TemporalBounds bounds);
 
 	public Iterator<Solution> solveAll(Formula formula, TemporalBounds bounds);

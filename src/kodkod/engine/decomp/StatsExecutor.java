@@ -31,7 +31,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import kodkod.ast.Formula;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 
 /**
  * A concretization of a decomposed problem executor designed to retrieve the
@@ -51,11 +53,12 @@ public class StatsExecutor extends DProblemExecutor {
 
 	/**
 	 * Constructs an implementation of a decomposed problem solver to retrieve the problem's stats.
+	 * @param rep 
 	 *
 	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
-	public StatsExecutor(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver1, Solver solver2, int n) {
-		super(new DMonitorImpl(), f1, f2, b1, b2, solver1, solver2, n);
+	public StatsExecutor(Formula formula, DecompBounds bounds, Solver solver1, Solver solver2, int n, Reporter rep) {
+		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
 	}
 
 	/**
@@ -79,7 +82,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 */
 	@Override
 	public void run() {
-		Iterator<Solution> configs = solver1.solveAll(formula1, bounds1);
+		Iterator<Solution> configs = solver1.solveAll(formula, bounds);
 		while (configs.hasNext() && !executor.isShutdown()) {
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();
@@ -109,6 +112,12 @@ public class StatsExecutor extends DProblemExecutor {
 		boolean timeout = executor.awaitTermination(3, TimeUnit.HOURS);
 		monitor.done(timeout);
 		return null;
+	}
+
+	@Override
+	public boolean hasNext() throws InterruptedException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

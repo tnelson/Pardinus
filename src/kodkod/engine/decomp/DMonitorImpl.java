@@ -27,6 +27,7 @@ import java.util.List;
 
 import kodkod.engine.Solution;
 import kodkod.engine.Statistics;
+import kodkod.engine.config.Reporter;
 
 /**
  * 
@@ -45,7 +46,12 @@ public class DMonitorImpl implements DMonitor {
 	protected final List<DProblem> solutions = new ArrayList<DProblem>();
 	private int configs = 0;
 	private boolean amalgamated_solution = false;
+	private final Reporter rep;
 
+	public DMonitorImpl(Reporter rep) {
+		this.rep = rep;
+	}
+	
 	/* (non-Javadoc)
 	 * @see kodkod.pardinus.DReporterI#newConfig(kodkod.engine.Solution)
 	 */
@@ -57,6 +63,7 @@ public class DMonitorImpl implements DMonitor {
 		}
 		config_times += config.stats().solvingTime();
 		configs ++;
+		rep.solvingConfig(config);
 	}
 
 	/* (non-Javadoc)

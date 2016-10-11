@@ -31,10 +31,11 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
-import kodkod.ast.Relation;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
+import kodkod.instance.DecompBounds;
 
 /**
  * A concretization of a decomposed problem executor designed to retrieve a
@@ -46,14 +47,14 @@ import kodkod.instance.Bounds;
  */
 public class DProblemExecutorImpl extends DProblemExecutor {
 
-	/** the queue of solvers to be launched */
-	private final List<DProblem> problem_queue = new ArrayList<DProblem>();
+	Solution buffer;
 
 	/** the number of effectively running solvers */
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(200);
+	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(
+			200);
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -62,26 +63,34 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	private DProblem amalgamated_running;
 
 	/**
-	 * Constructs an implementation of a decomposed problem solver with support for hybrid model.
+	 * Constructs an implementation of a decomposed problem solver with support
+	 * for hybrid model.
+	 * 
+	 * @param rep
+	 *            TODO
 	 *
-	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
+	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula,
+	 *      Formula, Bounds, Bounds, Solver, int)
 	 */
-	public DProblemExecutorImpl(Formula f1, Formula f2, Bounds b1, Bounds b2, Solver solver1, Solver solver2, int n, boolean it) {
-		super(new DMonitorImpl(), f1, f2, b1, b2, solver1, solver2, n);
+	public DProblemExecutorImpl(Formula formula, DecompBounds bounds,
+			Solver solver1, Solver solver2, int n, boolean it, Reporter rep) {
+		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
 		this.hybrid = it;
 	}
 
 	/**
 	 * Registers the solution and shutdowns the executor if the caller is the
 	 * amalgamated problem, SAT integrated problem or last integrated problem.
-	 * @return 
+	 * 
+	 * @return
 	 * 
 	 * @see kodkod.engine.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
 	public void end(DProblem sol) {
-//		System.out.println(sol.getSolution().outcome()+"");
-		if (Thread.currentThread().isInterrupted()) return;
+		// System.out.println(sol.getSolution().outcome()+"");
+		if (Thread.currentThread().isInterrupted())
+			return;
 		try {
 			// if the amalgamated terminates...
 			if (!(sol instanceof IProblem)) {
@@ -98,7 +107,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 					amalgamated_running.start();
 				} else
 					running.incrementAndGet();
-			} 
+			}
 			// if an integrated terminates...
 			else {
 				// if it is sat...
@@ -106,24 +115,25 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 					// store the sat solution
 					solution_queue.put(sol.getSolution());
 					// terminate the amalgamated problem
-					if (amalgamated_running != null && amalgamated_running.isAlive()) {
+					if (amalgamated_running != null
+							&& amalgamated_running.isAlive()) {
 						amalgamated_running.interrupt();
 						running.decrementAndGet();
 					}
 					// iterate and launch
 					executor.execute(sol.next());
-				} 
+				}
 				// if it is unsat...
 				else {
 					running.decrementAndGet();
 					// if last running integrated...
 					if (monitor.isConfigsDone() && running.get() == 0) {
 						// store the unsat solution
-						solution_queue.put(sol.getSolution()); 
+						solution_queue.put(sol.getSolution());
 						// terminate the executor
 						if (!executor.isTerminated())
 							executor.shutdownNow();
-					} 
+					}
 				}
 			}
 			monitor.newSolution(sol);
@@ -135,7 +145,6 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 
 	}
 
-
 	/**
 	 * Launches the parallel finders to solve the decomposed problem until the
 	 * partial problem is unsatisfiable. The processes are handled by an
@@ -146,29 +155,32 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 */
 	@Override
 	public void run() {
+		List<DProblem> problem_queue = new ArrayList<DProblem>();
+
 		// if hybrid mode, launch the amalgamated problem
 		if (hybrid) {
-			DProblem amalg = new DProblem(this, formula1.and(formula2), merge(bounds1, bounds2));
+			DProblem amalg = new DProblem(this, formula, bounds.amalgamated().clone());
 			amalg.setPriority(MAX_PRIORITY);
 			executor.execute(amalg);
 			running.incrementAndGet();
 			amalgamated_running = amalg;
 		}
 
-		Iterator<Solution> configs = solver1.solveAll(formula1, bounds1);
+		Iterator<Solution> configs = solver1.solveAll(formula, bounds);
 		boolean first = true;
 
 		while (configs.hasNext() && !executor.isShutdown()) {
 			// collects a batch of configurations
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();
-//				System.out.println("Config: "+config.instance());
 				if (config.unsat()) {
 					// when there is no configuration no solver will ever
 					// callback so it must be terminated here
 					if (first)
 						try {
+							terminate();
 							solution_queue.put(config);
+
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -184,7 +196,9 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			}
 			// launches a batch of integrated problems
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
-				DProblem problem = problem_queue.remove(0/*problem_queue.size()-1*/);
+				DProblem problem = problem_queue.remove(0/*
+														 * problem_queue.size()-1
+														 */);
 				try {
 					executor.execute(problem);
 				} catch (RejectedExecutionException e) {
@@ -193,37 +207,37 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 				running.incrementAndGet();
 			}
 		}
-//		executor.shutdown();
 		monitor.configsDone();
 	}
 
 	/**
-	 * Waits until a single solutions is added to the solution queue.
+	 * Waits until a single solution is added to the solution queue. If the
+	 * solution is unsat, terminates the process.
 	 * 
 	 * @see kodkod.engine.decomp.DProblemExecutor#waitUntil()
 	 */
 	@Override
 	public Solution waitUntil() throws InterruptedException {
-		Solution sol = solution_queue.take();
+		Solution sol;
+		if (buffer != null) {
+			sol = buffer;
+			buffer = null;
+		} else {
+			sol = solution_queue.take();
+		}
 		monitor.done(false);
+		// if UNSAT, terminate execution
+		if (!sol.sat())
+			terminate();
 		return sol;
 	}
 
-	/**
-	 * Merges two problem bounds into a single one.
-	 * 
-	 * @param b1
-	 *            the base bounds.
-	 * @param b2
-	 *            the bounds to be merged.
-	 * @return the merged bounds.
-	 */
-	private static Bounds merge(Bounds b1, Bounds b2) {
-		Bounds b3 = b1.clone();
-		for (Relation r : b2.relations()) {
-			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
-		}
-		return b3;
+	public boolean hasNext() throws InterruptedException {
+		if (buffer != null) return true;
+		if (executor.isTerminated())
+			return !solution_queue.isEmpty();
+		buffer = solution_queue.take();
+		return true;
 	}
 
 }
