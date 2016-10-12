@@ -19,6 +19,7 @@ import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.DecompBounds;
+import kodkod.instance.RelativeBounds;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 public final class RunTestModel {
@@ -231,12 +232,12 @@ public final class RunTestModel {
 	 * @return
 	 */
 	private static Solution go_batch(Bounds b1, Bounds b2, Formula f1, Formula f2) {
-		Bounds b3 = b1.clone();
-		for (Relation r : b2.relations()) {
-			b3.bound(r, b2.lowerBound(r), b2.upperBound(r));
-		}
+		DecompBounds x = new DecompBounds(b1, b2);
+		RelativeBounds y = new RelativeBounds(x.amalgamated());
+		y.resolve();
+
 		Solver solver = new Solver(psolver.options());
-		return solver.solve(f1.and(f2), b3);
+		return solver.solve(f1.and(f2), y);
 	}
 
 	private static Solution go_incremental(Bounds b1, Bounds b2, Formula f1, Formula f2) {
