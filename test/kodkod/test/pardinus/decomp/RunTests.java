@@ -42,7 +42,7 @@ public final class RunTests {
 	static DProblem psolution = null;
 	static Solution solution = null;
 
-	static int tries, threads = 2;
+	static int tries, threads = 4;
 
 	static private StringBuilder log = new StringBuilder();
 	static private StringBuilder header = new StringBuilder();
