@@ -27,7 +27,6 @@ import java.util.Map;
 
 import kodkod.ast.Relation;
 import kodkod.engine.Solution;
-import kodkod.test.pardinus.decomp.RelativeBounds;
 import kodkod.util.ints.SparseSequence;
 
 /**
