@@ -36,6 +36,7 @@ import kodkod.engine.Solver;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
 import kodkod.instance.DecompBounds;
+import kodkod.instance.RelativeBounds;
 
 /**
  * A concretization of a decomposed problem executor designed to retrieve a
@@ -159,7 +160,9 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 
 		// if hybrid mode, launch the amalgamated problem
 		if (hybrid) {
-			DProblem amalg = new DProblem(this, formula, bounds.amalgamated().clone());
+			RelativeBounds amalgbounds = new RelativeBounds(bounds.amalgamated());
+			amalgbounds.resolve();
+			DProblem amalg = new DProblem(this, formula, amalgbounds);
 			amalg.setPriority(MAX_PRIORITY);
 			executor.execute(amalg);
 			running.incrementAndGet();

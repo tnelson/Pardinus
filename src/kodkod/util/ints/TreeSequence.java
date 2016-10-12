@@ -44,6 +44,12 @@ public final class TreeSequence<V> extends AbstractSparseSequence<V>
 		size = 0;
 	}
 
+	// [HASLab]
+	public TreeSequence(SparseSequence<? extends V> s) {
+		this();
+		this.putAll(s);
+	}
+	
 	/**
 	 * Copy constructor.
 	 * @ensures creatres a deep copy of the original

@@ -58,6 +58,7 @@ import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
 import kodkod.instance.DecompBounds;
 import kodkod.instance.Instance;
+import kodkod.instance.RelativeBounds;
 import kodkod.instance.TargetBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
@@ -435,6 +436,8 @@ public final class Translator {
 			if (bounds instanceof DecompBounds) {
 				DecompFormulaSlicer slicer = new DecompFormulaSlicer(originalFormula, (DecomposedOptions<?>) options);
 				DecompBounds dbnd = (DecompBounds) bounds;
+				if (dbnd.amalgamated instanceof RelativeBounds)
+					((RelativeBounds) dbnd.amalgamated).resolve();
 				if (!dbnd.integrated)
 					actual = slicer.f1;
 				else 

@@ -38,16 +38,21 @@ public class DecompBounds extends Bounds {
 
 	public final boolean integrated;
 
-	public final Bounds amalgamated;
+	public final RelativeBounds amalgamated;
 
 	public boolean trivial_config;
 
 	public DecompBounds(Bounds bounds1, Bounds bounds2) {
 		super(bounds1.universe().factory(), bounds1.lowerBounds(), bounds1
 				.upperBounds(), bounds1.intBounds());
-		this.amalgamated = bounds1.clone();
+		this.amalgamated = new RelativeBounds(bounds1);
 		for (Relation r : bounds2.relations())
 			this.amalgamated.bound(r, bounds2.lowerBound(r), bounds2.upperBound(r));
+		if (bounds2 instanceof RelativeBounds)
+			for (Relation r : ((RelativeBounds) bounds2).relrelations())
+				this.amalgamated.bound(r, ((RelativeBounds) bounds2).lowerRelBounds(r), ((RelativeBounds) bounds2).upperRelBounds(r));
+
+		
 		integrated = false;
 		trivial_config = false;
 	}
@@ -56,7 +61,7 @@ public class DecompBounds extends Bounds {
 			Map<Relation, TupleSet> uppers, SparseSequence<TupleSet> ints,
 			Bounds bounds2, boolean integrated, boolean trivial_config) {
 		super(factory, lowers, uppers, ints);
-		this.amalgamated = bounds2;
+		this.amalgamated = new RelativeBounds (bounds2);
 		this.trivial_config = trivial_config;
 		this.integrated = integrated;
 	}
@@ -66,7 +71,7 @@ public class DecompBounds extends Bounds {
 			return new DecompBounds(universe().factory(),
 					new LinkedHashMap<Relation, TupleSet>(lowerBounds()),
 					new LinkedHashMap<Relation, TupleSet>(upperBounds()),
-					intBounds().clone(), amalgamated.clone(), integrated, trivial_config);
+					intBounds().clone(), new RelativeBounds(amalgamated), integrated, trivial_config);
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
 		}
@@ -80,8 +85,8 @@ public class DecompBounds extends Bounds {
 		if (integrated)
 			throw new IllegalAccessError("Can't");
 		
-		Bounds integrated = amalgamated.clone();
-
+		RelativeBounds integrated = new RelativeBounds(amalgamated);
+		
 		if (sol.stats().primaryVariables() == 0) trivial_config = true;
 		
 		for (Relation e : this.relations()) {
@@ -94,9 +99,7 @@ public class DecompBounds extends Bounds {
 		for (Integer i : sol.instance().ints().toArray())
 			integrated.boundExactly(i, integrated.universe().factory().setOf(i));
 
-		if (integrated instanceof RelativeBounds) {
-			((RelativeBounds) integrated).resolve();
-		}
+		integrated.resolve();
 		
 		DecompBounds res = null;
 		try {

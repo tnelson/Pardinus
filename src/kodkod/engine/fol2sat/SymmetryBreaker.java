@@ -205,7 +205,7 @@ final class SymmetryBreaker {
 						continue;  // r does not range over sym
 					
 					BooleanMatrix m = interpreter.interpret(r);
-					SortedMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanConstant>, Entry<Integer, BooleanConstant>>> aux = new TreeMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanConstant>, Entry<Integer, BooleanConstant>>>();
+					SortedMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>> aux = new TreeMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>>();
 					for(IndexedEntry<BooleanValue> entry : m) {
 						int permIndex = permutation(r.arity(), entry.index(), prevIndex, curIndex);
 						BooleanValue permValue = m.get(permIndex);
@@ -227,10 +227,10 @@ final class SymmetryBreaker {
 							// considered when defining the predicate.
 							// [HASLab] this only relevant if entry != perm, in which case
 							// entry was the larger element, thus False => True
-							if (((BooleanConstant) entry.value()) != ((BooleanConstant) permValue)) {
-								Entry<Integer, BooleanConstant> e1 = new AbstractMap.SimpleEntry<Integer, BooleanConstant>(entry.index(),(BooleanConstant) entry.value());
-								Entry<Integer, BooleanConstant> e2 = new AbstractMap.SimpleEntry<Integer, BooleanConstant>(permIndex,(BooleanConstant) permValue);
-								aux.put(entry.index()>permIndex?permIndex:entry.index(), new AbstractMap.SimpleEntry<Entry<Integer, BooleanConstant>, Entry<Integer, BooleanConstant>>(e1,e2));
+							if ((entry.value()) != (permValue)) {
+								Entry<Integer, BooleanValue> e1 = new AbstractMap.SimpleEntry<Integer, BooleanValue>(entry.index(),entry.value());
+								Entry<Integer, BooleanValue> e2 = new AbstractMap.SimpleEntry<Integer, BooleanValue>(permIndex,permValue);
+								aux.put(entry.index()>permIndex?permIndex:entry.index(), new AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>(e1,e2));
 
 							} 
 						}
@@ -238,8 +238,8 @@ final class SymmetryBreaker {
 						
 					}
 					for (Integer index : aux.keySet()) {
-						Entry<Integer, BooleanConstant> e1 = aux.get(index).getKey();
-						Entry<Integer, BooleanConstant> e2 = aux.get(index).getValue();
+						Entry<Integer, BooleanValue> e1 = aux.get(index).getKey();
+						Entry<Integer, BooleanValue> e2 = aux.get(index).getValue();
 						
 						if (e1.getKey() > e2.getKey() && !(e2.getValue() == BooleanConstant.TRUE)) {
 							original.add(e2.getValue());
