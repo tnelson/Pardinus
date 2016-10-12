@@ -9,6 +9,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.RelativeBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -350,26 +351,50 @@ public final class RingP implements DModel {
 		return b;
 	}
 	
+//	public Bounds bounds2() {
+//		final TupleFactory f = u.factory();
+//		final Bounds b = new Bounds(u);
+//		
+//		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+ (n_ps-1)));
+//		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+(n_ts-1)));
+//		
+//		if (variable == Variant2.VARIABLE) {
+//			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id"+ (n_ps-1)));
+//			b.bound(toSend, pb.product(ib).product(tb));
+//		}
+//		else			
+//			b.bound(toSend, pb.product(pb).product(tb));
+//		
+//		b.bound(elected, pb.product(tb));
+//		
+//		b.bound(Time, tb);
+//		b.bound(tord, tb.product(tb));
+//		b.bound(tfirst, tb);
+//		b.bound(tlast, tb);
+//		
+//		return b;
+//	}
+	
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final RelativeBounds b = new RelativeBounds(u);
 		
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+ (n_ps-1)));
 		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+(n_ts-1)));
 		
 		if (variable == Variant2.VARIABLE) {
 			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id"+ (n_ps-1)));
-			b.bound(toSend, pb.product(ib).product(tb));
+			b.bound(toSend,  new Relation[]{Process,Id,Time});
 		}
 		else			
-			b.bound(toSend, pb.product(pb).product(tb));
+			b.bound(toSend,  new Relation[]{Process,Process,Time});
 		
-		b.bound(elected, pb.product(tb));
+		b.bound(elected,  new Relation[]{Process,Time});
 		
 		b.bound(Time, tb);
-		b.bound(tord, tb.product(tb));
-		b.bound(tfirst, tb);
-		b.bound(tlast, tb);
+		b.bound(tord, new Relation[]{Time, Time});
+		b.bound(tfirst, new Relation[]{Time});
+		b.bound(tlast, new Relation[]{Time});
 		
 		return b;
 	}
