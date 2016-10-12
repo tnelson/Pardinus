@@ -113,7 +113,7 @@ abstract public class DProblemExecutor extends Thread {
 		if (!executor.isShutdown())
 			executor.shutdownNow();
 		if (!executor.isTerminated()) {
-			boolean timeout = executor.awaitTermination(1, TimeUnit.HOURS);
+			boolean timeout = executor.awaitTermination(0, TimeUnit.HOURS);
 			monitor.terminated(timeout);
 		}
 	}

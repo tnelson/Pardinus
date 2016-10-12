@@ -27,6 +27,7 @@ import java.util.Map;
 
 import kodkod.ast.Relation;
 import kodkod.engine.Solution;
+import kodkod.test.pardinus.decomp.RelativeBounds;
 import kodkod.util.ints.SparseSequence;
 
 /**
@@ -94,6 +95,10 @@ public class DecompBounds extends Bounds {
 		for (Integer i : sol.instance().ints().toArray())
 			integrated.boundExactly(i, integrated.universe().factory().setOf(i));
 
+		if (integrated instanceof RelativeBounds) {
+			((RelativeBounds) integrated).resolve();
+		}
+		
 		DecompBounds res = null;
 		try {
 			res = new DecompBounds(universe().factory(),

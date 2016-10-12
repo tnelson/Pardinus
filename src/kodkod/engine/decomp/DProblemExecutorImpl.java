@@ -88,7 +88,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 */
 	@Override
 	public void end(DProblem sol) {
-		// System.out.println(sol.getSolution().outcome()+"");
+		 System.out.println(sol.getSolution().outcome()+"");
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
