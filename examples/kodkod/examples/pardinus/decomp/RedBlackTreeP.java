@@ -26,14 +26,14 @@ public class RedBlackTreeP implements DModel {
 	final private Variant1 v1;
 	final private Variant2 v2;
 	
-	public enum Variant2 {
-		V1,
-		V2;
-	}
-
 	public enum Variant1 {
 		COUNTER,
 		THEOREM;
+	}
+
+	public enum Variant2 {
+		V1,
+		V2;
 	}
 
 	public RedBlackTreeP(String[] args) {
