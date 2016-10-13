@@ -208,15 +208,16 @@ final class SymmetryBreaker {
 					if (!rparts.representatives.contains(sym.min())) 
 						continue;  // r does not range over sym
 					
-					BooleanMatrix m = interpreter.interpret(r);
 					// [HASLab] configuration matrices have a set of variables assigned T.
 					// when the process iterates over these, we may obtain variables that are
 					// not in the original SBP order; eg, if originally we had [1,2] < [3,4],
 					// and 3=2=T, we need to generate [F,T]<[T,F]; but since it will only
 					// iterate over T values, it will first retrieve 2=T, leading to [T,F]<[F,T]
 					// thus we must store the variables and then sort them
-					SortedMap<Integer, AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>> aux;
-					aux = new TreeMap<Integer, AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>>();
+					SortedMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>> aux;
+					aux = new TreeMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>>();
+
+					BooleanMatrix m = interpreter.interpret(r);
 					for(IndexedEntry<BooleanValue> entry : m) {
 						int permIndex = permutation(r.arity(), entry.index(), prevIndex, curIndex);
 						BooleanValue permValue = m.get(permIndex);
@@ -225,9 +226,13 @@ final class SymmetryBreaker {
 						// the fixed configuration.
 						// [HASLab] the found T variable may be the "larger" var, at 
 						// which case atSameIndex will fail, but we still need to process it.
-						if (!isConfigAtIntegrated(r)) {}
-						else if (permIndex==entry.index() || (atSameIndex(original, permValue, permuted, entry.value())))
+						if (permIndex==entry.index() || (!(permValue instanceof BooleanConstant) && atSameIndex(original, permValue, permuted, entry.value())))
 							continue;
+						
+//						if (!isConfigAtIntegrated(r)) {} // this is also wrong
+//						else if (permIndex==entry.index() || (atSameIndex(original, permValue, permuted, entry.value())))
+//							continue;
+
 						
 						// [HASLab] we know that boolean constants only occur at
 						// configuration matrices; otherwise behave as usual.
@@ -256,9 +261,11 @@ final class SymmetryBreaker {
 							original.add(e1.getValue());
 							permuted.add(e2.getValue());
 						} else {
-							// this happens because I can't filter the fixed bounds from total orders
-//							throw new UnsupportedOperationException("impossible: " + r.toString());
+							// [HASLab] this happens because I can't filter the fixed bounds from total orders
+							// since the bounds are cloned at the translator and the TOTALORDER is lost for 
+							// the integrated problem
 						}
+
 					}
 				}
 								
@@ -303,12 +310,12 @@ final class SymmetryBreaker {
 				// [HASLab] the order of the variable lexer may not change
 				// from the config stage to the integrated stage, thus the
 				// integrated variables must be kept at the end.
-				if (bounds instanceof DecompBounds) {
+//				if (bounds instanceof DecompBounds) { // adding this condition breaks everything!
 					if (isConfigStage(o1.relation) && !isConfigStage(o2.relation))
 						return -1;
 					else if (isConfigStage(o2.relation) && !isConfigStage(o1.relation))
 						return 1;
-				}
+//				}
 				final int acmp = o1.relation.arity() - o2.relation.arity();
 				return acmp!=0 ? acmp : String.valueOf(o1.relation.name()).compareTo(String.valueOf(o2.relation.name()));
 			}
@@ -348,6 +355,7 @@ final class SymmetryBreaker {
 			return stage_bounds.lowerBound(r).size() != bounds.lowerBound(r).size() || stage_bounds.upperBound(r).size() != bounds.upperBound(r).size();
 		else return false;
 	}
+	
 	
 	/**
 	 * Returns a BooleanValue that is true iff the string of bits
