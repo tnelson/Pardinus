@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -72,7 +71,7 @@ import kodkod.util.ints.Ints;
  * @modified Nuno Macedo // [HASLab] decomposed model finding
  */
 final class SymmetryBreaker {
-	private final Bounds relevant_bounds; // [HASLab]
+	private final Bounds stage_bounds; // [HASLab]
 	private final Bounds bounds;
 	private final Set<IntSet> symmetries;
 	private final int usize;
@@ -92,7 +91,12 @@ final class SymmetryBreaker {
 		// amalgamated problem should be considered when calculating symmetries.
 		// [HASLab] the original bounds are used to set the relevant relations,
 		// discarding irrelevant detected symmetries.
-		relevant_bounds = bounds;
+		// [HASLab] if configuration, these are the original bounds restricted to
+		// the config vars; if integrated, these are the amalgamated bounds with
+		// the config vars set to constant.
+		// [HASLab] we can't simply use the stage bounds at the integrated stage
+		// because the fixed configurations would affect the symmetries.
+		stage_bounds = bounds;
 		if (bounds instanceof DecompBounds) 
 			bounds = ((DecompBounds) bounds).amalgamated();
 
@@ -196,47 +200,51 @@ final class SymmetryBreaker {
 					RelationParts rparts = rIter.next();
 					Relation r = rparts.relation;
 					
-					// [HASLab] ignore symmetries that are not considered relevant (should 
-					// only occur on decomposed problems).
-					if (!relevant_bounds.relations().contains(r)) 
+					// [HASLab] ignore symmetries that are not considered relevant at this stage 
+					// (should only occur on decomposed problems at the configuration stage).
+					if (!stage_bounds.relations().contains(r)) 
 						continue; 
 					
 					if (!rparts.representatives.contains(sym.min())) 
 						continue;  // r does not range over sym
 					
 					BooleanMatrix m = interpreter.interpret(r);
-					SortedMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>> aux = new TreeMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>>();
+					// [HASLab] configuration matrices have a set of variables assigned T.
+					// when the process iterates over these, we may obtain variables that are
+					// not in the original SBP order; eg, if originally we had [1,2] < [3,4],
+					// and 3=2=T, we need to generate [F,T]<[T,F]; but since it will only
+					// iterate over T values, it will first retrieve 2=T, leading to [T,F]<[F,T]
+					// thus we must store the variables and then sort them
+					SortedMap<Integer, AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>> aux;
+					aux = new TreeMap<Integer, AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>>();
 					for(IndexedEntry<BooleanValue> entry : m) {
 						int permIndex = permutation(r.arity(), entry.index(), prevIndex, curIndex);
 						BooleanValue permValue = m.get(permIndex);
-//						if (entry.value() instanceof BooleanConstant) {
-//							original.add(BooleanConstant.FALSE);
-//							permuted.add(BooleanConstant.TRUE);
-//							continue;
-//						}
-						// [HASLab]
-						if (permIndex==entry.index() || (!(permValue instanceof BooleanConstant) && atSameIndex(original, permValue, permuted, entry.value())))
+						// [HASLab] relParts() filters out every fixed relation at the
+						// general problem, so any constant value will have arisen from
+						// the fixed configuration.
+						// [HASLab] the found T variable may be the "larger" var, at 
+						// which case atSameIndex will fail, but we still need to process it.
+						if (!isConfigAtIntegrated(r)) {}
+						else if (permIndex==entry.index() || (atSameIndex(original, permValue, permuted, entry.value())))
 							continue;
 						
+						// [HASLab] we know that boolean constants only occur at
+						// configuration matrices; otherwise behave as usual.
 						if (!(permValue instanceof BooleanConstant)) {
 							original.add(entry.value());
 							permuted.add(permValue);			
 						} else {
-							// [HASLab] when dealing with decomposed problems, symmetries may 
-							// refer to variables that are already bound, but must still be 
-							// considered when defining the predicate.
-							// [HASLab] this only relevant if entry != perm, in which case
-							// entry was the larger element, thus False => True
+							// [HASLab] if the values are equal, then it does not affect the lexer
+							// [HASLab] store the values so that they can be ordered below
 							if ((entry.value()) != (permValue)) {
 								Entry<Integer, BooleanValue> e1 = new AbstractMap.SimpleEntry<Integer, BooleanValue>(entry.index(),entry.value());
 								Entry<Integer, BooleanValue> e2 = new AbstractMap.SimpleEntry<Integer, BooleanValue>(permIndex,permValue);
 								aux.put(entry.index()>permIndex?permIndex:entry.index(), new AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>(e1,e2));
-
 							} 
 						}
-						
-						
 					}
+					// [HASLab] TODO: optimize this: [T, ...] < [F, ...] = F, [F, ...] < [T, ...] = T
 					for (Integer index : aux.keySet()) {
 						Entry<Integer, BooleanValue> e1 = aux.get(index).getKey();
 						Entry<Integer, BooleanValue> e2 = aux.get(index).getValue();
@@ -247,6 +255,9 @@ final class SymmetryBreaker {
 						} else if (e1.getKey() < e2.getKey() && !(e1.getValue() == BooleanConstant.TRUE)) {
 							original.add(e1.getValue());
 							permuted.add(e2.getValue());
+						} else {
+							// this happens because I can't filter the fixed bounds from total orders
+//							throw new UnsupportedOperationException("impossible: " + r.toString());
 						}
 					}
 				}
@@ -289,27 +300,53 @@ final class SymmetryBreaker {
 		}
 		final Comparator<RelationParts> cmp = new Comparator<RelationParts>() {
 			public int compare(RelationParts o1, RelationParts o2) {
-				// [HASLab]
-//				if (bounds instanceof DecompBounds && !((DecompBounds) bounds).integrated) {
-				if (isToSolve(relevant_bounds, o1.relation) && !isToSolve(relevant_bounds, o2.relation))
-					return -1;
-				else if (isToSolve(relevant_bounds, o2.relation) && !isToSolve(relevant_bounds, o1.relation))
-					return 1;
-//				}
+				// [HASLab] the order of the variable lexer may not change
+				// from the config stage to the integrated stage, thus the
+				// integrated variables must be kept at the end.
+				if (bounds instanceof DecompBounds) {
+					if (isConfigStage(o1.relation) && !isConfigStage(o2.relation))
+						return -1;
+					else if (isConfigStage(o2.relation) && !isConfigStage(o1.relation))
+						return 1;
+				}
 				final int acmp = o1.relation.arity() - o2.relation.arity();
 				return acmp!=0 ? acmp : String.valueOf(o1.relation.name()).compareTo(String.valueOf(o2.relation.name()));
 			}
 		};
-		Collections.sort(relParts, cmp); // [HASLab]
+		Collections.sort(relParts, cmp);
 		return relParts;
 	}
 	
-	private boolean isToSolve(Bounds bounds, Relation r) {
-		if ((bounds instanceof DecompBounds) && (((DecompBounds) bounds).integrated))
-			return bounds.relations().contains(r) && bounds.lowerBound(r).size() == bounds.upperBound(r).size();
-		else 
-			return bounds.relations().contains(r);
-		
+	/**
+	 * Checks whether a relation belongs to the first stage of a decomposed problem.
+	 * At the config stage, it suffices to check the stage bounds; at the integrated
+	 * stage we need to check if the relation is fixed at the stage bounds. Note that
+	 * relations that are fixed in the general bounds are already filtered by relParts.
+	 * @param stage_bounds
+	 * @param r
+	 * @return
+	 */
+	// [HASLab]
+	private boolean isConfigStage(Relation r) {
+		if ((stage_bounds instanceof DecompBounds) && (((DecompBounds) stage_bounds).integrated))
+			return stage_bounds.relations().contains(r)
+					&& stage_bounds.lowerBound(r).size() == stage_bounds.upperBound(r).size();
+		else
+			return stage_bounds.relations().contains(r);
+	}
+	
+	/**
+	 * Checks whether a config relation at the integrated stage.
+	 * @param r
+	 * @return
+	 */
+	// [HASLab]
+	private boolean isConfigAtIntegrated(Relation r) {
+		if ((stage_bounds instanceof DecompBounds) && !(((DecompBounds) stage_bounds).integrated))
+			return false;
+		else if ((stage_bounds instanceof DecompBounds) && (((DecompBounds) stage_bounds).integrated))
+			return stage_bounds.lowerBound(r).size() != bounds.lowerBound(r).size() || stage_bounds.upperBound(r).size() != bounds.upperBound(r).size();
+		else return false;
 	}
 	
 	/**
@@ -423,17 +460,19 @@ final class SymmetryBreaker {
 			
 			if (aggressive) {
 				bounds.bound(relation, bounds.universe().factory().setOf(2, reduced));
-				// [HASLab]
-				if (relevant_bounds instanceof DecompBounds) 
-					relevant_bounds.bound(relation, bounds.universe().factory().setOf(2, reduced));
+				// [HASLab] in decomposed problems, stage bounds are those that will
+				// be effectively solved; for normal problems, stage bounds = bounds.
+				if (stage_bounds instanceof DecompBounds) 
+					stage_bounds.bound(relation, bounds.universe().factory().setOf(2, reduced));
 
 				return Formula.TRUE;
 			} else {
 				final Relation acyclicConst = Relation.binary("SYM_BREAK_CONST_"+acyclic.relation().name());
 				bounds.boundExactly(acyclicConst, bounds.universe().factory().setOf(2, reduced));
-				// [HASLab]
-				if (relevant_bounds instanceof DecompBounds) 
-					relevant_bounds.boundExactly(acyclicConst, bounds.universe().factory().setOf(2, reduced));
+				// [HASLab] in decomposed problems, stage bounds are those that will
+				// be effectively solved; for normal problems, stage bounds = bounds.
+				if (stage_bounds instanceof DecompBounds) 
+					stage_bounds.boundExactly(acyclicConst, bounds.universe().factory().setOf(2, reduced));
 				
 				return relation.in(acyclicConst);
 			}
@@ -493,12 +532,13 @@ final class SymmetryBreaker {
 					bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
 					bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
 					bounds.boundExactly(relation, f.setOf(2, ordering));
-					// [HASLab]
-					if (relevant_bounds instanceof DecompBounds) {
-						relevant_bounds.boundExactly(first, f.setOf(f.tuple(1, domain.min())));
-						relevant_bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
-						relevant_bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
-						relevant_bounds.boundExactly(relation, f.setOf(2, ordering));
+					// [HASLab] in decomposed problems, stage bounds are those that will
+					// be effectively solved; for normal problems, stage bounds = bounds.
+					if (stage_bounds instanceof DecompBounds) {
+						stage_bounds.boundExactly(first, f.setOf(f.tuple(1, domain.min())));
+						stage_bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
+						stage_bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
+						stage_bounds.boundExactly(relation, f.setOf(2, ordering));
 					}
 					
 					return Formula.TRUE;
@@ -512,12 +552,12 @@ final class SymmetryBreaker {
 					bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
 					bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
 					bounds.boundExactly(relConst, f.setOf(2, ordering));
-					// [HASLab]
-					if (relevant_bounds instanceof DecompBounds) {
-						relevant_bounds.boundExactly(firstConst, f.setOf(f.tuple(1, domain.min())));
-						relevant_bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
-						relevant_bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
-						relevant_bounds.boundExactly(relConst, f.setOf(2, ordering));
+					// [HASLab] in decomposed problems, stage bounds are those that will be solved
+					if (stage_bounds instanceof DecompBounds) {
+						stage_bounds.boundExactly(firstConst, f.setOf(f.tuple(1, domain.min())));
+						stage_bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
+						stage_bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
+						stage_bounds.boundExactly(relConst, f.setOf(2, ordering));
 					}
 					return Formula.and(first.eq(firstConst), last.eq(lastConst), ordered.eq(ordConst), relation.eq(relConst));
 //					return first.eq(firstConst).and(last.eq(lastConst)).and( ordered.eq(ordConst)).and( relation.eq(relConst));
