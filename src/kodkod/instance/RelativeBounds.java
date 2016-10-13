@@ -71,6 +71,8 @@ public class RelativeBounds extends Bounds {
 
 	public void resolve() {
 		for (Relation r : lowers.keySet()) {
+			if (super.relations().contains(r) && super.lowerBound(r).size() == super.upperBound(r).size())
+				continue;
 			TupleSet aux1 = resolveLower(lowers.get(r)[0]);
 			for (int i = 1; i < lowers.get(r).length; i++)
 				aux1 = aux1.product(resolveLower(lowers.get(r)[i]));
