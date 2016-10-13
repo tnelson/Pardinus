@@ -12,13 +12,14 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.RelativeBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
 public class RedBlackTreeP implements DModel {
 
-	final private Relation Node, Root, left, right, parent, key, color, Black, Red, Num;
+	final private Relation Node, Root, left, right, parent, key, color, Black, Red, Num, Color;
 	final int n;
 	final private Universe u;
 
@@ -46,6 +47,7 @@ public class RedBlackTreeP implements DModel {
 		key = Relation.binary("key");
 		color = Relation.binary("color");
 		Num = Relation.unary("Num");
+		Color = Relation.unary("Color");
 		
 		n = Integer.valueOf(args[0]);
 		v1 = RedBlackTreeP.Variant1.valueOf(args[1]);
@@ -115,7 +117,7 @@ public class RedBlackTreeP implements DModel {
 		if (v2 == Variant2.V2)
 			return Formula.and(f1,f2,f5,f6,ordered());
 		else
-			return f1;//Formula.and(f1,f2);
+			return Formula.and(f1,f2);
 	}
 	
 	private Formula color() {
@@ -181,10 +183,30 @@ public class RedBlackTreeP implements DModel {
 		return b;
 	}
 
+//	@Override
+//	public Bounds bounds2() {
+//		final TupleFactory f = u.factory();
+//		final Bounds b = new Bounds(u);
+//
+//		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
+//		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
+//		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
+//
+//		if (v2 == Variant2.V2)
+//			b.bound(key, nb.product(kb));
+//
+//		b.boundExactly(Black, f.setOf("Black"));
+//		b.boundExactly(Red, f.setOf("Red"));
+//		b.bound(color, nb.product(cb));
+//		b.bound(parent, nb.product(nb));
+//
+//		return b;
+//	}
+	
 	@Override
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final RelativeBounds b = new RelativeBounds(u);
 
 		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
 		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
@@ -193,13 +215,15 @@ public class RedBlackTreeP implements DModel {
 		if (v2 == Variant2.V2)
 			b.bound(key, nb.product(kb));
 
+		b.boundExactly(Color, cb);
 		b.boundExactly(Black, f.setOf("Black"));
 		b.boundExactly(Red, f.setOf("Red"));
-		b.bound(color, nb.product(cb));
-//		b.bound(parent, nb.product(nb));
+		b.bound(color, new Relation[]{Node,Color});
+		b.bound(parent, new Relation[]{Node,Node});
 
 		return b;
 	}
+
 
 	private int bits(int n) {
 		float x = (float) (Math.log(n*2) / Math.log(2));
