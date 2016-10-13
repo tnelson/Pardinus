@@ -115,7 +115,7 @@ public class RedBlackTreeP implements DModel {
 		if (v2 == Variant2.V2)
 			return Formula.and(f1,f2,f5,f6,ordered());
 		else
-			return f1;//Formula.and(f1,f2);
+			return Formula.and(f1,f2);
 	}
 	
 	private Formula color() {
@@ -196,7 +196,7 @@ public class RedBlackTreeP implements DModel {
 		b.boundExactly(Black, f.setOf("Black"));
 		b.boundExactly(Red, f.setOf("Red"));
 		b.bound(color, nb.product(cb));
-//		b.bound(parent, nb.product(nb));
+		b.bound(parent, nb.product(nb));
 
 		return b;
 	}
