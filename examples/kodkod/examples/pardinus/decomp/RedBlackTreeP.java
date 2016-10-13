@@ -183,30 +183,10 @@ public class RedBlackTreeP implements DModel {
 		return b;
 	}
 
-	@Override
-	public Bounds bounds2() {
-		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
-
-		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
-		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
-		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
-
-		if (v2 == Variant2.V2)
-			b.bound(key, nb.product(kb));
-
-		b.boundExactly(Black, f.setOf("Black"));
-		b.boundExactly(Red, f.setOf("Red"));
-		b.bound(color, nb.product(cb));
-		b.bound(parent, nb.product(nb));
-
-		return b;
-	}
-	
 //	@Override
 //	public Bounds bounds2() {
 //		final TupleFactory f = u.factory();
-//		final RelativeBounds b = new RelativeBounds(u);
+//		final Bounds b = new Bounds(u);
 //
 //		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
 //		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
@@ -215,14 +195,34 @@ public class RedBlackTreeP implements DModel {
 //		if (v2 == Variant2.V2)
 //			b.bound(key, nb.product(kb));
 //
-//		b.boundExactly(Color, cb);
 //		b.boundExactly(Black, f.setOf("Black"));
 //		b.boundExactly(Red, f.setOf("Red"));
-//		b.bound(color, new Relation[]{Node,Color});
-//		b.bound(parent, new Relation[]{Node,Node});
+//		b.bound(color, nb.product(cb));
+//		b.bound(parent, nb.product(nb));
 //
 //		return b;
 //	}
+	
+	@Override
+	public Bounds bounds2() {
+		final TupleFactory f = u.factory();
+		final RelativeBounds b = new RelativeBounds(u);
+
+		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
+		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
+		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
+
+		if (v2 == Variant2.V2)
+			b.bound(key, nb.product(kb));
+
+		b.boundExactly(Color, cb);
+		b.boundExactly(Black, f.setOf("Black"));
+		b.boundExactly(Red, f.setOf("Red"));
+		b.bound(color, new Relation[]{Node,Color});
+		b.bound(parent, new Relation[]{Node,Node});
+
+		return b;
+	}
 
 
 	private int bits(int n) {

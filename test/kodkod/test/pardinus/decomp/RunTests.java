@@ -572,8 +572,19 @@ public final class RunTests {
 
 		int t = 20;
 
-		for (HotelP.Variant v : HotelP.Variant.values()) {
-//			HotelP.Variant v = HotelP.Variant.INTERVENES;
+//		for (HotelP.Variant v : HotelP.Variant.values()) {
+			HotelP.Variant v = HotelP.Variant.INTERVENES;
+			log.append(v.name()+" "+t+"\n"); 
+			log.append(header);
+			flush();
+			for (int i = 1; i <= 10; i ++)  {
+				log.append(i+"\t"); flush();
+				runModes(model, new String[]{i+"", t+"", v.name()});
+				log.append("\n"); flush();
+			}
+			log.append("\n");
+//		}
+			v = HotelP.Variant.NOINTERVENES;
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
@@ -583,7 +594,6 @@ public final class RunTests {
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
 	}
 
 
