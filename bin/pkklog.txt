@@ -1123,4 +1123,19 @@ n	G.B	Sat	G.H	Sat	C.#	C.t	S.B	Sat
 1	72	U	75	U	-2		123	U	
 2	119	U	118	U	3		203	U	
 3	194	U	224	U	8		276	U	
-4	
+4	10917	U	863	U	24		3639	U	
+5	
+------
+2016-10-14_11-22-07
+Examples: RingLeader 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.H	Sat	C.#	C.t	
+1	73	U	-1		
+2	118	U	3		
+3	217	U	8		
+4	766	U	24		
+5	
