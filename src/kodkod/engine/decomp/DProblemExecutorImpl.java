@@ -128,7 +128,8 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 				else {
 					running.decrementAndGet();
 					// if last running integrated...
-					if (monitor.isConfigsDone() && running.get() == 0) {
+					if (monitor.isConfigsDone() && (running.get() == 0 || (amalgamated_running != null 
+							&& running.get() == 1))) {
 						// store the unsat solution
 						solution_queue.put(sol.getSolution());
 						// terminate the executor
