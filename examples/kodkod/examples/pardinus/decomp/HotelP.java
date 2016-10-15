@@ -122,15 +122,15 @@ public final class HotelP implements DModel {
 		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+ (t-1)));
 		
 		b.boundExactly(time, tb);
-		b.bound(time_init, new Relation[]{time});
-		b.bound(time_end, new Relation[]{time});
-		b.bound(time_loop, new Relation[]{time, time});
-		b.bound(time_next, new Relation[]{time, time});
-		b.bound(time_next_, new Relation[]{time, time});
-		b.bound(lastkey, new Relation[]{room, key, time});
-		b.bound(occupant, new Relation[]{room, guest, time});
-		b.bound(current, new Relation[]{room, key, time});
-		b.bound(gkeys, new Relation[]{guest, key, time});
+		b.bound(time_init, new Relation[][]{{time}});
+		b.bound(time_end, new Relation[][]{{time}});
+		b.bound(time_loop, new Relation[][]{{time}, {time}});
+		b.bound(time_next, new Relation[][]{{time},{time}});
+		b.bound(time_next_, new Relation[][]{{time}, {time}});
+		b.bound(lastkey, new Relation[][]{{room}, {key}, {time}});
+		b.bound(occupant, new Relation[][]{{room}, {guest}, {time}});
+		b.bound(current, new Relation[][]{{room}, {key}, {time}});
+		b.bound(gkeys, new Relation[][]{{guest}, {key}, {time}});
 				
 		return b;	
 	}

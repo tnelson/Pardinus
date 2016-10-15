@@ -384,17 +384,17 @@ public final class RingP implements DModel {
 		
 		if (variable == Variant2.VARIABLE) {
 			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id"+ (n_ps-1)));
-			b.bound(toSend,  new Relation[]{Process,Id,Time});
+			b.bound(toSend,  new Relation[][]{{Process},{Id},{Time}});
 		}
 		else			
-			b.bound(toSend,  new Relation[]{Process,Process,Time});
+			b.bound(toSend,  new Relation[][]{{Process},{Process},{Time}});
 		
-		b.bound(elected,  new Relation[]{Process,Time});
+		b.bound(elected,  new Relation[][]{{Process},{Time}});
 		
 		b.bound(Time, tb);
-		b.bound(tord, new Relation[]{Time, Time});
-		b.bound(tfirst, new Relation[]{Time});
-		b.bound(tlast, new Relation[]{Time});
+		b.bound(tord, new Relation[][]{{Time}, {Time}});
+		b.bound(tfirst, new Relation[][]{{Time}});
+		b.bound(tlast, new Relation[][]{{Time}});
 		
 		return b;
 	}

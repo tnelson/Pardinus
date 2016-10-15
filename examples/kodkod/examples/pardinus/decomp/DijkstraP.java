@@ -348,8 +348,8 @@ public class DijkstraP implements DModel {
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+(processes-1)));
 		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex"+(mutexes-1)));
 		
-		b.bound(holds, new Relation[]{State,Process,Mutex});
-		b.bound(waits, new Relation[]{State,Process,Mutex});
+		b.bound(holds, new Relation[][]{{State},{Process},{Mutex}});
+		b.bound(waits, new Relation[][]{{State},{Process},{Mutex}});
 					
 		return b;
 	}

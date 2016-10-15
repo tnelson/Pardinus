@@ -340,13 +340,13 @@ public class SpanP implements DModel {
 		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+ (n_ts-1)));
 
 		b.boundExactly(State, sb);
-		b.bound(runs, sb.product(pb));
-		b.bound(level, sb.product(pb).product(lb));
-		b.bound(parent, sb.product(pb).product(pb));
+		b.bound(runs, new Relation[][]{{State},{Root,Process_rem}});
+		b.bound(level, new Relation[][]{{State},{Root,Process_rem}, {Level}});
+		b.bound(parent, new Relation[][]{{State},{Root,Process_rem}, {Root,Process_rem}});
 
-		b.bound(state_first, new Relation[]{State});
-		b.bound(state_next, new Relation[]{State,State});
-		b.bound(state_last, new Relation[]{State});
+		b.bound(state_first, new Relation[][]{{State}});
+		b.bound(state_next, new Relation[][]{{State},{State}});
+		b.bound(state_last, new Relation[][]{{State}});
 
 		return b;
 	}
