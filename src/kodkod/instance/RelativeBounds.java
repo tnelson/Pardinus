@@ -88,7 +88,7 @@ public class RelativeBounds extends Bounds {
 	private TupleSet resolveLower(Relation[] r) {
 		if (r == null || r.length == 0)
 			return universe().factory().noneOf(1);
-		TupleSet res = super.lowerBound(r[0]);
+		TupleSet res = super.lowerBound(r[0]).clone();
 		for (int i = 1; i<r.length; i++)
 			res.addAll(super.lowerBound(r[i]));
 		return res;
@@ -97,7 +97,7 @@ public class RelativeBounds extends Bounds {
 	private TupleSet resolveUpper(Relation[] r) {
 		if (r == null || r.length == 0)
 			return universe().factory().noneOf(1);
-		TupleSet res = super.upperBound(r[0]);
+		TupleSet res = super.upperBound(r[0]).clone();
 		for (int i = 1; i<r.length; i++)
 			res.addAll(super.upperBound(r[i]));
 		return res;
