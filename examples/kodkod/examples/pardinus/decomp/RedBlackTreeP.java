@@ -19,7 +19,7 @@ import kodkod.instance.Universe;
 
 public class RedBlackTreeP implements DModel {
 
-	final private Relation Node, Root, left, right, parent, key, color, Black, Red, Num, Color;
+	final private Relation Node, Root, left, right, parent, key, color, Black, Red, Num;
 	final int n;
 	final private Universe u;
 
@@ -47,7 +47,6 @@ public class RedBlackTreeP implements DModel {
 		key = Relation.binary("key");
 		color = Relation.binary("color");
 		Num = Relation.unary("Num");
-		Color = Relation.unary("Color");
 		
 		n = Integer.valueOf(args[0]);
 		v1 = RedBlackTreeP.Variant1.valueOf(args[1]);
@@ -215,11 +214,10 @@ public class RedBlackTreeP implements DModel {
 		if (v2 == Variant2.V2)
 			b.bound(key, nb.product(kb));
 
-		b.boundExactly(Color, cb);
 		b.boundExactly(Black, f.setOf("Black"));
 		b.boundExactly(Red, f.setOf("Red"));
-		b.bound(color, new Relation[]{Node,Color});
-		b.bound(parent, new Relation[]{Node,Node});
+		b.bound(color, new Relation[][]{{Node},{Red,Black}});
+		b.bound(parent, new Relation[][]{{Node},{Node}});
 
 		return b;
 	}

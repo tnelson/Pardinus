@@ -16,8 +16,8 @@ import kodkod.util.ints.TreeSequence;
 
 public class RelativeBounds extends Bounds {
 
-	private Map<Relation, Relation[]> lowers = new LinkedHashMap<Relation, Relation[]>();
-	private Map<Relation, Relation[]> uppers = new LinkedHashMap<Relation, Relation[]>();
+	private Map<Relation, Relation[][]> lowers = new LinkedHashMap<Relation, Relation[][]>();
+	private Map<Relation, Relation[][]> uppers = new LinkedHashMap<Relation, Relation[][]>();
 	private final Set<Relation> rel_relations;
 
 	public RelativeBounds(Universe universe) {
@@ -28,8 +28,8 @@ public class RelativeBounds extends Bounds {
 	public RelativeBounds(TupleFactory factory,
 			Map<Relation, TupleSet> lowerBounds,
 			Map<Relation, TupleSet> upperBounds,
-			Map<Relation, Relation[]> linkedHashMap,
-			Map<Relation, Relation[]> linkedHashMap2,
+			Map<Relation, Relation[][]> linkedHashMap,
+			Map<Relation, Relation[][]> linkedHashMap2,
 			SparseSequence<TupleSet> clone) {
 		super(factory, lowerBounds, upperBounds, clone);
 		this.lowers = linkedHashMap;
@@ -41,27 +41,27 @@ public class RelativeBounds extends Bounds {
 		super(bounds1.universe().factory(), new LinkedHashMap<Relation, TupleSet>(bounds1.lowerBounds()), new LinkedHashMap<Relation, TupleSet>(bounds1
 				.upperBounds()), new TreeSequence<TupleSet>(bounds1.intBounds()));
 		if (bounds1 instanceof RelativeBounds) {
-			this.lowers = new LinkedHashMap<Relation, Relation[]>(((RelativeBounds) bounds1).lowerRelBounds());
-			this.uppers = new LinkedHashMap<Relation, Relation[]>(((RelativeBounds) bounds1).upperRelBounds());
+			this.lowers = new LinkedHashMap<Relation, Relation[][]>(((RelativeBounds) bounds1).lowerRelBounds());
+			this.uppers = new LinkedHashMap<Relation, Relation[][]>(((RelativeBounds) bounds1).upperRelBounds());
 		}
 		this.rel_relations = rel_relations(lowers, uppers);
 	}
 
-	public void bound(Relation relation, Relation[] upper) {
+	public void bound(Relation relation, Relation[][] upper) {
 		if (upper.length != relation.arity())
 			throw new IllegalArgumentException();
-		lowers.put(relation, new Relation[relation.arity()]);
+		lowers.put(relation, new Relation[relation.arity()][0]);
 		uppers.put(relation, upper);
 	}
 
-	public void boundExactly(Relation relation, Relation[] upper) {
+	public void boundExactly(Relation relation, Relation[][] upper) {
 		if (upper.length != relation.arity())
 			throw new IllegalArgumentException();
 		lowers.put(relation, upper);
 		uppers.put(relation, upper);
 	}
 
-	public void bound(Relation relation, Relation[] lower, Relation[] upper) {
+	public void bound(Relation relation, Relation[][] lower, Relation[][] upper) {
 		if (lower.length != relation.arity()
 				|| upper.length != relation.arity())
 			throw new IllegalArgumentException();
@@ -85,26 +85,30 @@ public class RelativeBounds extends Bounds {
 		}
 	}
 
-	private TupleSet resolveLower(Relation r) {
-		if (r == null)
+	private TupleSet resolveLower(Relation[] r) {
+		if (r == null || r.length == 0)
 			return universe().factory().noneOf(1);
-		else
-			return super.lowerBound(r);
+		TupleSet res = super.lowerBound(r[0]).clone();
+		for (int i = 1; i<r.length; i++)
+			res.addAll(super.lowerBound(r[i]));
+		return res;
 	}
 
-	private TupleSet resolveUpper(Relation r) {
-		if (r == null)
+	private TupleSet resolveUpper(Relation[] r) {
+		if (r == null || r.length == 0)
 			return universe().factory().noneOf(1);
-		else
-			return super.upperBound(r);
+		TupleSet res = super.upperBound(r[0]).clone();
+		for (int i = 1; i<r.length; i++)
+			res.addAll(super.upperBound(r[i]));
+		return res;
 	}
 
 	public RelativeBounds clone() {
 		try {
 			return new RelativeBounds(universe().factory(),
 					new LinkedHashMap<Relation, TupleSet>(super.lowerBounds()), new LinkedHashMap<Relation, TupleSet>(super.upperBounds()),
-					new LinkedHashMap<Relation, Relation[]>(lowers),
-					new LinkedHashMap<Relation, Relation[]>(uppers), super
+					new LinkedHashMap<Relation, Relation[][]>(lowers),
+					new LinkedHashMap<Relation, Relation[][]>(uppers), super
 							.intBounds().clone());
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
@@ -112,7 +116,7 @@ public class RelativeBounds extends Bounds {
 	}
 
 	protected static <T extends Relation> Set<T> rel_relations(
-			final Map<T, Relation[]> lowers, final Map<T, Relation[]> uppers) {
+			final Map<T, Relation[][]> lowers, final Map<T, Relation[][]> uppers) {
 		return new AbstractSet<T>() {
 
 			public Iterator<T> iterator() {
@@ -164,19 +168,19 @@ public class RelativeBounds extends Bounds {
 		return rel_relations;
 	}
 
-	public Relation[] lowerRelBounds(Relation r) {
+	public Relation[][] lowerRelBounds(Relation r) {
 		return lowers.get(r);
 	}
 
-	public Relation[] upperRelBounds(Relation r) {
+	public Relation[][] upperRelBounds(Relation r) {
 		return uppers.get(r);
 	}
 	
-	public Map<Relation, Relation[]> lowerRelBounds() {
+	public Map<Relation, Relation[][]> lowerRelBounds() {
 		return unmodifiableMap(lowers);
 	}
 
-	public Map<Relation, Relation[]> upperRelBounds() {
+	public Map<Relation, Relation[][]> upperRelBounds() {
 		return unmodifiableMap(uppers);
 	}
 }

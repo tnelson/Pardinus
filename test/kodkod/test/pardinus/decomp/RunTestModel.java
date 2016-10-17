@@ -13,7 +13,9 @@ import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.IncrementalSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.FileReporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.satlab.SATFactory;
@@ -92,6 +94,7 @@ public final class RunTestModel {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 
+		psolver.options().setReporter(new FileReporter());
 		psolver.options().setBitwidth(model.getBitwidth());
 		psolver.options().setSymmetryBreaking(sym);
 
