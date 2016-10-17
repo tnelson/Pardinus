@@ -166,7 +166,7 @@ public final class RunTestsP {
 
 	private static void printHeader() {
 		Format formatter = new SimpleDateFormat("YYYY-MM-dd_HH-mm-ss");
-		log.append("\n------\n");
+		log.append("\n---P---\n");
 		log.append(formatter.format(new Date()));
 		log.append("\n");
 		log.append("Examples: ");
