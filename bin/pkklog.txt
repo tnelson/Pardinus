@@ -2273,3 +2273,105 @@ Dijkstra15 SAT
 n	G.B	Sat	S.B	Sat	
 1	68	U	119	U	
 2	103	S	
+---R---
+2016-10-17_19-03-11
+Examples: Handshake RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	48	U	0		49	U	0		
+4	63	S	0		58	S	0		
+5	60	U	0		63	U	0		
+6	78	S	0		76	S	0		
+7	71	U	0		83	U	0		
+8	128	S	0		141	S	0		
+9	85	U	0		95	U	0		
+10	141	S	0		154	S	0		
+11	97	U	0		110	U	0		
+12	377	S	0		391	S	0		
+13	112	U	0		129	U	0		
+14	619	S	0		630	S	0		
+15	126	U	0		137	U	0		
+16	1562	S	0		1633	S	0		
+17	143	U	0		166	U	0		
+18	4717	S	0		5165	S	0		
+19	162	U	0		187	U	0		
+20	869658	S	0		
+---P---
+2016-10-17_19-21-55
+Examples: Handshake RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	47	U	0		48	U	0		
+4	61	S	0		59	S	0		
+5	60	U	0		62	U	0		
+6	79	S	0		75	S	0		
+7	71	U	0		80	U	0		
+8	128	S	0		140	S	0		
+9	83	U	0		98	U	0		
+10	143	S	0		152	S	0		
+11	97	U	0		112	U	0		
+12	372	S	0		384	S	0		
+13	112	U	0		127	U	0		
+14	623	S	0		632	S	0		
+15	125	U	0		140	U	0		
+16	1553	S	0		1683	S	0		
+17	146	U	0		161	U	0		
+18	4777	S	0		4938	S	0		
+19	159	U	0		197	U	0		
+20	
+---R---
+2016-10-17_19-22-48
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	57	S	0		53	S	0		
+3	75	S	4		64	S	0		
+4	85	S	1		75	S	0		
+5	129	S	24		97	S	0		
+6	167	S	2		152	S	0		
+7	318	S	87		361	S	90		
+8	597	S	365		683	S	364		
+9	483	S	110		544	S	112		
+10	3267	S	1693		4080	S	1695		
+11	1660	S	436		2043	S	441		
+12	17196	S	8998		20106	S	9003		
+13	134416	S	60462		163414	S	60462		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	55	U	2		44	U	-1		
+3	72	U	5		59	U	-1		
+4	99	U	14		74	U	-1		
+5	157	U	42		99	U	-1		
+6	297	U	132		129	U	-1		
+7	592	U	429		307	U	-36		
+8	1786	U	1430		1534	U	-1001		
+9	6659	U	4862		7758	U	4862		
+10	25496	U	16796		29004	U	16796		
+11	100382	U	58786		120592	U	58786		
+12	
+---P---
+2016-10-17_19-33-48
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	60	S	0		55	S	0		
+3	72	S	4		63	S	0		
+4	86	S	1		78	S	0		
+5	
