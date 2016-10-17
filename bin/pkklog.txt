@@ -1416,3 +1416,62 @@ n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	S.B	Sat
 6	4917	U	4978	U	8747	U	-199		8984	U	-206		1790	U	1947	U	
 7	14487	U	14629	U	24467	U	-410		24048	U	-404		7458	U	6407	U	
 8	76216	U	75819	U	130637	U	-1239		134627	U	-1275		29014	U	40486	U	
+
+------
+2016-10-17_08-34-33
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+9	579	S	111		
+10	4203	S	1691		
+11	2037	S	438		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	
+9	
+------
+2016-10-17_08-37-18
+Examples: SpanTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Span9 V1
+n	G.H	Sat	C.#	C.t	
+2	87	U	-1		
+3	126	U	3		
+4	151	U	-4		
+5	260	U	-4		
+6	906	U	-14		
+7	9140	U	-56		
+8	497	S	0		
+9	642	S	1		
+10	834	S	1		
+11	1083	S	0		
+12	1186	S	0		
+13	1431	S	0		
+14	1762	S	0		
+15	2082	S	0		
+16	2460	S	0		
+
+Span9 V2
+n	G.H	Sat	C.#	C.t	
+2	128	U	1		
+3	202	U	3		
+4	293	U	-4		
+5	702	U	-6		
+6	1146	U	8		
+7	4653	U	-22		
+8	36244	U	-43		
+9	1107	S	0		
+10	1920	S	0		
+11	1987	S	0		
+12	2924	S	0		
+13	3235	S	0		
+14	3051	S	0		
+15	4518	S	0		
+16	5003	S	1		
