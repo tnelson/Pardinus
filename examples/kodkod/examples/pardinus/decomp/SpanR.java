@@ -16,7 +16,7 @@ import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
 
-public class SpanP implements DModel {
+public class SpanR implements DModel {
 
 	final private Universe u;
 //	final private Variant2 var;
@@ -35,7 +35,7 @@ public class SpanP implements DModel {
 		V3;
 	}
 
-	public SpanP(String[] args) {
+	public SpanR(String[] args) {
 
 		Root = Relation.unary("this/Root");
 		Process_rem = Relation.unary("this/Process remainder");
@@ -311,26 +311,45 @@ public class SpanP implements DModel {
 		return b;
 	}
 
+//	public Bounds bounds2() {
+//		final TupleFactory f = u.factory();
+//		final Bounds b = new Bounds(u);
+//
+//		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process"+ (n_ps-1)));
+//		final TupleSet lb = f.range(f.tuple("Lvl0"), f.tuple("Lvl"+ (n_ps-1)));
+//		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+ (n_ts-1)));
+//
+//		b.boundExactly(State, sb);
+//		b.bound(runs, sb.product(pb));
+//		b.bound(level, sb.product(pb).product(lb));
+//		b.bound(parent, sb.product(pb).product(pb));
+//
+//		b.bound(state_first, sb);
+//		b.bound(state_next, sb.product(sb));
+//		b.bound(state_last, sb);
+//
+//		return b;
+//	}
+	
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final RelativeBounds b = new RelativeBounds(u);
 
 		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process"+ (n_ps-1)));
 		final TupleSet lb = f.range(f.tuple("Lvl0"), f.tuple("Lvl"+ (n_ps-1)));
 		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+ (n_ts-1)));
 
 		b.boundExactly(State, sb);
-		b.bound(runs, sb.product(pb));
-		b.bound(level, sb.product(pb).product(lb));
-		b.bound(parent, sb.product(pb).product(pb));
+		b.bound(runs, new Relation[][]{{State},{Root,Process_rem}});
+		b.bound(level, new Relation[][]{{State},{Root,Process_rem}, {Level}});
+		b.bound(parent, new Relation[][]{{State},{Root,Process_rem}, {Root,Process_rem}});
 
-		b.bound(state_first, sb);
-		b.bound(state_next, sb.product(sb));
-		b.bound(state_last, sb);
+		b.bound(state_first, new Relation[][]{{State}});
+		b.bound(state_next, new Relation[][]{{State},{State}});
+		b.bound(state_last, new Relation[][]{{State}});
 
 		return b;
 	}
-	
 
 	@Override
 	public int getBitwidth() {

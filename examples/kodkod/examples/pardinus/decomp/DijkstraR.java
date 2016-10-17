@@ -15,7 +15,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class DijkstraP implements DModel {
+public class DijkstraR implements DModel {
 
 	private final Relation Process, Mutex, State, holds, waits;
 	private final Relation sfirst, slast, sord, mfirst, mlast, mord;
@@ -33,7 +33,7 @@ public class DijkstraP implements DModel {
 	/**
 	 * Creates an instance of Dijkstra example.
 	 */
-	public DijkstraP(String[] args) {
+	public DijkstraR(String[] args) {
 		Process = Relation.unary("Process");
 		Mutex = Relation.unary("Mutex");
 		State = Relation.unary("State");
@@ -324,17 +324,32 @@ public class DijkstraP implements DModel {
 			
 		return b;	}
 
+//	@Override
+//	public Bounds bounds2() {
+//		final TupleFactory f = u.factory();
+//		final Bounds b = new Bounds(u);
+//		
+//		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+(states-1)));
+//		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+(processes-1)));
+//		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex"+(mutexes-1)));
+//		
+//		b.bound(holds, sb.product(pb).product(mb));
+//		b.bound(waits, sb.product(pb).product(mb));
+//					
+//		return b;
+//	}
+
 	@Override
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final RelativeBounds b = new RelativeBounds(u);
 		
 		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+(states-1)));
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+(processes-1)));
 		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex"+(mutexes-1)));
 		
-		b.bound(holds, sb.product(pb).product(mb));
-		b.bound(waits, sb.product(pb).product(mb));
+		b.bound(holds, new Relation[][]{{State},{Process},{Mutex}});
+		b.bound(waits, new Relation[][]{{State},{Process},{Mutex}});
 					
 		return b;
 	}

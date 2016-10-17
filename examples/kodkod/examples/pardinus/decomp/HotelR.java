@@ -15,7 +15,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public final class HotelP implements DModel {
+public final class HotelR implements DModel {
 
 	final private int n, t;
 	final private Variant variant;
@@ -31,7 +31,7 @@ public final class HotelP implements DModel {
 	}
 	
 	
-	public HotelP(String[] args) {
+	public HotelR(String[] args) {
 		this.n = Integer.valueOf(args[0]);
 		this.t = Integer.valueOf(args[1]);
 		this.variant = Variant.valueOf(args[2]);
@@ -90,30 +90,50 @@ public final class HotelP implements DModel {
 		return b;	
 	}
 
+//	@Override
+//	public Bounds bounds2() {
+//		final TupleFactory f = u.factory();
+//		final Bounds b = new Bounds(u);
+//		
+//		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key"+ (n-1)));
+//		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest"+ (n-1)));
+//		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room"+ (n-1)));
+//		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+ (t-1)));
+//		
+//		b.boundExactly(time, tb);
+//		b.bound(time_init, tb);
+//		b.bound(time_end, tb);
+//		b.bound(time_loop, tb.product(tb));
+//		b.bound(time_next, tb.product(tb));
+//		b.bound(time_next_, tb.product(tb));
+//		b.bound(lastkey, rb.product(kb).product(tb));
+//		b.bound(occupant, rb.product(gb).product(tb));
+//		b.bound(current, rb.product(kb).product(tb));
+//		b.bound(gkeys, gb.product(kb).product(tb));
+//				
+//		return b;	
+//	}
+	
 	@Override
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final RelativeBounds b = new RelativeBounds(u);
 		
-		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key"+ (n-1)));
-		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest"+ (n-1)));
-		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room"+ (n-1)));
 		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+ (t-1)));
 		
 		b.boundExactly(time, tb);
-		b.bound(time_init, tb);
-		b.bound(time_end, tb);
-		b.bound(time_loop, tb.product(tb));
-		b.bound(time_next, tb.product(tb));
-		b.bound(time_next_, tb.product(tb));
-		b.bound(lastkey, rb.product(kb).product(tb));
-		b.bound(occupant, rb.product(gb).product(tb));
-		b.bound(current, rb.product(kb).product(tb));
-		b.bound(gkeys, gb.product(kb).product(tb));
+		b.bound(time_init, new Relation[][]{{time}});
+		b.bound(time_end, new Relation[][]{{time}});
+		b.bound(time_loop, new Relation[][]{{time}, {time}});
+		b.bound(time_next, new Relation[][]{{time},{time}});
+		b.bound(time_next_, new Relation[][]{{time}, {time}});
+		b.bound(lastkey, new Relation[][]{{room}, {key}, {time}});
+		b.bound(occupant, new Relation[][]{{room}, {guest}, {time}});
+		b.bound(current, new Relation[][]{{room}, {key}, {time}});
+		b.bound(gkeys, new Relation[][]{{guest}, {key}, {time}});
 				
 		return b;	
 	}
-	
 
 	@Override
 	public Formula partition1() {
