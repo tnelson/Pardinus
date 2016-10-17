@@ -2105,3 +2105,100 @@ n	G.B	Sat	S.B	Sat
 4	875	S	1143	S	
 5	3975	S	3169	S	
 6	
+------
+2016-10-17_17-54-31
+Examples: RingLeader 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	78	U	1		75	U	1		
+2	122	U	3		118	U	3		
+3	189	U	8		
+------
+2016-10-17_17-54-39
+Examples: RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	76	U	1		75	U	1		
+2	119	U	3		120	U	3		
+3	198	U	8		222	U	8		
+4	629	U	24		733	U	24		
+5	5984	U	89		7894	U	89		
+6	67068	S	187		4249	S	-7		
+7	2772	S	59		2264	S	-41		
+8	196427	S	41		4385	S	-9		
+9	1212	S	9		1229	S	9		
+10	2247	S	31		1968	S	31		
+11	61639	S	65		5033	S	-21		
+12	18944	S	32		4994	S	-18		
+13	9897	S	42		4138	S	0		
+
+GOODLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	79	U	1		74	U	1		
+2	121	U	3		118	U	3		
+3	212	U	8		223	U	8		
+4	656	U	24		806	U	24		
+5	6456	U	89		7948	U	89		
+6	238180	U	415		319799	U	415		
+
+GOODSAFETY VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	73	U	1		69	U	-1		
+2	117	U	3		110	U	3		
+3	190	U	8		203	U	8		
+4	565	U	24		650	U	-21		
+5	2406	U	89		2874	U	-81		
+6	13238	U	415		9036	U	-208		
+7	104948	U	2372		24528	U	-409		
+8	1091283	U	16072		135820	U	-1275		
+
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	87	U	1		84	U	-1		
+3	122	U	3		121	U	3		
+4	250	U	11		149	U	-4		
+5	1143	U	58		268	U	-4		
+6	14122	U	457		934	U	-15		
+7	673011	U	5777		8852	U	-54		
+8	514	S	1		466	S	0		
+9	631	S	0		615	S	0		
+10	782	S	0		752	S	0		
+11	1157	S	0		1057	S	0		
+12	1320	S	0		1201	S	0		
+13	1621	S	0		1545	S	0		
+14	1920	S	0		1898	S	0		
+15	2324	S	0		2339	S	0		
+16	2638	S	0		2726	S	0		
+17	4547	S	0		4493	S	0		
+18	4742	S	0		4715	S	0		
+
+Span9 V2
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	122	U	1		131	U	1		
+3	198	U	3		219	U	3		
+4	556	U	11		293	U	-4		
+5	2821	U	58		692	U	-6		
+6	29627	U	457		1180	U	-9		
+7	
+------
+2016-10-17_18-47-34
+Examples: Hotel RingLeader SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	S.B	Sat	
+1	65	U	120	U	
+2	104	S	170	S	
+3	140	S	226	S	
+4	191	S	279	S	
+5	267	S	
