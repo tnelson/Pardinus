@@ -118,6 +118,14 @@ public final class ConsoleReporter implements Reporter {
 		System.out.println("new configuration...");
 	}
 
-	
+	@Override
+	public void configOutcome(Solution solution) {
+		System.out.println("config outcome: "+solution.outcome());
+	}
+
+	@Override
+	public void amalgOutcome(Solution solution) {
+		System.out.println("amalg outcome: "+solution.outcome());
+	}
 
 }
