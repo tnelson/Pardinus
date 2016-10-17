@@ -1724,3 +1724,55 @@ n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 12	6636	U	1		6069	U	-1		
 13	112	U	0		129	U	0		
 14	
+------
+2016-10-17_13-57-30
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	
+9	7822	U	4862		
+
+------
+2016-10-17_13-58-14
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	56	S	0		52	S	0		
+3	74	S	4		62	S	0		
+4	84	S	1		76	S	0		
+5	129	S	21		95	S	0		
+6	169	S	2		154	S	0		
+7	342	S	88		348	S	87		
+8	604	S	365		691	S	365		
+9	486	S	110		547	S	109		
+10	3239	S	1693		4049	S	1700		
+11	1677	S	436		1984	S	435		
+12	16977	S	8998		19983	S	8998		
+13	134225	S	60463		168327	S	60444		
+14	
+------
+2016-10-17_14-08-10
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	72	U	5		56	U	-1		
+4	99	U	14		73	U	-1		
+5	156	U	42		102	U	-1		
+6	294	U	132		130	U	-1		
+7	581	U	429		297	U	-31		
+8	1814	U	1430		1495	U	-1001		
+9	6647	U	4862		7989	U	4862		
+10	25207	U	16796		28960	U	16796		
+11	104218	U	58786		120910	U	58786		
+12	
