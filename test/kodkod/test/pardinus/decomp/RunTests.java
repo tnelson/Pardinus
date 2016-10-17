@@ -429,18 +429,18 @@ public final class RunTests {
 		String model = RedBlackTreeP.class.getCanonicalName();
 
 		RedBlackTreeP.Variant2 s = RedBlackTreeP.Variant2.V1;
-		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
-//		RedBlackTreeP.Variant1 v = RedBlackTreeP.Variant1.COUNTER;
+//		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
+		RedBlackTreeP.Variant1 v = RedBlackTreeP.Variant1.THEOREM;
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 11; i ++)  {
+			for (int i = 9; i <= 9; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
-		}
+//		}
 	}
 	
 

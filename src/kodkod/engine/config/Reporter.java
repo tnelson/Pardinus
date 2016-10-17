@@ -104,5 +104,9 @@ public interface Reporter {
 
 	// [HASLab]
 	public void solvingConfig(Solution solution);
-
+	// [HASLab]
+	public void configOutcome(Solution solution);
+	// [HASLab]
+	void amalgOutcome(Solution solution);
+	
 }

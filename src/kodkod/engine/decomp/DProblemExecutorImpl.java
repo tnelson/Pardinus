@@ -63,6 +63,8 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	/** whether the amalgamated solver is currently running */
 	private DProblem amalgamated_running;
 
+	private Reporter rep;
+
 	/**
 	 * Constructs an implementation of a decomposed problem solver with support
 	 * for hybrid model.
@@ -77,6 +79,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			Solver solver1, Solver solver2, int n, boolean it, Reporter rep) {
 		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
 		this.hybrid = it;
+		this.rep = rep;
 	}
 
 	/**
@@ -89,7 +92,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 */
 	@Override
 	public void end(DProblem sol) {
-		 System.out.println(sol.getSolution().outcome()+"");
+		rep.configOutcome(sol.getSolution());
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
