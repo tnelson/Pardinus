@@ -75,6 +75,16 @@ public class HotelTests {
 				System.out.println(solution.outcome()+": "
 						+ solution.instance().relationTuples().toString());
 			}
+			
+			@Override
+			public void configOutcome(Solution solution) {
+				System.out.println("dproblem: "+solution.outcome());
+			}
+			
+			@Override
+			public void amalgOutcome(Solution solution) {
+				System.out.println("amalg: "+solution.outcome());
+			}
 		};
 		opt = new BoundedExtendedOptions();
 		opt.setSymmetryBreaking(20);

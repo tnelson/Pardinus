@@ -99,7 +99,7 @@ public final class FileReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#translatingToBoolean(kodkod.ast.Formula, kodkod.instance.Bounds)
 	 */
 	public void translatingToBoolean(Formula formula, Bounds bounds) {
-		writer.println("translating to boolean: "+formula+"\n"+bounds);
+		writer.println("translating to boolean... ");
 	}
 
 	/**
@@ -116,9 +116,18 @@ public final class FileReporter implements Reporter {
 
 	// [HASLab]
 	public void solvingConfig(Solution solution) {
-		writer.println("new configuration: "+solution);
+		writer.println("new configuration...");
 	}
 
+	@Override
+	public void configOutcome(Solution solution) {
+		writer.println("new config solved: "+solution.outcome());
+	}
+
+	@Override
+	public void amalgOutcome(Solution solution) {
+		writer.println("amalg solved: "+solution.outcome());
+	}
 	
 
 }

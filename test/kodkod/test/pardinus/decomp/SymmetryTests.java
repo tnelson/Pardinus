@@ -121,6 +121,16 @@ public class SymmetryTests {
 				System.out.println(solution.outcome()+": "
 						+ solution.instance().relationTuples().toString());
 			}
+
+			@Override
+			public void configOutcome(Solution solution) {
+				System.out.println("dproblem: "+solution.outcome());
+			}
+			
+			@Override
+			public void amalgOutcome(Solution solution) {
+				System.out.println("amalg: "+solution.outcome());
+			}
 		};
 		opt2.setReporter(rep);
 

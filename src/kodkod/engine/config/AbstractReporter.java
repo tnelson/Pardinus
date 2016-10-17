@@ -93,4 +93,9 @@ public abstract class AbstractReporter implements Reporter {
 	// [HASLab]
 	public void solvingConfig(Solution solution) {}
 	
+	// [HASLab]
+	public void configOutcome(Solution solution) {}
+
+	// [HASLab]
+	public void amalgOutcome(Solution solution) {}
 }
