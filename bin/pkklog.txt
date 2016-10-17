@@ -2202,3 +2202,74 @@ n	G.B	Sat	S.B	Sat
 3	140	S	226	S	
 4	191	S	279	S	
 5	267	S	
+---R---
+2016-10-17_18-48-48
+Examples: Handshake 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	48	U	0		50	U	0		
+4	66	S	0		56	S	0		
+5	60	U	0		64	U	0		
+6	81	S	0		74	S	0		
+7	71	U	0		79	U	0		
+8	128	S	0		140	S	0		
+9	83	U	0		94	U	0		
+10	139	S	0		152	S	0		
+11	93	U	0		109	U	0		
+12	384	S	0		392	S	0		
+13	113	U	0		143	U	0		
+14	627	S	0		637	S	0		
+15	126	U	0		143	U	0		
+16	1568	S	0		1674	S	0		
+17	147	U	0		166	U	0		
+18	4723	S	0		5112	S	0		
+19	162	U	0		195	U	0		
+20	
+---A---
+2016-10-17_18-50-15
+Examples: Hotel RingLeader SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	S.B	Sat	
+1	68	U	121	U	
+2	
+---R---
+2016-10-17_18-50-38
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	57	S	0		53	S	0		
+3	73	S	4		64	S	0		
+4	84	S	0		78	S	0		
+5	130	S	22		96	S	0		
+6	166	S	2		161	S	-1		
+7	314	S	92		364	S	88		
+8	617	S	365		712	S	365		
+9	485	S	108		556	S	110		
+10	3355	S	1692		4084	S	1693		
+11	1627	S	436		1914	S	435		
+12	17044	S	8998		19777	S	8999		
+13	133518	S	60462		162312	S	60462		
+14	
+---A---
+2016-10-17_19-01-24
+Examples: Hotel RingLeader SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.B	Sat	S.B	Sat	
+1	68	U	119	U	
+2	103	S	
