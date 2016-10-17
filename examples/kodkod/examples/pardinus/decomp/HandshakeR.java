@@ -12,6 +12,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.RelativeBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -203,7 +204,7 @@ public class HandshakeR implements DModel {
 
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final RelativeBounds b = new RelativeBounds(u);
 		b.bound(shaken, new Relation[][]{{Person},{Person}});
 
 		return b;
