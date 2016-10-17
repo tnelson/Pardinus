@@ -17,7 +17,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class RedBlackTreeP implements DModel {
+public class RedBlackTreeR implements DModel {
 
 	final private Relation Node, Root, left, right, parent, key, color, Black, Red, Num;
 	final int n;
@@ -36,7 +36,7 @@ public class RedBlackTreeP implements DModel {
 		V2;
 	}
 
-	public RedBlackTreeP(String[] args) {
+	public RedBlackTreeR(String[] args) {
 		Node = Relation.unary("Node");
 		Black = Relation.unary("Black");
 		Red = Relation.unary("Red");
@@ -49,8 +49,8 @@ public class RedBlackTreeP implements DModel {
 		Num = Relation.unary("Num");
 		
 		n = Integer.valueOf(args[0]);
-		v1 = RedBlackTreeP.Variant1.valueOf(args[1]);
-		v2 = RedBlackTreeP.Variant2.valueOf(args[2]);
+		v1 = RedBlackTreeR.Variant1.valueOf(args[1]);
+		v2 = RedBlackTreeR.Variant2.valueOf(args[2]);
 		
 		final List<Object> atoms = new ArrayList<Object>(2*n+2);
 
@@ -182,10 +182,30 @@ public class RedBlackTreeP implements DModel {
 		return b;
 	}
 
+//	@Override
+//	public Bounds bounds2() {
+//		final TupleFactory f = u.factory();
+//		final Bounds b = new Bounds(u);
+//
+//		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
+//		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
+//		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
+//
+//		if (v2 == Variant2.V2)
+//			b.bound(key, nb.product(kb));
+//
+//		b.boundExactly(Black, f.setOf("Black"));
+//		b.boundExactly(Red, f.setOf("Red"));
+//		b.bound(color, nb.product(cb));
+//		b.bound(parent, nb.product(nb));
+//
+//		return b;
+//	}
+	
 	@Override
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final RelativeBounds b = new RelativeBounds(u);
 
 		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
 		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
@@ -196,12 +216,11 @@ public class RedBlackTreeP implements DModel {
 
 		b.boundExactly(Black, f.setOf("Black"));
 		b.boundExactly(Red, f.setOf("Red"));
-		b.bound(color, nb.product(cb));
-		b.bound(parent, nb.product(nb));
+		b.bound(color, new Relation[][]{{Node},{Red,Black}});
+		b.bound(parent, new Relation[][]{{Node},{Node}});
 
 		return b;
 	}
-	
 
 
 	private int bits(int n) {
