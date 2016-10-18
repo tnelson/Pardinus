@@ -3119,3 +3119,135 @@ n	G.B	Sat	S.B	Sat
 3	49	U	101	U	
 4	58	S	111	S	
 5	64	U	
+---R---
+2016-10-18_12-47-42
+Examples: SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+9	666	S	0		633	S	0		
+10	813	S	0		891	S	0		
+11	1204	S	0		1119	S	0		
+12	
+---P---
+2016-10-18_12-47-49
+Examples: RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	75	U	1		75	U	-1		
+2	124	U	3		114	U	3		
+3	185	U	8		
+---A---
+2016-10-18_12-47-51
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	
+---R---
+2016-10-18_12-47-53
+Examples: SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+9	602	S	0		618	S	0		
+10	845	S	0		818	S	0		
+11	1185	S	0		1118	S	0		
+12	1181	S	0		1180	S	0		
+13	1566	S	0		1511	S	0		
+14	2087	S	0		1873	S	0		
+15	2593	S	0		1989	S	0		
+16	2602	S	1		2892	S	0		
+17	4632	S	1		4444	S	0		
+18	5159	S	0		4777	S	0		
+
+Span9 V2
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+9	1282	S	0		1132	S	0		
+10	1864	S	0		1690	S	0		
+11	1779	S	0		2225	S	0		
+12	2398	S	0		2883	S	0		
+13	2707	S	0		3323	S	0		
+14	3452	S	0		3368	S	0		
+15	4089	S	0		3906	S	0		
+16	4457	S	0		4979	S	0		
+17	7402	S	0		7989	S	0		
+18	8281	S	0		8277	S	0		
+
+---P---
+2016-10-18_12-50-10
+Examples: RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	75	U	1		78	U	1		
+2	121	U	3		116	U	3		
+3	183	U	8		221	U	8		
+4	635	U	24		803	U	24		
+5	6398	U	89		8151	U	89		
+6	68312	S	187		4142	S	-7		
+7	2545	S	59		2208	S	-42		
+8	189914	S	42		4117	S	-10		
+9	1097	S	10		1266	S	9		
+10	2268	S	31		2177	S	31		
+11	60680	S	66		5344	S	-22		
+12	20282	S	34		5490	S	-19		
+13	10101	S	42		3983	S	0		
+
+GOODLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	81	U	1		76	U	1		
+2	121	U	3		118	U	3		
+3	217	U	8		226	U	8		
+4	683	U	24		796	U	24		
+5	6891	U	89		8257	U	89		
+6	238726	U	415		315825	U	415		
+
+GOODSAFETY VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	72	U	1		71	U	-1		
+2	113	U	3		105	U	3		
+3	191	U	8		208	U	8		
+4	552	U	24		632	U	-21		
+5	2460	U	89		2701	U	-74		
+6	13420	U	415		9157	U	-199		
+7	105738	U	2372		25178	U	-422		
+8	1104400	U	16072		127120	U	-1211		
+
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	86	U	1		85	U	-2		
+3	123	U	3		119	U	3		
+4	248	U	11		147	U	-4		
+5	1139	U	58		286	U	-4		
+6	13720	U	457		938	U	-14		
+7	
+---A---
+2016-10-18_13-34-59
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	55	U	102	U	
+4	59	S	113	S	
+5	68	U	118	U	
+6	76	S	

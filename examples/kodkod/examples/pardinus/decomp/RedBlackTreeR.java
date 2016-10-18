@@ -167,7 +167,7 @@ public class RedBlackTreeR implements DModel {
 		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
 		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
 
-		b.boundExactly(Node, nb);
+		b.bound(Node, nb);
 		b.bound(Root, nb);
 		b.bound(left, nb.product(nb));
 		b.bound(right, nb.product(nb));

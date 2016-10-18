@@ -415,7 +415,7 @@ public final class RunTestsR {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 14; i ++)  {
+			for (int i = 2; i <= 12; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -449,7 +449,7 @@ public final class RunTestsR {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 18; i ++)  {
+			for (int i = 9; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -460,7 +460,7 @@ public final class RunTestsR {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 18; i ++)  {
+			for (int i = 9; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
