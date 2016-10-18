@@ -3366,3 +3366,158 @@ Threads: 4
 COUNTER STATIC
 n	G.B	Sat	S.B	Sat	
 3	49	U	
+---R---
+2016-10-18_14-35-23
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	51	S	0		
+3	63	S	0		
+4	79	S	0		
+5	93	S	0		
+6	151	S	0		
+7	359	S	89		
+8	673	S	365		
+9	555	S	109		
+10	4014	S	1692		
+11	
+---P---
+2016-10-18_14-35-31
+Examples: SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	58	S	0		54	S	0		
+3	71	S	4		64	S	0		
+4	83	S	1		77	S	0		
+---A---
+2016-10-18_14-35-32
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	49	U	
+---R---
+2016-10-18_14-35-50
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	53	S	0		
+3	63	S	0		
+4	76	S	0		
+5	93	S	0		
+6	153	S	0		
+7	
+---A---
+2016-10-18_14-35-51
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	48	U	101	U	
+4	56	S	111	S	
+5	
+---R---
+2016-10-18_14-36-07
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	52	S	-1		
+3	63	S	0		
+4	76	S	0		
+5	94	S	0		
+6	147	S	0		
+7	362	S	91		
+8	683	S	365		
+9	563	S	110		
+10	3959	S	1695		
+11	1923	S	437		
+12	19464	S	8998		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	
+2	44	U	-1		
+3	56	U	-1		
+4	70	U	-1		
+5	99	U	-1		
+6	124	U	-1		
+7	280	U	-28		
+8	1490	U	-1001		
+9	7614	U	4862		
+10	28745	U	16796		
+11	120156	U	58786		
+12	
+---P---
+2016-10-18_15-15-58
+Examples: SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	96	S	0		
+3	81	S	0		
+4	98	S	0		
+5	115	S	0		
+6	190	S	0		
+7	519	S	88		
+8	884	S	363		
+9	727	S	108		
+10	6120	S	1692		
+11	2887	S	436		
+12	25214	S	8998		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	
+2	44	U	-1		
+3	56	U	-1		
+4	71	U	-1		
+5	96	U	-1		
+6	131	U	-1		
+7	291	U	-25		
+8	1437	U	-890		
+9	7709	U	4862		
+10	28841	U	16796		
+11	118729	U	58786		
+12	
+---A---
+2016-10-18_16-17-00
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	92	U	141	U	
+4	76	S	149	S	
+5	87	U	158	U	
+6	100	S	177	S	
+7	111	U	191	U	
+8	189	S	209	S	
+9	144	U	287	U	
+10	885	S	438	S	
+11	200	U	276	U	
+12	
