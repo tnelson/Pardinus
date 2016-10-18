@@ -3251,3 +3251,118 @@ n	G.B	Sat	S.B	Sat
 4	59	S	113	S	
 5	68	U	118	U	
 6	76	S	
+---R---
+2016-10-18_13-37-12
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	55	S	0		
+3	63	S	0		
+4	77	S	0		
+5	97	S	0		
+6	109	S	0		
+7	129	S	0		
+8	140	S	0		
+9	167	S	0		
+10	188	S	0		
+11	214	S	0		
+12	264	S	0		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	
+2	43	U	-1		
+3	57	U	-1		
+4	73	U	-1		
+5	103	U	-1		
+6	149	U	-1		
+7	281	U	-24		
+8	1322	U	852		
+9	12433	U	-8837		
+10	
+---R---
+2016-10-18_13-40-40
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	53	S	0		
+3	63	S	0		
+4	76	S	0		
+5	93	S	0		
+6	
+---P---
+2016-10-18_13-40-41
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	78	U	2		68	U	-2		
+2	121	S	2		123	S	2		
+3	156	S	2		156	S	2		
+4	209	S	2		
+---A---
+2016-10-18_13-40-43
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	49	U	99	U	
+4	55	S	111	S	
+5	63	U	125	U	
+6	73	S	130	S	
+7	83	U	141	U	
+8	140	S	153	S	
+9	103	U	169	U	
+10	650	S	408	S	
+11	151	U	202	U	
+12	4767	S	1644	S	
+13	342	U	272	U	
+14	81082	S	49837	S	
+15	2133	U	903	U	
+16	1495470	S	1030813	S	
+17	40570	U	26383	U	
+18	
+---R---
+2016-10-18_14-33-09
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	
+---P---
+2016-10-18_14-33-09
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	77	U	2		69	U	-2		
+2	118	S	2		
+---A---
+2016-10-18_14-33-10
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	49	U	
