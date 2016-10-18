@@ -3521,3 +3521,49 @@ n	G.B	Sat	S.B	Sat
 10	885	S	438	S	
 11	200	U	276	U	
 12	
+---R---
+2016-10-18_16-17-43
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	58	S	0		
+3	63	S	0		
+4	
+---P---
+2016-10-18_16-17-44
+Examples: SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	53	S	0		
+3	63	S	0		
+4	
+---A---
+2016-10-18_16-17-44
+Examples: Hotel RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	S.B	Sat	
+1	290	U	366	U	
+2	365	U	566	U	
+3	631	S	799	S	
+4	894	S	1151	S	
+5	4041	S	2081	S	
+6	10054	S	15908	S	
+7	43528	S	8122	S	
+8	66369	S	39414	S	
+9	216306	S	120562	S	
+10	225893	S	168183	S	
+11	1116500	S	706790	S	
+12	187865	S	210404	S	
+13	
