@@ -3062,3 +3062,60 @@ n	G.B	Sat	S.B	Sat
 7	83	U	140	U	
 8	138	S	155	S	
 9	
+---R---
+2016-10-18_12-45-03
+Examples: SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+9	647	S	0		637	S	0		
+10	761	S	0		797	S	0		
+11	1094	S	0		1125	S	0		
+12	1279	S	0		1151	S	0		
+13	1526	S	0		1468	S	0		
+14	1915	S	1		1960	S	0		
+15	2232	S	1		2496	S	0		
+16	2592	S	0		2824	S	0		
+17	4617	S	0		4453	S	0		
+18	5143	S	0		4764	S	1		
+
+Span9 V2
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+9	1192	S	1		1068	S	0		
+10	1841	S	0		1757	S	0		
+11	1765	S	0		2127	S	1		
+12	2681	S	0		2782	S	1		
+13	2666	S	0		3286	S	0		
+14	3522	S	0		3459	S	0		
+15	4163	S	0		3681	S	0		
+16	4602	S	0		5683	S	0		
+17	7793	S	1		7812	S	0		
+18	9012	S	0		8280	S	0		
+
+---P---
+2016-10-18_12-47-20
+Examples: RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	77	U	1		74	U	-1		
+2	125	U	3		112	U	3		
+3	190	U	8		
+---A---
+2016-10-18_12-47-22
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	49	U	101	U	
+4	58	S	111	S	
+5	64	U	
