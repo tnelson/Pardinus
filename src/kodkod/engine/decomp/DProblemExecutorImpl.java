@@ -147,7 +147,6 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 		} catch (RejectedExecutionException e) {
 			// was shutdown in the meantime
 		}
-
 	}
 
 	/**
@@ -160,7 +159,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 	 */
 	@Override
 	public void run() {
-		List<DProblem> problem_queue = new ArrayList<DProblem>();
+		BlockingQueue<DProblem> problem_queue = new LinkedBlockingQueue<DProblem>(200);
 
 		// if hybrid mode, launch the amalgamated problem
 		if (hybrid) {
@@ -203,9 +202,7 @@ public class DProblemExecutorImpl extends DProblemExecutor {
 			}
 			// launches a batch of integrated problems
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
-				DProblem problem = problem_queue.remove(0/*
-														 * problem_queue.size()-1
-														 */);
+				DProblem problem = problem_queue.remove();
 				try {
 					executor.execute(problem);
 				} catch (RejectedExecutionException e) {
