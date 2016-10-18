@@ -2759,3 +2759,129 @@ Threads: 4
 COUNTER STATIC
 n	G.B	Sat	S.B	Sat	
 3	49	U	
+---R---
+2016-10-18_09-09-10
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	80	U	2		69	U	-2		
+2	119	S	2		118	S	2		
+3	158	S	2		154	S	2		
+4	186	S	3		169	S	3		
+5	208	S	3		194	S	2		
+6	232	S	3		215	S	3		
+7	288	S	2		255	S	3		
+8	292	S	3		280	S	2		
+9	
+---A---
+2016-10-18_09-09-16
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	49	U	101	U	
+4	57	S	111	S	
+5	62	U	
+---R---
+2016-10-18_09-09-35
+Examples: RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	77	U	1		77	U	-1		
+2	120	U	3		119	U	3		
+3	188	U	8		224	U	8		
+4	636	U	24		792	U	24		
+5	6411	U	89		7968	U	89		
+6	68136	S	187		4157	S	-7		
+7	2919	S	59		2161	S	-40		
+8	195605	S	41		4278	S	-10		
+9	1264	S	9		1239	S	9		
+10	2209	S	32		1998	S	31		
+11	62398	S	65		5108	S	-21		
+12	18705	S	32		5433	S	-18		
+13	9863	S	42		4119	S	0		
+
+GOODLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	81	U	1		76	U	1		
+2	125	U	3		120	U	3		
+3	209	U	8		223	U	8		
+4	669	U	24		788	U	24		
+5	6173	U	89		8325	U	89		
+6	236877	U	415		317756	U	415		
+
+GOODSAFETY VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	74	U	1		69	U	-1		
+2	116	U	3		110	U	3		
+3	191	U	8		208	U	7		
+4	583	U	24		647	U	-20		
+5	2448	U	89		2742	U	-80		
+6	13175	U	415		9152	U	-208		
+7	104992	U	2372		23867	U	-402		
+8	1094110	U	16072		132178	U	-1250		
+
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	86	U	1		85	U	-2		
+3	126	U	3		119	U	3		
+4	252	U	11		149	U	-4		
+5	1174	U	58		260	U	-4		
+6	13799	U	457		960	U	-15		
+7	674328	U	5777		9203	U	-57		
+8	523	S	1		485	S	0		
+9	622	S	0		633	S	1		
+10	770	S	0		841	S	0		
+11	1102	S	0		1099	S	0		
+12	1228	S	0		1238	S	0		
+13	1554	S	0		1563	S	0		
+14	1931	S	0		1958	S	0		
+15	2359	S	0		2385	S	0		
+16	2687	S	1		2792	S	0		
+17	4858	S	0		4763	S	0		
+18	5218	S	0		4600	S	0		
+
+Span9 V2
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	123	U	1		131	U	1		
+3	195	U	3		195	U	3		
+4	609	U	11		286	U	-4		
+5	2756	U	58		681	U	-6		
+6	30323	U	457		1136	U	-10		
+7	778306	U	5777		4641	U	-22		
+8	
+---P---
+2016-10-18_10-38-48
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	101	U	2		87	U	-2		
+2	159	S	2		151	S	-4		
+3	205	S	2		188	S	4		
+4	
+---A---
+2016-10-18_10-38-51
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	S.B	Sat	
+3	61	U	129	U	
+4	72	S	
