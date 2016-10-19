@@ -3627,3 +3627,245 @@ Red Black Tree COUNTER V1
 n	G.B	Sat	S.B	Sat	
 2	66	S	147	S	
 3	
+---R---
+2016-10-18_18-24-20
+Examples: SpanTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Span9 V1
+n	G.H	Sat	C.#	C.t	
+9	650	S	0		
+10	764	S	0		
+11	1092	S	0		
+12	1196	S	0		
+13	1466	S	0		
+14	1699	S	0		
+15	2391	S	0		
+16	2820	S	0		
+17	4474	S	0		
+18	4765	S	0		
+
+Span9 V2
+n	G.H	Sat	C.#	C.t	
+9	1131	S	0		
+10	1689	S	0		
+11	1851	S	0		
+12	2420	S	0		
+13	3199	S	0		
+14	3343	S	0		
+15	3924	S	0		
+16	5027	S	0		
+17	7979	S	0		
+18	8183	S	0		
+
+---P---
+2016-10-18_18-25-29
+Examples: Hotel RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	320	U	2		376	U	2		
+2	665	U	6		721	U	-5		
+3	
+---A---
+2016-10-18_18-25-32
+Examples: Hotel RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	S.B	Sat	
+1	
+---R---
+2016-10-18_18-25-32
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	
+---R---
+2016-10-18_18-26-42
+Examples: Handshake SpanTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	G.H	Sat	C.#	C.t	
+3	48	U	0		
+4	55	S	-1		
+5	62	U	0		
+6	74	S	0		
+7	80	U	0		
+8	138	S	0		
+9	96	U	0		
+10	147	S	0		
+11	107	U	0		
+12	384	S	0		
+13	124	U	0		
+14	624	S	0		
+15	137	U	0		
+16	1590	S	0		
+17	165	U	0		
+18	5003	S	0		
+19	200	U	0		
+20	1030644	S	0		
+
+THEOREM STATIC
+n	G.H	Sat	C.#	C.t	
+3	50	U	0		
+4	57	U	-1		
+5	62	U	0		
+6	72	U	-1		
+7	80	U	0		
+8	148	U	-1		
+9	88	U	0		
+10	448	U	1		
+11	108	U	0		
+12	5078	U	-1		
+13	129	U	0		
+14	120782	U	-1		
+15	141	U	0		
+16	2912833	U	-1		
+
+Span9 V1
+n	G.H	Sat	C.#	C.t	
+2	85	U	-1		
+3	120	U	3		
+4	147	U	-4		
+5	266	U	-4		
+6	919	U	-15		
+7	8625	U	-54		
+8	468	S	3		
+9	607	S	1		
+10	787	S	0		
+11	1011	S	0		
+12	1253	S	0		
+13	1472	S	0		
+14	2076	S	0		
+15	2235	S	0		
+16	2649	S	0		
+
+Span9 V2
+n	G.H	Sat	C.#	C.t	
+2	131	U	1		
+3	196	U	3		
+4	290	U	-4		
+5	688	U	-6		
+6	1100	U	-9		
+7	4884	U	-22		
+8	35465	U	-44		
+9	1085	S	0		
+10	1835	S	0		
+11	2291	S	0		
+12	2181	S	0		
+13	2913	S	0		
+14	3453	S	0		
+15	4027	S	0		
+16	4967	S	0		
+
+---P---
+2016-10-18_19-36-26
+Examples: Hotel RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	329	U	2		356	U	2		
+2	668	U	6		676	U	-4		
+3	721	S	3		847	S	2		
+4	935	S	2		849	S	2		
+5	1082	S	2		1095	S	2		
+6	1273	S	2		1282	S	2		
+7	2086	S	2		2048	S	2		
+8	3048	S	3		2722	S	3		
+9	3358	S	3		3196	S	2		
+10	3766	S	3		3972	S	3		
+11	4474	S	3		3761	S	2		
+12	4870	S	3		4226	S	3		
+13	5018	S	3		5115	S	3		
+14	6032	S	3		5640	S	3		
+
+NOINTERVENES 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	393	U	2		462	U	-2		
+2	819	U	6		864	U	-4		
+3	2628	U	20		1651	U	6		
+4	13091	U	75		11829	U	-59		
+5	128342	U	312		135526	U	-217		
+6	1974160	U	1421		467327	U	-206		
+
+BADLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	77	U	1		72	U	-1		
+2	118	U	3		116	U	3		
+3	205	U	8		231	U	8		
+4	616	U	24		794	U	24		
+5	6528	U	89		7866	U	89		
+6	67757	S	187		4456	S	-7		
+7	2811	S	59		2136	S	-41		
+8	193022	S	42		4200	S	-9		
+9	1109	S	9		1199	S	10		
+10	2208	S	32		2611	S	31		
+11	60155	S	66		4964	S	-21		
+12	20491	S	34		5507	S	-18		
+13	9942	S	42		4279	S	0		
+
+GOODLIVENESS VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	80	U	1		74	U	-1		
+2	120	U	3		119	U	3		
+3	200	U	8		228	U	8		
+4	641	U	24		779	U	24		
+5	6644	U	89		8298	U	89		
+6	235169	U	415		318228	U	415		
+
+GOODSAFETY VARIABLE 20
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	73	U	1		69	U	-1		
+2	114	U	3		115	U	3		
+3	187	U	8		216	U	8		
+4	573	U	24		659	U	-21		
+5	2597	U	89		2660	U	-74		
+6	14162	U	415		9306	U	-203		
+7	105537	U	2372		23323	U	-398		
+8	1100082	U	16072		131128	U	-1234		
+
+Span9 V1
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	85	U	1		91	U	-1		
+3	120	U	3		120	U	-3		
+4	246	U	11		147	U	-4		
+5	1145	U	58		279	U	-4		
+6	14118	U	457		881	U	-15		
+7	663358	U	5777		8855	U	-55		
+8	468	S	1		439	S	1		
+9	638	S	1		578	S	1		
+10	738	S	1		733	S	1		
+11	1064	S	1		1042	S	1		
+12	1252	S	1		1117	S	1		
+13	1498	S	1		1535	S	1		
+14	1723	S	1		1526	S	1		
+15	2254	S	1		2232	S	1		
+16	2590	S	1		2648	S	1		
+
+Span9 V2
+n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	122	U	1		134	U	-1		
+3	193	U	3		195	U	3		
+4	521	U	11		286	U	-4		
+5	3082	U	58		643	U	-6		
+6	29981	U	457		1056	U	-9		
+7	786911	U	5777		4421	U	-23		
+8	
