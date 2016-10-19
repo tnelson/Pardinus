@@ -3869,3 +3869,308 @@ n	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 6	29981	U	457		1056	U	-9		
 7	786911	U	5777		4421	U	-23		
 8	
+---A---
+2016-10-19_09-13-29
+Examples: Hotel RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	S.B	Sat	
+1	315	U	381	U	
+2	372	U	603	U	
+3	599	S	857	S	
+4	854	S	1255	S	
+5	4004	S	1879	S	
+6	9882	S	4726	S	
+7	44047	S	10503	S	
+8	64232	S	27697	S	
+9	217676	S	137131	S	
+10	224226	S	101837	S	
+11	1108779	S	451305	S	
+12	183364	S	111932	S	
+13	
+---R---
+2016-10-19_10-55-05
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	78	S	0		
+3	62	S	0		
+4	77	S	0		
+5	94	S	0		
+6	149	S	0		
+7	353	S	88		
+8	691	S	365		
+9	557	S	109		
+10	
+---R---
+2016-10-19_10-55-57
+Examples: SpanTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Span9 V1
+n	G.H	Sat	C.#	C.t	
+2	86	U	-1		
+3	122	U	3		
+4	150	U	-4		
+5	268	U	-4		
+6	969	U	-17		
+7	9351	U	-55		
+8	471	S	0		
+9	610	S	0		
+10	840	S	0		
+11	1014	S	0		
+12	1187	S	0		
+13	1411	S	0		
+14	2020	S	0		
+15	2298	S	0		
+16	2661	S	0		
+
+Span9 V2
+n	G.H	Sat	C.#	C.t	
+2	131	U	1		
+3	200	U	3		
+4	295	U	-4		
+5	694	U	-6		
+6	1162	U	-10		
+7	4853	U	-21		
+8	35066	U	-44		
+9	1188	S	0		
+10	1780	S	0		
+11	1844	S	0		
+12	2457	S	0		
+13	3337	S	0		
+14	3433	S	0		
+15	3738	S	0		
+16	4653	S	0		
+
+---P---
+2016-10-19_10-57-34
+Examples: RingLeader SpanTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+BADLIVENESS VARIABLE 20
+n	G.H	Sat	C.#	C.t	
+1	74	U	1		
+2	117	U	3		
+3	226	U	8		
+4	772	U	24		
+5	7784	U	89		
+6	4224	S	-7		
+7	2044	S	-39		
+8	3991	S	-9		
+9	1174	S	9		
+10	2642	S	31		
+11	5444	S	-21		
+12	5354	S	18		
+13	4249	S	0		
+
+GOODLIVENESS VARIABLE 20
+n	G.H	Sat	C.#	C.t	
+1	75	U	1		
+2	118	U	3		
+3	229	U	8		
+4	804	U	24		
+5	8370	U	89		
+6	315570	U	415		
+
+GOODSAFETY VARIABLE 20
+n	G.H	Sat	C.#	C.t	
+1	66	U	-1		
+2	115	U	3		
+3	211	U	8		
+4	673	U	-21		
+5	2761	U	-75		
+6	8683	U	-196		
+7	23747	U	-392		
+8	132870	U	-1266		
+
+Span9 V1
+n	G.H	Sat	C.#	C.t	
+2	80	U	-1		
+3	117	U	-4		
+4	147	U	-4		
+5	271	U	-4		
+6	1133	U	-18		
+7	8764	U	-54		
+8	438	S	0		
+9	586	S	1		
+10	771	S	1		
+11	1051	S	1		
+12	1176	S	1		
+13	1530	S	1		
+14	1962	S	0		
+15	2147	S	0		
+16	2748	S	1		
+
+Span9 V2
+n	G.H	Sat	C.#	C.t	
+2	135	U	1		
+3	197	U	3		
+4	293	U	3		
+5	708	U	-6		
+6	1152	U	-10		
+7	4845	U	-21		
+8	35187	U	-44		
+9	1083	S	1		
+10	1665	S	1		
+11	1863	S	1		
+12	2718	S	1		
+13	3204	S	1		
+14	3185	S	1		
+15	3626	S	1		
+16	5186	S	1		
+
+---A---
+2016-10-19_11-08-12
+Examples: RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE, SYRUP]
+Modes: [BATCH]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.B	Sat	S.B	Sat	
+2	51	S	110	S	
+3	60	S	117	S	
+4	72	S	130	S	
+5	87	S	148	S	
+6	140	S	176	S	
+7	379	S	230	S	
+8	720	S	398	S	
+9	1593	S	1001	S	
+10	56960	S	1946	S	
+11	239674	S	28324	S	
+12	2341174	S	5228	S	
+
+Red Black Tree THEOREM V1
+n	G.B	Sat	S.B	Sat	
+2	46	U	100	U	
+3	63	U	119	U	
+4	74	U	133	U	
+5	93	U	152	U	
+6	124	U	183	U	
+7	255	U	257	U	
+8	977	U	562	U	
+9	7262	U	3464	U	
+10	70241	U	36386	U	
+11	713878	U	437732	U	
+
+BADLIVENESS VARIABLE 20
+n	G.B	Sat	S.B	Sat	
+1	70	U	123	U	
+2	114	U	190	U	
+3	193	U	274	U	
+4	10531	U	3240	U	
+5	4469839	U	1909039	U	
+6	2757	S	1024	S	
+7	1042	S	1103	S	
+8	1882	S	1476	S	
+9	1559	S	2018	S	
+10	1542	S	2945	S	
+11	2570	S	3260	S	
+12	3400	S	4136	S	
+13	3928	S	5259	S	
+
+GOODLIVENESS VARIABLE 20
+n	G.B	Sat	S.B	Sat	
+1	76	U	124	U	
+2	118	U	190	U	
+3	189	U	283	U	
+4	10890	U	3305	U	
+5	4485504	U	1932354	U	
+
+GOODSAFETY VARIABLE 20
+n	G.B	Sat	S.B	Sat	
+1	61	U	110	U	
+2	113	U	179	U	
+3	188	U	250	U	
+4	422	U	420	U	
+5	1395	U	881	U	
+6	4802	U	2209	U	
+7	14607	U	7614	U	
+8	75627	U	39587	U	
+
+Span9 V1
+n	G.B	Sat	S.B	Sat	
+2	79	U	132	U	
+3	97	U	160	U	
+4	123	U	196	U	
+5	189	U	243	U	
+6	564	U	422	U	
+7	4448	U	1421	U	
+8	336	S	456	S	
+9	435	S	637	S	
+10	544	S	802	S	
+11	893	S	970	S	
+12	812	S	1226	S	
+13	878	S	1539	S	
+14	1115	S	1774	S	
+15	1244	S	2152	S	
+16	1915	S	2422	S	
+17	3792	S	3539	S	
+18	2879	S	4045	S	
+
+Span9 V2
+n	G.B	Sat	S.B	Sat	
+2	116	U	180	U	
+3	155	U	236	U	
+4	214	U	307	U	
+5	434	U	432	U	
+6	611	U	695	U	
+7	1704	U	1635	U	
+8	11352	U	6006	U	
+9	2540	S	1837	S	
+10	3181	S	2094	S	
+11	4427	S	2665	S	
+12	5434	S	3763	S	
+13	2724	S	3892	S	
+14	15134	S	6207	S	
+15	8908	S	6616	S	
+16	6064	S	9012	S	
+17	14378	S	16946	S	
+18	18068	S	16837	S	
+
+---R---
+2016-10-19_15-54-55
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	
+2	55	S	0		
+3	62	S	0		
+4	76	S	0		
+5	94	S	0		
+6	157	S	0		
+7	350	S	87		
+8	708	S	365		
+9	546	S	110		
+10	4020	S	1692		
+11	1961	S	436		
+12	20083	S	8996		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	
+2	43	U	-1		
+3	56	U	-1		
+4	71	U	-1		
+5	98	U	-1		
+6	131	U	-1		
+7	285	U	-25		
+8	1481	U	-974		
+9	7854	U	4862		
+10	28560	U	16796		
+11	119401	U	58786		
+12	
