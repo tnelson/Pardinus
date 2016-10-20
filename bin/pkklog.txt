@@ -5045,3 +5045,135 @@ n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t
 2	58	S	0		59	S	0		
 3	71	S	4		73	S	4		
 4	83	S	1		84	S	1		
+---R---
+2016-10-20_17-37-51
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+25	1001	S	2		1002	S	2		
+26	1290	S	2		
+---P---
+2016-10-20_17-37-55
+Examples: RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+2	61	S	0		59	S	0		
+3	71	S	4		73	S	4		
+4	
+---R---
+2016-10-20_17-37-56
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [SYRUP]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+Dijkstra15 SAT
+n	S.B	Sat	S.B	Sat	
+25	
+---R---
+2016-10-20_17-38-04
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+25	1048	S	2		1011	S	2		
+26	
+---P---
+2016-10-20_17-38-06
+Examples: RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+2	57	S	0		58	S	0		
+3	71	S	4		
+---A---
+2016-10-20_17-38-07
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [SYRUP]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+Dijkstra15 SAT
+n	S.B	Sat	S.B	Sat	
+1	125	U	117	U	
+2	
+---R---
+2016-10-20_17-39-03
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 2
+Threads: 2
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	58	S	0		57	S	0		55	S	0		54	S	0		
+3	75	S	4		75	S	4		64	S	0		64	S	0		
+4	83	S	0		83	S	0		76	S	0		76	S	-1		
+5	146	S	20		147	S	20		94	S	0		95	S	0		
+6	184	S	2		168	S	2		150	S	0		157	S	0		
+7	348	S	86		353	S	89		451	S	88		459	S	88		
+8	661	S	365		693	S	365		985	S	-321		982	S	-317		
+9	536	S	111		528	S	109		752	S	109		748	S	109		
+10	3432	S	1692		3336	S	1691		4136	S	1691		4193	S	1692		
+11	1661	S	443		1646	S	436		2049	S	436		2071	S	436		
+12	17120	S	8998		16589	S	8999		20418	S	8995		20117	S	8998		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	54	U	2		56	U	2		45	U	-1		45	U	-1		
+3	76	U	5		75	U	5		59	U	-1		58	U	-1		
+4	108	U	14		109	U	14		71	U	-1		74	U	-1		
+5	176	U	42		181	U	42		101	U	-1		101	U	-1		
+6	342	U	132		346	U	132		136	U	-1		131	U	-1		
+7	708	U	429		721	U	429		289	U	-9		294	U	-10		
+8	1927	U	1430		1885	U	1430		1307	U	-371		1306	U	-364		
+9	6854	U	4862		6739	U	4862		9058	U	4862		9128	U	4862		
+10	24810	U	16796		24371	U	16796		28051	U	16796		28282	U	16796		
+11	96991	U	58786		99516	U	58786		121762	U	58786		
+---R---
+2016-10-20_17-49-28
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 2
+Threads: 6
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	56	S	0		56	S	0		55	S	0		55	S	0		
+3	74	S	4		71	S	4		66	S	0		64	S	0		
+4	86	S	3		88	S	3		77	S	0		76	S	0		
+5	121	S	21		126	S	21		94	S	-1		98	S	0		
+6	172	S	4		173	S	3		152	S	0		151	S	0		
+7	305	S	88		309	S	87		329	S	88		341	S	88		
+8	581	S	365		593	S	365		659	S	365		650	S	364		
+9	481	S	110		488	S	110		489	S	109		511	S	111		
+10	3262	S	1692		3213	S	1693		4035	S	1705		4006	S	1694		
+11	1616	S	436		1621	S	433		2166	S	437		2005	S	436		
+12	17716	S	8997		17328	S	8995		20044	S	8999		20288	S	8998		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+2	56	U	2		56	U	2		45	U	-1		43	U	-1		
+3	70	U	5		69	U	5		57	U	-1		57	U	-1		
+4	98	U	14		97	U	14		73	U	-1		73	U	-1		
+5	151	U	42		148	U	42		103	U	-1		99	U	-1		
+6	282	U	132		281	U	132		134	U	-1		137	U	-1		
+7	576	U	429		569	U	429		295	U	-36		306	U	-45		
+8	1840	U	1430		1843	U	1430		1565	U	-1000		1522	U	-1001		
+9	7073	U	4862		7108	U	4862		8189	U	4862		8023	U	4862		
+10	26440	U	16796		26264	U	16796		29104	U	16796		30208	U	16796		
+11	102956	U	58786		
