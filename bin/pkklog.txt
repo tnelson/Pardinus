@@ -4877,3 +4877,171 @@ n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t
 18	4726	S	0		4756	S	0		
 19	165	U	0		162	U	0		
 20	872373	S	0		
+---P---
+2016-10-20_15-16-20
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+1	77	U	2		85	U	2		
+2	118	S	2		123	S	2		
+3	161	S	2		160	S	2		
+4	203	S	3		203	S	2		
+5	268	S	2		266	S	3		
+6	307	S	3		320	S	2		
+7	417	S	2		426	S	3		
+8	441	S	3		512	S	2		
+9	557	S	2		560	S	2		
+10	631	S	2		620	S	2		
+11	759	S	2		920	S	2		
+12	918	S	2		1042	S	2		
+13	1152	S	2		1270	S	2		
+14	1381	S	2		1173	S	2		
+15	1430	S	2		1623	S	2		
+16	1525	S	2		1511	S	2		
+17	1783	S	2		1779	S	2		
+18	1854	S	2		1886	S	2		
+19	2190	S	2		2244	S	2		
+20	2625	S	2		2440	S	2		
+21	2667	S	2		2540	S	2		
+22	2978	S	2		2834	S	2		
+23	3073	S	2		2944	S	2		
+24	3208	S	2		3125	S	2		
+25	3828	S	2		3663	S	2		
+26	4371	S	2		4584	S	2		
+27	4654	S	2		4799	S	2		
+28	4715	S	2		4687	S	2		
+29	5480	S	2		5218	S	2		
+30	5941	S	2		6002	S	2		
+
+Dijkstra15 UNSAT
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+1	81	U	2		82	U	2		
+2	118	U	3		122	U	3		
+3	169	U	4		167	U	4		
+4	254	U	5		254	U	5		
+5	389	U	6		406	U	6		
+6	658	U	7		645	U	7		
+7	897	U	8		936	U	8		
+8	1297	U	9		1331	U	9		
+9	1831	U	10		1880	U	10		
+10	2547	U	11		2699	U	11		
+11	3436	U	12		3789	U	12		
+12	4365	U	13		4084	U	13		
+13	5399	U	14		5348	U	14		
+14	6436	U	15		6682	U	15		
+15	7935	U	16		7754	U	16		
+16	8987	U	17		9907	U	17		
+17	11570	U	18		10852	U	18		
+18	14672	U	19		14829	U	19		
+19	17141	U	20		16671	U	20		
+20	21296	U	21		21622	U	21		
+21	25915	U	22		26539	U	22		
+22	33173	U	23		32476	U	23		
+23	39762	U	24		39535	U	24		
+24	44252	U	25		43881	U	25		
+25	56533	U	26		55588	U	26		
+26	66462	U	27		66781	U	27		
+27	79026	U	28		79775	U	28		
+28	98847	U	29		98269	U	29		
+29	116083	U	30		114368	U	30		
+30	132479	U	31		133250	U	31		
+
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+3	48	U	0		47	U	0		
+4	63	S	0		64	S	0		
+5	61	U	0		59	U	0		
+6	79	S	0		80	S	0		
+7	70	U	0		70	U	0		
+8	129	S	0		130	S	0		
+9	84	U	0		83	U	0		
+10	140	S	0		146	S	0		
+11	97	U	0		97	U	0		
+12	370	S	0		369	S	0		
+13	110	U	0		118	U	0		
+14	624	S	0		620	S	0		
+15	125	U	0		125	U	0		
+16	1557	S	0		1563	S	0		
+17	146	U	0		144	U	0		
+18	4702	S	0		4714	S	0		
+19	164	U	0		161	U	0		
+20	887663	S	0		870780	S	0		
+
+THEOREM STATIC
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+3	49	U	0		48	U	0		
+4	64	U	1		63	U	1		
+5	60	U	0		61	U	0		
+6	81	U	1		80	U	1		
+7	71	U	0		72	U	0		
+8	140	U	1		138	U	1		
+9	85	U	0		84	U	0		
+10	557	U	1		579	U	1		
+11	96	U	0		98	U	0		
+12	6637	U	1		6657	U	1		
+13	112	U	0		115	U	0		
+14	721499	U	1		722888	U	1		
+15	129	U	0		125	U	0		
+
+INTERVENES 20
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+1	333	U	2		326	U	2		
+2	673	U	6		682	U	6		
+3	755	S	2		712	S	2		
+4	876	S	2		929	S	2		
+5	1100	S	2		1051	S	2		
+6	1280	S	2		1220	S	2		
+7	2108	S	2		2225	S	2		
+8	3062	S	4		3018	S	3		
+9	3151	S	2		3181	S	3		
+10	4030	S	3		3712	S	3		
+11	4647	S	3		4697	S	2		
+12	5044	S	3		4939	S	2		
+13	5723	S	3		5240	S	3		
+14	5575	S	3		5572	S	3		
+
+NOINTERVENES 20
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+1	370	U	2		392	U	2		
+2	873	U	6		877	U	6		
+3	2633	U	20		2638	U	20		
+4	12734	U	75		12257	U	75		
+5	128267	U	312		129105	U	312		
+6	1974371	U	1421		
+---P---
+2016-10-20_17-30-04
+Examples: RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+2	57	S	0		55	S	0		
+3	
+---R---
+2016-10-20_17-33-47
+Examples: Hotel RingLeader Handshake SpanTree RedBlackTree Dijkstra 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Dijkstra15 SAT
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+25	
+---P---
+2016-10-20_17-33-47
+Examples: RingLeader SpanTree RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+2	58	S	0		59	S	0		
+3	71	S	4		73	S	4		
+4	83	S	1		84	S	1		
