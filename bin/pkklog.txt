@@ -6441,3 +6441,69 @@ n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.
 9	10276	U	6731	U	4862		8034	U	4862		7289	U	6805	U	4862		7775	U	4862		2577	U	
 10	197628	U	25979	U	16796		28543	U	16796		69747	U	25153	U	16796		28727	U	16796		26338	U	
 11	
+---R---
+2016-10-21_18-24-07
+Examples: Hotel Handshake 
+Solvers: [MINISAT, GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+3	49	U	48	U	0		51	U	-1		49	U	47	U	0		51	U	0		106	U	
+
+THEOREM STATIC
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+3	47	U	49	U	0		66	U	0		50	U	49	U	0		50	U	-1		99	U	
+4	58	U	61	U	1		54	U	-1		58	U	63	U	1		56	U	-1		111	U	
+5	65	U	60	U	0		63	U	0		67	U	61	U	0		63	U	0		120	U	
+6	73	U	81	U	1		76	U	-1		75	U	79	U	1		74	U	-1		132	U	
+7	79	U	72	U	0		95	U	0		81	U	71	U	0		82	U	0		140	U	
+8	134	U	125	U	1		143	U	-1		141	U	138	U	1		153	U	1		178	U	
+9	103	U	84	U	0		95	U	0		105	U	84	U	0		96	U	0		169	U	
+10	565	U	647	U	1		592	U	-1		759	U	437	U	1		452	U	1		451	U	
+11	129	U	98	U	0		107	U	0		133	U	98	U	0		113	U	0		204	U	
+12	7475	U	52307	U	1		7541	U	-1		5017	U	7141	U	1		5321	U	-1		2588	U	
+13	249	U	116	U	0		127	U	0		272	U	128	U	0		124	U	0		285	U	
+14	
+---R---
+2016-10-21_18-36-14
+Examples: RingLeader Dijkstra 
+Solvers: [MINISAT, GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Dijkstra15 SAT
+n	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+27	1149	S	3		1194	S	3		1077	S	2		1088	S	2		
+28	1439	S	2		1389	S	2		1229	S	2		1163	S	3		
+29	1294	S	2		1330	S	2		1246	S	3		1385	S	2		
+30	1767	S	2		1657	S	2		1706	S	2		1419	S	3		
+
+Dijkstra15 UNSAT
+n	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+27	58640	U	28		37360	U	-22		55263	U	28		37398	U	-23		
+28	65713	U	29		42665	U	-23		67601	U	29		36508	U	-22		
+29	80027	U	30		51481	U	-24		81341	U	30		48327	U	-23		
+30	91468	U	31		58735	U	-24		94980	U	31		50245	U	-23		
+
+BADLIVENESS VARIABLE 20
+n	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	76	U	1		78	U	-1		79	U	1		76	U	-1		
+
+GOODLIVENESS VARIABLE 20
+n	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	79	U	1		77	U	1		81	U	1		76	U	-1		
+2	128	U	3		113	U	3		121	U	3		122	U	3		
+3	206	U	8		228	U	8		191	U	8		230	U	8		
+4	643	U	24		781	U	24		654	U	24		784	U	24		
+5	16272	U	89		18272	U	89		6453	U	89		8567	U	89		
+
+GOODSAFETY VARIABLE 20
+n	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	74	U	1		69	U	-1		73	U	1		69	U	-1		
+2	113	U	3		112	U	3		114	U	3		115	U	3		
+3	192	U	8		223	U	8		196	U	8		209	U	8		
+4	599	U	24		672	U	-23		570	U	24		665	U	-21		
+5	2563	U	89		2467	U	-67		2435	U	89		2899	U	-81		
+6	13213	U	415		8106	U	-155		13369	U	415		8805	U	-193		
