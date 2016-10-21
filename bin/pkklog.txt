@@ -6159,3 +6159,285 @@ n	S.B	Sat	S.B	Sat
 14	65938	S	35139	S	
 15	855	U	818	U	
 16	
+---R---
+2016-10-21_14-33-25
+Examples: Hotel Handshake RedBlackTree 
+Solvers: [MINISAT]
+Modes: [PARALLEL, HYBRID]
+Tries: 2
+Threads: 4
+COUNTER STATIC
+n	M.P	Sat	C.#	C.t	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	M.H	Sat	C.#	C.t	
+3	47	U	0		48	U	0		
+---R---
+2016-10-21_14-33-25
+Examples: Hotel RedBlackTree 
+Solvers: [SYRUP]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	S.B	Sat	S.B	Sat	
+1	360	U	373	U	
+2	594	U	
+---R---
+2016-10-21_14-34-01
+Examples: Hotel Handshake RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 2
+Threads: 4
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	49	U	0		48	U	0		51	U	0		51	U	0		
+4	62	S	0		63	S	0		56	S	0		57	S	0		
+5	58	U	0		59	U	0		61	U	0		61	U	0		
+6	78	S	0		79	S	0		74	S	0		75	S	0		
+7	70	U	0		69	U	0		80	U	0		79	U	0		
+8	130	S	0		129	S	0		140	S	0		144	S	0		
+9	83	U	0		84	U	0		94	U	0		95	U	0		
+10	140	S	0		141	S	0		151	S	0		150	S	0		
+11	98	U	0		98	U	0		110	U	0		116	U	0		
+12	373	S	0		
+---R---
+2016-10-21_14-34-10
+Examples: Hotel RedBlackTree 
+Solvers: [SYRUP]
+Modes: [BATCH]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	S.B	Sat	S.B	Sat	
+1	364	U	
+---R---
+2016-10-21_14-34-24
+Examples: Hotel Handshake RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 2
+Threads: 1
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+3	47	U	0		48	U	0		50	U	0		50	U	0		
+4	63	S	0		62	S	0		56	S	0		57	S	0		
+5	58	U	0		59	U	0		59	U	0		64	U	0		
+6	80	S	0		79	S	0		74	S	0		75	S	0		
+7	71	U	0		70	U	0		80	U	0		79	U	0		
+8	129	S	0		131	S	0		142	S	0		141	S	0		
+9	83	U	0		84	U	0		97	U	0		91	U	0		
+10	144	S	0		139	S	0		667	S	0		659	S	0		
+11	98	U	0		98	U	0		112	U	0		111	U	0		
+12	370	S	0		375	S	0		4807	S	0		4804	S	0		
+13	115	U	0		115	U	0		131	U	0		125	U	0		
+14	625	S	0		617	S	0		
+---R---
+2016-10-21_14-35-22
+Examples: Hotel RedBlackTree 
+Solvers: [SYRUP]
+Modes: [BATCH]
+Tries: 2
+Threads: 1
+INTERVENES 20
+n	S.B	Sat	S.B	Sat	
+1	363	U	
+---R---
+2016-10-21_14-35-38
+Examples: Hotel Handshake RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL]
+Tries: 2
+Threads: 1
+COUNTER STATIC
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+3	45	U	0		47	U	0		
+4	62	S	0		61	S	0		
+5	59	U	0		59	U	0		
+6	79	S	0		80	S	0		
+7	69	U	0		71	U	0		
+8	129	S	0		128	S	0		
+9	84	U	0		84	U	0		
+10	142	S	0		145	S	0		
+11	95	U	0		96	U	0		
+12	369	S	0		382	S	0		
+13	116	U	0		116	U	0		
+14	615	S	0		618	S	0		
+15	125	U	0		124	U	0		
+16	1566	S	0		1563	S	0		
+17	146	U	0		147	U	0		
+18	4785	S	0		4724	S	0		
+19	162	U	0		165	U	0		
+
+THEOREM STATIC
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+3	49	U	0		49	U	0		
+4	63	U	1		63	U	1		
+5	60	U	0		59	U	0		
+6	79	U	1		80	U	1		
+7	72	U	0		71	U	0		
+8	135	U	1		138	U	1		
+9	86	U	0		86	U	0		
+10	435	U	1		437	U	1		
+11	96	U	0		100	U	0		
+12	6961	U	1		6871	U	1		
+13	114	U	0		114	U	0		
+15	128	U	0		126	U	0		
+
+INTERVENES 20
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+1	345	U	2		336	U	2		
+2	923	U	6		891	U	6		
+3	586	S	2		597	S	2		
+4	623	S	2		666	S	2		
+5	702	S	2		722	S	2		
+6	804	S	2		755	S	2		
+7	940	S	2		948	S	2		
+8	930	S	2		891	S	2		
+9	959	S	2		977	S	2		
+10	976	S	2		970	S	2		
+11	1017	S	3		1099	S	2		
+12	1100	S	2		1059	S	2		
+
+NOINTERVENES 20
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+1	389	U	2		411	U	2		
+2	1159	U	6		1143	U	6		
+3	4422	U	20		4455	U	20		
+4	25028	U	75		25244	U	75		
+
+Red Black Tree COUNTER V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+2	57	S	0		57	S	0		
+3	80	S	4		80	S	4		
+4	83	S	0		84	S	0		
+5	154	S	20		155	S	20		
+6	174	S	2		175	S	2		
+7	425	S	87		426	S	87		
+8	938	S	366		938	S	365		
+9	652	S	109		662	S	110		
+10	3457	S	1692		3566	S	1692		
+11	1701	S	437		1740	S	436		
+12	17379	S	8998		16741	S	8998		
+
+Red Black Tree THEOREM V1
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	
+2	56	U	2		58	U	2		
+3	81	U	5		80	U	5		
+4	125	U	14		124	U	14		
+5	213	U	42		219	U	42		
+6	442	U	132		418	U	132		
+7	960	U	429		943	U	429		
+8	2658	U	1430		2682	U	1430		
+9	8193	U	4862		8414	U	4862		
+
+---R---
+2016-10-21_14-39-06
+Examples: Hotel RedBlackTree 
+Solvers: [SYRUP]
+Modes: [BATCH]
+Tries: 2
+Threads: 1
+INTERVENES 20
+n	S.B	Sat	S.B	Sat	
+1	363	U	355	U	
+2	591	U	635	U	
+3	777	S	751	S	
+4	1143	S	1400	S	
+5	2238	S	4804	S	
+6	12096	S	8519	S	
+7	12118	S	7504	S	
+8	11062	S	55325	S	
+9	59324	S	32448	S	
+10	24599	S	38007	S	
+11	168088	S	
+---R---
+2016-10-21_14-51-50
+Examples: Hotel Handshake RedBlackTree 
+Solvers: [MINISAT, GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+3	47	U	45	U	0		49	U	0		48	U	47	U	0		49	U	0		102	U	
+4	56	S	62	S	0		56	S	-1		61	S	62	S	0		57	S	0		110	S	
+5	66	U	59	U	0		64	U	0		65	U	59	U	0		63	U	0		117	U	
+6	75	S	79	S	0		76	S	0		75	S	78	S	0		75	S	0		132	S	
+7	80	U	70	U	0		82	U	0		82	U	71	U	0		82	U	0		140	U	
+8	125	S	101	S	0		115	S	0		139	S	131	S	0		142	S	0		173	S	
+9	102	U	84	U	0		91	U	0		104	U	86	U	0		91	U	0		171	U	
+10	542	S	135	S	0		148	S	0		653	S	142	S	0		160	S	0		394	S	
+11	126	U	99	U	0		111	U	0		148	U	97	U	0		114	U	0		203	U	
+12	9603	S	512	S	0		530	S	0		4767	S	372	S	0		394	S	0		2277	S	
+13	959	U	111	U	0		131	U	0		342	U	115	U	0		129	U	0		264	U	
+14	317221	S	583	S	0		579	S	0		81668	S	625	S	0		628	S	0		40161	S	
+15	3486	U	127	U	0		138	U	0		2070	U	126	U	0		155	U	0		901	U	
+16	
+---R---
+2016-10-21_17-05-39
+Examples: Hotel Handshake RedBlackTree 
+Solvers: [MINISAT, GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+COUNTER STATIC
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+3	48	U	45	U	0		49	U	0		50	U	47	U	0		49	U	0		102	U	
+
+THEOREM STATIC
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+3	50	U	48	U	0		51	U	0		48	U	49	U	0		50	U	0		100	U	
+
+INTERVENES 20
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+1	278	U	321	U	2		405	U	-2		289	U	324	U	2		374	U	2		365	U	
+2	371	U	587	U	6		658	U	-5		384	U	646	U	6		598	U	-6		574	U	
+3	512	S	640	S	2		645	S	3		641	S	655	S	2		673	S	2		800	S	
+4	6005	S	656	S	3		678	S	2		872	S	668	S	1		667	S	2		1563	S	
+5	4603	S	732	S	2		732	S	2		4037	S	725	S	2		708	S	2		2256	S	
+6	23995	S	865	S	2		857	S	2		10503	S	845	S	2		863	S	2		6675	S	
+7	17243	S	848	S	2		1089	S	2		43973	S	1129	S	2		1072	S	2		27701	S	
+8	41079	S	1184	S	2		915	S	2		63810	S	906	S	2		940	S	2		22545	S	
+9	388038	S	1081	S	2		869	S	2		214965	S	1100	S	2		866	S	2		87522	S	
+10	
+---R---
+2016-10-21_17-31-44
+Examples: RedBlackTree 
+Solvers: [MINISAT, GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	77	S	64	S	0		53	S	0		56	S	57	S	0		52	S	0		112	S	
+3	63	S	71	S	3		66	S	0		65	S	73	S	4		63	S	0		117	S	
+4	73	S	84	S	2		78	S	-1		73	S	85	S	1		78	S	0		130	S	
+5	90	S	141	S	31		102	S	0		85	S	132	S	24		92	S	0		148	S	
+6	124	S	177	S	7		135	S	-1		144	S	169	S	2		155	S	0		182	S	
+7	392	S	471	S	308		506	S	-244		396	S	316	S	88		362	S	88		217	S	
+8	168	S	425	S	97		184	S	0		737	S	632	S	366		669	S	365		320	S	
+9	6088	S	2817	S	1788		3320	S	1789		1624	S	488	S	109		556	S	109		767	S	
+10	112594	S	5207	S	2463		6129	S	2463		55327	S	3267	S	1693		4006	S	1692		1946	S	
+11	
+---R---
+2016-10-21_17-52-41
+Examples: RedBlackTree 
+Solvers: [MINISAT, GLUCOSE, SYRUP]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 1
+Threads: 4
+Red Black Tree COUNTER V1
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	51	S	57	S	0		53	S	0		51	S	56	S	0		53	S	0		103	S	
+
+Red Black Tree THEOREM V1
+n	M.B	Sat	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.B	Sat	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	S.B	Sat	
+2	45	U	56	U	2		44	U	-1		59	U	57	U	2		43	U	-1		96	U	
+3	63	U	73	U	5		58	U	-1		64	U	72	U	5		57	U	-1		120	U	
+4	74	U	101	U	14		72	U	-1		81	U	100	U	14		72	U	-1		133	U	
+5	94	U	161	U	42		97	U	-1		97	U	159	U	42		101	U	-1		154	U	
+6	136	U	298	U	132		139	U	-1		127	U	302	U	132		128	U	-1		186	U	
+7	336	U	623	U	429		435	U	-119		263	U	596	U	429		288	U	-22		284	U	
+8	1186	U	1793	U	1430		1793	U	-1201		945	U	1899	U	1429		1552	U	-1001		588	U	
+9	10276	U	6731	U	4862		8034	U	4862		7289	U	6805	U	4862		7775	U	4862		2577	U	
+10	197628	U	25979	U	16796		28543	U	16796		69747	U	25153	U	16796		28727	U	16796		26338	U	
+11	
