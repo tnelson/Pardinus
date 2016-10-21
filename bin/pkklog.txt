@@ -6507,3 +6507,48 @@ n	M.P	Sat	C.#	C.t	M.H	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 4	599	U	24		672	U	-23		570	U	24		665	U	-21		
 5	2563	U	89		2467	U	-67		2435	U	89		2899	U	-81		
 6	13213	U	415		8106	U	-155		13369	U	415		8805	U	-193		
+
+---R---
+2016-10-21_19-07-22
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 4
+Threads: 4
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+10	3903	S	1693		4034	S	1691		3985	S	1692		4126	S	1692		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+8	1539	U	-1001		1492	U	-988		1463	U	970		1560	U	-1001		
+
+---R---
+2016-10-21_19-08-06
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 4
+Threads: 6
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+10	4049	S	1689		4152	S	1710		4012	S	1692		3932	S	1694		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+8	1759	U	-1201		1564	U	-1001		1573	U	-1001		1633	U	-1001		
+
+---R---
+2016-10-21_19-08-45
+Examples: RedBlackTree 
+Solvers: [GLUCOSE]
+Modes: [HYBRID]
+Tries: 4
+Threads: 2
+Red Black Tree COUNTER V1
+n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+10	4082	S	1692		4327	S	1693		4162	S	1692		4287	S	1692		
+
+Red Black Tree THEOREM V1
+n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+8	1397	U	-381		1265	U	-369		1371	U	-401		1285	U	-346		

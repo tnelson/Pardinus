@@ -36,7 +36,7 @@ public final class RunTestsR {
 	static DProblem psolution = null;
 	static Solution solution = null;
 
-	static int tries, threads = 4;
+	static int tries, threads = 6;
 
 	static private StringBuilder log = new StringBuilder();
 	static private StringBuilder header = new StringBuilder();
@@ -231,7 +231,7 @@ public final class RunTestsR {
 		String className = RunTestModel.class.getCanonicalName();
 		String librarypath = System.getProperty("java.library.path");
 
-		String[] cmd_args = new String[]{javaBin, "-Djava.library.path="+librarypath, "-cp", classpath, className, model};
+		String[] cmd_args = new String[]{javaBin, "-Djava.library.path="+librarypath,"-Xmx4g", "-XX:-UseGCOverheadLimit", "-cp", classpath, className, model};
 
 		String[] args = Arrays.copyOf(cmd_args, cmd_args.length + model_args.length);
 		System.arraycopy(model_args, 0, args, cmd_args.length, model_args.length);
@@ -338,18 +338,19 @@ public final class RunTestsR {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 13; i ++)  {
+				for (int i = 1; i <= 1; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
 				log.append("\n");
+
 				
 				v = RingR.Variant1.GOODLIVENESS;
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 6; i ++)  {
+				for (int i = 1; i <= 5; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -360,7 +361,7 @@ public final class RunTestsR {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 8; i ++)  {
+				for (int i = 1; i <= 6; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -385,7 +386,7 @@ public final class RunTestsR {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 20; i ++)  {
+				for (int i = 3; i <= 3; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -396,11 +397,12 @@ public final class RunTestsR {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 16; i ++)  {
+				for (int i = 3; i <= 14; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
+ 
 				log.append("\n");
 //			}
 	}
@@ -415,7 +417,7 @@ public final class RunTestsR {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 12; i ++)  {
+			for (int i = 11; i <= 11; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -426,7 +428,7 @@ public final class RunTestsR {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 12; i ++)  {
+			for (int i = 9; i <= 9; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -449,7 +451,12 @@ public final class RunTestsR {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 9; i <= 18; i ++)  {
+        for (int i = 3; i <= 5; i ++)  {
+            log.append(i+"\t"); flush();
+            runModes(model, new String[]{i+"", t+"",v.name()});
+            log.append("\n"); flush();
+        }
+			for (int i = 13; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -460,7 +467,12 @@ public final class RunTestsR {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 9; i <= 18; i ++)  {
+        for (int i = 3; i <= 5; i ++)  {
+            log.append(i+"\t"); flush();
+            runModes(model, new String[]{i+"", t+"",v.name()});
+            log.append("\n"); flush();
+        }
+			for (int i = 13; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -490,7 +502,7 @@ public final class RunTestsR {
 			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 30; i ++)  {
+			for (int i = 27; i <= 30; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -539,7 +551,7 @@ public final class RunTestsR {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 14; i ++)  {
+			for (int i = 1; i <= 1; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
@@ -550,7 +562,7 @@ public final class RunTestsR {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 6; i ++)  {
+			for (int i = 1; i <= 5; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
