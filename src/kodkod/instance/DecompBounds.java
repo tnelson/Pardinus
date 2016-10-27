@@ -105,7 +105,7 @@ public class DecompBounds extends Bounds {
 		try {
 			res = new DecompBounds(universe().factory(),
 					integrated.lowerBounds(), integrated.upperBounds(),
-					integrated.intBounds().clone(), this.amalgamated.clone(), true, trivial_config);
+					integrated.intBounds().clone(), this.amalgamated, true, trivial_config);
 		} catch (CloneNotSupportedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

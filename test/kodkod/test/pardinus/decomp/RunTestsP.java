@@ -261,7 +261,7 @@ public final class RunTestsP {
 		String className = RunTestModel.class.getCanonicalName();
 		String librarypath = System.getProperty("java.library.path");
 
-		String[] cmd_args = new String[]{javaBin, "-Djava.library.path="+librarypath, "-cp", classpath, className, model};
+		String[] cmd_args = new String[]{javaBin, "-XX:-UseGCOverheadLimit", "-Xmx2g", "-Djava.library.path="+librarypath, "-cp", classpath, className, model};
 
 		String[] args = Arrays.copyOf(cmd_args, cmd_args.length + model_args.length);
 		System.arraycopy(model_args, 0, args, cmd_args.length, model_args.length);
@@ -445,7 +445,7 @@ public final class RunTestsP {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 13; i ++)  {
+			for (int i = 2; i <= 2; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -456,7 +456,7 @@ public final class RunTestsP {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 12; i ++)  {
+			for (int i = 12; i <= 12; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();

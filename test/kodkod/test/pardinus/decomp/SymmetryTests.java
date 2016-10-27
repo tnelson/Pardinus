@@ -157,11 +157,11 @@ public class SymmetryTests {
 //				{ VariantBounds.V5, VariantFormulas.V1 },
 //				{ VariantBounds.V6, VariantFormulas.V1 },
 				{ VariantBounds.V1, VariantFormulas.V2 },
-				{ VariantBounds.V2, VariantFormulas.V2 },
-				{ VariantBounds.V3, VariantFormulas.V2 },
-				{ VariantBounds.V4, VariantFormulas.V2 },
-				{ VariantBounds.V5, VariantFormulas.V2 },
-				{ VariantBounds.V6, VariantFormulas.V2 },
+//				{ VariantBounds.V2, VariantFormulas.V2 },
+//				{ VariantBounds.V3, VariantFormulas.V2 },
+//				{ VariantBounds.V4, VariantFormulas.V2 },
+//				{ VariantBounds.V5, VariantFormulas.V2 },
+//				{ VariantBounds.V6, VariantFormulas.V2 },
 //				{ VariantBounds.V1, VariantFormulas.V3 },
 //				{ VariantBounds.V2, VariantFormulas.V3 },
 //				{ VariantBounds.V3, VariantFormulas.V3 },
@@ -180,7 +180,7 @@ public class SymmetryTests {
 
 	@Test
 	public void test() {
-		int n = 3;
+		int n = 2;
 
 		String[] args = new String[] { n + "", v1.name(), v2.name() };
 		DModel model = new SymmetryP(args);
