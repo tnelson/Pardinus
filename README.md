@@ -22,6 +22,10 @@ Pardinus can be built and run following the instructions from [Kodkod](https://g
 - Eduardo Pessoa, 2015 - 2016
 
 ## History
+### Pardinus (0.3.1) (September 2016) 
+<!--- TACAS 17 -->
+- Support for relative bounds on decomposed model finding
+
 ### Pardinus (0.3.0) (September 2016) 
 <!--- TRUST Workshop 16 -->
 - Initial support for temporal model finding
