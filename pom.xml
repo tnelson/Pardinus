@@ -1,86 +1,76 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
-<groupId>pt.uminho.haslab.pardinus</groupId>
-<artifactId>pardinus</artifactId>
-<version>0.3.1</version>
-<packaging>jar</packaging>
-<name>pardinus</name>
-
-<build>
-       <plugins>
-
-<plugin>
-  <artifactId>exec-maven-plugin</artifactId>
-  <groupId>org.codehaus.mojo</groupId>
-<executions>
-      <execution>
-        <id>some-execution</id>
-        <phase>validate</phase>
-        <goals>
-          <goal>exec</goal>
-        </goals>
-      </execution>
-    </executions>
-    <configuration>
-      <executable>./waf</executable>
-      <arguments>
-          <argument>configure</argument>
-          <argument>--prefix=.</argument>
-          <argument>--libdir=src/main/resources</argument>
-          <argument>build</argument>
-          <argument>install</argument>
-      </arguments>    </configuration>
-</plugin>
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-compiler-plugin</artifactId>
-  <version>3.5.1</version>
-  <configuration>
-    <source>1.8</source>
-    <target>1.8</target>
-  </configuration>
-</plugin>
-
-
-
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-resources-plugin</artifactId>
-  <version>3.0.1</version>
-  <configuration>
-      <useDefaultFilterDelimiters>false</useDefaultFilterDelimiters>
-          </configuration>
-</plugin>
-
-
-</plugins>
-</build>
-
-<dependencies>
-
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>pt.uminho.haslab.pardinus</groupId>
+  <artifactId>pardinus</artifactId>
+  <version>0.3.1</version>
+  <packaging>jar</packaging>
+  <name>pardinus</name>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <executions>
+          <execution>
+            <id>some-execution</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>./waf</executable>
+          <arguments>
+            <argument>configure</argument>
+            <argument>--prefix=.</argument>
+            <argument>--libdir=src/main/resources</argument>
+            <argument>build</argument>
+            <argument>install</argument>
+          </arguments>
+          <executable>./waf</executable>
+          <arguments>
+            <argument>distclean</argument>
+          </arguments>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.1</version>
+        <configuration>
+          <useDefaultFilterDelimiters>false</useDefaultFilterDelimiters>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
     <!-- https://mvnrepository.com/artifact/org.sat4j/org.sat4j.maxsat -->
     <dependency>
-        <groupId>org.sat4j</groupId>
-        <artifactId>org.sat4j.maxsat</artifactId>
-        <version>2.3.1</version>
+      <groupId>org.sat4j</groupId>
+      <artifactId>org.sat4j.maxsat</artifactId>
+      <version>2.3.1</version>
     </dependency>
-
     <!-- https://mvnrepository.com/artifact/org.sat4j/org.sat4j.pb -->
     <dependency>
-        <groupId>org.sat4j</groupId>
-        <artifactId>org.sat4j.pb</artifactId>
-        <version>2.3.1</version>
+      <groupId>org.sat4j</groupId>
+      <artifactId>org.sat4j.pb</artifactId>
+      <version>2.3.1</version>
     </dependency>
-
-
-<!-- https://mvnrepository.com/artifact/org.sat4j/org.sat4j.core -->
-<dependency>
-    <groupId>org.sat4j</groupId>
-    <artifactId>org.sat4j.core</artifactId>
-    <version>2.3.1</version>
-</dependency>
-
-</dependencies>
-
-
+    <!-- https://mvnrepository.com/artifact/org.sat4j/org.sat4j.core -->
+    <dependency>
+      <groupId>org.sat4j</groupId>
+      <artifactId>org.sat4j.core</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+  </dependencies>
 </project>
