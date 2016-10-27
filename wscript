@@ -51,7 +51,7 @@ def build(bld):
         basedir   = 'examples',
         destfile  = 'examples.jar')
     
-    bld.install_files('${LIBDIR}', ['kodkod.jar', 'examples.jar', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'])
+    bld.install_files('${LIBDIR}', ['org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'])
 
 def distclean(ctx):
     from waflib import Scripting

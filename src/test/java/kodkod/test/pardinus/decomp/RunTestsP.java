@@ -261,7 +261,11 @@ public final class RunTestsP {
 		String className = RunTestModel.class.getCanonicalName();
 		String librarypath = System.getProperty("java.library.path");
 
+<<<<<<< HEAD:test/kodkod/test/pardinus/decomp/RunTestsP.java
 		String[] cmd_args = new String[]{javaBin, "-XX:-UseGCOverheadLimit", "-Xmx2g", "-Djava.library.path="+librarypath, "-cp", classpath, className, model};
+=======
+        String[] cmd_args = new String[]{javaBin, "-Djava.library.path="+librarypath,"-Xmx4g", "-XX:-UseGCOverheadLimit", "-cp", classpath, className, model};
+>>>>>>> ac4fd882cc55299c5f5595731af60eaa3e83e8a0:src/test/java/kodkod/test/pardinus/decomp/RunTestsP.java
 
 		String[] args = Arrays.copyOf(cmd_args, cmd_args.length + model_args.length);
 		System.arraycopy(model_args, 0, args, cmd_args.length, model_args.length);
@@ -368,18 +372,25 @@ public final class RunTestsP {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 13; i ++)  {
+				for (int i = 1; i <= 7; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
 				log.append("\n");
+        
+        for (int i = 9; i <= 10; i ++)  {
+            log.append(i+"\t"); flush();
+            runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
+            log.append("\n"); flush();
+        }
+        log.append("\n");
 				
 				v = RingP.Variant1.GOODLIVENESS;
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 6; i ++)  {
+				for (int i = 1; i <= 5; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -390,7 +401,7 @@ public final class RunTestsP {
 				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 8; i ++)  {
+				for (int i = 1; i <= 6; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -415,7 +426,7 @@ public final class RunTestsP {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 20; i ++)  {
+				for (int i = 3; i <= 19; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -426,12 +437,16 @@ public final class RunTestsP {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 15; i ++)  {
+				for (int i = 3; i <= 13; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
-				log.append("\n");
+        for (int i = 15; i <= 15; i ++)  {
+            log.append(i+"\t"); flush();
+            runModes(model, new String[]{i+"", v.name(), s.name()});
+            log.append("\n"); flush();
+        }				log.append("\n");
 //			}
 	}
 
@@ -445,7 +460,11 @@ public final class RunTestsP {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
+<<<<<<< HEAD:test/kodkod/test/pardinus/decomp/RunTestsP.java
 			for (int i = 2; i <= 2; i ++)  {
+=======
+			for (int i = 2; i <= 12; i ++)  {
+>>>>>>> ac4fd882cc55299c5f5595731af60eaa3e83e8a0:src/test/java/kodkod/test/pardinus/decomp/RunTestsP.java
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -456,7 +475,11 @@ public final class RunTestsP {
 			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
 			log.append(header);
 			flush();
+<<<<<<< HEAD:test/kodkod/test/pardinus/decomp/RunTestsP.java
 			for (int i = 12; i <= 12; i ++)  {
+=======
+			for (int i = 2; i <= 9; i ++)  {
+>>>>>>> ac4fd882cc55299c5f5595731af60eaa3e83e8a0:src/test/java/kodkod/test/pardinus/decomp/RunTestsP.java
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name(), s.name()});
 				log.append("\n"); flush();
@@ -479,7 +502,12 @@ public final class RunTestsP {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 18; i ++)  {
+        for (int i = 3; i <= 5; i ++)  {
+            log.append(i+"\t"); flush();
+            runModes(model, new String[]{i+"", t+"",v.name()});
+            log.append("\n"); flush();
+        }
+        for (int i = 13; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -490,7 +518,12 @@ public final class RunTestsP {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 2; i <= 18; i ++)  {
+        for (int i = 3; i <= 5; i ++)  {
+            log.append(i+"\t"); flush();
+            runModes(model, new String[]{i+"", t+"",v.name()});
+            log.append("\n"); flush();
+        }
+			for (int i = 13; i <= 18; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -599,7 +632,7 @@ public final class RunTestsP {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 14; i ++)  {
+			for (int i = 1; i <= 12; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
@@ -610,7 +643,7 @@ public final class RunTestsP {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 6; i ++)  {
+			for (int i = 1; i <= 4; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
