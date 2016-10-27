@@ -13,7 +13,7 @@
         <executions>
           <execution>
             <id>some-execution</id>
-            <phase>validate</phase>
+            <phase>initialize</phase>
             <goals>
               <goal>exec</goal>
             </goals>
@@ -54,19 +54,16 @@
     </plugins>
   </build>
   <dependencies>
-    <!-- https://mvnrepository.com/artifact/org.sat4j/org.sat4j.maxsat -->
     <dependency>
       <groupId>org.sat4j</groupId>
       <artifactId>org.sat4j.maxsat</artifactId>
       <version>2.3.1</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.sat4j/org.sat4j.pb -->
     <dependency>
       <groupId>org.sat4j</groupId>
       <artifactId>org.sat4j.pb</artifactId>
       <version>2.3.1</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.sat4j/org.sat4j.core -->
     <dependency>
       <groupId>org.sat4j</groupId>
       <artifactId>org.sat4j.core</artifactId>
