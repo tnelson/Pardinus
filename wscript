@@ -32,24 +32,13 @@ def build(bld):
 
     bld(features  = 'javac jar',
         name      = 'kodkod',
-        srcdir    = 'src', 
+        srcdir    = 'src/main/java', 
         outdir    = 'kodkod',
         compat    = '1.8',
         classpath = ['.', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'],
         manifest  = 'src/MANIFEST',
         basedir   = 'kodkod',
         destfile  = 'kodkod.jar')
-    
-    bld(features  = 'javac jar',
-        name      = 'examples',
-        use       = 'kodkod',
-        srcdir    = 'examples', 
-        outdir    = 'examples',
-        compat    = '1.8',
-        classpath = ['.', 'kodkod.jar'],
-        manifest  = 'examples/MANIFEST',
-        basedir   = 'examples',
-        destfile  = 'examples.jar')
     
     bld.install_files('${LIBDIR}', ['org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'])
 
@@ -73,12 +62,12 @@ def test(bld):
         target = 'hamcrest-core.jar')
     bld.add_group()
 
-    cp = ['.', 'kodkod.jar', 'examples.jar', 'org.sat4j.core.jar', 'junit.jar', 'hamcrest-core.jar']
+    cp = ['.', 'kodkod.jar', 'org.sat4j.core.jar', 'junit.jar', 'hamcrest-core.jar']
     bld(features  = 'javac',
         name      = 'test',
-        srcdir    = 'test',
+        srcdir    = 'src/test/java',
         classpath = cp, 
-        use       = ['kodkod', 'examples'])
+        use       = ['kodkod'])
     bld.add_group()
 
     bld(rule = 'java -cp {classpath} -Djava.library.path={libpath} {junit} {test}'.format(classpath = ':'.join(cp),
