@@ -39,10 +39,36 @@
             </goals>
           </execution>
           <execution>
-            <id>waf build</id>
-            <phase>initialize</phase>
+            <id>waf download</id>
+            <phase>validate</phase>
             <configuration>
-              <executable>./waf</executable>
+              <executable>wget</executable>
+              <arguments>
+                <argument>http://waf.io/waf-1.8.12</argument>
+              </arguments>
+            </configuration>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>waf chmod</id>
+            <phase>validate</phase>
+            <configuration>
+              <executable>chmod</executable>
+              <arguments>
+                <argument>u+x</argument>
+                <argument>waf-1.8.12</argument>
+              </arguments>
+            </configuration>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>          <execution>
+            <id>waf build</id>
+            <phase>validate</phase>
+            <configuration>
+              <executable>./waf-1.8.12</executable>
               <arguments>
                 <argument>configure</argument>
                 <argument>--prefix=.</argument>
@@ -59,9 +85,22 @@
             <id>waf clean</id>
             <phase>validate</phase>
             <configuration>
-              <executable>./waf</executable>
+              <executable>./waf-1.8.12</executable>
               <arguments>
                 <argument>distclean</argument>
+              </arguments>
+            </configuration>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>waf del</id>
+            <phase>validate</phase>
+            <configuration>
+              <executable>rm</executable>
+              <arguments>
+                <argument>waf-1.8.12</argument>
               </arguments>
             </configuration>
             <goals>
