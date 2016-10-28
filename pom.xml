@@ -6,6 +6,35 @@
   <packaging>jar</packaging>
   <name>pardinus</name>
   <build>
+      <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.mojo</groupId>
+                                        <artifactId>exec-maven-plugin</artifactId>
+                                        <versionRange>[1.2.1,)</versionRange>
+                                        <goals>
+                                            <goal>java</goal>
+                                            <goal>exec</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -19,7 +48,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.2.1</version>
         <inherited>false</inherited>
         <executions>
           <execution>
@@ -117,6 +146,16 @@
           <useDefaultFilterDelimiters>false</useDefaultFilterDelimiters>
         </configuration>
       </plugin>
+      
+          <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <configuration>
+        <argLine>-Djava.library.path=${project.basedir}/src/main/resources</argLine>
+            </configuration>
+    </plugin>
+      
+      
     </plugins>
   </build>
   <dependencies>
@@ -135,5 +174,10 @@
       <artifactId>org.sat4j.core</artifactId>
       <version>2.3.1</version>
     </dependency>
-  </dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+    </dependency>
+      </dependencies>
 </project>

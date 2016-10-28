@@ -12,7 +12,6 @@ import kodkod.ast.Relation;
 import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
-import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.BoundedExtendedOptions;

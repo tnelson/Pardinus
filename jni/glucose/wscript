@@ -16,6 +16,7 @@ def configure(conf):
     subprocess.check_call(['wget', 'http://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup.tgz', '--directory-prefix', root])
     subprocess.check_call(['tar', '-xzf', root + '/glucose-syrup.tgz', '-C', root])
     subprocess.check_call(['patch', '-p0', '-d', root + '/glucose-syrup/core/', '-i', root + '/Solver.patch'])
+    subprocess.check_call('cd ' +root +'/glucose-syrup/parallel/' + ' && make', shell=True)
 
 def build(bld):
     
@@ -35,6 +36,8 @@ def build(bld):
               target = 'glucose', use = 'glucose-core', uselib = 'JAVA',
               includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
     
+    bld.install_files('${LIBDIR}', 'glucose-syrup/parallel/glucose-syrup', chmod=493)
+
 def distclean(ctx):
     from waflib import Scripting
     Scripting.distclean(ctx)

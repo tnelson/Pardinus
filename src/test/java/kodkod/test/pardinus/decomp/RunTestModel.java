@@ -13,7 +13,6 @@ import kodkod.engine.DecomposedKodkodSolver;
 import kodkod.engine.IncrementalSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.FileReporter;
 import kodkod.engine.decomp.DModel;

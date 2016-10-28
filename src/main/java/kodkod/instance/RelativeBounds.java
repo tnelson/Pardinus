@@ -4,7 +4,6 @@ import static java.util.Collections.unmodifiableMap;
 
 import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
