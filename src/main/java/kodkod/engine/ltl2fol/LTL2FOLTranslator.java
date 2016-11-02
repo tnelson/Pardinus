@@ -234,13 +234,10 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfleft;
 		// TODO: wrong, should use next rather than nextt
 		if (postDepthLeft > 0) {
-			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l.oneOf(getVariableLastQuantificationUntil(
-					false).join(TRACE.reflexiveClosure()).intersection(
-					TRACE.closure().join(r))));
+			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l.oneOf(upTo(getVariableLastQuantificationUntil(
+					false),r)));
 		} else {
-			nfleft = left.forAll(l.oneOf(getVariableLastQuantificationUntil(false).join(
-					TRACE.reflexiveClosure()).intersection(
-					TRACE.closure().join(r))));
+			nfleft = left.forAll(l.oneOf(upTo(getVariableLastQuantificationUntil(false),r)));
 		}
 
 		if (postDepthRight > 0) {
@@ -256,6 +253,16 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		}
 	}
 
+	
+	private Expression upTo(Expression t1, Expression t2) {
+		Formula c = t2.in(t1.join(PREFIX.reflexiveClosure()));
+		Expression e1 = (t1.join(PREFIX.reflexiveClosure())).intersection(t2.join(PREFIX.transpose().closure()));
+		Expression e21 = (t1.join(TRACE.reflexiveClosure())).intersection(t2.join(TRACE.transpose().closure()));
+		Expression e22 = (t2.join(PREFIX.reflexiveClosure())).intersection(t1.join(PREFIX.transpose().closure()));
+		Expression e2 = e21.difference(e22);
+		return c.thenElse(e1, e2);
+	}
+	
 	private Formula getQuantifierRelease(Formula always, Formula left, Formula right, int leftFormula, int rightFormula) {
 		Variable r = getVariableRelease(true, false);
 		Variable l = getVariableRelease(false, false);
@@ -268,13 +275,10 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 				TRACE.reflexiveClosure()))));
 
 		if (rightFormula > 0) {
-			nfleft = (forceNextExists(l, rightFormula).and(right)).forAll(l.oneOf(getVariableLastQuantificationRelease(
-					false, true).join(TRACE.reflexiveClosure()).intersection(
-					TRACE.reflexiveClosure().join(r))));
+			nfleft = (forceNextExists(l, rightFormula).and(right)).forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(
+					false, true),r).union(r)));
 		} else {
-			nfleft = right.forAll(l.oneOf(getVariableLastQuantificationRelease(false, true).join(
-					TRACE.reflexiveClosure()).intersection(
-					TRACE.reflexiveClosure().join(r))));
+			nfleft = right.forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(false, true),r).union(r)));
 		}
 
 		if (leftFormula > 0) {
