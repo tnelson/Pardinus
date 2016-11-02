@@ -51,15 +51,21 @@ import kodkod.instance.TemporalBounds;
 public class TemporalTranslator {
 
 	/** The name assigned to {@link #STATE state} atoms. */
-	public static String STATEATOM = "Time";
+	public static final String STATEATOM = "Time";
 
 	/** Relations representing the explicit trace of the temporal problem. **/
-	public static Relation STATE = Relation.unary(STATEATOM);
-	public static Relation FIRST = Relation.unary("first");
-	public static Relation LAST = Relation.unary("last");
-	public static Relation PREFIX = Relation.binary("prefix");
-	public static Relation TRACE = Relation.binary("trace");
-	public static Relation LOOP = Relation.binary("loop");
+	public static final Relation STATE = Relation.unary(STATEATOM);
+	public static final Relation FIRST = Relation.unary("first");
+	public static final Relation LAST = Relation.unary("last");
+	public static final Relation PREFIX = Relation.binary("prefix");
+	public static final Relation TRACE = Relation.binary("trace");
+	public static final Relation LOOP = Relation.binary("loop");
+	
+	/**
+	 * The constraint forcing the time trace to be infinite. Forces the loop to
+	 * exist.
+	 */
+	public static final Formula INFINITE = TemporalTranslator.LOOP.one();
 
 	/**
 	 * Translates {@link kodkod.instance.TemporalBounds temporal bound} into
@@ -95,8 +101,7 @@ public class TemporalTranslator {
 	 * @return the static version of the temporal formula.
 	 */
 	public static Formula translate(Formula formula) {
-		NNFReplacer nnf = new NNFReplacer();
-		Formula nnfFormula = formula.accept(nnf);
+		Formula nnfFormula = NNFReplacer.nnf(formula);
 
 		return LTL2FOLTranslator.translate(nnfFormula);
 	}

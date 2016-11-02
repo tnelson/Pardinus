@@ -198,16 +198,6 @@ final class FormulaFlattener extends AbstractVoidVisitor {
 		}
 	}
 	
-	// [HASLab]
-	public final void visit(BinaryTempFormula tempFormula) {
-		throw new UnsupportedOperationException("Temporal flatenner.");
-	}
-
-	// [HASLab]
-	public final void visit(UnaryTempFormula tempFormula) {
-		throw new UnsupportedOperationException("Temporal flatenner.");
-	}
-	
 	/**
 	 * Visits the formula's children with appropriate settings
 	 * for the negated flag if bf  has not been visited before.
@@ -269,6 +259,14 @@ final class FormulaFlattener extends AbstractVoidVisitor {
 		addConjunct(f);
 	}
 	
+	// [HASLab]
+	/** @see #visitFormula(Formula) */
+	public final void visit(BinaryTempFormula tf) 		{ visitFormula(tf); }
+
+	// [HASLab]
+	/** @see #visitFormula(Formula) */
+	public final void visit(UnaryTempFormula tf) 		{ visitFormula(tf); }			
+		
 	/** @see #visitFormula(Formula) */
 	public final void visit(ComparisonFormula cf) 		{ visitFormula(cf); }
 	
