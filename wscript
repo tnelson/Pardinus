@@ -5,8 +5,10 @@ import os.path
 def options(opt):
     opt.load('java')
     opt.recurse('jni')
+    opt.add_option('--lib', action='store_false', default=True)
 
 def configure(conf):
+    print('→ the value of full is %r' % conf.options.lib)
     conf.load('java')
     conf.recurse('jni')
 
@@ -30,15 +32,16 @@ def build(bld):
         target = 'org.sat4j.pb.jar')
     bld.add_group()
 
-    bld(features  = 'javac jar',
-        name      = 'kodkod',
-        srcdir    = 'src/main/java', 
-        outdir    = 'kodkod',
-        compat    = '1.8',
-        classpath = ['.', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'],
-        manifest  = 'src/MANIFEST',
-        basedir   = 'kodkod',
-        destfile  = 'kodkod.jar')
+    if bld.options.lib:
+        bld(features  = 'javac jar',
+            name      = 'kodkod',
+            srcdir    = 'src/main/java', 
+            outdir    = 'kodkod',
+            compat    = '1.8',
+            classpath = ['.', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'],
+            manifest  = 'src/MANIFEST',
+            basedir   = 'kodkod',
+            destfile  = 'kodkod.jar')
     
     bld.install_files('${LIBDIR}', ['org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'])
 

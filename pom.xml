@@ -100,6 +100,7 @@
               <executable>./waf-1.8.12</executable>
               <arguments>
                 <argument>configure</argument>
+                <argument>--lib</argument>
                 <argument>--prefix=.</argument>
                 <argument>--libdir=src/main/resources</argument>
                 <argument>build</argument>
@@ -150,6 +151,7 @@
           <plugin>
       <groupId>org.apache.maven.plugins</groupId>
       <artifactId>maven-surefire-plugin</artifactId>
+        <inherited>false</inherited>
       <configuration>
         <argLine>-Djava.library.path=${project.basedir}/src/main/resources</argLine>
             </configuration>
