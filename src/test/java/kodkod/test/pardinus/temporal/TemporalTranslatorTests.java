@@ -15,7 +15,7 @@ import static kodkod.engine.ltl2fol.TemporalTranslator.INFINITE;
 import static kodkod.engine.ltl2fol.TemporalTranslator.TRACE;
 import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX;
 
-public class TemporalTranslatorUnitTesting {
+public class TemporalTranslatorTests {
 
 	private static Relation Process = Relation.unary("Process");
 	private static VarRelation toSend = VarRelation.binary("toSend");
@@ -28,12 +28,20 @@ public class TemporalTranslatorUnitTesting {
 	private static Relation plast = Relation.unary("plast");
 	private static VarRelation pord = VarRelation.binary("pord");
 
-	public TemporalTranslatorUnitTesting() {
+	public TemporalTranslatorTests() {
 		Map<String, Relation> rels = new HashMap<String, Relation>();
 		rels.put(toSend.name(), Relation.nary(toSend.name(), toSend.arity() + 1));
 		rels.put(elected.name(), Relation.nary(elected.name(), elected.arity() + 1));
 		rels.put(naryRelation.name(), Relation.nary(naryRelation.name(), naryRelation.arity() + 1));
 		rels.put(pord.name(), Relation.nary(pord.name(), pord.arity() + 1));
+	}
+	
+	/* Declarations */
+	@Test
+	public final void test() {
+		Formula initial = (elected.eq(elected.prime()).not()).next();
+		Formula result = elected.expanded.join(FIRST).in(Process);
+		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial)).child(0).toString());
 	}
 
 	/* Declarations */

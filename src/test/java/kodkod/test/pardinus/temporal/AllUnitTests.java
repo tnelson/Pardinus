@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        TemporalTranslatorUnitTesting.class,
+        TemporalTranslatorTests.class,
         NNFUnitTesting.class,
         TemporalSlicerUnitTesting.class
 })
