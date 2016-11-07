@@ -72,9 +72,13 @@ public class TemporalInstance extends Instance {
 	public TemporalInstance(Instance instance, Set<VarRelation> varrelations) {
 		super(instance.universe(), new LinkedHashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
 		Evaluator eval = new Evaluator(instance);
-		String[] l = eval.evaluate(TemporalTranslator.LOOP).toString().split(TemporalTranslator.STATEATOM);
-		end = Integer.valueOf(l[1].substring(0, l[1].length() - 2));
-		loop = Integer.valueOf(l[2].substring(0, l[2].length() - 2));
+		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST).iterator().next();
+		end = Integer.valueOf(tuple_last.atom(0).toString().substring(4));
+		TupleSet tupleset_loop = eval.evaluate(TemporalTranslator.LOOP);
+		if (tupleset_loop.iterator().hasNext())
+			loop = Integer.valueOf(tupleset_loop.iterator().next().atom(1).toString().substring(4));
+		else 
+			loop = -1;
 		this.varrelations = varrelations;
 	}
 

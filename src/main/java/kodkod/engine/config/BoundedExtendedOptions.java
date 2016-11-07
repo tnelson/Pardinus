@@ -129,4 +129,19 @@ public class BoundedExtendedOptions extends Options implements BoundedOptions,
 		return trace_length;
 	}
 
+	
+	public String toString() {
+		StringBuilder b = new StringBuilder(super.toString());
+		b.append("\n run target: ");
+		b.append(runTarget);
+		b.append("\n target mode: ");
+		b.append(target_mode);
+		b.append("\n threads: ");
+		b.append(threads);
+		b.append("\n decomposed mode: ");
+		b.append(mode);
+		b.append("\n max trace length: ");
+		b.append(trace_length);
+        return b.toString();
+	}
 }

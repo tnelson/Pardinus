@@ -121,17 +121,20 @@ public final class TemporalKodkodSolver implements BoundedSolver<TemporalBounds,
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole translation = null;
-			int traceLength = 1;
+			int traceLength = 0;
 			while (!isSat && traceLength <= options.maxTraceLength()) {
 				startTransl = System.currentTimeMillis();
-				Bounds extbounds = TemporalTranslator.translate(bounds, traceLength);
-				translation = Translator.translate(extformula, extbounds, options);
+				do {
+					traceLength++;
+					Bounds extbounds = TemporalTranslator.translate(bounds, traceLength);
+					translation = Translator.translate(extformula, extbounds, options);
+				} while (translation.trivial() && traceLength <= options.maxTraceLength());
 				endTransl = System.currentTimeMillis();
 				transTime += endTransl - startTransl;
 
 				if (translation.trivial())
 					return trivial(translation, endTransl - startTransl, bounds.varRelations());
-
+				
 				final SATSolver cnf = translation.cnf();
 
 				options.reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(),
@@ -239,19 +242,22 @@ public final class TemporalKodkodSolver implements BoundedSolver<TemporalBounds,
 	 */
 	private final static class SolutionIterator implements Iterator<Solution> {
 		private Translation.Whole translation;
-		private final Formula extformula; 
+		private Formula extformula; 
 		private long translTime;
 		private int trivial;
 		private final TemporalBounds tempBounds;
 		private final BoundedExtendedOptions opt; // [HASLab] temporal
-		private int current_trace = 1;
+		private int current_trace = 0;
 		private boolean incremented = false;
 
 		SolutionIterator(Formula formula, TemporalBounds bounds, BoundedExtendedOptions options) { // [HASLab]
 			this.translTime = System.currentTimeMillis();
-			Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
-			this.extformula = TemporalTranslator.translate(formula);
-			this.translation = Translator.translate(extformula, extbounds, options);
+			do {
+				current_trace++;
+				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
+				this.extformula = TemporalTranslator.translate(formula);
+				this.translation = Translator.translate(extformula, extbounds, options);
+			} while (this.translation.trivial() && current_trace <= options.maxTraceLength());
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.trivial = 0;
 			this.tempBounds = bounds;
@@ -375,14 +381,7 @@ public final class TemporalKodkodSolver implements BoundedSolver<TemporalBounds,
 		private Solution nextTrivialSolution() {
 			final Translation.Whole transl = this.translation;
 
-			final Solution sol = trivial(transl, translTime, tempBounds.varRelations()); // this
-																							// also
-																							// frees
-																							// up
-																							// solver
-																							// resources,
-																							// if
-																							// unsat
+			final Solution sol = trivial(transl, translTime, tempBounds.varRelations()); // this also frees up solver resources, if unsat
 
 			if (sol.instance() == null) {
 				translation = null; // unsat, no more solutions
