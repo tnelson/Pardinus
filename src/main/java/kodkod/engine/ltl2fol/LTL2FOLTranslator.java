@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import kodkod.ast.BinaryTempFormula;
+import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Node;
@@ -38,7 +39,6 @@ import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractReplacer;
-
 import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.INFINITE;
 import static kodkod.engine.ltl2fol.TemporalTranslator.LAST;
@@ -136,6 +136,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		return result;
 	}
 
+	@Override
+	public Expression visit(ConstantExpression constant) {
+		maxPostDepth = currentPostDepth > maxPostDepth ? currentPostDepth : maxPostDepth;
+		return constant;
+	}
+	
 	@Override
 	public Expression visit(Relation relation) {
 		maxPostDepth = currentPostDepth > maxPostDepth ? currentPostDepth : maxPostDepth;

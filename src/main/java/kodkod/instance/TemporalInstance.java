@@ -91,9 +91,16 @@ public class TemporalInstance extends Instance {
 	public String toString() {
 		Evaluator eval = new Evaluator(this);
 		StringBuilder sb = new StringBuilder();
+		sb.append("\nstatic relations: ");
+		Map<Relation, TupleSet> map = new HashMap<Relation, TupleSet>();
+		for (Relation r : super.relations()) {
+			TupleSet ts = eval.evaluate(r, 0);
+			map.put(r, ts);
+		}
+		sb.append(map.toString());
 		for (int i = 0; i <= end; i++) {
 			sb.append("\nrelations at " + i + ": ");
-			Map<Relation, TupleSet> map = new HashMap<Relation, TupleSet>();
+			map = new HashMap<Relation, TupleSet>();
 			for (Relation r : varrelations) {
 				TupleSet ts = eval.evaluate(r, i);
 				map.put(r, ts);
