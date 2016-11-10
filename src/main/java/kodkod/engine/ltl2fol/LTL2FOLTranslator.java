@@ -211,6 +211,17 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			popVariable();
 			popVariable();
 			break;
+		case SINCE:
+			resetPostVariables();
+			right = binaryTempFormula.right().accept(this);
+			quantificationPostRight = maxPostDepth;
+			pushVariable();
+			resetPostVariables();
+			left = binaryTempFormula.left().accept(this);
+			quantificationPostLeftf = maxPostDepth;
+			rt = getQuantifierSince(left, right, quantificationPostLeftf, quantificationPostRight);
+			popVariable();
+			break;
 		default:
 			throw new UnsupportedOperationException("Unsupported binary temporal operator:" + binaryTempFormula.op());
 		}
@@ -238,12 +249,11 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable r = getVariableUntil(true);
 		Variable l = getVariableUntil(false);
 		Formula nfleft;
-		// TODO: wrong, should use next rather than nextt
 		if (postDepthLeft > 0) {
 			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l.oneOf(upTo(getVariableLastQuantificationUntil(
-					false),r)));
+					false),r,true,false)));
 		} else {
-			nfleft = left.forAll(l.oneOf(upTo(getVariableLastQuantificationUntil(false),r)));
+			nfleft = left.forAll(l.oneOf(upTo(getVariableLastQuantificationUntil(false),r,true,false)));
 		}
 
 		if (postDepthRight > 0) {
@@ -258,13 +268,40 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 									TRACE.reflexiveClosure())));
 		}
 	}
-
 	
-	private Expression upTo(Expression t1, Expression t2) {
+	private Formula getQuantifierSince(Formula left, Formula right, int postDepthLeft, int postDepthRight) {
+		Variable r = getVariableSince(true);
+		Variable l = getVariableSince(false);
+		Formula nfleft;
+		if (postDepthLeft > 0) {
+			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l.oneOf(upTo(r,getVariableLastQuantificationUntil(
+					false),false,true)));
+		} else {
+			nfleft = left.forAll(l.oneOf(upTo(r,getVariableLastQuantificationUntil(false),false,true)));
+		}
+
+		if (postDepthRight > 0) {
+			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft)
+					.forSome(
+							r.oneOf(getVariableLastQuantificationUntil(false).join(
+									TRACE.transpose().reflexiveClosure())));
+		} else {
+			return right.and(nfleft)
+					.forSome(
+							r.oneOf(getVariableLastQuantificationUntil(false).join(
+									TRACE.transpose().reflexiveClosure())));
+		}
+	}
+	
+	private Expression upTo(Expression t1, Expression t2, boolean inc1, boolean inc2) {
 		Formula c = t2.in(t1.join(PREFIX.reflexiveClosure()));
-		Expression e1 = (t1.join(PREFIX.reflexiveClosure())).intersection(t2.join(PREFIX.transpose().closure()));
-		Expression e21 = (t1.join(TRACE.reflexiveClosure())).intersection(t2.join(TRACE.transpose().closure()));
-		Expression e22 = (t2.join(PREFIX.reflexiveClosure())).intersection(t1.join(PREFIX.transpose().closure()));
+		Expression exp1 = inc1?PREFIX.reflexiveClosure():PREFIX.closure();
+		Expression exp2 = inc2?PREFIX.reflexiveClosure():PREFIX.closure();
+		Expression exp11 = inc1?TRACE.reflexiveClosure():TRACE.closure();
+		Expression exp12 = inc2?TRACE.reflexiveClosure():TRACE.closure();
+		Expression e1 = (t1.join(exp1)).intersection(t2.join(exp2.transpose()));
+		Expression e21 = (t1.join(exp11)).intersection(t2.join(exp12.transpose()));
+		Expression e22 = (t2.join(exp1)).intersection(t1.join(exp2.transpose()));
 		Expression e2 = e21.difference(e22);
 		return c.thenElse(e1, e2);
 	}
@@ -282,9 +319,9 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 		if (rightFormula > 0) {
 			nfleft = (forceNextExists(l, rightFormula).and(right)).forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(
-					false, true),r).union(r)));
+					false, true),r,true,true)));
 		} else {
-			nfleft = right.forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(false, true),r).union(r)));
+			nfleft = right.forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(false, true),r,true,true)));
 		}
 
 		if (leftFormula > 0) {
@@ -462,6 +499,14 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	}
 
 	private Variable getVariableUntil(boolean sideIsRight) {
+		if (!sideIsRight) {
+			return (Variable) variables.get(variables.size() - 1);
+		} else {
+			return (Variable) variables.get(variables.size() - 2);
+		}
+	}
+
+	private Variable getVariableSince(boolean sideIsRight) {
 		if (!sideIsRight) {
 			return (Variable) variables.get(variables.size() - 1);
 		} else {

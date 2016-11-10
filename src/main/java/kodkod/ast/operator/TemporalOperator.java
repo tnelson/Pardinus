@@ -46,10 +46,12 @@ public enum TemporalOperator {
     UNTIL 			{ public String toString() { return "until"; }},
     /** Release binary temporal operator. */
     RELEASE 		{ public String toString() { return "release"; }},
+    /** Release binary temporal operator. */
+    SINCE 			{ public String toString() { return "since"; }},
     /** Priming temporal operator. */
     PRIME 			{ public String toString() { return "'";} };
   	
-    static final int binary = UNTIL.index() | RELEASE.index();
+    static final int binary = UNTIL.index() | RELEASE.index() | SINCE.index();
 
     static final int unary = ~binary;
 
