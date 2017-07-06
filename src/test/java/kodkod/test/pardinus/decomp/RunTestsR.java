@@ -551,7 +551,7 @@ public final class RunTestsR {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 8; i <= 10; i ++)  {
+			for (int i = 8; i <= 12; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
@@ -562,7 +562,7 @@ public final class RunTestsR {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 0; i ++)  {
+			for (int i = 4; i <= 5; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
