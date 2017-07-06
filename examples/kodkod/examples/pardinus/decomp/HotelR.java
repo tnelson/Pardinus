@@ -78,7 +78,8 @@ public final class HotelR implements DModel {
 		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key"+ (n-1)));
 		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest"+ (n-1)));
 		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room"+ (n-1)));
-		
+        final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+ (t-1)));
+
 		b.boundExactly(key, kb);
 		b.bound(key_first, kb);
 		b.bound(key_last, kb);
@@ -86,6 +87,15 @@ public final class HotelR implements DModel {
 		b.bound(guest, gb);
 		b.bound(room, rb);
 		b.bound(rkeys, rb.product(kb));
+        
+        
+        b.boundExactly(time, tb);
+        b.bound(time_init, tb);
+        b.bound(time_end, tb);
+        b.bound(time_loop, tb.product(tb));
+        b.bound(time_next, tb.product(tb));
+        b.bound(time_next_, tb.product(tb));
+
 				
 		return b;	
 	}
@@ -120,14 +130,7 @@ public final class HotelR implements DModel {
 		final RelativeBounds b = new RelativeBounds(u);
 		
 		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+ (t-1)));
-		
-		b.boundExactly(time, tb);
-		b.bound(time_init, new Relation[][]{{time}});
-		b.bound(time_end, new Relation[][]{{time}});
-		b.bound(time_loop, new Relation[][]{{time}, {time}});
-		b.bound(time_next, new Relation[][]{{time},{time}});
-		b.bound(time_next_, new Relation[][]{{time}, {time}});
-		b.bound(lastkey, new Relation[][]{{room}, {key}, {time}});
+			b.bound(lastkey, new Relation[][]{{room}, {key}, {time}});
 		b.bound(occupant, new Relation[][]{{room}, {guest}, {time}});
 		b.bound(current, new Relation[][]{{room}, {key}, {time}});
 		b.bound(gkeys, new Relation[][]{{guest}, {key}, {time}});
@@ -150,7 +153,14 @@ public final class HotelR implements DModel {
 		Formula x99 = guest.eq(guest);
 		
 		Formula x12=Formula.compose(FormulaOperator.AND, x13, x28, x41,x99, x42);
-		return x12;
+        
+        Formula t11 = time_next_.totalOrder(time, time_init, time_end);
+        Formula t22 = time_next.eq(time_next_.union(time_loop)); // next = next_ + loop
+        Formula t33 = time_loop.one(); // one loop
+        Formula t4 = time_loop.join(time).eq(time_end); // loop.Time = end
+        Formula time = t11.and(t22).and(t33).and(t4);
+        
+		return x12.and(time);
 	}
 
 	@Override
@@ -173,13 +183,9 @@ public final class HotelR implements DModel {
 		Formula rt3 = (r.join(current.join(t))).in(r.join(rkeys)); // all t : Time, r : Room | r.current.t in r.keys 
 		Formula x32=(rt1.and(rt2).and(rt3)).forAll(r.oneOf(room).and(t.oneOf(time))); 
 
-		Formula t11 = time_next_.totalOrder(time, time_init, time_end);
-		Formula t22 = time_next.eq(time_next_.union(time_loop)); // next = next_ + loop
-		Formula t33 = time_loop.one(); // one loop
-		Formula t4 = time_loop.join(time).eq(time_end); // loop.Time = end
-		Formula time = t11.and(t22).and(t33).and(t4);
 
-		return Formula.compose(FormulaOperator.AND, x22, x27, x32, x60, x86, time);
+
+		return Formula.compose(FormulaOperator.AND, x22, x27, x32, x60, x86);
 	}
 
 	private Formula init() {

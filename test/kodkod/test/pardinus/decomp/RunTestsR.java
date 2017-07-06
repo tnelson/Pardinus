@@ -36,7 +36,7 @@ public final class RunTestsR {
 	static DProblem psolution = null;
 	static Solution solution = null;
 
-	static int tries, threads = 6;
+	static int tries, threads = 4;
 
 	static private StringBuilder log = new StringBuilder();
 	static private StringBuilder header = new StringBuilder();
@@ -386,7 +386,7 @@ public final class RunTestsR {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 3; i ++)  {
+				for (int i = 3; i <= 0; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -397,7 +397,7 @@ public final class RunTestsR {
 				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 3; i <= 14; i ++)  {
+				for (int i = 12; i <= 12; i ++)  {
 					log.append(i+"\t"); flush();
 					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
@@ -451,12 +451,12 @@ public final class RunTestsR {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-        for (int i = 3; i <= 5; i ++)  {
+        for (int i = 3; i <= 0; i ++)  {
             log.append(i+"\t"); flush();
             runModes(model, new String[]{i+"", t+"",v.name()});
             log.append("\n"); flush();
         }
-			for (int i = 13; i <= 18; i ++)  {
+			for (int i = 13; i <= 0; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -467,12 +467,12 @@ public final class RunTestsR {
 			log.append("Span"+t+" "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-        for (int i = 3; i <= 5; i ++)  {
+        for (int i = 3; i <= 0; i ++)  {
             log.append(i+"\t"); flush();
             runModes(model, new String[]{i+"", t+"",v.name()});
             log.append("\n"); flush();
         }
-			for (int i = 13; i <= 18; i ++)  {
+			for (int i = 14; i <= 16; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"",v.name()});
 				log.append("\n"); flush();
@@ -551,7 +551,7 @@ public final class RunTestsR {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 1; i ++)  {
+			for (int i = 8; i <= 10; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
@@ -562,7 +562,7 @@ public final class RunTestsR {
 			log.append(v.name()+" "+t+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 5; i ++)  {
+			for (int i = 1; i <= 0; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", t+"", v.name()});
 				log.append("\n"); flush();
