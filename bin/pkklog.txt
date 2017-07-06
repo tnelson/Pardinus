@@ -6577,3 +6577,218 @@ n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t
 Red Black Tree THEOREM V1
 n	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
 9	8377	U	4861		8281	U	4862		
+
+---R---
+2017-04-20_18-06-13
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 1
+Threads: 6
+INTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	328	U	385	U	-2		
+
+NOINTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	334	U	500	U	2		
+2	474	U	926	U	6		
+3	943	U	2223	U	-14		
+4	
+---R---
+2017-04-20_18-12-17
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 1
+Threads: 6
+INTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	287	U	400	U	-2		
+
+NOINTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	346	U	
+---R---
+2017-04-20_18-13-05
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 1
+Threads: 6
+INTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	281	U	394	U	2		
+
+NOINTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	324	U	444	U	-2		
+2	467	U	
+---R---
+2017-04-20_18-13-33
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 1
+Threads: 6
+INTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	281	U	371	U	-2		
+2	360	U	662	U	6		
+3	610	S	800	S	2		
+4	881	S	797	S	2		
+5	3924	S	903	S	2		
+
+NOINTERVENES 20
+n	G.B	Sat	G.H	Sat	C.#	C.t	
+1	330	U	441	U	-2		
+2	473	U	873	U	6		
+3	974	U	2412	U	-14		
+4	6331	U	11929	U	75		
+5	67877	U	141302	U	312		
+
+---R---
+2017-04-20_18-18-22
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	288	U	282	U	414	U	-2		387	U	-2		
+2	367	U	371	U	636	U	-5		667	U	-6		
+3	624	S	623	S	651	S	2		630	S	2		
+4	884	S	861	S	681	S	2		644	S	3		
+5	3929	S	3867	S	705	S	2		794	S	2		
+6	9961	S	10038	S	852	S	2		754	S	2		
+7	45453	S	44579	S	1112	S	3		1083	S	2		
+8	65356	S	66708	S	884	S	2		853	S	2		
+
+NOINTERVENES 20
+n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	328	U	334	U	447	U	2		464	U	2		
+2	477	U	490	U	875	U	-6		771	U	-6		
+3	938	U	989	U	1617	U	-8		1689	U	-8		
+4	6331	U	6302	U	12321	U	-69		12328	U	-68		
+5	67702	U	67966	U	132968	U	-252		134989	U	-264		
+
+---R---
+2017-04-20_18-38-10
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	291	U	285	U	280	U	40		295	U	40		
+2	362	U	370	U	535	U	-46		530	U	-46		
+3	573	S	564	S	267	S	3		255	S	2		
+4	1564	S	1596	S	322	S	3		285	S	3		
+5	8276	S	8197	S	478	S	7		467	S	7		
+6	8105	S	8047	S	323	S	2		315	S	2		
+7	17467	S	17717	S	554	S	11		590	S	11		
+8	83723	S	84900	S	461	S	5		459	S	6		
+
+NOINTERVENES 20
+n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	327	U	330	U	365	U	40		371	U	40		
+2	469	U	483	U	661	U	-46		689	U	-53		
+3	904	U	943	U	1467	U	-50		1474	U	-43		
+4	6569	U	6547	U	12460	U	-258		12259	U	-261		
+5	76359	U	75321	U	135157	U	-1440		134522	U	-1429		
+
+---R---
+2017-04-20_18-51-42
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	280	U	291	U	373	U	-2		380	U	-2		
+2	374	U	369	U	639	U	-4		641	U	-5		
+3	639	S	620	S	630	S	2		627	S	2		
+4	886	S	886	S	670	S	2		645	S	2		
+5	4068	S	4133	S	782	S	2		743	S	2		
+6	10317	S	10088	S	826	S	2		863	S	2		
+7	44980	S	45284	S	1083	S	2		891	S	3		
+8	67548	S	
+---R---
+2017-04-20_18-56-20
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [BATCH, HYBRID]
+Tries: 2
+Threads: 4
+INTERVENES 20
+n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	283	U	296	U	292	U	40		309	U	40		
+2	367	U	367	U	518	U	-41		498	U	-41		
+3	563	S	568	S	251	S	3		258	S	3		
+4	1540	S	1562	S	282	S	3		284	S	3		
+5	8062	S	8047	S	483	S	7		469	S	8		
+6	7849	S	7592	S	300	S	3		329	S	2		
+7	17480	S	17880	S	578	S	11		558	S	11		
+8	84640	S	84612	S	453	S	5		452	S	5		
+9	189996	S	190060	S	391	S	2		384	S	3		
+
+NOINTERVENES 20
+n	G.B	Sat	G.B	Sat	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+1	351	U	346	U	362	U	40		373	U	40		
+2	510	U	489	U	679	U	-45		653	U	-44		
+3	927	U	890	U	1568	U	-53		1531	U	-50		
+4	6472	U	6428	U	12236	U	-261		12168	U	-256		
+5	74506	U	74294	U	129706	U	-1423		130577	U	-1431		
+6	267276	U	266330	U	496316	U	-805		476352	U	-790		
+
+---R---
+2017-07-06_08-47-57
+Examples: Hotel Handshake SpanTree 
+Solvers: [GLUCOSE]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 20
+Threads: 4
+COUNTER STATIC
+n	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+
+THEOREM STATIC
+n	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+12	5048	U	4988	U	5005	U	5000	U	5236	U	5052	U	5018	U	5029	U	5034	U	5029	U	5216	U	5046	U	5033	U	4994	U	5025	U	5081	U	4978	U	4984	U	5016	U	5040	U	6935	U	1		6862	U	1		6875	U	1		6928	U	1		6898	U	1		6888	U	1		6904	U	1		6883	U	1		6944	U	1		7117	U	1		6907	U	1		6814	U	1		6906	U	1		6861	U	1		6957	U	1		6867	U	1		6865	U	1		6882	U	1		6849	U	1		6864	U	1		5089	U	-1		5091	U	-1		5122	U	-1		5073	U	-1		5202	U	-1		5091	U	-1		5092	U	-1		5122	U	-1		5123	U	-1		5129	U	-1		5120	U	-1		5088	U	-1		5121	U	-1		5280	U	-1		5287	U	-1		5288	U	-1		5128	U	-1		5122	U	-1		5117	U	-1		5119	U	-1		
+
+INTERVENES 20
+n	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+8	
+---R---
+2017-07-06_08-54-53
+Examples: SpanTree 
+Solvers: [GLUCOSE]
+Modes: [BATCH, PARALLEL, HYBRID]
+Tries: 20
+Threads: 4
+Span9 V1
+n	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+
+Span9 V2
+n	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.B	Sat	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+14	15093	S	15536	S	14770	S	15285	S	14907	S	15613	S	14972	S	14940	S	14998	S	15484	S	15213	S	15076	S	15205	S	14996	S	14865	S	14922	S	14930	S	15206	S	15262	S	15358	S	3661	S	0		3405	S	0		3563	S	0		3547	S	0		3537	S	0		3634	S	0		3450	S	0		3534	S	0		3439	S	0		3471	S	0		3557	S	0		3462	S	0		3566	S	1		3354	S	0		3372	S	0		3593	S	0		3512	S	0		3528	S	0		3397	S	0		3539	S	0		3159	S	0		3375	S	0		3298	S	0		3213	S	0		3265	S	0		3366	S	1		3391	S	0		3559	S	0		3497	S	0		3478	S	0		3341	S	0		3242	S	0		3258	S	0		3496	S	0		3307	S	0		3272	S	0		3175	S	0		3303	S	0		3235	S	0		3538	S	0		
+15	9476	S	9109	S	9427	S	8816	S	9336	S	8980	S	9126	S	9110	S	9170	S	9367	S	9464	S	9169	S	9401	S	9309	S	9324	S	9099	S	9086	S	9216	S	9108	S	9449	S	4031	S	0		3867	S	0		4149	S	0		4058	S	0		4326	S	0		4080	S	1		3894	S	0		4190	S	0		4094	S	0		4079	S	0		4085	S	1		3872	S	0		4019	S	0		3880	S	0		4126	S	0		4053	S	0		4075	S	0		3910	S	1		4009	S	0		4170	S	0		4008	S	0		3703	S	0		3564	S	0		4309	S	1		4053	S	0		4062	S	0		3773	S	0		4184	S	0		4066	S	0		3551	S	0		4148	S	0		3904	S	1		3843	S	0		3942	S	0		4092	S	0		3855	S	0		4190	S	0		3885	S	0		3606	S	0		3959	S	0		
+16	6550	S	6086	S	6366	S	6664	S	6626	S	6411	S	6344	S	6253	S	6195	S	6075	S	6382	S	6550	S	6272	S	6293	S	6416	S	6797	S	6516	S	6111	S	6421	S	6174	S	4997	S	0		4433	S	0		4584	S	0		5162	S	0		4337	S	0		4692	S	0		4327	S	1		4702	S	0		4392	S	0		4621	S	0		4680	S	0		4318	S	0		4589	S	0		5104	S	0		4310	S	0		4180	S	0		4266	S	1		4460	S	0		4492	S	0		4323	S	0		5192	S	0		4789	S	1		4878	S	0		4947	S	0		4538	S	0		5438	S	0		5175	S	0		4858	S	0		5002	S	0		4976	S	0		5066	S	0		5500	S	0		5234	S	0		5182	S	0		4959	S	0		5184	S	0		4818	S	0		4853	S	0		5093	S	0		4991	S	1		
+
+---R---
+2017-07-06_09-16-29
+Examples: Hotel 
+Solvers: [GLUCOSE]
+Modes: [PARALLEL, HYBRID]
+Tries: 20
+Threads: 4
+INTERVENES 20
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
+8	412	S	4		421	S	4		392	S	4		395	S	5		379	S	5		417	S	4		391	S	5		377	S	4		409	S	5		398	S	4		395	S	4		392	S	4		393	S	5		387	S	5		370	S	4		391	S	4		391	S	5		380	S	4		389	S	5		399	S	5		494	S	5		478	S	5		478	S	5		489	S	6		497	S	5		455	S	5		479	S	5		484	S	6		484	S	5		473	S	6		476	S	6		480	S	5		475	S	6		464	S	5		488	S	5		479	S	6		487	S	5		481	S	6		505	S	5		474	S	5		
+9	428	S	2		412	S	3		455	S	3		422	S	3		395	S	3		405	S	2		415	S	3		444	S	2		435	S	2		414	S	2		403	S	2		413	S	3		404	S	2		416	S	2		429	S	2		420	S	2		413	S	3		426	S	2		424	S	3		431	S	3		399	S	2		410	S	3		418	S	2		403	S	3		420	S	2		422	S	3		392	S	2		405	S	2		400	S	3		400	S	3		396	S	2		392	S	2		398	S	2		420	S	2		402	S	2		378	S	3		414	S	3		392	S	2		397	S	2		404	S	2		
+10	463	S	6		437	S	6		438	S	5		433	S	5		436	S	5		460	S	5		452	S	5		464	S	5		444	S	5		442	S	5		505	S	5		449	S	5		456	S	6		442	S	6		465	S	6		438	S	6		442	S	6		453	S	6		438	S	5		433	S	5		487	S	4		483	S	3		492	S	3		463	S	3		503	S	3		447	S	4		476	S	4		466	S	4		460	S	3		458	S	3		467	S	4		489	S	3		469	S	4		484	S	4		449	S	3		454	S	4		462	S	3		479	S	3		472	S	3		484	S	3		
+
+NOINTERVENES 20
+n	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.P	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	G.H	Sat	C.#	C.t	
