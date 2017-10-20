@@ -29,7 +29,7 @@ import java.util.List;
 import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.instance.Bounds;
-import kodkod.instance.TemporalBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -59,7 +59,7 @@ public class TemporalBoundsExpander {
 	 * @return a new universe with the atoms of the original one plus the time
 	 *         ones.
 	 */
-	private static Universe createUniverse(TemporalBounds oldBounds, int numberOfTimes) {
+	static Universe createUniverse(PardinusBounds oldBounds, int numberOfTimes) {
 		List<Object> newAtoms = new ArrayList<Object>();
 		Iterator<Object> it = oldBounds.universe().iterator();
 		while (it.hasNext()) {
@@ -104,12 +104,12 @@ public class TemporalBoundsExpander {
 	 * @param traceLength The number of distinguished states in the trace.
 	 * @return
 	 */
-	public static Bounds expand(TemporalBounds bounds, int traceLength) {
-		Universe u = createUniverse(bounds, traceLength);
-		Bounds newBounds = new Bounds(u);
+	public static PardinusBounds expand(PardinusBounds bounds, int traceLength, Universe u) {
+		PardinusBounds newBounds = new PardinusBounds(u);
 		TupleSet tupleSetTime = u.factory().range(
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + "0" }),
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + (traceLength - 1) }));
+		bounds.first();
 		for (Relation r : bounds.relations()) {
 			if (r instanceof VarRelation) {
 				TupleSet tupleSetL = convert(bounds.lowerBounds().get(r), u);
@@ -121,12 +121,27 @@ public class TemporalBoundsExpander {
 				newBounds.bound(r, tupleSetL, tupleSetU);			}
 		}
 
+		if (bounds.relationsSymb().size() > 1) 
+			throw new UnsupportedOperationException("Expansion of symbolic bounds not yet supported.");
+
+		if (bounds.relationsVars().size() > 1) 
+			throw new UnsupportedOperationException("Expansion of trace bounds not yet supported.");
+
 		newBounds.bound(TemporalTranslator.STATE, tupleSetTime);
 		newBounds.bound(TemporalTranslator.FIRST, tupleSetTime);
 		newBounds.bound(TemporalTranslator.LAST, tupleSetTime);
 		newBounds.bound(TemporalTranslator.PREFIX, tupleSetTime.product(tupleSetTime));
 		newBounds.bound(TemporalTranslator.LOOP, tupleSetTime.product(tupleSetTime));
 		newBounds.bound(TemporalTranslator.TRACE, tupleSetTime.product(tupleSetTime));
+		
+		if (bounds.amalgamated() != null) {
+			PardinusBounds newAmalg = expand(bounds.amalgamated(), traceLength, u);
+			newBounds = new PardinusBounds(newBounds,newAmalg);
+		}
+		
+		newBounds.integrated = bounds.integrated;
+		newBounds.trivial_config = bounds.trivial_config;
+		newBounds.setLoop(bounds.loop());
 		
 		return newBounds;
 	}

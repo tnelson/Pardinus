@@ -33,7 +33,8 @@ import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.VarRelation;
 import kodkod.ast.visitor.AbstractDetector;
 import kodkod.instance.Bounds;
-import kodkod.instance.TemporalBounds;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.Universe;
 
 /**
  * Translates temporal problems, i.e., formulas with
@@ -83,8 +84,9 @@ public class TemporalTranslator {
 	 *            the trace length.
 	 * @return the temporal bounds expanded into standard bounds.
 	 */
-	public static Bounds translate(TemporalBounds bounds, int traceLength) {
-		return TemporalBoundsExpander.expand(bounds, traceLength);
+	public static Bounds translate(PardinusBounds bounds, int traceLength) {
+		Universe u = TemporalBoundsExpander.createUniverse(bounds, traceLength);
+		return TemporalBoundsExpander.expand(bounds, traceLength,u);
 	}
 
 	/**

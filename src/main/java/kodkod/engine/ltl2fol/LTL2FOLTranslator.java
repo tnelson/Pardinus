@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
@@ -37,6 +38,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
+import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractReplacer;
 import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST;
@@ -60,8 +62,6 @@ import static kodkod.engine.ltl2fol.TemporalTranslator.TRACE;
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public class LTL2FOLTranslator extends AbstractReplacer {
-
-
 
 	/**
 	 * Variables to handle the depth of nested post operators within the current
@@ -96,8 +96,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	public static Formula translate(Formula tempFormula) {
 		LTL2FOLTranslator translator = new LTL2FOLTranslator();
 		
-		Formula order = PREFIX.totalOrder(STATE, FIRST,
-				LAST);
+		Formula order = PREFIX.totalOrder(STATE, FIRST, LAST);
 		Formula loopDecl = LOOP.partialFunction(LAST, STATE);
 		Expression nextDecl = PREFIX.union(LOOP);
 		Formula nextFnct = TRACE.eq(nextDecl);
@@ -111,7 +110,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			result = exists.and(result);
 		}
 		
-		return Formula.and(result, order, loopDecl, nextFnct);
+		// if the formula was already sliced, then should not affect the conjunction
+		// TODO: do this better
+		if (result instanceof BinaryFormula && ((BinaryFormula) result).op() == FormulaOperator.AND) {
+			return ((BinaryFormula) result).left().and(Formula.and(((BinaryFormula) result).right(),order,loopDecl,nextFnct));
+		} else
+			return Formula.and(result, order, loopDecl, nextFnct);
 	}
 
 	/**
