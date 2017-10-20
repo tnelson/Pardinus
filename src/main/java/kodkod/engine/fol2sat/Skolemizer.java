@@ -491,7 +491,7 @@ abstract class Skolemizer extends AbstractReplacer {
 	 * for the negated flag and the skolemDepth parameter.
 	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.BinaryTempFormula)
 	 */
-	// [HASLab]
+	// [HASLab] temporal formulas, cannot skolemize
 	public final Formula visit(BinaryTempFormula tf) {
 		Formula ret = lookup(tf);
 		if (ret!=null) return ret;
@@ -511,7 +511,7 @@ abstract class Skolemizer extends AbstractReplacer {
 	 * the negated flag and the skolemDepth parameter.
 	 * @see kodkod.ast.visitor.AbstractReplacer#visit(kodkod.ast.UnaryTempFormula)
 	 */
-	// [HASLab]
+	// [HASLab] temporal formulas, cannot skolemize
 	public final Formula visit(UnaryTempFormula tf) {
 		Formula ret = lookup(tf);
 		if (ret!=null) return ret;

@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Expression;
@@ -41,6 +42,7 @@ import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.visitor.AbstractReplacer;
+import kodkod.engine.ExtendedSolver;
 import kodkod.engine.bool.BooleanAccumulator;
 import kodkod.engine.bool.BooleanConstant;
 import kodkod.engine.bool.BooleanFactory;
@@ -49,17 +51,14 @@ import kodkod.engine.bool.BooleanMatrix;
 import kodkod.engine.bool.BooleanValue;
 import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
-import kodkod.engine.config.DecomposedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
 import kodkod.instance.Instance;
-import kodkod.instance.RelativeBounds;
-import kodkod.instance.TargetBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntSet;
@@ -433,19 +432,22 @@ public final class Translator {
 			if (!annotated_.usesInts()) bounds.ints().clear();
 			// [HASLab] if dealing with a decomposed problem, split the formula and 
 			// remove spurious variables;
-			if (bounds instanceof DecompBounds) {
-				DecompFormulaSlicer slicer = new DecompFormulaSlicer(originalFormula, (DecomposedOptions<?>) options);
-				DecompBounds dbnd = (DecompBounds) bounds;
-				if (dbnd.amalgamated instanceof RelativeBounds)
-					((RelativeBounds) dbnd.amalgamated).resolve();
-				if (!dbnd.integrated)
-					actual = slicer.f1;
-				else 
-					actual = slicer.f2;
-				dbnd.amalgamated.relations().retainAll(annotated_.relations());
-				if (!annotated_.usesInts()) dbnd.amalgamated.ints().clear();
-			} else {
-				actual = originalFormula;
+			if (bounds instanceof PardinusBounds) {
+				PardinusBounds pbounds = (PardinusBounds) bounds;
+				pbounds.relationsSymb().retainAll(annotated_.relations());
+
+				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
+					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula, pbounds);
+					pbounds.amalgamated().resolve();
+					pbounds.amalgamated().relations().retainAll(annotated_.relations());
+					if (!annotated_.usesInts()) pbounds.amalgamated().ints().clear();
+					if (!pbounds.integrated)
+						actual = slices.getKey();
+					else 
+						actual = slices.getValue();
+				} else {
+					actual = originalFormula;
+				}
 			}
 		}
 		final AnnotatedNode<Formula> annotated = logging ? annotateRoots(actual) : annotate(actual);
@@ -605,11 +607,7 @@ public final class Translator {
 			if (circuit.op()==Operator.CONST) { 
 				return trivial((BooleanConstant)circuit, null, bounds.relations());
 			} 
-			BooleanValue x = factory.and(circuit, breaker.generateSBP(interpreter, options)); // [HASLab]
-//			if (x.op()==Operator.CONST) { 
-//				return trivial((BooleanConstant)x, null, bounds.relations());
-//			} 
-			return toCNF((BooleanFormula)x, interpreter, null);
+			return toCNF((BooleanFormula)factory.and(circuit, breaker.generateSBP(interpreter, options)), interpreter, null);
 		}
 	}
 	
@@ -642,8 +640,8 @@ public final class Translator {
 			final Map<Relation, IntSet> varUsage = interpreter.vars();
 			final SATSolver cnf = Bool2CNFTranslator.translate((BooleanFormula)circuit, maxPrimaryVar, options.solver());
 			// [HASLab] add the targets to the SAT problem
-			if (bounds instanceof TargetBounds) 
-				doTargets((TargetBounds) bounds, interpreter, cnf);
+			if (bounds instanceof PardinusBounds) 
+				doTargets((PardinusBounds) bounds, interpreter, cnf);
 
 			interpreter = null; // enable gc
 
@@ -652,13 +650,19 @@ public final class Translator {
 	}
 
 	/**
-	 * Add the targets to the SAT problem.
+	 * Add the targets defined in the bounds to the SAT problem. Note that this
+	 * process will only be performed once, as the iteration does not involve
+	 * the bounds (see {@link ExtendedSolver#solveAll(Formula, Bounds)}).
+	 * 
 	 * @param bounds
+	 *            the bounds where the targets are defined.
 	 * @param interpreter
+	 *            assigns boolean variables to the relations.
 	 * @param cnf
+	 *            the cnf to which to add the targets.
 	 */
 	// [HASLab]
-	private void doTargets(TargetBounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
+	private void doTargets(PardinusBounds bounds, LeafInterpreter interpreter, final SATSolver cnf) {
 		for (Relation r : bounds.targets().keySet()) {
 			Integer w = bounds.weight(r);
 			if (w == null)
@@ -667,7 +671,7 @@ public final class Translator {
 					if (e.value() instanceof BooleanConstant) ; // not a boolean variable;
 					else if (bounds.target(r).indexView().contains(e.index()))
 						((TargetSATSolver) cnf).addTarget(x);
-					else 
+					else
 						((TargetSATSolver) cnf).addTarget(-x);
 				}	
 			else
@@ -746,10 +750,12 @@ public final class Translator {
 		}
 		
 		// [HASLab] consider the remainder bounds in decomposed problems.
-		if (optimized instanceof DecompBounds) {
-			for(Relation r : ((DecompBounds)original).amalgamated.relations()) {
-				if (!((DecompBounds)optimized).amalgamated.relations().contains(r)) {
-					((DecompBounds)optimized).amalgamated.bound(r, ((DecompBounds)original).amalgamated.lowerBound(r), ((DecompBounds)original).amalgamated.upperBound(r));
+		// TODO: what about variables only symbolically bound?
+		if (optimized instanceof PardinusBounds && ((PardinusBounds) original).amalgamated() != null) {
+			PardinusBounds b = ((PardinusBounds) original).amalgamated();
+			for(Relation r : b.relations()) {
+				if (!((PardinusBounds) optimized).amalgamated().relations().contains(r)) {
+					((PardinusBounds) optimized).amalgamated().bound(r, b.lowerBound(r), b.upperBound(r));
 				}
 			}
 		}

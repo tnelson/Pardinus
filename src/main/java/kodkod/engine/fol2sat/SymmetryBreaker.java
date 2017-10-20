@@ -52,7 +52,8 @@ import kodkod.engine.bool.Operator;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.Tuple;
 import kodkod.instance.TupleFactory;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntIterator;
@@ -75,6 +76,7 @@ final class SymmetryBreaker {
 	private final Bounds bounds;
 	private final Set<IntSet> symmetries;
 	private final int usize;
+	private final Reporter reporter; // [HASLab]
 	
 	/**
 	 * Constructs a new symmetry breaker for the given Bounds, and calls 
@@ -86,7 +88,8 @@ final class SymmetryBreaker {
 	 * @ensures reporter.detectedSymmetries(this.symmteries')
 	 * @ensures this.bounds' = bounds && this.symmetries' = SymmetryDetector.partition(bounds) && no this.broken'
 	 **/
-	SymmetryBreaker(Bounds bounds, Reporter reporter) {
+	// [HASLab] public
+	public SymmetryBreaker(Bounds bounds, Reporter reporter) {
 		// [HASLab] if the bounds are for a decomposed problem, the bounds of the 
 		// amalgamated problem should be considered when calculating symmetries.
 		// [HASLab] the original bounds are used to set the relevant relations,
@@ -97,9 +100,10 @@ final class SymmetryBreaker {
 		// [HASLab] we can't simply use the stage bounds at the integrated stage
 		// because the fixed configurations would affect the symmetries.
 		stage_bounds = bounds;
-		if (bounds instanceof DecompBounds) 
-			bounds = ((DecompBounds) bounds).amalgamated();
+		if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).amalgamated() != null) 
+			bounds = ((PardinusBounds) bounds).amalgamated();
 
+		this.reporter = reporter; // [HASLab]
 		this.bounds = bounds; 
 		this.usize = bounds.universe().size();
 		reporter.detectingSymmetries(bounds);
@@ -189,7 +193,11 @@ final class SymmetryBreaker {
 		final BooleanAccumulator sbp = BooleanAccumulator.treeGate(Operator.AND);
 		final List<BooleanValue> original = new ArrayList<BooleanValue>(predLength);
 		final List<BooleanValue> permuted = new ArrayList<BooleanValue>(predLength);
-		
+
+		// [HASLab] report lexes
+		final List<Entry<Relation, Tuple>> _original = new ArrayList<Entry<Relation, Tuple>>(predLength);
+		final List<Entry<Relation, Tuple>> _permuted = new ArrayList<Entry<Relation, Tuple>>(predLength);
+
 		for(IntSet sym : symmetries) {
 		
 			IntIterator indeces = sym.iterator();
@@ -237,6 +245,9 @@ final class SymmetryBreaker {
 						// [HASLab] we know that boolean constants only occur at
 						// configuration matrices; otherwise behave as usual.
 						if (!(permValue instanceof BooleanConstant)) {
+							// [HASLab] report lexes
+							_original.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), entry.index())));
+							_permuted.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), permIndex)));
 							original.add(entry.value());
 							permuted.add(permValue);			
 						} else {
@@ -269,9 +280,13 @@ final class SymmetryBreaker {
 					}
 				}
 								
+				// [HASLab] report lexes
+				reporter.reportLex(_original,_permuted);
 				sbp.add(leq(factory, original, permuted));
 				original.clear();
 				permuted.clear();
+				_original.clear();
+				_permuted.clear();
 				prevIndex = curIndex;
 			}
 		}
@@ -335,27 +350,12 @@ final class SymmetryBreaker {
 	 */
 	// [HASLab]
 	private boolean isConfigStage(Relation r) {
-		if ((stage_bounds instanceof DecompBounds) && (((DecompBounds) stage_bounds).integrated))
+		if ((stage_bounds instanceof PardinusBounds) && (((PardinusBounds) stage_bounds).integrated))
 			return stage_bounds.relations().contains(r)
 					&& stage_bounds.lowerBound(r).size() == stage_bounds.upperBound(r).size();
 		else
 			return stage_bounds.relations().contains(r);
 	}
-	
-	/**
-	 * Checks whether a config relation at the integrated stage.
-	 * @param r
-	 * @return
-	 */
-	// [HASLab]
-	private boolean isConfigAtIntegrated(Relation r) {
-		if ((stage_bounds instanceof DecompBounds) && !(((DecompBounds) stage_bounds).integrated))
-			return false;
-		else if ((stage_bounds instanceof DecompBounds) && (((DecompBounds) stage_bounds).integrated))
-			return stage_bounds.lowerBound(r).size() != bounds.lowerBound(r).size() || stage_bounds.upperBound(r).size() != bounds.upperBound(r).size();
-		else return false;
-	}
-	
 	
 	/**
 	 * Returns a BooleanValue that is true iff the string of bits
@@ -470,7 +470,7 @@ final class SymmetryBreaker {
 				bounds.bound(relation, bounds.universe().factory().setOf(2, reduced));
 				// [HASLab] in decomposed problems, stage bounds are those that will
 				// be effectively solved; for normal problems, stage bounds = bounds.
-				if (stage_bounds instanceof DecompBounds) 
+				if (stage_bounds instanceof PardinusBounds) 
 					stage_bounds.bound(relation, bounds.universe().factory().setOf(2, reduced));
 
 				return Formula.TRUE;
@@ -479,7 +479,7 @@ final class SymmetryBreaker {
 				bounds.boundExactly(acyclicConst, bounds.universe().factory().setOf(2, reduced));
 				// [HASLab] in decomposed problems, stage bounds are those that will
 				// be effectively solved; for normal problems, stage bounds = bounds.
-				if (stage_bounds instanceof DecompBounds) 
+				if (stage_bounds instanceof PardinusBounds) 
 					stage_bounds.boundExactly(acyclicConst, bounds.universe().factory().setOf(2, reduced));
 				
 				return relation.in(acyclicConst);
@@ -542,7 +542,7 @@ final class SymmetryBreaker {
 					bounds.boundExactly(relation, f.setOf(2, ordering));
 					// [HASLab] in decomposed problems, stage bounds are those that will
 					// be effectively solved; for normal problems, stage bounds = bounds.
-					if (stage_bounds instanceof DecompBounds) {
+					if (stage_bounds instanceof PardinusBounds) {
 						stage_bounds.boundExactly(first, f.setOf(f.tuple(1, domain.min())));
 						stage_bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
 						stage_bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
@@ -561,7 +561,7 @@ final class SymmetryBreaker {
 					bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
 					bounds.boundExactly(relConst, f.setOf(2, ordering));
 					// [HASLab] in decomposed problems, stage bounds are those that will be solved
-					if (stage_bounds instanceof DecompBounds) {
+					if (stage_bounds instanceof PardinusBounds) {
 						stage_bounds.boundExactly(firstConst, f.setOf(f.tuple(1, domain.min())));
 						stage_bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
 						stage_bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));

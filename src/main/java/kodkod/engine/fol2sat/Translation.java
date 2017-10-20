@@ -1,6 +1,5 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +63,6 @@ import kodkod.util.ints.Ints;
  * @see Incremental
  * 
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class Translation {
 
@@ -159,8 +157,7 @@ public abstract class Translation {
 	 * @throws IllegalStateException  this.solver.solve() has not been called or the outcome of the last call 
 	 *        was not <code>true</code>.
 	 */
-	// [HASLab] removed final
-	public Instance interpret() {
+	public final Instance interpret() {
 		final SATSolver solver = cnf();
 		
 		final Instance instance = new Instance(bounds.universe());
@@ -206,8 +203,7 @@ public abstract class Translation {
      * 
 	 * @author Emina Torlak
 	 */
-	// [HASLab] removed final
-	public static class Whole extends Translation {
+	public static final class Whole extends Translation {
 		private final SATSolver solver;
 		private final Map<Relation, IntSet> primaryVarUsage;
 		private final TranslationLog log;

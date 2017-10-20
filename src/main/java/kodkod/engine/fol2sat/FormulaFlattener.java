@@ -63,7 +63,8 @@ import kodkod.util.nodes.AnnotatedNode;
  * @author Emina Torlak
  * @modified Nuno Macedo // [HASLab] temporal model finding
  */
-final class FormulaFlattener extends AbstractVoidVisitor {
+// [HASLab] public
+final public class FormulaFlattener extends AbstractVoidVisitor {
 
 	/**
 	 * Flattens the given formula into a set of conjuncts
@@ -259,11 +260,11 @@ final class FormulaFlattener extends AbstractVoidVisitor {
 		addConjunct(f);
 	}
 	
-	// [HASLab]
+	// [HASLab] temporal formulas, cannot be broken into conjuncts
 	/** @see #visitFormula(Formula) */
 	public final void visit(BinaryTempFormula tf) 		{ visitFormula(tf); }
 
-	// [HASLab]
+	// [HASLab] temporal formulas, cannot be broken into conjuncts
 	/** @see #visitFormula(Formula) */
 	public final void visit(UnaryTempFormula tf) 		{ visitFormula(tf); }			
 		

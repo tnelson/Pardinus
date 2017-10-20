@@ -35,7 +35,7 @@ import java.util.Set;
 
 import kodkod.ast.Relation;
 import kodkod.instance.Bounds;
-import kodkod.instance.TargetBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
@@ -142,9 +142,9 @@ public final class SymmetryDetector {
 			if (!lower.isEmpty() && lower.size()<upper.size()) { sets.add(lower); }
 			if (!upper.isEmpty()) {	sets.add(upper); }
 
-			// [HASLab] consider targets
-			if (bounds instanceof TargetBounds) {
-				final TupleSet target = ((TargetBounds) bounds).target(r);
+			// [HASLab] consider targets in the bounds
+			if (bounds instanceof PardinusBounds) {
+				final TupleSet target = ((PardinusBounds) bounds).target(r);
 				if (target != null && !target.isEmpty()) { sets.add(target); }
 			}
 		}
