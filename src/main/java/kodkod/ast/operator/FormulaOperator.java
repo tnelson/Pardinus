@@ -28,13 +28,13 @@ package kodkod.ast.operator;
  */
 public enum FormulaOperator {
     /** Logical AND operator. */      
-    AND  		{ public String toString() { return "&&"; } },
+    AND  		{ public String toString() { return "and"; } }, // [HASLab]
     /** Logical OR operator. */      
-    OR 			{ public String toString() { return "||"; } },
+    OR 			{ public String toString() { return "or"; } }, // [HASLab]
     /** Logical bi-implication operator. */
-    IFF 		{ public String toString() { return "<=>"; } },
+    IFF 		{ public String toString() { return "iff"; } }, // [HASLab]
     /** Logical implication operator. */      
-    IMPLIES 	{ public String toString() { return "=>"; } };
+    IMPLIES 	{ public String toString() { return "implies"; } }; // [HASLab]
   
     static final int nary = (1<<AND.ordinal()) | (1<<OR.ordinal());
     
