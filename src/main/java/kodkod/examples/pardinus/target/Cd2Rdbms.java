@@ -9,7 +9,7 @@ import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
-import kodkod.instance.TargetBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -51,7 +51,7 @@ public class Cd2Rdbms {
 		}
 			
 		Universe universe = new Universe(atoms);
-		TargetBounds bounds = new TargetBounds(universe);
+		PardinusBounds bounds = new PardinusBounds(universe);
 		TupleFactory factory = universe.factory();
 
 		String lastC  = "C" + (2*size+maxdelta-1);
@@ -298,7 +298,7 @@ public Bounds bounds_restricted(int size, int maxdelta, int change){
 		}
 			
 		Universe universe = new Universe(atoms);
-		TargetBounds bounds = new TargetBounds(universe);
+		PardinusBounds bounds = new PardinusBounds(universe);
 		TupleFactory factory = universe.factory();
 
 		String lastC  = "C" + (2*size+maxdelta-1);

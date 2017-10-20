@@ -8,8 +8,8 @@ import kodkod.ast.*;
 import kodkod.ast.operator.*;
 import kodkod.instance.*;
 import kodkod.engine.*;
-import kodkod.engine.Solver.TSolutionIterator;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.ExtendedSolver.SolutionIterator;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.satlab.SATFactory;
 
@@ -38,7 +38,7 @@ public final class OwnGranpa {
 
 		Universe universe = new Universe(atomlist);
 		TupleFactory factory = universe.factory();
-		TargetBounds bounds = new TargetBounds(universe);
+		PardinusBounds bounds = new PardinusBounds(universe);
 
 		TupleSet _nxtupper = factory.noneOf(2);
 		bounds.boundExactly(_nxt, _nxtupper);
@@ -225,14 +225,14 @@ public final class OwnGranpa {
 		ws.put("String", 1);
 
 
-		BoundedExtendedOptions opt = new BoundedExtendedOptions();
+		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSolver(SATFactory.externalPMaxYices("/Users/nmm/Documents/Work/Programming/AlloyExplore/kodextension/lib/yices-1.0.38/bin/yices", "owngrandpa.wcnf", 2000, "-d","-e","-ms","-mw",""+2000));
 //		opt.setSolver(SATFactory.PMaxSAT4J);
 		opt.setBitwidth(1);
 		opt.setSymmetryBreaking(0);
 		opt.setNoOverflow(true);
-		Solver solver = new Solver(opt);
-		TSolutionIterator sols = (TSolutionIterator) solver.solveAll(family,bounds);
+		ExtendedSolver solver = new ExtendedSolver(opt);
+		SolutionIterator sols = (SolutionIterator) solver.solveAll(family,bounds);
 		opt.setTargetMode(TMode.CLOSE);
 		Solution sol = sols.next(ws);
 		//System.out.println(sol.stats());

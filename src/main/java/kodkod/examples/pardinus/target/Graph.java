@@ -42,7 +42,7 @@ public final class Graph {
 			atoms.add("C" + i);
 		}
 		Universe universe = new Universe(atoms);
-		TargetBounds bounds = new TargetBounds(universe);
+		PardinusBounds bounds = new PardinusBounds(universe);
 		String lastN = "N" + (size-1);
 		String lastC = "C" + (size-1);
 		TupleFactory factory = universe.factory();
@@ -120,7 +120,7 @@ public final class Graph {
 			atoms.add("C" + i);
 		}
 		Universe universe = new Universe(atoms);
-		TargetBounds bounds = new TargetBounds(universe);
+		PardinusBounds bounds = new PardinusBounds(universe);
 		String lastN = "N" + (size-1);
 		String lastC = "C" + (size-1);
 		TupleFactory factory = universe.factory();
