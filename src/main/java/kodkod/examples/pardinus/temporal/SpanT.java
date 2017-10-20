@@ -30,11 +30,10 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DModel;
-import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
-import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -59,8 +58,6 @@ public class SpanT implements DModel {
 		V1, V2, V3;
 	}
 
-	private TemporalFormulaSlicer slicer;
-
 	public SpanT(String args[]) {
 
 		Root = Relation.unary("this/Root");
@@ -78,7 +75,6 @@ public class SpanT implements DModel {
 		n_ps = Integer.valueOf(args[0]);
 		var = Variant.valueOf(args[1]);
 
-		slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
 	}
 
 	public Formula staticPart() {
@@ -226,10 +222,6 @@ public class SpanT implements DModel {
 
 	}
 
-	private Formula finalFormula() {
-		return temporalPart().and(staticPart());
-	}
-
 	/*
 	 * private Formula equivStates(Expression s, Expression s1) { Expression
 	 * x109=s.join(level); Expression x110=s1.join(level); Formula
@@ -294,7 +286,7 @@ public class SpanT implements DModel {
 	 *
 	 * @return a bounds for the given number of persons.
 	 */
-	public Bounds bounds() {
+	public PardinusBounds bounds1() {
 		final List<Object> atoms = new ArrayList<Object>(2 * n_ps);
 
 		atoms.add("Root");
@@ -307,7 +299,7 @@ public class SpanT implements DModel {
 		Universe u = new Universe(atoms);
 
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 
 		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process" + (n_ps - 1)));
 		final TupleSet rb = f.range(f.tuple("Process1"), f.tuple("Process" + (n_ps - 1)));
@@ -317,9 +309,6 @@ public class SpanT implements DModel {
 		b.boundExactly(Process_rem, rb);
 		b.boundExactly(Level, lb);
 		b.bound(adjacent, pb.product(pb));
-		b.bound(runs, pb);
-		b.bound(level, pb.product(lb));
-		b.bound(parent, pb.product(pb));
 
 		b.bound(level_first, lb);
 		b.bound(level_next, lb.product(lb));
@@ -327,25 +316,40 @@ public class SpanT implements DModel {
 
 		return b;
 	}
+	
+	public PardinusBounds bounds2() {
+		final List<Object> atoms = new ArrayList<Object>(2 * n_ps);
 
-	@Override
-	public Bounds bounds1() {
-		return slicer.getStaticBounds();
-	}
+		atoms.add("Root");
+		for (int i = 1; i < n_ps; i++)
+			atoms.add("Process" + i);
 
-	@Override
-	public Bounds bounds2() {
-		return slicer.getDynamicBounds();
+		for (int i = 0; i < n_ps; i++)
+			atoms.add("Lvl" + i);
+
+		Universe u = new Universe(atoms);
+
+		final TupleFactory f = u.factory();
+		final PardinusBounds b = new PardinusBounds(u);
+
+		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process" + (n_ps - 1)));
+		final TupleSet lb = f.range(f.tuple("Lvl0"), f.tuple("Lvl" + (n_ps - 1)));
+
+		b.bound(runs, pb);
+		b.bound(level, pb.product(lb));
+		b.bound(parent, pb.product(pb));
+
+		return b;
 	}
 
 	@Override
 	public Formula partition1() {
-		return Formula.and(slicer.getStaticFormulas());
+		return staticPart();
 	}
 
 	@Override
 	public Formula partition2() {
-		return Formula.and(slicer.getDynamicFormulas());
+		return temporalPart();
 	}
 
 	@Override
@@ -362,12 +366,14 @@ public class SpanT implements DModel {
 	public static void main(String[] args) {
 		SpanT model = new SpanT(new String[] { "2", "V3" });
 
-		BoundedExtendedOptions opt = new BoundedExtendedOptions();
+		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		Solver solver = new Solver(opt);
 
-		Solution sol = solver.solve(model.finalFormula(), model.bounds());
+		PardinusBounds bnds = model.bounds1();
+		bnds.merge(model.bounds2());
+		Solution sol = solver.solve(model.partition1().and(model.partition2()), bnds);
 
 		System.out.println(sol);
 		return;

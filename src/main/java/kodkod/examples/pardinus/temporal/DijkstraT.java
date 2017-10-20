@@ -30,11 +30,11 @@ import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DModel;
-import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -58,8 +58,6 @@ public class DijkstraT implements DModel {
 		SAT, UNSAT;
 	}
 
-	private TemporalFormulaSlicer slicer;
-
 	/**
 	 * Creates an instance of Dijkstra example.
 	 */
@@ -77,7 +75,6 @@ public class DijkstraT implements DModel {
 		this.mutexes = Integer.valueOf(args[1]);
 		this.var = Variant.valueOf(args[2]);
 
-		slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
 	}
 
 	/**
@@ -99,10 +96,8 @@ public class DijkstraT implements DModel {
 																	 * OP
 																	 */
 
-		final Formula f5 = mord.totalOrder(Mutex, mfirst, mlast);
-		final Formula f6 = Process.eq(Process);
 
-		return Formula.and(f3, f4, f5, f6);
+		return Formula.and(f3, f4);
 	}
 
 	/**
@@ -350,7 +345,34 @@ public class DijkstraT implements DModel {
 		return declarations().and(grabOrRelease()).and(deadlock()).and(waits.some().eventually());
 	}
 
-	public Bounds bounds() {
+	public PardinusBounds bounds1() {
+
+		final List<String> atoms = new ArrayList<String>(processes + mutexes);
+		for (int i = 0; i < processes; i++) {
+			atoms.add("Process" + i);
+		}
+		for (int i = 0; i < mutexes; i++) {
+			atoms.add("Mutex" + i);
+		}
+
+		Universe u = new Universe(atoms);
+		final TupleFactory f = u.factory();
+		final PardinusBounds b = new PardinusBounds(u);
+
+		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (processes - 1)));
+		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex" + (mutexes - 1)));
+
+		b.bound(Process, pb);
+
+		b.bound(Mutex, mb);
+		b.bound(mfirst, mb);
+		b.bound(mlast, mb);
+		b.bound(mord, mb.product(mb));
+
+		return b;
+	}
+	
+	public Bounds bounds2() {
 
 		final List<String> atoms = new ArrayList<String>(processes + mutexes);
 		for (int i = 0; i < processes; i++) {
@@ -367,15 +389,8 @@ public class DijkstraT implements DModel {
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (processes - 1)));
 		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex" + (mutexes - 1)));
 
-		b.bound(Process, pb);
-
 		b.bound(holds, pb.product(mb));
 		b.bound(waits, pb.product(mb));
-
-		b.bound(Mutex, mb);
-		b.bound(mfirst, mb);
-		b.bound(mlast, mb);
-		b.bound(mord, mb.product(mb));
 
 		return b;
 	}
@@ -388,23 +403,15 @@ public class DijkstraT implements DModel {
 	}
 
 	@Override
-	public Bounds bounds1() {
-		return slicer.getStaticBounds();
-	}
-
-	@Override
-	public Bounds bounds2() {
-		return slicer.getDynamicBounds();
-	}
-
-	@Override
 	public Formula partition1() {
-		return Formula.and(slicer.getStaticFormulas());
+		final Formula f5 = mord.totalOrder(Mutex, mfirst, mlast);
+		final Formula f6 = Process.eq(Process);
+		return f5.and(f6);
 	}
 
 	@Override
 	public Formula partition2() {
-		return Formula.and(slicer.getDynamicFormulas());
+		return finalFormula();
 	}
 
 	@Override
@@ -421,12 +428,14 @@ public class DijkstraT implements DModel {
 	public static void main(String[] args) {
 		DijkstraT model = new DijkstraT(new String[] { "3", "3", "SAT" });
 
-		BoundedExtendedOptions opt = new BoundedExtendedOptions();
+		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		Solver solver = new Solver(opt);
 
-		Solution sol = solver.solve(model.finalFormula(), model.bounds());
+		PardinusBounds bnds = model.bounds1();
+		bnds.merge(model.bounds2());
+		Solution sol = solver.solve(model.partition1().and(model.partition2()), bnds);
 
 		System.out.println(sol);
 		return;

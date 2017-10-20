@@ -25,11 +25,11 @@ package kodkod.examples.pardinus.temporal;
 import kodkod.ast.*;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DModel;
-import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -63,8 +63,6 @@ public class RingT implements DModel {
 	// partition 2 relations
 	private VarRelation toSend, elected;
 
-	private TemporalFormulaSlicer slicer;
-
 	public RingT(String args[]) {
 		this.n_ps = Integer.valueOf(args[0]);
 		this.variant = Variant1.valueOf(args[1]);
@@ -81,8 +79,6 @@ public class RingT implements DModel {
 
 		toSend = VarRelation.binary("toSend");
 		elected = VarRelation.unary("elected");
-
-		slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
 	}
 
 	/**
@@ -336,14 +332,55 @@ public class RingT implements DModel {
 	public Formula finalFormula() {
 		if (!(variant == Variant1.GOODSAFETY))
 			if (variant == Variant1.GOODLIVENESS)
-				return variableConstraints().and(checkAtLeastOneElectedLoop());
+				return (checkAtLeastOneElectedLoop());
 			else
-				return variableConstraints().and(checkAtLeastOneElected());
+				return (checkAtLeastOneElected());
 		else
-			return variableConstraints().and(checkAtMostOneElected());
+			return (checkAtMostOneElected());
 	}
 
-	public Bounds bounds() {
+	public PardinusBounds bounds1() {
+
+		final List<String> atoms = new ArrayList<String>(n_ps);
+
+		// add the process atoms
+		for (int i = 0; i < n_ps; i++)
+			atoms.add("Process" + i);
+
+		// if variable processes, must consider Ids as a workaround to
+		// totalorder
+		if (variable == Variant2.VARIABLE) {
+			for (int i = 0; i < n_ps; i++)
+				atoms.add("Id" + i);
+		}
+
+		Universe u = new Universe(atoms);
+		final TupleFactory f = u.factory();
+
+		final PardinusBounds b = new PardinusBounds(u);
+
+		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (n_ps - 1)));
+
+		b.bound(Process, pb);
+		b.bound(succ, pb.product(pb));
+
+		if (variable == Variant2.VARIABLE) {
+			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id" + (n_ps - 1)));
+			b.bound(Id, ib);
+			b.bound(id, pb.product(ib));
+			b.bound(pfirst, ib);
+			b.bound(plast, ib);
+			b.bound(pord, ib.product(ib));
+		} else {
+			b.bound(pfirst, pb);
+			b.bound(plast, pb);
+			b.bound(pord, pb.product(pb));
+		}
+
+		return b;
+	}
+
+	public Bounds bounds2() {
 
 		final List<String> atoms = new ArrayList<String>(n_ps);
 
@@ -365,21 +402,10 @@ public class RingT implements DModel {
 
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (n_ps - 1)));
 
-		b.bound(Process, pb);
-		b.bound(succ, pb.product(pb));
-
 		if (variable == Variant2.VARIABLE) {
 			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id" + (n_ps - 1)));
-			b.bound(Id, ib);
-			b.bound(id, pb.product(ib));
-			b.bound(pfirst, ib);
-			b.bound(plast, ib);
-			b.bound(pord, ib.product(ib));
 			b.bound(toSend, pb.product(ib));
 		} else {
-			b.bound(pfirst, pb);
-			b.bound(plast, pb);
-			b.bound(pord, pb.product(pb));
 			b.bound(toSend, pb.product(pb));
 		}
 		b.bound(elected, pb);
@@ -388,23 +414,13 @@ public class RingT implements DModel {
 	}
 
 	@Override
-	public Bounds bounds1() {
-		return slicer.getStaticBounds();
-	}
-
-	@Override
-	public Bounds bounds2() {
-		return slicer.getDynamicBounds();
-	}
-
-	@Override
 	public Formula partition1() {
-		return Formula.and(slicer.getStaticFormulas());
+		return variableConstraints();
 	}
 
 	@Override
 	public Formula partition2() {
-		return Formula.and(slicer.getDynamicFormulas());
+		return finalFormula();
 	}
 
 	@Override
@@ -421,12 +437,14 @@ public class RingT implements DModel {
 	public static void main(String[] args) {
 		RingT model = new RingT(new String[] { "3", "BADLIVENESS", "STATIC" });
 
-		BoundedExtendedOptions opt = new BoundedExtendedOptions();
+		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
 		Solver solver = new Solver(opt);
 
-		Solution sol = solver.solve(model.finalFormula(), model.bounds());
+		PardinusBounds bnds = model.bounds1();
+		bnds.merge(model.bounds2());
+		Solution sol = solver.solve(model.partition1().and(model.partition2()), bnds);
 
 		System.out.println(sol);
 		return;

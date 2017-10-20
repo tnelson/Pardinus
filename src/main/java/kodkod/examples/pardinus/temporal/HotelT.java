@@ -30,13 +30,12 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Solution;
-import kodkod.engine.TemporalKodkodSolver;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.TemporalPardinusSolver;
+import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DModel;
-import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
 import kodkod.engine.satlab.SATFactory;
-import kodkod.instance.Bounds;
-import kodkod.instance.TemporalBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -60,8 +59,6 @@ public class HotelT implements DModel {
 		INTERVENES, NOINTERVENES;
 	}
 
-	private TemporalFormulaSlicer slicer;
-
 	public HotelT(String[] args) {
 		this.n = Integer.valueOf(args[0]);
 		this.variant = Variant.valueOf(args[1]);
@@ -69,24 +66,15 @@ public class HotelT implements DModel {
 		key = Relation.unary("Key");
 		guest = Relation.unary("Guest");
 		room = Relation.unary("Room");
-		rkeys = Relation.nary("Room.keys", 2);
-		key_first = Relation.unary("ordering/Ord.First");
-		key_last = Relation.unary("ordering/Ord.Last");
-		key_next = Relation.nary("ordering/Ord.Next", 2);
+		rkeys = Relation.nary("Room#keys", 2);
+		key_first = Relation.unary("ordering##Ord#First");
+		key_last = Relation.unary("ordering##Ord#Last");
+		key_next = Relation.nary("ordering##Ord#Next", 2);
 
-		current = VarRelation.nary("Room.currentKey", 2);
-		lastkey = VarRelation.nary("FrontDesk.lastKey", 2);
-		occupant = VarRelation.nary("FrontDesk.occupant", 2);
-		gkeys = VarRelation.nary("Guest.gkeys", 2);
-
-		// slicer = new TemporalFormulaSlicer(finalFormula(), bounds());
-	}
-
-	public Formula finalFormula() {
-		Formula f2 = Formula.compose(FormulaOperator.AND, declsAndFacts(), init(), next(), noBadEntries().not());
-		if (variant == Variant.NOINTERVENES)
-			f2 = f2.and(noIntervenes());
-		return f2;
+		current = VarRelation.nary("Room#currentKey", 2);
+		lastkey = VarRelation.nary("FrontDesk#lastKey", 2);
+		occupant = VarRelation.nary("FrontDesk#occupant", 2);
+		gkeys = VarRelation.nary("Guest#gkeys", 2);
 	}
 
 	private Formula init() {
@@ -173,10 +161,6 @@ public class HotelT implements DModel {
 																	 */
 	}
 
-	public Formula declsAndFacts() {
-		return Formula.compose(FormulaOperator.AND, staticDecls(), staticFact(), tempDecls(), tempFacts());
-	}
-
 	private Formula next() {
 		Variable g = Variable.unary("g");
 		Variable r = Variable.unary("r");
@@ -241,7 +225,7 @@ public class HotelT implements DModel {
 		Formula x609 = (r.join(current.prime())).eq(k);/* TEMPORAL OP */// r.current.t'
 																		// = k
 
-		Variable r1 = Variable.unary("r'");
+		Variable r1 = Variable.unary("r1");
 		Formula x641 = (r1.join(current)).eq(r1.join(current.prime()));/*
 																	 * TEMPORAL
 																	 * OP
@@ -319,8 +303,8 @@ public class HotelT implements DModel {
 		Formula checkout = x337.and(x343.and(x351)).and(x352).and(x353);
 		return checkout;
 	}
-
-	public TemporalBounds bounds() {
+	
+	public PardinusBounds bounds1() {
 		final List<String> atoms = new ArrayList<String>(3 * n);
 		for (int i = 0; i < n; i++) {
 			atoms.add("Key" + i);
@@ -335,7 +319,7 @@ public class HotelT implements DModel {
 		Universe u = new Universe(atoms);
 
 		final TupleFactory f = u.factory();
-		final TemporalBounds b = new TemporalBounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 
 		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n - 1)));
 		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
@@ -349,6 +333,30 @@ public class HotelT implements DModel {
 		b.bound(room, rb);
 		b.bound(rkeys, rb.product(kb));
 
+		return b;
+	}
+
+	public PardinusBounds bounds2() {
+		final List<String> atoms = new ArrayList<String>(3 * n);
+		for (int i = 0; i < n; i++) {
+			atoms.add("Key" + i);
+		}
+		for (int i = 0; i < n; i++) {
+			atoms.add("Room" + i);
+		}
+		for (int i = 0; i < n; i++) {
+			atoms.add("Guest" + i);
+		}
+
+		Universe u = new Universe(atoms);
+
+		final TupleFactory f = u.factory();
+		final PardinusBounds b = new PardinusBounds(u);
+
+		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n - 1)));
+		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
+		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room" + (n - 1)));
+
 		b.bound(lastkey, rb.product(kb));
 		b.bound(occupant, rb.product(gb));
 		b.bound(current, rb.product(kb));
@@ -357,23 +365,16 @@ public class HotelT implements DModel {
 	}
 
 	@Override
-	public Bounds bounds1() {
-		return slicer.getStaticBounds();
-	}
-
-	@Override
-	public Bounds bounds2() {
-		return slicer.getDynamicBounds();
-	}
-
-	@Override
 	public Formula partition1() {
-		return Formula.and(slicer.getStaticFormulas());
+		return Formula.compose(FormulaOperator.AND, staticDecls(), staticFact());
 	}
 
 	@Override
 	public Formula partition2() {
-		return Formula.and(slicer.getDynamicFormulas());
+		Formula f2 = Formula.compose(FormulaOperator.AND, tempDecls(), tempFacts(), init(), next(), noBadEntries().not());
+		if (variant == Variant.NOINTERVENES)
+			f2 = f2.and(noIntervenes());
+		return f2;
 	}
 
 	@Override
@@ -390,13 +391,15 @@ public class HotelT implements DModel {
 	public static void main(String[] args) {
 		HotelT model = new HotelT(new String[] { "3", "INTERVENES" });
 
-		BoundedExtendedOptions opt = new BoundedExtendedOptions();
+		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSolver(SATFactory.Glucose);
 		opt.setMaxTraceLength(10);
-		TemporalKodkodSolver solver = new TemporalKodkodSolver(opt);
-		TemporalBounds tbmpbound = model.bounds();
+		opt.setDecomposedMode(DMode.PARALLEL);
+		TemporalPardinusSolver solver = new TemporalPardinusSolver(opt);
+		PardinusBounds tbmpbound = model.bounds1();
+		tbmpbound.merge(model.bounds2());
 		System.out.println(tbmpbound.toString());
-		Solution sol = solver.solveAll(model.finalFormula(), tbmpbound).next();
+		Solution sol = solver.solveAll(model.partition1().and(model.partition2()), tbmpbound).next();
 		System.out.println(sol);
 		if (sol.sat()) {
 			Evaluator eval = new Evaluator(sol.instance(), opt);
