@@ -22,42 +22,91 @@
  */
 package kodkod.engine.config;
 
-import kodkod.engine.PrimitiveFactory;
+import kodkod.engine.DecomposedSolver;
 
 /**
- * The options required by a decomposed model finding problem.
+ * The options required by a {@link DecomposedSolver decomposed solver} for
+ * handling model finding problems with a decomposed strategy. Currently allows
+ * this temporal mode to be switched on, to specify particular options for the
+ * first stage of the process and to configure how the second stage solvers are
+ * processed.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
- *
- * @param <S>
- *            the {@link kodkod.engine.PrimitiveSolver primitive solver}
- *            factory.
  */
-public interface DecomposedOptions<S extends PrimitiveFactory<?>> extends
-		PardinusOptions<S> {
-
-	public int threads();
-
-	public void setThreads(int threads);
-
-	public DMode decomposedMode();
-
-	public void setDecomposedMode(DMode mode);
-
-	public PardinusOptions<S> configOptions();
+public interface DecomposedOptions extends PardinusOptions {
 
 	/**
-	 * Sets specific options to the configuration solver. Unless this method is
-	 * called, the overall decomposed options are used by the configuration
-	 * solver. Once this method is called, changes to the decomposed options no
-	 * longer affect the configuration solver.
+	 * Instructs the solver whether to run in decomposed mode. Will require an
+	 * appropriate {@link DecomposedSolver solver} that is able to handle such
+	 * execution mode. Must be set prior to solver creation in order to
+	 * correctly initialize the process. A clone of <this> will be used at this
+	 * moment for the partial problem options, which can modified independently.
+	 * Once this method is called any changes to <this> are no longer propagated
+	 * to the partial problem options.
 	 * 
-	 * @param opt
+	 * @param run
+	 *            whether to run in decomposed mode.
 	 */
-	public void setConfigOptions(PardinusOptions<S> opt);
+	public void setRunDecomposed(boolean run);
+
+	/**
+	 * The decomposed strategy that will be followed by the solver.
+	 * 
+	 * @return the decomposed strategy followed by the solver.
+	 */
+	public DMode decomposedMode();
+
+	/**
+	 * Instructs the {@link DecomposedSolver solver} to solve the problem with a
+	 * specific decomposed strategy. This assumes that the decomposed constructs
+	 * were previously initialized.
+	 * 
+	 * @param mode
+	 *            the decomposed strategy to be followed by the solver.
+	 */
+	public void setDecomposedMode(DMode mode);
 
 	public enum DMode {
-		BATCH, PARALLEL, HYBRID, INCREMENTAL, EXHAUSTIVE;
+		PARALLEL, HYBRID, INCREMENTAL, EXHAUSTIVE;
 	}
+
+	/**
+	 * The number of threads that will be used to solve the integrated problems.
+	 * If in hybrid mode, one of the threads will be used by the batch problem.
+	 * If 1, then will solve the problems sequentially.
+	 * 
+	 * @return the number of threads for solving integrated problems.
+	 */
+	public int threads();
+
+	/**
+	 * Sets the number of threads that will be used to solve the integrated
+	 * problems.
+	 * 
+	 * @param threads
+	 *            the number of threads for solving integrated problems.
+	 */
+	public void setThreads(int threads);
+
+	/**
+	 * The specific options to the partial (configuration) solver. Unless
+	 * {@link #setConfigOptions(ExtendedOptions)} is called, a clone of
+	 * <this> at the time of activation ({@link #setRunDecomposed(boolean)})
+	 * will be used, which can be updated indenpendently.
+	 * 
+	 * @return the options for the partial solver.
+	 */
+	public ExtendedOptions configOptions();
+
+	/**
+	 * Sets specific options to the partial (configuration) solver. Unless this
+	 * method is called, the overall decomposed options at the time of
+	 * activation ({@link #setRunDecomposed(boolean)}) are used by the partial
+	 * solver.
+	 * 
+	 * @param opt
+	 *            the options for the partial solver.
+	 */
+	public void setConfigOptions(ExtendedOptions opt);
 
 }

@@ -22,37 +22,28 @@
  */
 package kodkod.engine.config;
 
-import kodkod.engine.PrimitiveFactory;
+import kodkod.engine.TargetOrientedSolver;
 
 /**
- * The options required by a target-oriented model finding problem.
+ * The options required by a {@link TargetOrientedSolver target-oriented solver}
+ * for handling target-oriented finding problems. Currently allows this temporal
+ * mode to be switched on and sets the execution mode, i.e., whether to find
+ * solutions close or far from the target.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
- *
- * @param <S>
- *            the {@link kodkod.engine.PrimitiveSolver primitive solver}
- *            factory.
  */
-public interface TargetOptions<S extends PrimitiveFactory<?>> extends
-		PardinusOptions<S> {
+public interface TargetOptions extends PardinusOptions {
 
 	/**
-	 * Whether the solver to run in target-oriented mode. This is different than
-	 * simply setting the target-oriented mode to default, since in that case
-	 * the target-oriented constructs are still initialized, but ignored for
-	 * that particular execution.
+	 * Instructs the solver whether to run in target-oriented mode. Will require
+	 * an appropriate {@link TargetOrientedSolver solver} that is able to handle
+	 * such execution mode. Must be set prior to solver creation in order to
+	 * correctly initialize the process.
 	 * 
-	 * @return Whether to initialize target-oriented constructs.
+	 * @param run
+	 *            whether to run in target-oriented mode.
 	 */
-	public boolean runTarget();
-
-	/**
-	 * Instructs the solver to run in target-oriented mode.
-	 * 
-	 * @param runTarget
-	 *            Whether to initialize target-oriented constructs.
-	 */
-	public void setRunTarget(boolean runTarget);
+	public void setRunTarget(boolean run);
 
 	/**
 	 * The target-oriented mode that will be followed by the solver.
@@ -62,17 +53,17 @@ public interface TargetOptions<S extends PrimitiveFactory<?>> extends
 	public TMode targetMode();
 
 	/**
-	 * Instructs the solver to solve the problem in a specific target-oriented
-	 * mode. This assumes that the target-oriented constructs were initialized
-	 * (i.e., runTarget() = true), even if running in default mode.
+	 * Instructs the {@link TargetOrientedSolver solver} to solve the problem in
+	 * a specific target-oriented mode. This assumes that the target-oriented
+	 * constructs were previously initialized.
 	 * 
-	 * @param the
-	 *            target-oriented mode followed by the solver.
+	 * @param mode
+	 *            the target-oriented mode to be followed by the solver.
 	 */
 	public void setTargetMode(TMode mode);
 
 	public enum TMode {
-		DEFAULT, FAR, CLOSE
+		FAR, CLOSE
 	}
 
 }

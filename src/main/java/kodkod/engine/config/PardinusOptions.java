@@ -22,36 +22,19 @@
  */
 package kodkod.engine.config;
 
-import kodkod.engine.PrimitiveFactory;
+import kodkod.engine.DecomposedSolver;
+import kodkod.engine.TargetOrientedSolver;
+import kodkod.engine.TemporalSolver;
+import kodkod.engine.UnboundedSolver;
 
 /**
- * The fundamental options, required by every model finding problem. Must be
- * provided a {@link kodkod.engine.PrimitiveSolver primitive solver} factory
- * (e.g., a SAT solver) that will be deployed to solve the problem.
+ * The fundamental options required by every model finding problem supported by
+ * Kodkod and the Pardinus extensions. Specifies reporters and which execution
+ * modes are to be followed by the solvers.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
- *
- * @param <S>
- *            the {@link kodkod.engine.PrimitiveSolver primitive solver}
- *            factory.
  */
-public interface PardinusOptions<F extends PrimitiveFactory<?>> {
-
-	/**
-	 * Returns a primitive solver factory used to generate
-	 * {@link kodkod.engine.PrimitiveSolver primitive solvers}.
-	 * 
-	 * @return a primitive solver factory
-	 */
-	public F solver();
-
-	/**
-	 * Sets the primitive solver factory used to generate
-	 * {@link kodkod.engine.PrimitiveSolver primitive solvers}.
-	 * 
-	 * @param solver the primitive solver factory
-	 */
-	public void setSolver(F solver);
+public interface PardinusOptions {
 
 	/**
 	 * Returns a reporter.
@@ -61,11 +44,50 @@ public interface PardinusOptions<F extends PrimitiveFactory<?>> {
 	public Reporter reporter();
 
 	/**
-	 * Sets the reporters.
+	 * Sets the reporter.
 	 * 
 	 * @param reporter
 	 *            a reporter.
 	 */
 	public void setReporter(Reporter reporter);
+
+	/**
+	 * Whether the solver should run in decomposed mode. Will require an
+	 * appropriate {@link DecomposedSolver solver} that is able to handle such
+	 * execution mode. If false will run in an amalgamated strategy.
+	 * 
+	 * @return whether to run in decomposed mode.
+	 */
+	public boolean decomposed();
+
+	/**
+	 * Whether the solver should run in temporal mode. Will require an
+	 * appropriate {@link TemporalSolver solver} that is able to handle such
+	 * execution mode. If false, temporal formulas will throw an error.
+	 * 
+	 * TODO: is this needed? there is no way to ignore temporal formulas
+	 * 
+	 * @return whether to run in temporal mode.
+	 */
+	@Deprecated
+	public boolean temporal();
+	
+	/**
+	 * Whether the solver should run in unbounded mode. Will require an
+	 * appropriate {@link UnboundedSolver solver} that is able to handle such
+	 * execution mode. Will be ignored if {@link #temporal()} false.
+	 * 
+	 * @return whether to run in unbounded mode.
+	 */
+	public boolean unbounded();
+
+	/**
+	 * Whether the solver should run in target-oriented mode. Will require an
+	 * appropriate {@link TargetOrientedSolver solver} that is able to handle such
+	 * execution mode. If false, targets will be ignored even if specified.
+	 * 
+	 * @return whether to run in target-oriented mode.
+	 */
+	public boolean targetoriented();
 
 }

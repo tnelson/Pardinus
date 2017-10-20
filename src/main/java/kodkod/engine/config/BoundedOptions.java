@@ -29,11 +29,28 @@ import kodkod.engine.satlab.SATFactory;
  * The options required by a bounded model finding problem. These rely on SAT
  * solvers to solver the problems.
  * 
- * @author Nuno Macedo // [HASLab] model finding hierarchy
- *
+ * @author Emina Torlak
+ * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
-public interface BoundedOptions extends PardinusOptions<SATFactory> {
+//[HASLab] model finding hierarchy
+public interface BoundedOptions extends PardinusOptions {
 
+	/**
+	 * Returns a primitive solver factory used to generate
+	 * {@link kodkod.engine.PrimitiveSolver primitive solvers}.
+	 * 
+	 * @return a primitive solver factory
+	 */
+	public SATFactory solver();
+
+	/**
+	 * Sets the primitive solver factory used to generate
+	 * {@link kodkod.engine.PrimitiveSolver primitive solvers}.
+	 * 
+	 * @param solver the primitive solver factory
+	 */
+	public void setSolver(SATFactory solver);
+	
 	/**
 	 * Returns the size of the integer representation. For example, if
 	 * this.intEncoding is BINARY and this.bitwidth = 5 (the default), then all

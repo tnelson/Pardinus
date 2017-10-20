@@ -22,15 +22,27 @@
  */
 package kodkod.engine.config;
 
-import kodkod.engine.smvlab.SMVFactory;
+import kodkod.engine.UnboundedSolver;
 
 /**
- * The options required by a bounded model finding problem. These rely on SMV
- * solvers to solver the problems.
+ * The options required by an {@link UnboundedSolver unbounded solver} for
+ * handling unbounded temporal model finding problems. Currently just allows
+ * this unbounded mode to be switched on.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
- *
  */
-public interface UnboundedOptions extends PardinusOptions<SMVFactory> {
+public interface UnboundedOptions extends TemporalOptions {
+
+	/**
+	 * Instructs the solver whether to run in unbounded mode. Will require an
+	 * appropriate {@link UnboundedSolver solver} that is able to handle such
+	 * execution mode. Must be set prior to solver creation in order to
+	 * correctly initialize the process.
+	 * 
+	 * 
+	 * @param run
+	 *            whether to run in unbounded mode.
+	 */
+	public void setRunUnbounded(boolean run);
 
 }

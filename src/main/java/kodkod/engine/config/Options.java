@@ -27,23 +27,28 @@ import kodkod.util.ints.IntRange;
 import kodkod.util.ints.Ints;
 
 /**
- * Stores information about various
- * user-level translation and analysis options.  It can be
- * used to choose the SAT solver, control symmetry breaking, etc.
+ * Stores information about various user-level translation and analysis options.
+ * It can be used to choose the SAT solver, control symmetry breaking, etc.
  * 
  * @specfield solver: SATFactory // SAT solver factory to use
  * @specfield reporter: Reporter // reporter to use
- * @specfield symmetryBreaking: int // the amount of symmetry breaking to perform
- * @specfield sharing: int // the depth to which circuits should be checked for equivalence during translation
- * @specfield intEncoding: IntEncoding // encoding to use for translating int expressions
- * @specfield bitwidth: int // the bitwidth to use for integer representation / arithmetic
+ * @specfield symmetryBreaking: int // the amount of symmetry breaking to
+ *            perform
+ * @specfield sharing: int // the depth to which circuits should be checked for
+ *            equivalence during translation
+ * @specfield intEncoding: IntEncoding // encoding to use for translating int
+ *            expressions
+ * @specfield bitwidth: int // the bitwidth to use for integer representation /
+ *            arithmetic
  * @specfield skolemDepth: int // skolemization depth
- * @specfield logTranslation: [0..2] // log translation events, default is 0 (no logging)
- * @specfield coreGranularity: [0..3] // unsat core granularity, default is 0 (only top-level conjuncts are considered)
+ * @specfield logTranslation: [0..2] // log translation events, default is 0 (no
+ *            logging)
+ * @specfield coreGranularity: [0..3] // unsat core granularity, default is 0
+ *            (only top-level conjuncts are considered)
  * @author Emina Torlak
  * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
-// [HASLab] bounded options, copy constructor
+// [HASLab] model finding hierarchy, copy constructor
 public class Options implements Cloneable, BoundedOptions { 
 	private Reporter reporter = new AbstractReporter(){};
 	private SATFactory solver = SATFactory.DefaultSAT4J;
@@ -85,7 +90,7 @@ public class Options implements Cloneable, BoundedOptions {
 		this.setReporter(options.reporter());
 		this.setBitwidth(options.bitwidth());
 		this.setIntEncoding(options.intEncoding());
-		this.setSharing(sharing());
+		this.setSharing(options.sharing());
 		this.setSymmetryBreaking(options.symmetryBreaking());
 		this.setSkolemDepth(options.skolemDepth());
 		this.setLogTranslation(options.logTranslation());
@@ -97,7 +102,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * The default is SATSolver.DefaultSAT4J.
 	 * @return this.solver
 	 */
-	@Override
 	public SATFactory solver() {
 		return solver;
 	}
@@ -107,7 +111,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @ensures this.solver' = solver
 	 * @throws NullPointerException  solver = null
 	 */
-	@Override
 	public void setSolver(SATFactory solver) {
 		if (solver==null)
 			throw new NullPointerException();
@@ -118,7 +121,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * {@inheritDoc}
 	 * @return this.reporter
 	 */
-	@Override
 	public Reporter reporter() {
 		return reporter;
 	}
@@ -129,7 +131,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @ensures this.reporter' = reporter
 	 * @throws NullPointerException  reporter = null
 	 */
-	@Override
 	public void setReporter(Reporter reporter) {
 		if (reporter==null)
 			throw new NullPointerException();
@@ -139,11 +140,9 @@ public class Options implements Cloneable, BoundedOptions {
 
 	/** {@inheritDoc} */ 
 	// [AM]
-	@Override
 	public boolean noOverflow()                   { return noOverflow; }
 	/** {@inheritDoc} */ 
 	// [AM]	
-	@Override
 	public void setNoOverflow(boolean noOverflow) { this.noOverflow = noOverflow; }
 
 	
@@ -161,7 +160,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * {@inheritDoc}
 	 * @return this.intEncoding
 	 */
-	@Override
 	public IntEncoding intEncoding() { 
 		return intEncoding;
 	}
@@ -172,7 +170,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @throws NullPointerException  encoding = null
 	 * @throws IllegalArgumentException  this.bitwidth is not a valid bitwidth for the specified encoding
 	 */
-	@Override
 	public void setIntEncoding(IntEncoding encoding) {
 		if (encoding.maxAllowedBitwidth()<bitwidth) throw new IllegalArgumentException();
 		this.intEncoding = encoding;
@@ -182,7 +179,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * {@inheritDoc}
 	 * @return this.bitwidth
 	 */
-	@Override
 	public int bitwidth() {
 		return bitwidth;
 	}
@@ -193,7 +189,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @throws IllegalArgumentException  bitwidth < 1
 	 * @throws IllegalArgumentException  this.intEncoding==BINARY && bitwidth > 32
 	 */
-	@Override
 	public void setBitwidth(int bitwidth) {
 		checkRange(bitwidth, 1, intEncoding.maxAllowedBitwidth());
 		this.bitwidth = bitwidth;
@@ -213,7 +208,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * {@inheritDoc}
 	 * @return this.symmetryBreaking
 	 */
-	@Override
 	public int symmetryBreaking() {
 		return symmetryBreaking;
 	}
@@ -223,7 +217,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @ensures this.symmetryBreaking' = symmetryBreaking
 	 * @throws IllegalArgumentException  symmetryBreaking !in [0..Integer.MAX_VALUE]
 	 */
-	@Override
 	public void setSymmetryBreaking(int symmetryBreaking) {
 		checkRange(symmetryBreaking, 0, Integer.MAX_VALUE);
 		this.symmetryBreaking = symmetryBreaking;
@@ -253,7 +246,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * {@inheritDoc}
 	 * @return this.skolemDepth
 	 */
-	@Override
 	public int skolemDepth() {
 		return skolemDepth;
 	}
@@ -263,7 +255,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * Sets the skolemDepth to the given value. 
 	 * @ensures this.skolemDepth' = skolemDepth
 	 */
-	@Override
 	public void setSkolemDepth(int skolemDepth) {
 		this.skolemDepth = skolemDepth;
 	}
@@ -272,7 +263,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * {@inheritDoc}
 	 * @return this.logTranslation
 	 */
-	@Override
 	public int logTranslation() {
 		return logTranslation;
 	}
@@ -283,7 +273,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @ensures this.logTranslation' = logTranslation  
 	 * @throws IllegalArgumentException  logTranslation !in [0..2]
 	 */
-	@Override
 	public void setLogTranslation(int logTranslation) {
 		checkRange(logTranslation, 0, 2);
 		this.logTranslation = logTranslation;
@@ -293,7 +282,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * {@inheritDoc}
 	 * @return this.coreGranularity
 	 */
-	@Override
 	public int coreGranularity() { 
 		return coreGranularity;
 	}
@@ -304,7 +292,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @ensures this.coreGranularity' = coreGranularity  
 	 * @throws IllegalArgumentException  coreGranularity !in [0..3]
 	 */
-	@Override
 	public void setCoreGranularity(int coreGranularity) { 
 		checkRange(coreGranularity, 0, 3);
 		this.coreGranularity = coreGranularity;
@@ -316,7 +303,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * and {@linkplain #solver()} factory objects as this Options. 
 	 * @return a shallow copy of this Options object.
 	 */
-	@Override
 	public Options clone() {
 		final Options c = new Options();
 		c.setSolver(solver);
@@ -337,7 +323,6 @@ public class Options implements Cloneable, BoundedOptions {
 	 * Returns a string representation of this Options object.
 	 * @return a string representation of this Options object.
 	 */
-	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder();
 		b.append("Options:");
@@ -401,5 +386,37 @@ public class Options implements Cloneable, BoundedOptions {
 		 */
 		abstract IntRange range(int bitwidth) ;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Always false as these options are meant for regular Kodkod solvers.
+	 */
+	// [HASLab] 
+	public boolean decomposed() { return false; }
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Always false as these options are meant for regular Kodkod solvers.
+	 */
+	// [HASLab] 
+	public boolean temporal() { return false; }
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Always false as these options are meant for regular Kodkod solvers.
+	 */
+	// [HASLab] 
+	public boolean unbounded() { return false; }
+	
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Always false as these options are meant for regular Kodkod solvers.
+	 */
+	// [HASLab] 
+	public boolean targetoriented() { return false; }
 	
 }

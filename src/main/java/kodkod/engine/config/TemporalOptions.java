@@ -22,23 +22,35 @@
  */
 package kodkod.engine.config;
 
-import kodkod.engine.PrimitiveFactory;
+import kodkod.engine.TemporalSolver;
+import kodkod.engine.UnboundedSolver;
 
 /**
- * The options required by the {@link kodkod.engine.TemporalSolver temporal
- * solvers} to deploy temporal problems.
+ * The options required by a {@link TemporalSolver temporal solver} for handling
+ * temporal model finding problems. Currently allows this temporal mode to be
+ * switched on and sets a maximum trace to be analyzed.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
- *
- * @param <S>
- *            the {@link kodkod.engine.PrimitiveSolver primitive solver}
- *            factory.
  */
-public interface TemporalOptions<S extends PrimitiveFactory<?>> extends PardinusOptions<S> {
+public interface TemporalOptions extends PardinusOptions {
+
+	/**
+	 * Instructs the solver whether to run in temporal mode. Will require an
+	 * appropriate {@link TemporalSolver solver} that is able to handle such
+	 * execution mode. Must be set prior to solver creation in order to
+	 * correctly initialize the process.
+	 * 
+	 * TODO: is this needed? there is no way to ignore temporal formulas
+	 * 
+	 * @param run
+	 *            whether to run in temporal mode.
+	 */
+	public void setRunTemporal(boolean run);
 
 	/**
 	 * The maximum trace length that will be explored by the temporal model
-	 * finder.
+	 * finder. {@link UnboundedSolver unbounded temporal solvers} will ignore
+	 * this value.
 	 * 
 	 * @return the maximum trace length.
 	 */
@@ -46,7 +58,8 @@ public interface TemporalOptions<S extends PrimitiveFactory<?>> extends Pardinus
 
 	/**
 	 * Updates the maximum trace length that will be explored by the temporal
-	 * model finder.
+	 * model finder. {@link UnboundedSolver unbounded temporal solvers} will
+	 * ignore this value.
 	 * 
 	 * @param traceLength
 	 *            the new maximum trace length.
