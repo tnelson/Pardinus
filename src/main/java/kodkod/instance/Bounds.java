@@ -73,9 +73,9 @@ import kodkod.util.ints.TreeSequence;
 //[HASLab] removed final
 public class Bounds implements Cloneable {
 	private final TupleFactory factory;
-	private final Map<Relation, TupleSet> lowers, uppers;
+	protected final Map<Relation, TupleSet> lowers, uppers;
 	private final SparseSequence<TupleSet> intbounds;
-	private final Set<Relation> relations;
+	protected final Set<Relation> relations;
 	
 	/**
 	 * Constructs a Bounds object with the given factory and mappings.
