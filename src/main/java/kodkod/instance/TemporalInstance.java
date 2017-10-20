@@ -23,7 +23,9 @@
 package kodkod.instance;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,6 +58,8 @@ public class TemporalInstance extends Instance {
 	 */
 	private final Set<VarRelation> varrelations;
 
+	private List<Instance> states;
+
 	/**
 	 * Creates a new temporal instance from a static instance that is a solution
 	 * to the expansion of the temporal problem. The shape of the trace are
@@ -69,6 +73,7 @@ public class TemporalInstance extends Instance {
 	 * @param varrelations
 	 *            the original variable relations
 	 */
+	@Deprecated
 	public TemporalInstance(Instance instance, Set<VarRelation> varrelations) {
 		super(instance.universe(), new LinkedHashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
 		Evaluator eval = new Evaluator(instance);
@@ -82,6 +87,15 @@ public class TemporalInstance extends Instance {
 		this.varrelations = varrelations;
 	}
 
+	public TemporalInstance(List<Instance> instances, int loop) {
+		super(instances.get(0).universe());
+		this.varrelations = new HashSet<VarRelation>();
+		this.states = instances;
+		this.loop = loop;
+		this.end = instances.size()-1;
+	}
+	
+	
 	/**
 	 * {@inheritDoc}
 	 * 
