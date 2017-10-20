@@ -22,26 +22,21 @@
  */
 package kodkod.engine;
 
-import kodkod.engine.config.BoundedOptions;
-import kodkod.instance.Bounds;
+import kodkod.engine.config.PardinusOptions;
+import kodkod.instance.PardinusBounds;
 
 /**
- * An interface for bounded relational constraint solvers. These essentially
- * represent the standard {@link kodkod.engine.KodkodSolver Kodkod solvers},
- * whose interface is preserved for historical reasons. Other than requiring
- * options to specify bounded configurations, this interface does not impose
- * additional restrictions.
+ * An interface for relational constraint solvers with symbolic bounds. Pardinus
+ * {@link bounds PardinusBounds} are expected, as these support symbolic
+ * relation bounds. No specific configurations are required.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
- * @param <B>
- *            the class of bounds required by a concrete solver
  * @param <O>
- *            the class of options required by a concrete solver, which should
- *            at least consider bounded configurations
+ *            the class of options required by a concrete solver
  *
  */
-public interface BoundedSolver<B extends Bounds, O extends BoundedOptions>
-		extends AbstractSolver<B, O> {
+public interface SymbolicSolver<O extends PardinusOptions> extends
+		AbstractSolver<PardinusBounds, O> {
 
 }

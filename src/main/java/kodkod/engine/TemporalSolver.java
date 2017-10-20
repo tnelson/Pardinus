@@ -22,11 +22,9 @@
  */
 package kodkod.engine;
 
-import java.util.Iterator;
-
 import kodkod.ast.Formula;
 import kodkod.engine.config.TemporalOptions;
-import kodkod.instance.TemporalBounds;
+import kodkod.instance.PardinusBounds;
 
 /**
  * The interface that should be implemented by model finders that expect to
@@ -40,11 +38,9 @@ import kodkod.instance.TemporalBounds;
  *            the options containing
  *            {@link kodkod.engine.config.TemporalOptions temporal options}.
  */
-public interface TemporalSolver<O extends TemporalOptions<?>> extends PardinusSolver<TemporalBounds, O> {
+public interface TemporalSolver<O extends TemporalOptions> extends AbstractSolver<PardinusBounds, O> {
 
 	@Override
-	public Solution solve(Formula formula, TemporalBounds bounds);
-
-	public Iterator<Solution> solveAll(Formula formula, TemporalBounds bounds);
+	public Solution solve(Formula formula, PardinusBounds bounds);
 
 }

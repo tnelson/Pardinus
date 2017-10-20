@@ -104,7 +104,7 @@ import kodkod.instance.Universe;
  * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
 // [HASLab] solver hierarchy
-public final class IncrementalSolver implements KodkodSolver<Bounds,Options> {
+public final class IncrementalSolver implements BoundedSolver<Bounds,Options> {
 	private final Options options;
 	private Translation.Incremental translation;
 	private Boolean outcome;

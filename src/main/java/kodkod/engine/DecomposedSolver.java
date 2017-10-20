@@ -22,22 +22,23 @@
  */
 package kodkod.engine;
 
-import java.util.Iterator;
-
-import kodkod.ast.Formula;
 import kodkod.engine.config.DecomposedOptions;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
 
 /**
+ * An interface for decomposed relational constraint solvers. Pardinus
+ * {@link bounds PardinusBounds} are expected, as these contain information
+ * regarding bound slicing. Options are required to specify decomposed
+ * configurations.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
+ * @param <O>
+ *            the class of options required by a concrete solver, which should
+ *            at least consider decomposed configurations
+ *
  */
-public interface DecomposedSolver<B extends DecompBounds, O extends DecomposedOptions<?>> extends PardinusSolver<B,O> { 
-
-	@Override
-	public Solution solve(Formula formula, B bounds);
-	
-	public Iterator<Solution> solveAll(Formula formula, B bounds);
+public interface DecomposedSolver<O extends DecomposedOptions> extends
+		AbstractSolver<PardinusBounds, O> {
 
 }

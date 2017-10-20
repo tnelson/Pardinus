@@ -22,6 +22,8 @@
  */
 package kodkod.engine;
 
+import java.util.Iterator;
+
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
@@ -54,7 +56,7 @@ import kodkod.instance.Instance;
  * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
 // [HASLab] bounded solver
-public interface KodkodSolver<B extends Bounds, O extends Options> extends BoundedSolver<B,O> {
+public interface KodkodSolver<B extends Bounds, O extends Options> extends BoundedSolver<B,O>, IterableSolver<B,O> {
 
 	/**
 	 * Returns the Options object used by this solver.
@@ -85,27 +87,28 @@ public interface KodkodSolver<B extends Bounds, O extends Options> extends Bound
 	public Solution solve(Formula formula, B bounds) 
 	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
 	
-//	/**
-//	 * Attempts to find a set of solutions to the given {@code formula} and {@code bounds} with respect to 
-//	 * {@code this.options} or, optionally, to prove the formula's unsatisfiability.
-//	 * If the operation is successful, the method returns an iterator over {@link Solution} objects. 
-//	 * If there is more than one solution, the outcome of all of them is SAT or trivially SAT.  If the problem 
-//	 * is unsatisfiable, the iterator will produce a single {@link Solution} whose outcome is UNSAT
-//	 * or trivially  UNSAT.  The set of returned solutions must be non-empty, but it is not required to be complete; 
-//	 * a solver could simply return a singleton set containing just the first available solution.
-//	 * 
-//	 * @return some sols:  some {@link Solution} | 
-//	 *			(#sols > 1 => (all s: sols | s.satisfiable())) &&
-//	 *          (all s: sols | s.satisfiable() => s.instance() in MODELS(formula, bounds, this.options) else UNSAT(formula, bound, this.options))
-//	 *
-//	 * @throws NullPointerException  formula = null || bounds = null
-//	 * @throws UnboundLeafException  the formula contains an undeclared variable or a relation not mapped by the given bounds
-//	 * @throws HigherOrderDeclException  the formula contains a higher order declaration that cannot
-//	 * be skolemized, or it can be skolemized but {@code this.options.skolemDepth} is insufficiently large
-//	 * @throws AbortedException  this solving task was aborted  
-//	 */
-//	public Iterator<Solution> solveAll(Formula formula, Bounds bounds) 
-//	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
+	/**
+	 * Attempts to find a set of solutions to the given {@code formula} and {@code bounds} with respect to 
+	 * {@code this.options} or, optionally, to prove the formula's unsatisfiability.
+	 * If the operation is successful, the method returns an iterator over {@link Solution} objects. 
+	 * If there is more than one solution, the outcome of all of them is SAT or trivially SAT.  If the problem 
+	 * is unsatisfiable, the iterator will produce a single {@link Solution} whose outcome is UNSAT
+	 * or trivially  UNSAT.  The set of returned solutions must be non-empty, but it is not required to be complete; 
+	 * a solver could simply return a singleton set containing just the first available solution.
+	 * 
+	 * @return some sols:  some {@link Solution} | 
+	 *			(#sols > 1 => (all s: sols | s.satisfiable())) &&
+	 *          (all s: sols | s.satisfiable() => s.instance() in MODELS(formula, bounds, this.options) else UNSAT(formula, bound, this.options))
+	 *
+	 * @throws NullPointerException  formula = null || bounds = null
+	 * @throws UnboundLeafException  the formula contains an undeclared variable or a relation not mapped by the given bounds
+	 * @throws HigherOrderDeclException  the formula contains a higher order declaration that cannot
+	 * be skolemized, or it can be skolemized but {@code this.options.skolemDepth} is insufficiently large
+	 * @throws AbortedException  this solving task was aborted  
+	 */
+	// [HASLab] solver hierarchy
+	public Iterator<Solution> solveAll(Formula formula, B bounds) 
+	throws HigherOrderDeclException, UnboundLeafException, AbortedException;
 	
 	/**
 	 * Releases the resources, if any, associated with this solver.

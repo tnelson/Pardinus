@@ -23,14 +23,23 @@
 package kodkod.engine;
 
 import kodkod.engine.config.UnboundedOptions;
-import kodkod.instance.Bounds;
 
 /**
- * An interface for unbounded relational constraint solvers.
+ * An interface for unbounded relational constraint solvers. Pardinus
+ * {@link bounds PardinusBounds} are expected, as these contain information
+ * regarding unbounded problems. Options are required to specify unbounded
+ * configurations.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
+ * @param <B>
+ *            the class of bounds required by a concrete solver
+ * @param <O>
+ *            the class of options required by a concrete solver, which should
+ *            at least consider unbounded configurations
+ *
  */
-public interface UnboundedSolver<B extends Bounds, O extends UnboundedOptions> extends PardinusSolver<B,O> {
-	
+public interface UnboundedSolver<O extends UnboundedOptions> extends
+		TemporalSolver<O> {
+
 }

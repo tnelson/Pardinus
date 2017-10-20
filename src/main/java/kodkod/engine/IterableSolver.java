@@ -22,26 +22,39 @@
  */
 package kodkod.engine;
 
-import kodkod.engine.config.BoundedOptions;
+import java.util.Iterator;
+
+import kodkod.ast.Formula;
+import kodkod.engine.config.PardinusOptions;
 import kodkod.instance.Bounds;
 
 /**
- * An interface for bounded relational constraint solvers. These essentially
- * represent the standard {@link kodkod.engine.KodkodSolver Kodkod solvers},
- * whose interface is preserved for historical reasons. Other than requiring
- * options to specify bounded configurations, this interface does not impose
- * additional restrictions.
+ * Å relational constraint solver interface that support solution iteration,
+ * independent of the underlying technology (bounded vs. unbounded) and
+ * functionalities (temporal, target-oriented, decomposed, symbolic).
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
  * @param <B>
  *            the class of bounds required by a concrete solver
  * @param <O>
- *            the class of options required by a concrete solver, which should
- *            at least consider bounded configurations
- *
+ *            the class of options required by a concrete solver
  */
-public interface BoundedSolver<B extends Bounds, O extends BoundedOptions>
+public interface IterableSolver<B extends Bounds, O extends PardinusOptions>
 		extends AbstractSolver<B, O> {
+
+	/**
+	 * Attempts to find a set of solutions to the given {@code formula} and
+	 * {@code bounds} with respect to the set options or, optionally, to
+	 * prove the formula's unsatisfiability. If the operation is successful, the
+	 * method returns an iterator over {@link Solution} objects. If there is
+	 * more than one solution, the outcome of all of them is SAT or trivially
+	 * SAT. If the problem is unsatisfiable, the iterator will produce a single
+	 * {@link Solution} whose outcome is UNSAT or trivially UNSAT. The set of
+	 * returned solutions must be non-empty, but it is not required to be
+	 * complete; a solver could simply return a singleton set containing just
+	 * the first available solution.
+	 */
+	public Iterator<Solution> solveAll(Formula formula, B bounds);
 
 }
