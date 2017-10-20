@@ -1,4 +1,4 @@
-package kodkod.test.pardinus.decomp;
+package kodkod.test.pardinus.symbolic;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -6,9 +6,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	SymmetryTests.class,
-	RedBlackTests.class,
-	RingTests.class,
-	HotelTests.class
 })
 
-public class AllDecompTests {}
+public class AllSymbolicTests {}
