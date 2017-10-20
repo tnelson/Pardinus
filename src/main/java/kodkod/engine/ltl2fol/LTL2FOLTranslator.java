@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
@@ -38,7 +37,6 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
-import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractReplacer;
 import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST;
@@ -110,12 +108,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			result = exists.and(result);
 		}
 		
-		// if the formula was already sliced, then should not affect the conjunction
-		// TODO: do this better
-		if (result instanceof BinaryFormula && ((BinaryFormula) result).op() == FormulaOperator.AND) {
-			return ((BinaryFormula) result).left().and(Formula.and(((BinaryFormula) result).right(),order,loopDecl,nextFnct));
-		} else
-			return Formula.and(result, order, loopDecl, nextFnct);
+		return Formula.and(result, order, loopDecl, nextFnct);
 	}
 
 	/**
