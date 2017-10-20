@@ -23,21 +23,22 @@
 package kodkod.engine.config;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.instance.Bounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 /**
  * An implementation of the reporter interface that prints messages
  * to the standard output stream.
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] decomposed model finding
+ * @modified Nuno Macedo // [HASLab] additional reporting
  */
 public final class ConsoleReporter implements Reporter {
 	
@@ -67,7 +68,6 @@ public final class ConsoleReporter implements Reporter {
 	public void solvingCNF(int primaryVars, int vars, int clauses) {
 		System.out.println("solving p cnf " + vars + " " + clauses);
 	}
-
 
 	/**
 	 * {@inheritDoc}
@@ -107,25 +107,25 @@ public final class ConsoleReporter implements Reporter {
 	}
 	
 	/**
+	 * @see kodkod.engine.config.Reporter#reportLex(List, List)
+	 */
+	// [HASLab]
+	public void reportLex(List<Entry<Relation, Tuple>> original,
+			List<Entry<Relation, Tuple>> permuted) {}
+	
+	/**
+	 * @see kodkod.engine.config.Reporter#debug(String)
+	 */
+	// [HASLab]
+	public void debug(String debug) {
+		System.out.println(debug);
+	}
+	
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		return "ConsoleReporter";
-	}
-
-	// [HASLab]
-	public void solvingConfig(Solution solution) {
-		System.out.println("new configuration...");
-	}
-
-	@Override
-	public void configOutcome(Solution solution) {
-		System.out.println("config outcome: "+solution.outcome());
-	}
-
-	@Override
-	public void amalgOutcome(Solution solution) {
-		System.out.println("amalg outcome: "+solution.outcome());
 	}
 
 }

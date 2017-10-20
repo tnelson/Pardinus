@@ -26,21 +26,22 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.instance.Bounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 /**
  * An implementation of the reporter interface that prints messages
  * to the standard output stream.
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] decomposed model finding
+ * @modified Nuno Macedo // [HASLab] additional reporting
  */
 public final class FileReporter implements Reporter {
 	
@@ -108,26 +109,25 @@ public final class FileReporter implements Reporter {
 	public void translatingToCNF(BooleanFormula circuit) {}
 	
 	/**
+	 * @see kodkod.engine.config.Reporter#reportLex(List, List)
+	 */
+	// [HASLab]
+	public void reportLex(List<Entry<Relation, Tuple>> original,
+			List<Entry<Relation, Tuple>> permuted) { }
+	
+	/**
+	 * @see kodkod.engine.config.Reporter#debug(String)
+	 */
+	// [HASLab]
+	public void debug(String debug) {
+		writer.println(debug);		
+	}
+	
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		return "FileReporter";
 	}
-
-	// [HASLab]
-	public void solvingConfig(Solution solution) {
-		writer.println("new configuration...");
-	}
-
-	@Override
-	public void configOutcome(Solution solution) {
-		writer.println("new config solved: "+solution.outcome());
-	}
-
-	@Override
-	public void amalgOutcome(Solution solution) {
-		writer.println("amalg solved: "+solution.outcome());
-	}
-	
 
 }

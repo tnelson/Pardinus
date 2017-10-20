@@ -25,20 +25,21 @@ package kodkod.engine.config;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.instance.Bounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 /**
  * A skeleton implementation of the {@link Reporter} interface.
  * The default implementation for each method has an empty body.s
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] decomposed model finding
+ * @modified Nuno Macedo // [HASLab] additional reporting
  */
 public abstract class AbstractReporter implements Reporter {
 
@@ -90,12 +91,15 @@ public abstract class AbstractReporter implements Reporter {
 	 */
 	public void translatingToCNF(BooleanFormula circuit) {}
 
+	/**
+	 * @see kodkod.engine.config.Reporter#reportLex(List, List)
+	 */
 	// [HASLab]
-	public void solvingConfig(Solution solution) {}
-	
-	// [HASLab]
-	public void configOutcome(Solution solution) {}
+	public void reportLex(List<Entry<Relation,Tuple>> _original, List<Entry<Relation,Tuple>> _permuted) {}
 
+	/**
+	 * @see kodkod.engine.config.Reporter#debug(String)
+	 */
 	// [HASLab]
-	public void amalgOutcome(Solution solution) {}
+	public void debug(String debug){}
 }

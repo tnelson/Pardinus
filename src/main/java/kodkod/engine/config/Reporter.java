@@ -22,16 +22,16 @@
  */
 package kodkod.engine.config;
 
-
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.instance.Bounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 /**
@@ -48,7 +48,7 @@ import kodkod.util.ints.IntSet;
  * Some of these stages may not be executed, depending on the 
  * {@link Options options} used for analysis.  
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] decomposed model finding
+ * @modified Nuno Macedo // [HASLab] additional reporting
  */
 public interface Reporter {
 
@@ -101,12 +101,18 @@ public interface Reporter {
 	 * a sat solver (stage 7 of the analysis).
 	 */
 	public void solvingCNF(int primaryVars, int vars, int clauses);
-
+	
+	/**
+	 * TODO
+	 */
 	// [HASLab]
-	public void solvingConfig(Solution solution);
-	// [HASLab]
-	public void configOutcome(Solution solution);
-	// [HASLab]
-	void amalgOutcome(Solution solution);
+	public void reportLex(List<Entry<Relation, Tuple>> original,
+			List<Entry<Relation, Tuple>> permuted);
+	
+	/**
+	 * TODO
+	 */
+	// [HASLab] 
+	public void debug(String debug);
 	
 }
