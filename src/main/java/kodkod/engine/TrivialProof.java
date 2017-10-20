@@ -321,12 +321,12 @@ final class TrivialProof extends Proof {
 			if (rvisit) { r.accept(this); }
 		}
 		
-		// [HASLab]
+		// [HASLab] temporal formulas
 		public final void visit(BinaryTempFormula tempFormula) {
 			throw new UnsupportedOperationException("Temporal trivial solutions not yet supported.");
 		}
 
-		// [HASLab]
+		// [HASLab] temporal formulas
 		public final void visit(UnaryTempFormula tempFormula) {
 			throw new UnsupportedOperationException("Temporal trivial solutions not yet supported.");
 		}
