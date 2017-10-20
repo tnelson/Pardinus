@@ -1,6 +1,5 @@
 /*
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
- * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +21,6 @@
  */
 package kodkod.engine.satlab;
 
-import kodkod.engine.PrimitiveSolver;
-
-
 /**
  * Provides an interface to a SAT solver.
  * 
@@ -34,10 +30,8 @@ import kodkod.engine.PrimitiveSolver;
  * @invariant all c: clauses | all lit: c.literals | lit in variables || -lit in variables
  * @invariant all c: clauses | all disj i,j: c.literals | abs(i) != abs(j)
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
-// [HASLab] primitive solver
-public interface SATSolver extends PrimitiveSolver {
+public interface SATSolver {
 	
 	/**
 	 * Returns the size of this solver's vocabulary.

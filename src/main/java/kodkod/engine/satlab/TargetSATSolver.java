@@ -22,15 +22,13 @@
  */
 package kodkod.engine.satlab;
 
-import kodkod.engine.TargetPrimitiveSolver;
-
 /**
  * Provides an interface to SAT target-oriented solvers, used behind
  * the target-oriented model finding solvers.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  */
-public interface TargetSATSolver extends SATSolver, TargetPrimitiveSolver {
+public interface TargetSATSolver extends SATSolver {
 		
 	/**
 	 * The current number of target literals.

@@ -27,8 +27,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import kodkod.engine.PrimitiveFactory;
-
 import org.sat4j.minisat.SolverFactory;
 
 /**
@@ -38,11 +36,10 @@ import org.sat4j.minisat.SolverFactory;
  * and the <a href="http://www.cs.chalmers.se/Cs/Research/FormalMethods/MiniSat/">MiniSat</a> 
  * solver by Niklas E&eacute;n and Niklas S&ouml;rensson.
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] model finding hierarchy, syrup
+ * @modified Nuno Macedo // [HASLab] syrup
  * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
-// [HASLab] primitive solver factory
-public abstract class SATFactory implements PrimitiveFactory<SATSolver> { 
+public abstract class SATFactory { 
 	
 	/**
 	 * Constructs a new instance of SATFactory.

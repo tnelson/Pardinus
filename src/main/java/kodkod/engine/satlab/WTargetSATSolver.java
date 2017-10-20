@@ -22,16 +22,13 @@
  */
 package kodkod.engine.satlab;
 
-import kodkod.engine.WTargetPrimitiveSolver;
-
 /**
  * Provides an interface to weighted SAT target-oriented solvers, used behind
  * the target-oriented model finding solvers.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  */
-public interface WTargetSATSolver extends TargetSATSolver,
-		WTargetPrimitiveSolver {
+public interface WTargetSATSolver extends TargetSATSolver {
 	
 	/**
 	 * Adds a weighted target.
