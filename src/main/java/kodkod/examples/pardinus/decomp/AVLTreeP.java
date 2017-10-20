@@ -12,6 +12,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -130,9 +131,9 @@ public class AVLTreeP implements DModel {
 		return f1.forAll(n1.oneOf(set).and(n2.oneOf(set)));
 	}
 
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
 		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));

@@ -32,6 +32,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -132,9 +133,9 @@ public final class LiftP implements DModel {
 	}
 
 	@Override
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet fb = f.range(f.tuple("Floor0"), f.tuple("Floor"+ (n_floors-1)));
 		final TupleSet ib = f.range(f.tuple("LiftButton0"), f.tuple("LiftButton"+ (n_floors-1)));

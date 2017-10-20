@@ -10,10 +10,10 @@ import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
@@ -353,20 +353,20 @@ public final class ListsP {
 //			s = solver.solve(f, b1);
 //			System.out.println(s);
 
-			DecomposedKodkodSolver psolver;
-			BoundedExtendedOptions opt, opt2;
+			PardinusSolver psolver;
+			ExtendedOptions opt, opt2;
 			
-			opt = new BoundedExtendedOptions();
+			opt = new ExtendedOptions();
 			opt.setSymmetryBreaking(20);
 			opt.setSolver(SATFactory.Glucose);
 			opt.setDecomposedMode(DMode.PARALLEL);
 			opt.setThreads(4);
-			opt2 = new BoundedExtendedOptions(opt);
+			opt2 = new ExtendedOptions(opt);
 			opt2.setRunTarget(false);
 			opt2.setSymmetryBreaking(20);
 
 			opt.setConfigOptions(opt2);
-			psolver = new DecomposedKodkodSolver(opt);
+			psolver = new PardinusSolver(opt);
 			
 		
 			System.out.println("checking reflexive: "+f1);

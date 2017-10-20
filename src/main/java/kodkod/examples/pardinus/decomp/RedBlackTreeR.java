@@ -12,7 +12,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
-import kodkod.instance.RelativeBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -160,9 +160,9 @@ public class RedBlackTreeR implements DModel {
 	}
 
 	@Override
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
 		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
@@ -205,7 +205,7 @@ public class RedBlackTreeR implements DModel {
 	@Override
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final RelativeBounds b = new RelativeBounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 
 		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
 		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
@@ -216,8 +216,8 @@ public class RedBlackTreeR implements DModel {
 
 		b.boundExactly(Black, f.setOf("Black"));
 		b.boundExactly(Red, f.setOf("Red"));
-		b.bound(color, new Relation[][]{{Node},{Red,Black}});
-		b.bound(parent, new Relation[][]{{Node},{Node}});
+		b.bound(color,Node.product(Red.union(Black)));
+		b.bound(parent, Node.product(Node));
 
 		return b;
 	}

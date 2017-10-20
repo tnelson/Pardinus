@@ -10,7 +10,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
-import kodkod.instance.RelativeBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -71,9 +71,9 @@ public final class HotelR implements DModel {
 	}
 
 	@Override
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key"+ (n-1)));
 		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest"+ (n-1)));
@@ -117,20 +117,20 @@ public final class HotelR implements DModel {
 	@Override
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final RelativeBounds b = new RelativeBounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+ (t-1)));
 		
 		b.boundExactly(time, tb);
-		b.bound(time_init, new Relation[][]{{time}});
-		b.bound(time_end, new Relation[][]{{time}});
-		b.bound(time_loop, new Relation[][]{{time}, {time}});
-		b.bound(time_next, new Relation[][]{{time},{time}});
-		b.bound(time_next_, new Relation[][]{{time}, {time}});
-		b.bound(lastkey, new Relation[][]{{room}, {key}, {time}});
-		b.bound(occupant, new Relation[][]{{room}, {guest}, {time}});
-		b.bound(current, new Relation[][]{{room}, {key}, {time}});
-		b.bound(gkeys, new Relation[][]{{guest}, {key}, {time}});
+		b.bound(time_init, time);
+		b.bound(time_end, time);
+		b.bound(time_loop, time.product(time));
+		b.bound(time_next, time.product(time));
+		b.bound(time_next_, time.product(time));
+		b.bound(lastkey, room.product(key).product(time));
+		b.bound(occupant, room.product(guest).product(time));
+		b.bound(current, room.product(key).product(time));
+		b.bound(gkeys, guest.product(key).product(time));
 				
 		return b;	
 	}

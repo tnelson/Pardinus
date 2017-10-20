@@ -30,11 +30,11 @@ import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.ConsoleReporter;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
@@ -161,20 +161,20 @@ public final class SocialGolferP {
 //			s.options().setSymmetryBreaking(1000);
 //			final Solution sol = s.solve(f, b);
 
-			DecomposedKodkodSolver psolver;
-			BoundedExtendedOptions opt, opt2;
+			PardinusSolver psolver;
+			ExtendedOptions opt, opt2;
 			
-			opt = new BoundedExtendedOptions();
+			opt = new ExtendedOptions();
 			opt.setSymmetryBreaking(20);
 			opt.setSolver(SATFactory.Glucose);
 			opt.setDecomposedMode(DMode.PARALLEL);
 			opt.setThreads(4);
-			opt2 = new BoundedExtendedOptions(opt);
+			opt2 = new ExtendedOptions(opt);
 			opt2.setRunTarget(false);
 			opt2.setReporter(new ConsoleReporter());
 			opt.setConfigOptions(opt2);
 			opt.setReporter(new ConsoleReporter());
-			psolver = new DecomposedKodkodSolver(opt);
+			psolver = new PardinusSolver(opt);
 			
 //			Solution solution = psolver.solve(model.schedule1().and(model.schedule2()).and(model.schedule3()), Formula.TRUE, b, new Bounds(b.universe()));
 

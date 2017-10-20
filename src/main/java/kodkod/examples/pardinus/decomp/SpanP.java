@@ -10,6 +10,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -290,9 +291,9 @@ public class SpanP implements DModel {
 	 * 
 	 * @return a bounds for the given number of persons.
 	 */
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process"+ (n_ps-1)));
 		final TupleSet rb = f.range(f.tuple("Process1"), f.tuple("Process"+ (n_ps-1)));

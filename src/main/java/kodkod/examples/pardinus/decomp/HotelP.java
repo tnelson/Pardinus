@@ -10,6 +10,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -70,9 +71,9 @@ public final class HotelP implements DModel {
 	}
 
 	@Override
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key"+ (n-1)));
 		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest"+ (n-1)));

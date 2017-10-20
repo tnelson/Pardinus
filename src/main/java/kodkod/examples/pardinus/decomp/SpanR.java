@@ -10,7 +10,7 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
-import kodkod.instance.RelativeBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -291,9 +291,9 @@ public class SpanR implements DModel {
 	 * 
 	 * @return a bounds for the given number of persons.
 	 */
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process"+ (n_ps-1)));
 		final TupleSet rb = f.range(f.tuple("Process1"), f.tuple("Process"+ (n_ps-1)));
@@ -333,20 +333,20 @@ public class SpanR implements DModel {
 	
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final RelativeBounds b = new RelativeBounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 
 		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process"+ (n_ps-1)));
 		final TupleSet lb = f.range(f.tuple("Lvl0"), f.tuple("Lvl"+ (n_ps-1)));
 		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+ (n_ts-1)));
 
 		b.boundExactly(State, sb);
-		b.bound(runs, new Relation[][]{{State},{Root,Process_rem}});
-		b.bound(level, new Relation[][]{{State},{Root,Process_rem}, {Level}});
-		b.bound(parent, new Relation[][]{{State},{Root,Process_rem}, {Root,Process_rem}});
-
-		b.bound(state_first, new Relation[][]{{State}});
-		b.bound(state_next, new Relation[][]{{State},{State}});
-		b.bound(state_last, new Relation[][]{{State}});
+		b.bound(runs, State.product(Root.union(Process_rem)));
+		b.bound(level, State.product(Root.union(Process_rem)).product(Level));
+		b.bound(parent, State.product(Root.union(Process_rem)).product(Root.union(Process_rem)));
+		
+		b.bound(state_first, State);
+		b.bound(state_next, State.product(State));
+		b.bound(state_last, State);
 
 		return b;
 	}

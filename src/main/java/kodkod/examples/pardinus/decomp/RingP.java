@@ -9,6 +9,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -324,10 +325,10 @@ public final class RingP implements DModel {
 	 * fields according to given values.
 	 * @return bounds
 	 */
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+ (n_ps-1)));
 		

@@ -9,7 +9,7 @@ import kodkod.instance.*;
 import kodkod.engine.*;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.config.ConsoleReporter;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.DecomposedOptions.DMode;
 
 public class PTCRISP {
@@ -1317,15 +1317,15 @@ public class PTCRISP {
 //		Solution sol = solver.solve(formula1().and(formula2()), b3);
 //		System.out.println(sol.toString());
 		
-		DecomposedKodkodSolver psolver;
-		BoundedExtendedOptions opt, opt2;
+		PardinusSolver psolver;
+		ExtendedOptions opt, opt2;
 		
-		opt = new BoundedExtendedOptions();
+		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
-		opt2 = new BoundedExtendedOptions(opt);
+		opt2 = new ExtendedOptions(opt);
 		opt2.setRunTarget(false);
 		opt2.setReporter(new ConsoleReporter());
 
@@ -1333,7 +1333,7 @@ public class PTCRISP {
 //		opt2.setSolver(SATFactory.PMaxSAT4J);
 		opt.setConfigOptions(opt2);
 		opt.setReporter(new ConsoleReporter());
-		psolver = new DecomposedKodkodSolver(opt);
+		psolver = new PardinusSolver(opt);
 		
 //		Bounds b3 = bounds1();
 //		Bounds b2 = bounds2();

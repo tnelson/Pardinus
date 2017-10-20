@@ -9,7 +9,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
-import kodkod.instance.RelativeBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -325,10 +325,10 @@ public final class RingR implements DModel {
 	 * fields according to given values.
 	 * @return bounds
 	 */
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+ (n_ps-1)));
 		
@@ -377,24 +377,24 @@ public final class RingR implements DModel {
 	
 	public Bounds bounds2() {
 		final TupleFactory f = u.factory();
-		final RelativeBounds b = new RelativeBounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+ (n_ps-1)));
 		final TupleSet tb = f.range(f.tuple("Time0"), f.tuple("Time"+(n_ts-1)));
 		
 		if (variable == Variant2.VARIABLE) {
 			final TupleSet ib = f.range(f.tuple("Id0"), f.tuple("Id"+ (n_ps-1)));
-			b.bound(toSend,  new Relation[][]{{Process},{Id},{Time}});
+			b.bound(toSend, Process.product(Id).product(Time));
 		}
 		else			
-			b.bound(toSend,  new Relation[][]{{Process},{Process},{Time}});
+			b.bound(toSend, Process.product(Process).product(Time));
 		
-		b.bound(elected,  new Relation[][]{{Process},{Time}});
+		b.bound(elected, Process.product(Time));
 		
 		b.bound(Time, tb);
-		b.bound(tord, new Relation[][]{{Time}, {Time}});
-		b.bound(tfirst, new Relation[][]{{Time}});
-		b.bound(tlast, new Relation[][]{{Time}});
+		b.bound(tord, Time.product(Time));
+		b.bound(tfirst, Time);
+		b.bound(tlast, Time);
 		
 		return b;
 	}

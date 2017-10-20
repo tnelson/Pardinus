@@ -9,6 +9,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -95,9 +96,9 @@ public class JobsP implements DModel {
 	 * 
 	 * @return a bounds for the given number of persons.
 	 */
-	public Bounds bounds1() {
+	public PardinusBounds bounds1() {
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		final TupleSet pb = f.range(f.tuple("Roberta"), f.tuple("Pete"));
 		final TupleSet jb = f.range(f.tuple("chef"), f.tuple("boxer"));
