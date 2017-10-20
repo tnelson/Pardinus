@@ -4,31 +4,35 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.DecomposedPardinusSolver;
+import kodkod.engine.ExtendedSolver;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.HotelP;
 import kodkod.examples.pardinus.decomp.HotelP.Variant;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class HotelTests {
-	DecomposedKodkodSolver psolver;
-	BoundedExtendedOptions opt, opt2;
+	PardinusSolver psolver;
+	ExtendedOptions opt;
 	
 	@Before 
 	public void method() throws InterruptedException {
@@ -70,36 +74,26 @@ public class HotelTests {
 			}
 			
 			@Override
-			public void solvingConfig(Solution solution) {
-				System.out.println(solution.outcome()+": "
-						+ solution.instance().relationTuples().toString());
+			public void reportLex(List<Entry<Relation, Tuple>> _original,
+					List<Entry<Relation, Tuple>> _permuted) {
+				// TODO Auto-generated method stub
 			}
 			
 			@Override
-			public void configOutcome(Solution solution) {
-				System.out.println("dproblem: "+solution.outcome());
-			}
-			
-			@Override
-			public void amalgOutcome(Solution solution) {
-				System.out.println("amalg: "+solution.outcome());
+			public void debug(String debug) {
+				System.out.println(debug);
 			}
 		};
-		opt = new BoundedExtendedOptions();
+		opt = new ExtendedOptions();
+		opt.setRunDecomposed(true);
 		opt.setSymmetryBreaking(20);
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
-		opt2 = new BoundedExtendedOptions(opt);
-		opt2.setRunTarget(false);
+		opt.setRunTemporal(false);
 
 		opt.setReporter(rep);
-		opt2.setReporter(rep);
-//		opt2.setTargetMode(TMode.FAR);
-//		opt2.setSolver(SATFactory.PMaxSAT4J);
-		opt.setConfigOptions(opt2);
-		psolver = new DecomposedKodkodSolver(opt);
-		
+		psolver = new PardinusSolver(opt);
 	}
 	
 	@Test 
@@ -112,17 +106,20 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setSkolemDepth(-1);
+		opt.setRunDecomposed(true);
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 20);
-
+		assertEquals(model.shortName()+": #Configs", configs, 20);
 	}
 	
 	@Test 
@@ -135,16 +132,19 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
-		
-		final Bounds b1 = model.bounds1();
+		opt.setRunDecomposed(true);
+
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 75);
+		assertEquals(model.shortName()+": #Configs", configs, 75);
 
 	}
 	
@@ -158,16 +158,19 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() >= 200);
+		assertTrue(model.shortName()+": #Configs", configs >= 200);
 
 	}
 	
@@ -181,17 +184,21 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 20);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 20);
+		assertEquals(model.shortName()+": #Runs", runs, 20);
+		assertEquals(model.shortName()+": #Configs", configs, 20);
 	}
 	
 	@Test 
@@ -204,17 +211,21 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 75);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 75);
+		assertEquals(model.shortName()+": #Runs", runs, 75);
+		assertEquals(model.shortName()+": #Configs", configs, 75);
 	}
 	
 	@Test 
@@ -227,17 +238,21 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 312);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 312);
+		assertEquals(model.shortName()+": #Runs", runs, 312);
+		assertEquals(model.shortName()+": #Configs", configs, 312);
 	}
 	
 	@Test 
@@ -251,18 +266,23 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
+
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 20);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 20);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), false);
+		assertTrue(model.shortName()+": #Configs", configs <= 20);
+		assertTrue(model.shortName()+": #Runs", runs < 20);
+		assertEquals(model.shortName()+": Amalg", amalgamated, false);
 	}
 	
 	@Test 
@@ -276,18 +296,23 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 75);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 75);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), false);
+		assertTrue(model.shortName()+": #Configs", configs <= 75);
+		assertTrue(model.shortName()+": #Runs", runs < 75);
+		assertEquals(model.shortName()+": Amalg", amalgamated, false);
 	}
 	
 	@Test 
@@ -301,18 +326,23 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
+
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 312);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 312);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), false);
+		assertTrue(model.shortName()+": #Configs", configs <= 312);
+		assertTrue(model.shortName()+": #Runs", runs < 312);
+		assertEquals(model.shortName()+": Amalg", amalgamated, false);
 	}
 	
 	@Test 
@@ -326,18 +356,23 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 20);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 20);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", configs <= 20);
+		assertTrue(model.shortName()+": #Runs", runs < 20);
+		assertEquals(model.shortName()+": Amalg", amalgamated, true);
 	}
 	
 	@Test 
@@ -351,18 +386,23 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 75);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 75);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", configs <= 75);
+		assertTrue(model.shortName()+": #Runs", runs < 75);
+		assertEquals(model.shortName()+": Amalg", amalgamated, true);
 	}
 	
 	@Test 
@@ -376,18 +416,23 @@ public class HotelTests {
 		DModel model = new HotelP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
+		opt.setRunDecomposed(true);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
+		
+		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
+		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
+		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
+
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 312);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 312);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", configs <= 312);
+		assertTrue(model.shortName()+": #Runs", runs < 312);
+		assertEquals(model.shortName()+": Amalg", amalgamated, true);
 	}
 
 }

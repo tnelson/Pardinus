@@ -27,25 +27,27 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.bool.BooleanFormula;
-import kodkod.engine.config.BoundedExtendedOptions;
-import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.Reporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
-import kodkod.examples.pardinus.decomp.SymmetryP.VariantFormulas;
 import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.examples.pardinus.decomp.SymmetryP.VariantBounds;
+import kodkod.examples.pardinus.decomp.SymmetryP.VariantFormulas;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Assert;
@@ -54,39 +56,45 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests whether the symmetries are being correctly calculated for decomposed
- * problems. Also tests whether every solution is being enumerated.
+ * problems by comparing with the amalgamated problem, as well as whether every
+ * solution is being enumerated. Also tests problems where either the partial or
+ * integrated problem become trivial. Uses the models from {@link SymmetryP}.
  * 
  * @author Nuno Macedo // [HASLab] decomposed model finding
  *
  */
 @RunWith(Parameterized.class)
 public class SymmetryTests {
-	DecomposedKodkodSolver dsolver;
-	BoundedExtendedOptions opt, opt2;
-	Set<IntSet> last;
+	private PardinusSolver dsolver;
+	private ExtendedOptions opt;
+	private Set<IntSet> last;
 
 	@Before
 	public void method() throws InterruptedException {
 
-		opt = new BoundedExtendedOptions();
+		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
-		opt2 = new BoundedExtendedOptions(opt);
-		opt2.setRunTarget(false);
 		Reporter rep = new Reporter() {
+		    private Logger LOGGER = LoggerFactory.getLogger(Reporter.class);
+
+			private Bounds bounds;
+
 			@Override
 			public void translatingToCNF(BooleanFormula circuit) {
 			}
 
 			@Override
 			public void translatingToBoolean(Formula formula, Bounds bounds) {
-				System.out.println("to bool: " + formula.toString() + ", "
-						+ bounds);
+				LOGGER.debug("to bool: " + formula.toString() + ", "
+						+ bounds.toString().replaceAll("[\r\n]+", " "));
 			}
 
 			@Override
@@ -108,35 +116,37 @@ public class SymmetryTests {
 
 			@Override
 			public void detectingSymmetries(Bounds bounds) {
+				this.bounds = bounds;
 			}
 
 			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
 				last = new HashSet<IntSet>(parts);
-				System.out.println("symmetry: " + parts.toString());
+				Set<Set<Object>> x = new HashSet<Set<Object>>();
+				for (IntSet y : parts) {
+					Set<Object> z = new HashSet<Object>();
+					for (int w : y.toArray())
+						z.add(bounds.universe().atom(w));
+					x.add(z);
+				}
+				LOGGER.debug("symmetry: " + x.toString());
 			}
 
 			@Override
-			public void solvingConfig(Solution solution) {
-				System.out.println(solution.outcome()+": "
-						+ solution.instance().relationTuples().toString());
-			}
-
-			@Override
-			public void configOutcome(Solution solution) {
-				System.out.println("dproblem: "+solution.outcome());
+			public void reportLex(List<Entry<Relation, Tuple>> _original,
+					List<Entry<Relation, Tuple>> _permuted) {
+				LOGGER.debug("lex: "+_original.toString() + " < " + _permuted.toString());
+				
 			}
 			
 			@Override
-			public void amalgOutcome(Solution solution) {
-				System.out.println("amalg: "+solution.outcome());
+			public void debug(String debug) {
+				LOGGER.debug(debug);
 			}
-		};
-		opt2.setReporter(rep);
 
-		opt.setConfigOptions(opt2);
+		};
+
 		opt.setReporter(rep);
-		dsolver = new DecomposedKodkodSolver(opt);
 	}
 
 	private VariantBounds v1;
@@ -150,45 +160,63 @@ public class SymmetryTests {
 	@Parameters(name = "{0} {1}")
 	public static Collection<Object[]> data() {
 		Object[][] data = new Object[][] {
-				{ VariantBounds.V1, VariantFormulas.V1 },
-				{ VariantBounds.V2, VariantFormulas.V1 },
-				{ VariantBounds.V3, VariantFormulas.V1 },
-				{ VariantBounds.V4, VariantFormulas.V1 },
-				{ VariantBounds.V5, VariantFormulas.V1 },
-				{ VariantBounds.V6, VariantFormulas.V1 },
-				{ VariantBounds.V1, VariantFormulas.V2 },
-				{ VariantBounds.V2, VariantFormulas.V2 },
-				{ VariantBounds.V3, VariantFormulas.V2 },
-				{ VariantBounds.V4, VariantFormulas.V2 },
-				{ VariantBounds.V5, VariantFormulas.V2 },
-				{ VariantBounds.V6, VariantFormulas.V2 },
-				{ VariantBounds.V1, VariantFormulas.V3 },
-				{ VariantBounds.V2, VariantFormulas.V3 },
-				{ VariantBounds.V3, VariantFormulas.V3 },
-				{ VariantBounds.V4, VariantFormulas.V3 },
-				{ VariantBounds.V5, VariantFormulas.V3 },
-				{ VariantBounds.V6, VariantFormulas.V3 },
-				{ VariantBounds.V1, VariantFormulas.V4 },
-				{ VariantBounds.V2, VariantFormulas.V4 },
-				{ VariantBounds.V3, VariantFormulas.V4 },
-				{ VariantBounds.V4, VariantFormulas.V4 },
-				{ VariantBounds.V5, VariantFormulas.V4 },
-				{ VariantBounds.V6, VariantFormulas.V4 },
+				{ VariantBounds.V1, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V1 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V7, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     constant b1,   symmetric b2
+				{ VariantBounds.V8, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  constant b2
+				{ VariantBounds.V9, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     empty b1,      symmetric b2
+				{ VariantBounds.V0, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  empty b2
+				{ VariantBounds.V1, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V2 }, // unsat, p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V7, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, constant b1,   symmetric b2
+				{ VariantBounds.V8, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  constant b2
+				{ VariantBounds.V9, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, empty b1,      symmetric b2
+				{ VariantBounds.V0, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  empty b2
+				{ VariantBounds.V1, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V7, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, constant b1,   symmetric b2
+				{ VariantBounds.V8, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  constant b2
+				{ VariantBounds.V9, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, empty b1,      symmetric b2
+				{ VariantBounds.V0, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  empty b2
+				{ VariantBounds.V1, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V7, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     constant b1,   symmetric b2
+				{ VariantBounds.V8, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  constant b2
+				{ VariantBounds.V9, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     empty b1,      symmetric b2
+				{ VariantBounds.V0, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  empty b2
 				};
 		return Arrays.asList(data);
 	}
 
 	@Test
 	public void test() {
-		int n = 2;
+		int n = 3;
 
 		String[] args = new String[] { n + "", v1.name(), v2.name() };
 		DModel model = new SymmetryP(args);
 
 		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
-
-		final DecompBounds bounds = new DecompBounds(model.bounds1(),
+		opt.setRunTemporal(false);
+		opt.setRunDecomposed(true);
+		opt.setDecomposedMode(DMode.PARALLEL);
+		dsolver = new PardinusSolver(opt);
+		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),
 				model.bounds2());
 		final Formula formula = model.partition1().and(model.partition2());
 		Iterator<Solution> solution ;
@@ -209,9 +237,10 @@ public class SymmetryTests {
 		}
 		Set<IntSet> decomp_syms = last;
 
-		
 		System.out.println("----- Solving in batch -----");
-		Solver solver = new Solver(dsolver.options());
+
+		opt.setRunDecomposed(false);
+		Solver solver = new Solver(opt);
 		solution = solver.solveAll(formula, bounds.amalgamated());
 		int batch_counter = 0;
 		while (solution.hasNext()) {

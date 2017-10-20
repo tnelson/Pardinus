@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.ExtendedSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DProblem;
@@ -36,11 +36,9 @@ import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 public final class RunConfigStats {
 
-	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver();
+	final static Map<Integer,List<DProblem<ExtendedSolver>>> stats = new HashMap<Integer,List<DProblem<ExtendedSolver>>> ();
 
-	final static Map<Integer,List<DProblem>> stats = new HashMap<Integer,List<DProblem>> ();
-
-	static DProblem psolution = null;
+	static DProblem<ExtendedSolver> psolution = null;
 	static Solution solution = null;
 
 	static int threads = 4;

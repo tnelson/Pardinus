@@ -4,45 +4,47 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.DecomposedPardinusSolver;
+import kodkod.engine.ExtendedSolver;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
-import kodkod.engine.config.BoundedExtendedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
-import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant1;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant2;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class RedBlackTests {
-	DecomposedKodkodSolver psolver;
-	BoundedExtendedOptions opt, opt2;
+	PardinusSolver psolver;
+	ExtendedOptions opt, opt2;
 	
 	@Before 
 	public void method() throws InterruptedException {
 		
-		opt = new BoundedExtendedOptions();
+		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
-		opt2 = new BoundedExtendedOptions(opt);
+		opt2 = new ExtendedOptions(opt);
 		opt2.setRunTarget(false);
-		opt2.setTargetMode(TMode.DEFAULT);
 		opt2.setSolver(SATFactory.PMaxSAT4J);
 		opt.setConfigOptions(opt2);
 		Reporter rep = new Reporter() {
@@ -83,26 +85,20 @@ public class RedBlackTests {
 			}
 			
 			@Override
-			public void solvingConfig(Solution solution) {
-				System.out.println(solution.outcome()+": "
-						+ solution.instance().relationTuples().toString());
+			public void reportLex(List<Entry<Relation, Tuple>> original,
+					List<Entry<Relation, Tuple>> permuted) {
+				// TODO Auto-generated method stub
+				
 			}
-			
+
 			@Override
-			public void configOutcome(Solution solution) {
-				System.out.println("dproblem: "+solution.outcome());
-			}
-			
-			@Override
-			public void amalgOutcome(Solution solution) {
-				System.out.println("amalg: "+solution.outcome());
+			public void debug(String debug) {
+				System.out.println(debug);
 			}
 		};
 		opt.setReporter(rep);
 		opt2.setReporter(rep);
-		psolver = new DecomposedKodkodSolver(opt);
-		
-		
+		psolver = new PardinusSolver(opt);
 	}
 	
 	@Test 
@@ -117,15 +113,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 5);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 5);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 5);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 5);
 	}
 	
 	@Test 
@@ -140,15 +136,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 14);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 14);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 14);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 14);
 	}
 	
 	@Test 
@@ -163,16 +159,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth()+2);
 		opt2.setBitwidth(model.getBitwidth()+2);
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		System.out.println(solution.instance());
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 42);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 42);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 42);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 42);
 	}
 	
 	@Test 
@@ -187,15 +183,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 132);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 132);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 132);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 132);
 	}
 	
 	@Test 
@@ -210,15 +206,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 5);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 5);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 5);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 5);
 	}
 	
 	@Test 
@@ -233,15 +229,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 14);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 14);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 14);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 14);
 	}
 	
 	@Test 
@@ -256,15 +252,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 42);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 42);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 42);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 42);
 	}
 	
 	@Test 
@@ -279,15 +275,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 132);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 132);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 132);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 132);
 	}
 	
 	@Test 
@@ -303,16 +299,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 5);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 6);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 5);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 6);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -328,16 +324,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 14);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 14);
-//		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 14);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 14);
+//		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -353,16 +349,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 42);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 42);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 42);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 42);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -378,16 +374,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 132);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 132);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 132);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 132);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -403,16 +399,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 5);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 6);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 5);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 6);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -428,16 +424,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 14);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 14);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 14);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 14);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -453,16 +449,16 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 42);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 42);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 42);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 42);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -478,15 +474,15 @@ public class RedBlackTests {
 		opt.setBitwidth(model.getBitwidth());
 		opt2.setBitwidth(model.getBitwidth());
 		
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 132);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 132);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 132);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 132);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 }

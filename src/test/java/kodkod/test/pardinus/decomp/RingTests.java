@@ -4,14 +4,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.DecomposedPardinusSolver;
+import kodkod.engine.ExtendedSolver;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DModel;
@@ -20,24 +24,25 @@ import kodkod.examples.pardinus.decomp.RingP;
 import kodkod.examples.pardinus.decomp.RingP.Variant1;
 import kodkod.examples.pardinus.decomp.RingP.Variant2;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class RingTests {
-	DecomposedKodkodSolver psolver;
+	PardinusSolver psolver;
 	
 	@Before 
 	public void method() throws InterruptedException {
 		
-		psolver = new DecomposedKodkodSolver();
+		ExtendedOptions opt = new ExtendedOptions();
 
-		psolver.options().setSymmetryBreaking(20);
-		psolver.options().setSolver(SATFactory.Glucose);
-		psolver.options().setDecomposedMode(DMode.PARALLEL);
-		psolver.options().setThreads(4);
+		opt.setSymmetryBreaking(20);
+		opt.setSolver(SATFactory.Glucose);
+		opt.setDecomposedMode(DMode.PARALLEL);
+		opt.setThreads(4);
 		
 		Reporter rep = new Reporter() {
 			@Override
@@ -75,25 +80,21 @@ public class RingTests {
 			public void detectedSymmetries(Set<IntSet> parts) {
 				System.out.println("symmetry: " + parts.toString());
 			}
-			
+
 			@Override
-			public void solvingConfig(Solution solution) {
-				System.out.println(solution.outcome()+": "
-						+ solution.instance().relationTuples().toString());
+			public void reportLex(List<Entry<Relation, Tuple>> original,
+					List<Entry<Relation, Tuple>> permuted) {
+				// TODO Auto-generated method stub
 			}
-			
+
 			@Override
-			public void configOutcome(Solution solution) {
-				System.out.println("dproblem: "+solution.outcome());
-			}
-			
-			@Override
-			public void amalgOutcome(Solution solution) {
-				System.out.println("amalg: "+solution.outcome());
+			public void debug(String debug) {
+				System.out.println(debug);				
 			}
 		};
-		psolver.options().setReporter(rep);
-		
+		opt.setReporter(rep);
+		psolver = new PardinusSolver(opt);
+
 	}
 	
 	@Test 
@@ -108,14 +109,14 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() >= 200);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() >= 200);
 	}
 	
 	@Test 
@@ -130,14 +131,14 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() >= 200);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() >= 200);
 }
 	
 
@@ -153,15 +154,15 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 8);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 8);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 8);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 8);
 	}
 	
 	@Test 
@@ -176,15 +177,15 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 8);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 8);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 8);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 8);
 	}
 	
 	@Test 
@@ -199,15 +200,15 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 24);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 24);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 24);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 24);
 	}
 	
 	@Test 
@@ -222,15 +223,15 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns(), 24);
-		assertEquals(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs(), 24);
+		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 24);
+		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 24);
 	}
 	
 	@Test 
@@ -246,16 +247,16 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-//		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 415);
-//		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 415);
-//		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+//		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 415);
+//		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 415);
+//		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
 	@Test 
@@ -271,16 +272,16 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() < 415);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 415);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 415);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 415);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 }
 	
 
@@ -297,16 +298,16 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 8);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 8);	}
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 8);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 8);	}
 	
 	@Test 
 	public void testHUNSAT3b() throws InterruptedException {
@@ -321,16 +322,16 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 8);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 8);	}
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 8);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 8);	}
 	
 	@Test 
 	public void testHUNSAT4a() throws InterruptedException {
@@ -345,16 +346,16 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 24);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 24);	}
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 24);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 24);	}
 	
 	@Test 
 	public void testHUNSAT4b() throws InterruptedException {
@@ -369,16 +370,16 @@ public class RingTests {
 
 		psolver.options().setBitwidth(model.getBitwidth());
 
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
-		Solution solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": Amalg", psolver.executor().monitor.isAmalgamated(), true);
-		assertTrue(model.shortName()+": #Runs", psolver.executor().monitor.getNumRuns() <= 24);
-		assertTrue(model.shortName()+": #Configs", psolver.executor().monitor.getNumConfigs() <= 24);
+		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 24);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 24);
 	}
 	
 

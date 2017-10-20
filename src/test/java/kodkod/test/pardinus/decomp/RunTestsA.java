@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.ExtendedSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DProblem;
@@ -35,12 +35,12 @@ import kodkod.examples.pardinus.decomp.SpanP;
 
 public final class RunTestsA {
 
-	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver();
+	final static Map<Integer,List<DProblem<ExtendedSolver>>> stats = new HashMap<Integer,List<DProblem<ExtendedSolver>>> ();
 
-	final static Map<Integer,List<DProblem>> stats = new HashMap<Integer,List<DProblem>> ();
-
-	static DProblem psolution = null;
+	static DProblem<ExtendedSolver> psolution = null;
 	static Solution solution = null;
+
+	static private boolean batch = false;
 
 	static int tries, threads = 4;
 
@@ -70,7 +70,7 @@ public final class RunTestsA {
 		if(opts.contains("-pl")) solvers.add(Solvers.PLINGELING);
 
 		if(opts.contains("-t")) modes.add(DMode.EXHAUSTIVE);
-		if(opts.contains("-b")) modes.add(DMode.BATCH);
+		if(opts.contains("-b")) batch = true;
 		if(opts.contains("-s")) { modes.add(DMode.PARALLEL); threads = 1;}
 		if(opts.contains("-p")) modes.add(DMode.PARALLEL);
 		if(opts.contains("-h")) modes.add(DMode.HYBRID);
@@ -198,7 +198,7 @@ public final class RunTestsA {
 
 		header.append("n\t");
 		if (solvers.contains(Solvers.MINISAT)) {
-			if (modes.contains(DMode.BATCH))
+			if (batch)
 				for (int i = 0; i < tries; i++)
 					header.append("M.B\tSat\t");
 			if (modes.contains(DMode.PARALLEL))
@@ -213,7 +213,7 @@ public final class RunTestsA {
 		}
 
 		if (solvers.contains(Solvers.GLUCOSE)) {
-			if (modes.contains(DMode.BATCH))
+			if (batch)
 				for (int i = 0; i < tries; i++)
 					header.append("G.B\tSat\t");
 			if (modes.contains(DMode.PARALLEL))
@@ -228,13 +228,13 @@ public final class RunTestsA {
 		}
 
 		if (solvers.contains(Solvers.SYRUP)) {
-			if (modes.contains(DMode.BATCH))
+			if (batch)
 				for (int i = 0; i < tries; i++)
 					header.append("S.B\tSat\t");
 		}
 
 		if (solvers.contains(Solvers.PLINGELING)) {
-			if (modes.contains(DMode.BATCH))
+			if (batch)
 				for (int i = 0; i < tries; i++)
 					header.append("P.B\tSat\t");
 		}
@@ -319,16 +319,16 @@ public final class RunTestsA {
 		}
 
 		if (solvers.contains(Solvers.SYRUP)) {
-			if (modes.contains(DMode.BATCH)) {
-				args[0] = DMode.BATCH.name();
+			if (batch) {
+				args[0] = "BATCH";
 				args[1] = Solvers.SYRUP.name();
 				runModelInstance(model,args,tries);
 			}
 		}
 
 		if (solvers.contains(Solvers.PLINGELING)) {
-			if (modes.contains(DMode.BATCH)) {
-				args[0] = DMode.BATCH.name();
+			if (batch) {
+				args[0] = "BATCH";
 				args[1] = Solvers.PLINGELING.name();
 				runModelInstance(model,args,tries);
 			}
