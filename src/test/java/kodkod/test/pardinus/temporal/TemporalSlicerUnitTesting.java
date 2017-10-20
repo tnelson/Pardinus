@@ -1,12 +1,15 @@
 package kodkod.test.pardinus.temporal;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.Map.Entry;
+
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
-import kodkod.engine.ltl2fol.TemporalFormulaSlicer;
-import kodkod.instance.Bounds;
+import kodkod.engine.decomp.DecompFormulaSlicer;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.Universe;
 
 import org.junit.Test;
@@ -16,7 +19,6 @@ public class TemporalSlicerUnitTesting {
 	private static Relation Process = Relation.unary("Process");
 	private static VarRelation toSend = VarRelation.binary("toSend");
 	private static VarRelation elected = VarRelation.unary("elected");
-	private static VarRelation naryRelation = VarRelation.nary("naryRelation", 4);
 
 	private static Relation succ = Relation.binary("succ");
 
@@ -27,8 +29,6 @@ public class TemporalSlicerUnitTesting {
 
 	private static Relation succ1 = Relation.binary("succ1");
 	private static Relation succ2 = Relation.binary("succ2");
-
-	TemporalFormulaSlicer slicingDynamicFormulas;
 
 	@Test
 	public final void test1() {
@@ -48,22 +48,16 @@ public class TemporalSlicerUnitTesting {
 		String resultStatic = "(succ in (Process -> Process))";
 
 		Universe universe = new Universe();
-		Bounds bounds = new Bounds(universe);
-
-		slicingDynamicFormulas = new TemporalFormulaSlicer(total, bounds);
-		Formula dynamicRel = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-		Formula staticRel = Formula.and(slicingDynamicFormulas.getStaticFormulas());
+		PardinusBounds bounds = new PardinusBounds(universe);
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
 		assertEquals(dynamicRel.toString(), resultDynamic);
 		assertEquals(staticRel.toString(), resultStatic);
-		assertEquals(slicingDynamicFormulas.getDynamicFormulas().size(), 4);
-		assertEquals(slicingDynamicFormulas.getStaticFormulas().size(), 1);
-
 	}
 
 	@Test
 	public final void test2() {
-		Formula succFunction = pord.partialFunction(pfirst, plast);
-
 		Formula var5 = elected.in(Process);
 		Formula var4 = succ.in(Process.product(Process));
 		Formula localFormula2 = pord.totalOrder(Process, pfirst, plast);
@@ -79,16 +73,15 @@ public class TemporalSlicerUnitTesting {
 		String resultDynamic = "(TOTAL_ORDERING(pord, Process, pfirst, plast) && (elected in Process) && next((all p: one Process | (((toSend . p) = (toSend . p)) release lone (Process . toSend')))))";
 		String resultStatic = "(succ in (Process -> Process))";
 
-		total.accept(slicingDynamicFormulas);
-		Formula dynamicRel = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-		Formula staticRel = Formula.and(slicingDynamicFormulas.getStaticFormulas());
+		Universe universe = new Universe();
+		PardinusBounds bounds = new PardinusBounds(universe);
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
 		assertEquals(dynamicRel.toString(), resultDynamic);
 		assertEquals(staticRel.toString(), resultStatic);
-		assertEquals(slicingDynamicFormulas.getDynamicFormulas().size(), 3);
-		assertEquals(slicingDynamicFormulas.getStaticFormulas().size(), 1);
-
 	}
-
+	
 	@Test
 	public final void test3() {
 		Formula succFunction = pord.partialFunction(pfirst, plast);
@@ -108,13 +101,13 @@ public class TemporalSlicerUnitTesting {
 		String resultDynamic = "(TOTAL_ORDERING(pord, Process, pfirst, plast) && (elected in Process) && FUNCTION(pord, pfirst ->lone plast) && next((all p: one Process | (((toSend . p) = (toSend . p)) release lone (Process . toSend')))))";
 		String resultStatic = "(succ in (Process -> Process))";
 
-		total.accept(slicingDynamicFormulas);
-		Formula dynamicRel = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-		Formula staticRel = Formula.and(slicingDynamicFormulas.getStaticFormulas());
+		Universe universe = new Universe();
+		PardinusBounds bounds = new PardinusBounds(universe);
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
 		assertEquals(dynamicRel.toString(), resultDynamic);
 		assertEquals(staticRel.toString(), resultStatic);
-		assertEquals(slicingDynamicFormulas.getDynamicFormulas().size(), 4);
-		assertEquals(slicingDynamicFormulas.getStaticFormulas().size(), 1);
 	}
 
 	@Test
@@ -136,13 +129,13 @@ public class TemporalSlicerUnitTesting {
 		String resultDynamic = "(TOTAL_ORDERING(pord, Process, pfirst, plast) && (elected in Process) && FUNCTION(pord, pfirst ->lone plast) && next((all p: one Process | (((toSend . p) = (toSend . p)) release lone (Process . toSend')))))";
 		String resultStatic = "(succ in (Process -> Process))";
 
-		total.accept(slicingDynamicFormulas);
-		Formula dynamicRel = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-		Formula staticRel = Formula.and(slicingDynamicFormulas.getStaticFormulas());
+		Universe universe = new Universe();
+		PardinusBounds bounds = new PardinusBounds(universe);
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
 		assertEquals(dynamicRel.toString(), resultDynamic);
 		assertEquals(staticRel.toString(), resultStatic);
-		assertEquals(slicingDynamicFormulas.getDynamicFormulas().size(), 4);
-		assertEquals(slicingDynamicFormulas.getStaticFormulas().size(), 1);
 	}
 
 	@Test
@@ -173,13 +166,13 @@ public class TemporalSlicerUnitTesting {
 		String resultDynamic = "(next((all p: one Process | (((toSend . p) = (toSend . p)) until lone (Process . toSend')))) && TOTAL_ORDERING(pord, Process, pfirst, plast) && FUNCTION(pord, pfirst ->lone plast) && (elected in Process) && next((all p: one Process | (((toSend . p) = (toSend . p)) release lone (Process . toSend')))))";
 		String resultStatic = "((succ2 in (Process -> Process)) && ((succ1 in (Process -> Process)) => ((succ2 in (Process -> Process)) && (succ in (Process -> Process)))) && (succ2 in (Process -> Process)) && (succ in (Process -> Process)))";
 
-		total.accept(slicingDynamicFormulas);
-		Formula dynamicRel = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-		Formula staticRel = Formula.and(slicingDynamicFormulas.getStaticFormulas());
+		Universe universe = new Universe();
+		PardinusBounds bounds = new PardinusBounds(universe);
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
 		assertEquals(dynamicRel.toString(), resultDynamic);
 		assertEquals(staticRel.toString(), resultStatic);
-		assertEquals(slicingDynamicFormulas.getDynamicFormulas().size(), 5);
-		assertEquals(slicingDynamicFormulas.getStaticFormulas().size(), 4);
 	}
 
 	@Test
@@ -213,13 +206,13 @@ public class TemporalSlicerUnitTesting {
 		String resultDynamic = "(next((all p: one Process | (((toSend . p) = (toSend . p)) until lone (Process . toSend')))) && (elected in Process) && TOTAL_ORDERING(pord, Process, pfirst, plast) && FUNCTION(pord, pfirst ->lone plast) && next((all p: one Process | (((toSend . p) = (toSend . p)) release lone (Process . toSend')))))";
 		String resultStatic = "((succ2 in (Process -> Process)) && ((succ1 in (Process -> Process)) => ((succ2 in (Process -> Process)) && (succ in (Process -> Process)))) && (succ2 in (Process -> Process)) && (succ in (Process -> Process)))";
 
-		total.accept(slicingDynamicFormulas);
-		Formula dynamicRel = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-		Formula staticRel = Formula.and(slicingDynamicFormulas.getStaticFormulas());
+		Universe universe = new Universe();
+		PardinusBounds bounds = new PardinusBounds(universe);
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
 		assertEquals(dynamicRel.toString(), resultDynamic);
 		assertEquals(staticRel.toString(), resultStatic);
-		assertEquals(slicingDynamicFormulas.getDynamicFormulas().size(), 5);
-		assertEquals(slicingDynamicFormulas.getStaticFormulas().size(), 4);
 	}
 
 	@Test
@@ -257,13 +250,13 @@ public class TemporalSlicerUnitTesting {
 		String resultDynamic = "(next((all p: one Process | (((toSend . p) = (toSend . p)) release lone (Process . toSend')))) && TOTAL_ORDERING(pord, Process, pfirst, plast) && FUNCTION(pord, pfirst ->lone plast) && (elected in Process) && next((all p: one Process | (((toSend . p) = (toSend . p)) until lone (Process . toSend')))))";
 		String resultStatic = "((succ in (Process -> Process)) && (succ2 in (Process -> Process)) && (succ2 in (Process -> Process)) && (succ2 in (Process -> Process)) && (succ1 in (Process -> Process)))";
 
-		total.accept(slicingDynamicFormulas);
-		Formula dynamicRel = Formula.and(slicingDynamicFormulas.getDynamicFormulas());
-		Formula staticRel = Formula.and(slicingDynamicFormulas.getStaticFormulas());
+		Universe universe = new Universe();
+		PardinusBounds bounds = new PardinusBounds(universe);
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
 		assertEquals(dynamicRel.toString(), resultDynamic);
 		assertEquals(staticRel.toString(), resultStatic);
-		assertEquals(slicingDynamicFormulas.getDynamicFormulas().size(), 5);
-		assertEquals(slicingDynamicFormulas.getStaticFormulas().size(), 5);
 	}
 
 	public static void p(String s) {

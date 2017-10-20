@@ -1,9 +1,9 @@
 package kodkod.test.pardinus.temporal;
 
 import kodkod.ast.*;
-import kodkod.engine.TemporalKodkodSolver;
-import kodkod.engine.config.BoundedExtendedOptions;
-import kodkod.instance.TemporalBounds;
+import kodkod.engine.TemporalPardinusSolver;
+import kodkod.engine.config.ExtendedOptions;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -31,10 +31,10 @@ public class Test {
 
 	public Test() {
 		Formula formula = finalFormula();
-		TemporalBounds bounds = bounds(3);
-		BoundedExtendedOptions options = new BoundedExtendedOptions();
+		PardinusBounds bounds = bounds(3);
+		ExtendedOptions options = new ExtendedOptions();
 		options.setMaxTraceLength(5);
-		TemporalKodkodSolver solver = new TemporalKodkodSolver(options);
+		TemporalPardinusSolver solver = new TemporalPardinusSolver(options);
 		solver.solve(formula, bounds);
 	}
 
@@ -98,7 +98,7 @@ public class Test {
 		return Formula.and(invariants(), GoodSafety());
 	}
 
-	public TemporalBounds bounds(int processes) {
+	public PardinusBounds bounds(int processes) {
 		final List<String> atoms = new ArrayList<String>(processes);
 		for (int i = 0; i < processes; i++) {
 			atoms.add("Process" + i);
@@ -106,7 +106,7 @@ public class Test {
 
 		final Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
-		final TemporalBounds b = new TemporalBounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 
 		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (processes - 1)));
 

@@ -7,11 +7,14 @@ import java.lang.reflect.InvocationTargetException;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.DecomposedKodkodSolver;
+import kodkod.engine.DecomposedPardinusSolver;
+import kodkod.engine.ExtendedSolver;
 import kodkod.engine.IncrementalSolver;
+import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.DecomposedOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
@@ -19,21 +22,21 @@ import kodkod.engine.decomp.DProblem;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.temporal.DijkstraT;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 
 public final class RunTestModel {
 
-	final static DecomposedKodkodSolver psolver = new DecomposedKodkodSolver();
+	static PardinusSolver psolver;
 
-	static DProblem psolution = null;
+	static DProblem<ExtendedSolver> psolution = null;
 	static Solution solution = null;
 
 	static int threads, sym = 20;
 	static Solvers selected_solver;
 	static DecomposedOptions.DMode selected_mode;
-
+	static private boolean batch = false;
 	static DModel model;
 	
 	static private StringBuilder log = new StringBuilder();
@@ -80,11 +83,8 @@ public final class RunTestModel {
 		model = dijkstraP;//(PartitionModel) Class.forName(args[0]).getConstructor(String[].class)
 				//.newInstance();
 
-
-
-
 		// the chosen partition mode
-		selected_mode = DecomposedOptions.DMode.BATCH;//ParallelOptions.Modes.valueOf(args[1]);
+		selected_mode = DecomposedOptions.DMode.PARALLEL;//ParallelOptions.Modes.valueOf(args[1]);
 		// the chosen solver
 		selected_solver = Solvers.GLUCOSE; //ParallelOptions.Solvers.valueOf(args[2]);
 
@@ -106,26 +106,28 @@ public final class RunTestModel {
 	 * @throws InterruptedException 
 	 */
 	private static void run_tests() throws InterruptedException {
-		final Bounds b1 = model.bounds1();
+		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 
-		psolver.options().setBitwidth(model.getBitwidth());
-		psolver.options().setSymmetryBreaking(sym);
+		ExtendedOptions opt = new ExtendedOptions();
+		
+		opt.setBitwidth(model.getBitwidth());
+		opt.setSymmetryBreaking(sym);
 
 		switch (selected_solver) {
 		case GLUCOSE:
-			psolver.options().setSolver(SATFactory.Glucose);
+			opt.setSolver(SATFactory.Glucose);
 			break;
 		case MINISAT:
-			psolver.options().setSolver(SATFactory.MiniSat);
+			opt.setSolver(SATFactory.MiniSat);
 			break;
 		case PLINGELING:
-			psolver.options().setSolver(SATFactory.plingeling());
+			opt.setSolver(SATFactory.plingeling());
 			break;
 		case SYRUP:
-			psolver.options().setSolver(SATFactory.syrup());
+			opt.setSolver(SATFactory.syrup());
 			break;
 		default:
 			break;
@@ -137,25 +139,26 @@ public final class RunTestModel {
 
 		long t1 = System.currentTimeMillis();
 
-		psolver.options().setDecomposedMode(selected_mode);
-		switch (selected_mode) {
-		case BATCH:
+		opt.setDecomposedMode(selected_mode);
+		psolver = new PardinusSolver(opt);
+		if (batch)
 			solution = go_batch(b1, b2, f1, f2);
-			break;
+		else
+		switch (selected_mode) {
 		case PARALLEL:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 			break;
 		case HYBRID:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 			break;
 		case INCREMENTAL:
 			solution = go_incremental(b1, b2, f1, f2);
 			break;
 		case EXHAUSTIVE:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new DecompBounds(b1, b2));
+			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 			break;
 		default:
 			break;
@@ -184,7 +187,7 @@ public final class RunTestModel {
 //			log.append(psolution.getSolution().instance());
 		}
 		else if (selected_mode == DMode.EXHAUSTIVE) {
-			DMonitor mon = psolver.executor().monitor;
+			DMonitor mon = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor;
 
 			long tt = mon.getNumRuns();
 			log.append(tt);
@@ -232,8 +235,8 @@ public final class RunTestModel {
 		log = new StringBuilder();
 	}
 
-	private static long getConfigNum(DecomposedKodkodSolver psolver2) {
-		DMonitor mon = psolver2.executor().monitor;
+	private static long getConfigNum(PardinusSolver psolver2) {
+		DMonitor mon = ((DecomposedPardinusSolver<ExtendedSolver>) psolver2.solver).executor().monitor;
 		long counter = mon.getNumRuns();
 		if (counter != 0)
 			if (mon.isAmalgamated())
