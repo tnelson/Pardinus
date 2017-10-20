@@ -160,6 +160,13 @@
       
     </plugins>
   </build>
+  
+  
+	<properties>
+		<logback-version>1.1.7</logback-version>
+	</properties>
+  
+  
   <dependencies>
     <dependency>
       <groupId>org.sat4j</groupId>
@@ -181,5 +188,17 @@
       <artifactId>junit</artifactId>
       <version>4.12</version>
     </dependency>
-      </dependencies>
+	<dependency>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-classic</artifactId>
+		<version>${logback-version}</version>
+		<scope>compile</scope>
+	</dependency>
+	<dependency>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-core</artifactId>
+		<version>${logback-version}</version>
+		<scope>compile</scope>
+	</dependency>
+  </dependencies>
 </project>
