@@ -24,6 +24,7 @@ package kodkod.engine.decomp;
 
 import kodkod.ast.Formula;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 
 /**
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
@@ -35,7 +36,7 @@ public interface DModel {
 	 * 
 	 * @return
 	 */
-	public Bounds bounds1();
+	public PardinusBounds bounds1();
 
 	/**
 	 * Bounds of the second partition.

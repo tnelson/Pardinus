@@ -22,30 +22,39 @@
  */
 package kodkod.engine.decomp;
 
-
-import java.util.Iterator;
-
+import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
+import kodkod.engine.config.PardinusOptions;
+import kodkod.instance.Bounds;
 
 /**
+ * A problem thread that represents an integrated problem. The main difference
+ * is that a configuration is now registered.
+ * 
+ * @param <S>
+ *            The solver that will be used to handle integrated problems.
+ * 
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  */
-public class IProblem extends DProblem {
+public class IProblem<S extends AbstractSolver<? extends Bounds, ? extends PardinusOptions>>
+		extends DProblem<S> {
 
-	final public Solution config;
+	@SuppressWarnings("unused")
+	private final Solution config;
 
-	public IProblem(Solution cfg, DProblemExecutor manager) {
-		super(manager, manager.formula, manager.bounds.integrated(cfg));
-		this.config = cfg;
-	}
-	
-	public IProblem(Solution cfg, DProblemExecutor manager, Iterator<Solution> sols) {
-		super(manager, manager.formula, manager.bounds.integrated(cfg), sols);
-		this.config = cfg;
+	/**
+	 * Constructs a new integrated problem thread with a given partial solution
+	 * (configuration). Retrieves the integrated problem from the manager.
+	 * 
+	 * @param config
+	 *            the partial solution to be extended.
+	 * @param manager
+	 *            the callback manager.
+	 */
+	public IProblem(Solution config, DProblemExecutor<S> manager) {
+		super(manager, manager.formula, manager.bounds.integrated(config));
+		this.config = config;
+		assert bounds.amalgamated() != null;
 	}
 
-	public IProblem next() {
-		return new IProblem(config, executor, getIterator());
-	}
-	
 }

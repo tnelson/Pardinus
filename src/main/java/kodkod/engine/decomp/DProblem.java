@@ -25,69 +25,110 @@ package kodkod.engine.decomp;
 import java.util.Iterator;
 
 import kodkod.ast.Formula;
+import kodkod.engine.IterableSolver;
+import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
+import kodkod.engine.config.PardinusOptions;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 
 /**
- * A decomposed model finding problem.
+ * A problem thread that is to be run in a decomposed model finding procedure.
+ * 
+ * @param <S>
+ *            The solver that will be used to handle integrated problems.
+ * 
  * @author Nuno Macedo // [HASLab] decomposed model finding
  */
-public class DProblem extends Thread {
+public class DProblem<S extends AbstractSolver<? extends Bounds, ? extends PardinusOptions>>
+		extends Thread {
 
-	final private Solver solver;
-	
+	private final S solver;
+
 	private Iterator<Solution> solutions;
 	private Solution solution;
-	final public Bounds bounds;
-	final public Formula formula;
-	final public DProblemExecutor executor;
+	protected final PardinusBounds bounds;
+	private final Formula formula;
+	protected final DProblemExecutor<S> manager;
 
-	public DProblem(DProblemExecutor executor, Formula formula, Bounds bnds) {
-		this.executor = executor;
-		if (this.executor != null) {
-			solver = executor.solver2;
-			this.bounds = bnds;
-			this.formula = formula;
-		} else {
-			this.solver = null;
-			this.formula = null;
-			this.bounds = null;
-		}
+	/**
+	 * Constructs a new problem thread, that will callback the decomposed model
+	 * solving manager. Retrieves the problem from the manager.
+	 * 
+	 * @param manager
+	 *            the callback manager.
+	 */
+	public DProblem(DProblemExecutor<S> manager) {
+		this(manager,manager.formula,manager.bounds.amalgamated());
+		assert bounds.amalgamated() == null;
 	}
 
-	protected DProblem(DProblemExecutor manager, Formula formula, Bounds bnds, Iterator<Solution> sols) {
-		this.executor = manager;
-		this.solver = manager.solver2;
+	
+	/**
+	 * Constructs a new problem thread, that will callback the decomposed model
+	 * solving manager.
+	 * 
+	 * @param manager
+	 *            the callback manager.
+	 * @param formula
+	 *            the formula of the problem.
+	 * @param bounds
+	 *            the bounds of the problem.
+	 */
+	protected DProblem(DProblemExecutor<S> manager, Formula formula,
+			PardinusBounds bounds) {
+		this.manager = manager;
+		this.solver = manager.solver_integrated;
+		this.bounds = bounds;
+		if (bounds instanceof PardinusBounds)
+			((PardinusBounds) this.bounds).resolve();
+		this.formula = formula;
+	}
+
+	/**
+	 * 
+	 * @param manager
+	 * @param formula
+	 * @param bnds
+	 * @param sols
+	 */
+	DProblem(DProblemExecutor<S> manager, Formula formula,
+			PardinusBounds bnds, Iterator<Solution> sols) {
+		this.manager = manager;
+		this.solver = manager.solver_integrated;
 		this.bounds = bnds;
 		this.formula = formula;
 		this.solutions = sols;
 	}
-	
+
 	public void run() {
-		if (solutions == null) {
-			solutions = solver.solveAll(formula,bounds);
+		if (solver instanceof IterableSolver<?, ?>) {
+			if (solutions == null) {
+				solutions = ((IterableSolver) solver).solveAll(formula, bounds);
+				solver.free();
+			}
+			if (solutions!=null)
+				solution = solutions.next();
+		} else {
+			solution = ((AbstractSolver) solver).solve(formula, bounds);
 			solver.free();
 		}
-		solution = solutions.next();
-		executor.end(this);
+		manager.end(this);
 	}
 
 	public boolean sat() {
 		return solution.sat();
 	}
-	
-	public DProblem next() {
-		return new DProblem(executor, formula, bounds, solutions);
+
+	public DProblem<S> next() {
+		if (solutions.hasNext())
+			return this;
+	    else
+			return null;
 	}
 
 	public Solution getSolution() {
-		if (solution == null && solutions.hasNext()) solution = solutions.next();
 		return solution;
 	}
-	
-	protected Iterator<Solution> getIterator() {
-		return solutions;
-	}
-	
+
 }

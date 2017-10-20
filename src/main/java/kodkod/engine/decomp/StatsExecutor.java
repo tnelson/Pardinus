@@ -29,11 +29,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
+import kodkod.engine.ExtendedSolver;
+import kodkod.engine.KodkodSolver;
+import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.config.Options;
+import kodkod.engine.config.PardinusOptions;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
-import kodkod.instance.DecompBounds;
+import kodkod.instance.PardinusBounds;
 
 /**
  * A concretization of a decomposed problem executor designed to retrieve the
@@ -57,7 +62,8 @@ public class StatsExecutor extends DProblemExecutor {
 	 *
 	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
-	public StatsExecutor(Formula formula, DecompBounds bounds, Solver solver1, Solver solver2, int n, Reporter rep) {
+	public StatsExecutor(Formula formula, PardinusBounds bounds,
+			ExtendedSolver solver1, AbstractSolver<? extends Bounds, ? extends PardinusOptions> solver2, int n, Reporter rep) {
 		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
 	}
 
@@ -82,7 +88,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 */
 	@Override
 	public void run() {
-		Iterator<Solution> configs = solver1.solveAll(formula, bounds);
+		Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
 		while (configs.hasNext() && !executor.isShutdown()) {
 			while (configs.hasNext() && problem_queue.size() < 200) {
 				Solution config = configs.next();
@@ -106,11 +112,11 @@ public class StatsExecutor extends DProblemExecutor {
 	/**
 	 * Waits until every problem terminates or there is a timeout.
 	 * 
-	 * @see kodkod.engine.decomp.DProblemExecutor#waitUntil()
+	 * @see kodkod.engine.decomp.DProblemExecutor#next()
 	 */
-	public Solution waitUntil() throws InterruptedException {
+	public Solution next() throws InterruptedException {
 		boolean timeout = executor.awaitTermination(3, TimeUnit.HOURS);
-		monitor.done(timeout);
+		monitor.gotNext(timeout);
 		return null;
 	}
 

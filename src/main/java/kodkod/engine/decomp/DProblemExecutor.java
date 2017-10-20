@@ -27,31 +27,46 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import kodkod.ast.Formula;
+import kodkod.engine.ExtendedSolver;
+import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
-import kodkod.instance.DecompBounds;
-
+import kodkod.engine.config.PardinusOptions;
+import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 
 /**
- * An executor that effectively handles a decomposed model finding problem problem,
- * defined by a pair of bounds, a pair of formulas and the solver that will be launched
- * in parallel. It is also defined by the number of threads that will be launched.
+ * An executor that effectively handles a decomposed model finding problem
+ * problem, defined by a pair of bounds, a pair of formulas and the solver that
+ * will be launched in parallel. It is also defined by the number of threads
+ * that will be launched.
  * 
+ * While the partial problem is expected to be solved by a Kodkod solver
+ * (iteration, symmetry breaking), the integrated problem may be tackled by
+ * different (possibly unbounded) solvers.
+ * 
+ * @param <S>
+ *            The solver that will be used to handle integrated problems.
+ *
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  */
-abstract public class DProblemExecutor extends Thread {
+abstract public class DProblemExecutor<S extends AbstractSolver<? extends Bounds, ? extends PardinusOptions>>
+		extends Thread {
 
 	/** the decomposed problem bounds */
-	protected final DecompBounds bounds;
-	
+	protected final PardinusBounds bounds;
+
 	/** the decomposed problem formulas */
 	protected final Formula formula;
 
-	/** the underlying regular solver */
-	protected final Solver solver1, solver2;
+	/** the underlying solvers */
+	protected final ExtendedSolver solver_partial;
+	protected final S solver_integrated;
 
-	/** the executor managing the launching of the threads 
-	 * TODO: replace by new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue) to manage LIFO
+	/**
+	 * the executor managing the launching of the threads
+	 * 
+	 * TODO: replace by new ThreadPoolExecutor(corePoolSize, maximumPoolSize,
+	 * keepAliveTime, unit, workQueue) to manage LIFO
 	 */
 	public final ExecutorService executor;
 
@@ -59,31 +74,45 @@ abstract public class DProblemExecutor extends Thread {
 	public final DMonitor monitor;
 
 	/**
-	 * Constructs an effective decomposed problem executor for a decomposed model finding problem
-	 * and the number of desired parallel solvers.
+	 * Constructs an effective decomposed problem executor for a decomposed
+	 * model finding problem and the number of desired parallel solvers.
 	 * 
-	 * @param f1 the partial problem formula.
-	 * @param f2 the remainder problem formula.
-	 * @param b1 the partial problem bounds.
-	 * @param b2 the remainder problem bounds.
-	 * @param solver the solver that will solve the integrated problems.
-	 * @param n the number of parallel solver threads.
+	 * The formula and bounds will only be decomposed by a slicer further down
+	 * the process.
+	 * 
+	 * TODO: allow the slicer to be parameterized.
+	 * 
+	 * @param rep
+	 *            a monitor for the decomposed process.
+	 * @param formula
+	 *            the formula to be solved.
+	 * @param bounds
+	 *            the bounds of the problem.
+	 * @param solver1
+	 *            the solver for the partial problem.
+	 * @param solver2
+	 *            the solver for the integrated problem.
+	 * @param n
+	 *            the number of solver threads.
 	 */
-	public DProblemExecutor(DMonitor rep, Formula formula, DecompBounds bounds, Solver solver1, Solver solver2, int n) {
+	DProblemExecutor(DMonitor rep, Formula formula, PardinusBounds bounds, 
+			ExtendedSolver solver1, S solver2, int n) {
 		this.formula = formula;
-		this.bounds = bounds; 
-		this.solver1 = solver1;
-		this.solver2 = solver2;
+		this.bounds = bounds;
+		this.solver_partial = solver1;
+		this.solver_integrated = solver2;
 		this.executor = Executors.newFixedThreadPool(n);
 		this.monitor = rep;
 	}
-	
+
 	/**
-	 * Called by one of the parallel integrated model finders when finished solving.
+	 * Called by one of the parallel integrated model finders when finished
+	 * solving.
 	 * 
-	 * @param sol the solution calculated by the caller.
+	 * @param sol
+	 *            the solution calculated by the caller.
 	 */
-	public abstract void end(DProblem sol);
+	public abstract void end(DProblem<S> sol);
 
 	/**
 	 * Starts the solving process.
@@ -91,23 +120,30 @@ abstract public class DProblemExecutor extends Thread {
 	public abstract void run();
 
 	/**
-	 * Waits until the executor terminates.
-	 * @return
-	 * @throws InterruptedException if interrupted while waiting.
+	 * Calculates the next solution. May block until a solution is calculated by
+	 * an integrated problem.
+	 * 
+	 * @return the solution found.
+	 * @throws InterruptedException
+	 *             if interrupted while waiting.
 	 */
-	public abstract Solution waitUntil() throws InterruptedException;
+	public abstract Solution next() throws InterruptedException;
 
 	/**
+	 * Tests whether there are further solutions. May block if there is no
+	 * solution in the queue and there are still running integrated problems.
 	 * 
-	 * @return
+	 * @return whether there are further solutions.
 	 * @throws InterruptedException
+	 *             if interrupted while waiting.
 	 */
 	public abstract boolean hasNext() throws InterruptedException;
 
 	/**
 	 * Terminates the thread executor and the running solvers.
 	 * 
-	 * @throws InterruptedException if interrupted while waiting.
+	 * @throws InterruptedException
+	 *             if interrupted while waiting.
 	 */
 	public void terminate() throws InterruptedException {
 		if (!executor.isShutdown())
