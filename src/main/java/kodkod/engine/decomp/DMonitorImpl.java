@@ -30,127 +30,170 @@ import kodkod.engine.Statistics;
 import kodkod.engine.config.Reporter;
 
 /**
+ * An implementation of a monitor that logs and reports the progress of a
+ * decomposed model finding procedure using a regular Kodkod reporter.
  * 
  * @author Nuno Macedo // [HASLab] decomposed model finding
  */
 public class DMonitorImpl implements DMonitor {
 
+	private final Reporter rep;
+	
+	private int configs = 0;
 	private long config_times = -1;
 	private Statistics config_stats = null;
+	private boolean configs_done = false;
 
-	private boolean finished = false;
 	private long sats = 0;
 	private long vars = 0;
 	private long clauses = 0;
-	
-	protected final List<DProblem> solutions = new ArrayList<DProblem>();
-	private int configs = 0;
-	private boolean amalgamated_solution = false;
-	private final Reporter rep;
+	private final List<DProblem<?>> solutions = new ArrayList<DProblem<?>>();
+	private boolean amalgamated_won = false;
 
+	/**
+	 * Constructs a new decomposed solving monitor that reports through a Kodkod
+	 * reporter.
+	 * 
+	 * @param rep
+	 *            the reporter.
+	 */
 	public DMonitorImpl(Reporter rep) {
 		this.rep = rep;
 	}
-	
-	/* (non-Javadoc)
-	 * @see kodkod.pardinus.DReporterI#newConfig(kodkod.engine.Solution)
+
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public synchronized void newConfig(Solution config) {
+		// first config, get stats and translation time
 		if (config_times < 0) {
-			config_times = config.stats().translationTime();
 			config_stats = config.stats();
+			config_times = config.stats().translationTime();
 		}
 		config_times += config.stats().solvingTime();
-		configs ++;
-		rep.solvingConfig(config);
+		configs++;
+		rep.debug("Config: "+configs+" "+config.outcome().toString()+"; "+ config.instance().relationTuples().toString());
 	}
 
-	/* (non-Javadoc)
-	 * @see kodkod.pardinus.DReporterI#newSolution(kodkod.pardinus.DSolution)
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized void newSolution(DProblem sol) {
-    	solutions.add(sol);
-		if (sol.sat()) sats++;
+	public Statistics getConfigStats() {
+		return config_stats;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public long getConfigTimes() {
+		return config_times;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isConfigsDone() {
+		return configs_done;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public long getNumConfigs() {
+		return configs;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void configsDone() {
+		rep.debug("Config: "+"Done");
+		configs_done = true;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public synchronized void newSolution(DProblem<?> sol) {
+		solutions.add(sol);
+		if (sol.sat()) {
+			sats++;
+			rep.debug("Solution: "+sats+" "+sol.getSolution().outcome());
+		} else {
+			rep.debug("Solution: "+sol.getSolution().outcome());
+		}
 		vars += sol.getSolution().stats().primaryVariables();
 		clauses += sol.getSolution().stats().clauses();
 	}
-	
-	/* (non-Javadoc)
-	 * @see kodkod.pardinus.DReporterI#getSats()
+
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public long getNumSATs() {
 		return sats;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public long getNumRuns() {
+		return solutions.size();
+	}
 	
-	/* (non-Javadoc)
-	 * @see kodkod.pardinus.DReporterI#getVars()
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public long getTotalVars() {
 		return vars;
 	}
-	
-	/* (non-Javadoc)
-	 * @see kodkod.pardinus.DReporterI#getClauses()
+
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public long getTotalClauses() {
 		return clauses;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public void configsDone() {
-		finished = true;
-	}
+	public void gotNext(boolean timeout) {}
 
-	@Override
-	public void done(boolean timeout) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void terminated(boolean timeout) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public long getNumRuns() {
-		return solutions.size();
-	}
-
-	@Override
-	public Statistics getConfigStats() {
-		return config_stats;
-	}
-
-	@Override
-	public long getConfigTimes() {
-		return config_times;
-	}
-
-	@Override
-	public boolean isConfigsDone() {
-		return finished;
-	}
-
-	@Override
-	public long getNumConfigs() {
-		return configs;
-	}
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void amalgamatedWon() {
-		amalgamated_solution  = true;
+		rep.debug("Amalgamated: "+"Done");
+		amalgamated_won = true;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isAmalgamated() {
-		return amalgamated_solution;
+		return amalgamated_won;
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void terminated(boolean timeout) {
+		rep.debug("Solving: "+"Done");
+	}
+
 }

@@ -24,39 +24,127 @@ package kodkod.engine.decomp;
 
 import kodkod.engine.Solution;
 import kodkod.engine.Statistics;
+
 /**
- * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
+ * A monitor that logs and reports the progress of a decomposed model finding
+ * procedure.
+ * 
+ * @author Nuno Macedo // [HASLab] decomposed model finding
  */
 public interface DMonitor {
 
+	/**
+	 * Reports that a new partial solution (configuration) was found.
+	 * 
+	 * @param config
+	 *            the new found configuration.
+	 */
 	public void newConfig(Solution config);
 
-	public void newSolution(DProblem sol);
-
-	public long getNumSATs();
-
-	public long getTotalVars();
-
-	public long getTotalClauses();
-
-	public void configsDone();
-
-	public boolean isConfigsDone();
-
-	public void done(boolean timeout);
-
-	public void terminated(boolean timeout);
-
-	public long getNumRuns();
-
+	/**
+	 * The number of configurations generated in the decomposed solving process
+	 * so far.
+	 * 
+	 * @return the number of generated configurations.
+	 */
 	public long getNumConfigs();
 
+	/**
+	 * The stats of the partial problem used to generate partial solutions
+	 * (configurations). Only available after one configuration has been
+	 * generated.
+	 * 
+	 * @return the statistics of the partial problem.
+	 */
 	public Statistics getConfigStats();
 
+	/**
+	 * The accumulated time spent generating partial solutions (configurations).
+	 * The translation is counted only once.
+	 * 
+	 * @return the time spent generating configurations.
+	 */
 	public long getConfigTimes();
 
+	/**
+	 * Reports that every partial solution (configuration) has been generated.
+	 */
+	public void configsDone();
+
+	/**
+	 * Whether every partial solution (configuration) has been generated (but
+	 * not necessarily solved).
+	 * 
+	 * @return whether every configuration was generated.
+	 */
+	public boolean isConfigsDone();
+
+	/**
+	 * Reports that a new full solution was found.
+	 * 
+	 * @param sol
+	 *            the new found solution.
+	 */
+	public void newSolution(DProblem<?> sol);
+
+	/**
+	 * Reports that a new next command was processed, and whether it was
+	 * successful or timed out.
+	 * 
+	 * @param timeout
+	 *            whether the next procedure timed out.
+	 */
+	public void gotNext(boolean timeout);
+
+	/**
+	 * The number of SAT solutions found so far.
+	 * 
+	 * @return the number of SAT solutions.
+	 */
+	public long getNumSATs();
+
+	/**
+	 * The number of integrated problems analyzed (i.e., that have already
+	 * terminated) in the decomposed solving process so far. Not necessarily SAT.
+	 * 
+	 * @return the number of analyzed integrated problems.
+	 */
+	public long getNumRuns();
+
+	/**
+	 * The number of SAT variables solved so far.
+	 * 
+	 * @return the number of SAT variables.
+	 */
+	public long getTotalVars();
+
+	/**
+	 * The number of SAT clauses solved so far.
+	 * 
+	 * @return the number of SAT clauses.
+	 */
+	public long getTotalClauses();
+
+	/**
+	 * Reports that the amalgamated (batch) problem finished before any
+	 * integrated problem.
+	 */
 	public void amalgamatedWon();
 
+	/**
+	 * Whether the amalgamated (batch) problem finished first.
+	 * 
+	 * @return whether the amalgamated problem finished first.
+	 */
 	public boolean isAmalgamated();
+
+	/**
+	 * Reports that the decomposed solving process terminated, and whether it
+	 * was successful or timed out.
+	 * 
+	 * @param timeout
+	 *            whether the process timed out.
+	 */
+	public void terminated(boolean timeout);
 
 }
