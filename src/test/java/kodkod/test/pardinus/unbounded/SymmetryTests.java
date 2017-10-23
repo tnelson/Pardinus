@@ -158,13 +158,13 @@ public class SymmetryTests {
 	@Parameters(name = "{0} {1}")
 	public static Collection<Object[]> data() {
 		Object[][] data = new Object[][] {
-				{ VariantBounds.V1, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
+//				{ VariantBounds.V1, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
 //				{ VariantBounds.V2, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  asymmetric b2
 //				{ VariantBounds.V3, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
 //				{ VariantBounds.V4, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
 //				{ VariantBounds.V5, VariantFormulas.V1 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
 //				{ VariantBounds.V6, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
-//				{ VariantBounds.V1, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V1, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
 //				{ VariantBounds.V2, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
 //				{ VariantBounds.V3, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
 //				{ VariantBounds.V4, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
@@ -199,8 +199,7 @@ public class SymmetryTests {
 		opt.setRunDecomposed(true);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		dsolver = new PardinusSolver(opt);
-		final PardinusBounds bounds = model.bounds1();
-		bounds.merge(model.bounds2());
+		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),model.bounds2());
 		final Formula formula = model.partition1().and(model.partition2());
 		Solution sol;
 		

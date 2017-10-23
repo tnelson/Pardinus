@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class HotelTests {
-	PardinusSolver psolver;
 	ExtendedOptions opt;
 	
 	@Before 
@@ -93,7 +92,6 @@ public class HotelTests {
 		opt.setRunTemporal(false);
 
 		opt.setReporter(rep);
-		psolver = new PardinusSolver(opt);
 	}
 	
 	@Test 
@@ -109,6 +107,8 @@ public class HotelTests {
 		opt.setSkolemDepth(-1);
 		opt.setRunDecomposed(true);
 
+		PardinusSolver psolver = new PardinusSolver(opt);
+		
 		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
@@ -120,6 +120,7 @@ public class HotelTests {
 		
 		assertEquals(model.shortName()+": SAT", solution.sat(), true);
 		assertEquals(model.shortName()+": #Configs", configs, 20);
+		
 	}
 	
 	@Test 
@@ -139,6 +140,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -165,6 +168,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -190,7 +195,9 @@ public class HotelTests {
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
-		
+
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -218,6 +225,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -245,6 +254,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -260,7 +271,7 @@ public class HotelTests {
 		int n = 3;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setDecomposedMode(DMode.HYBRID);
+		opt.setDecomposedMode(DMode.HYBRID);
 		
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -272,6 +283,8 @@ public class HotelTests {
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
+
+		PardinusSolver psolver = new PardinusSolver(opt);
 
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
@@ -290,7 +303,7 @@ public class HotelTests {
 		int n = 4;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setDecomposedMode(DMode.HYBRID);
+		opt.setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -303,6 +316,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -320,7 +335,7 @@ public class HotelTests {
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.INTERVENES;
-		psolver.options().setDecomposedMode(DMode.HYBRID);
+		opt.setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -332,6 +347,8 @@ public class HotelTests {
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
+
+		PardinusSolver psolver = new PardinusSolver(opt);
 
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
@@ -350,7 +367,7 @@ public class HotelTests {
 		int n = 3;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setDecomposedMode(DMode.HYBRID);
+		opt.setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -363,6 +380,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -380,7 +399,7 @@ public class HotelTests {
 		int n = 4;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setDecomposedMode(DMode.HYBRID);
+		opt.setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -393,6 +412,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
@@ -410,7 +431,7 @@ public class HotelTests {
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
-		psolver.options().setDecomposedMode(DMode.HYBRID);
+		opt.setDecomposedMode(DMode.HYBRID);
 
 		String[] args = new String[]{n+"",t+"",v1.name()};
 		DModel model = new HotelP(args);
@@ -423,6 +444,8 @@ public class HotelTests {
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 		
+		PardinusSolver psolver = new PardinusSolver(opt);
+
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
