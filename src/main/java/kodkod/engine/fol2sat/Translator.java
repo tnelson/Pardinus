@@ -441,10 +441,7 @@ public final class Translator {
 					pbounds.amalgamated().resolve();
 					pbounds.amalgamated().relations().retainAll(annotated_.relations());
 					if (!annotated_.usesInts()) pbounds.amalgamated().ints().clear();
-					if (!pbounds.integrated)
-						actual = slices.getKey();
-					else 
-						actual = slices.getValue();
+					actual = pbounds.integrated()?slices.getValue():slices.getKey();
 				} else {
 					actual = originalFormula;
 				}
@@ -604,10 +601,11 @@ public final class Translator {
 			return toCNF((BooleanFormula)factory.accumulate(circuit), interpreter, log);
 		} else {
 			final BooleanValue circuit = (BooleanValue)FOL2BoolTranslator.translate(annotated, interpreter);
+			BooleanValue x = breaker.generateSBP(interpreter, options); // [HASLab] for Electrod we need symmetries even when trivial
 			if (circuit.op()==Operator.CONST) { 
 				return trivial((BooleanConstant)circuit, null, bounds.relations());
 			} 
-			return toCNF((BooleanFormula)factory.and(circuit, breaker.generateSBP(interpreter, options)), interpreter, null);
+			return toCNF((BooleanFormula)factory.and(circuit, x), interpreter, null);
 		}
 	}
 	
