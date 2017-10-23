@@ -34,9 +34,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.rmi.CORBA.Tie;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.xml.sax.SAXException;
 
 import kodkod.ast.Formula;
@@ -64,7 +61,7 @@ import kodkod.instance.TemporalInstance;
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  *
  */
-public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, TemporalSolver<ExtendedOptions>, IterableSolver<PardinusBounds, ExtendedOptions> {
+public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, TemporalSolver<ExtendedOptions> {
 
 	private final ExtendedOptions options;
 
@@ -141,13 +138,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 	public void free() {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Deprecated
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
-		Set<Solution> s = new HashSet<Solution>();
-		s.add(solve(formula,bounds));
-		return s.iterator();
 	}
 
 }
