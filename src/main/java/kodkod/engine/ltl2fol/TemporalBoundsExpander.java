@@ -47,7 +47,6 @@ import kodkod.instance.Universe;
  */
 public class TemporalBoundsExpander {
 
-
 	/**
 	 * Create a new universe by duplicating the original one and creating a
 	 * given number of {@link TemporalTranlator#STATE time} atoms.
@@ -59,7 +58,7 @@ public class TemporalBoundsExpander {
 	 * @return a new universe with the atoms of the original one plus the time
 	 *         ones.
 	 */
-	static Universe createUniverse(PardinusBounds oldBounds, int numberOfTimes) {
+	static private Universe createUniverse(PardinusBounds oldBounds, int numberOfTimes) {
 		List<Object> newAtoms = new ArrayList<Object>();
 		Iterator<Object> it = oldBounds.universe().iterator();
 		while (it.hasNext()) {
@@ -81,7 +80,7 @@ public class TemporalBoundsExpander {
 	 *            the existing tuple set
 	 * @return the converted tuple set
 	 */
-	private static TupleSet convert(TupleSet ts, Universe newUniverse) {
+	static private TupleSet convert(TupleSet ts, Universe newUniverse) {
 		TupleSet tupleSet = newUniverse.factory().noneOf(ts.arity());
 		Iterator<Tuple> itr = ts.iterator();
 		while (itr.hasNext()) {
@@ -95,16 +94,24 @@ public class TemporalBoundsExpander {
 		return tupleSet;
 	}
 
+	
 	/**
 	 * Expands the old bounds by converting the bounds over variable relations
 	 * into regular bounds with {@link TemporalTranslator#STATE temporal} atoms
 	 * appended. It also bounds the constant variables representing the trace.
 	 * 
-	 * @param bounds the bounds with variable relations to be expanded.
-	 * @param traceLength The number of distinguished states in the trace.
+	 * @param bounds
+	 *            the bounds with variable relations to be expanded.
+	 * @param traceLength
+	 *            The number of distinguished states in the trace.
 	 * @return
 	 */
-	public static PardinusBounds expand(PardinusBounds bounds, int traceLength, Universe u) {
+	public static PardinusBounds expand(PardinusBounds bounds, int traceLength) {
+		Universe u = createUniverse(bounds, traceLength);
+		return expand(bounds, traceLength, u);
+	}
+
+	private static PardinusBounds expand(PardinusBounds bounds, int traceLength, Universe u) {
 		PardinusBounds newBounds = new PardinusBounds(u);
 		TupleSet tupleSetTime = u.factory().range(
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + "0" }),
@@ -138,10 +145,6 @@ public class TemporalBoundsExpander {
 			PardinusBounds newAmalg = expand(bounds.amalgamated(), traceLength, u);
 			newBounds = new PardinusBounds(newBounds,newAmalg);
 		}
-		
-		newBounds.integrated = bounds.integrated;
-		newBounds.trivial_config = bounds.trivial_config;
-		newBounds.setLoop(bounds.loop());
 		
 		return newBounds;
 	}
