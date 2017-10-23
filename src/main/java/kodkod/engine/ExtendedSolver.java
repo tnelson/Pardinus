@@ -261,7 +261,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 					// [HASLab] if integrated problem, then fixed bounds (from the configuration) must also be part 
 					// of the disjunction (i.e., some a || some r || some b || some s).
 					// [HASLab] TODO: ambiguous if the integrated problem had fixed bounds itself; does it affect soundness??
-					if (lower != bounds.upperBound(r) || (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).integrated)) { 
+					if (lower != bounds.upperBound(r) || (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).integrated())) { 
 						// r may change
 						if (lower.isEmpty()) { 
 							changes.add(r.some());
@@ -278,7 +278,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				// variable must occur in the formula, otherwise it will be disregarded by the 
 				// symmetry breaker.
 				List<Formula> changes2 = new ArrayList<Formula>();
-				if (bounds instanceof PardinusBounds && !((PardinusBounds) bounds).integrated && ((PardinusBounds)bounds).amalgamated() != null)  {
+				if (bounds instanceof PardinusBounds && !((PardinusBounds) bounds).integrated() && ((PardinusBounds)bounds).amalgamated() != null)  {
 					for(Relation r : ((PardinusBounds) bounds).amalgamated().relations()) {
 						final TupleSet lower = ((PardinusBounds) bounds).amalgamated().lowerBound(r); 
 						if (lower.isEmpty()) { 

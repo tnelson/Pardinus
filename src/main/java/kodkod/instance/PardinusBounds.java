@@ -95,7 +95,7 @@ public class PardinusBounds extends Bounds {
 
 	/* Decomposed bounds */
 
-	public boolean integrated;
+	private boolean integrated;
 	private PardinusBounds amalgamated;
 	public boolean trivial_config;
 
@@ -163,7 +163,7 @@ public class PardinusBounds extends Bounds {
 	/**
 	 * Constructor for decomposed bounds. The first is the partial problem
 	 * (which will be encoded in this) and the second is amalgamated with the
-	 * first in amalgamated.
+	 * first in amalgamated. Non-mergeable data is selected from <partial>.
 	 * 
 	 * @param partial
 	 * @param remainder
@@ -173,7 +173,7 @@ public class PardinusBounds extends Bounds {
 				.upperBounds(), partial.lowers_trace, partial.uppers_trace,
 				partial.loop(), partial.targets, partial.weights,
 				partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(),
-				null, false,false);
+				null, partial.integrated, partial.trivial_config);
 
 		// TODO: trace bounds are not being correctly assigned
 		
@@ -406,9 +406,15 @@ public class PardinusBounds extends Bounds {
 		return amalgamated;
 	}
 
+	public boolean integrated() {
+		return integrated;
+	}
+	
 	public PardinusBounds integrated(Solution sol) {
 		if (integrated)
-			throw new IllegalAccessError("Can't");
+			throw new IllegalArgumentException("Already integrated.");
+		if (amalgamated == null)
+			throw new IllegalArgumentException("Not decomposed bounds.");
 
 		PardinusBounds integrated = amalgamated.clone();
 
@@ -720,6 +726,7 @@ public class PardinusBounds extends Bounds {
 
 	/**
 	 * Merges the information of another Bounds object into <this>.
+	 * Non-mergeable data is overridden.
 	 * 
 	 * @param bounds
 	 *            the bounds to be merged.
@@ -743,7 +750,10 @@ public class PardinusBounds extends Bounds {
 				if (bnds.weight(r) != null)
 					this.setWeight(r, bnds.weight(r));
 			}
-			symbolic.merge(bnds.symbolic);
+			this.symbolic.merge(bnds.symbolic);
+			this.integrated = bnds.integrated;
+			this.loop = bnds.loop;
+			this.trivial_config = bnds.trivial_config;
 		}	
 	}
 

@@ -74,7 +74,7 @@ public class DecompFormulaSlicer {
 			PardinusBounds bounds) {
 		Set<Relation> partials = bounds.relations();
 		partials.addAll(bounds.relationsSymb());
-		if (bounds.integrated) {
+		if (bounds.integrated()) {
 			Set<Relation> aux = new HashSet<Relation>();
 			for (Relation r : partials)
 				if (bounds.lowerBound(r).size() == bounds.upperBound(r).size())
@@ -113,13 +113,12 @@ public class DecompFormulaSlicer {
 		} else if (f1 instanceof NaryFormula
 				&& ((NaryFormula) f1).op() == FormulaOperator.AND) {
 			Iterator<Formula> it = ((NaryFormula) f1).iterator();
-			f1 = it.next();
-			Formula aux = Formula.TRUE;
+			Formula aux = null;
 			while (it.hasNext()) {
 				Formula f = it.next();
 				Set<Relation> rs = f.accept(col);
 				if (partials.containsAll(rs))
-					aux = aux.and(f);
+					aux = aux==null?f:aux.and(f);
 				else
 					f2 = f2.and(f);
 			}
