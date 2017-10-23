@@ -27,7 +27,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
+import javax.rmi.CORBA.Tie;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
@@ -57,7 +64,7 @@ import kodkod.instance.TemporalInstance;
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  *
  */
-public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, TemporalSolver<ExtendedOptions> {
+public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, TemporalSolver<ExtendedOptions>, IterableSolver<PardinusBounds, ExtendedOptions> {
 
 	private final ExtendedOptions options;
 
@@ -97,11 +104,14 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 		try {
 			String electrode = ElectrodProblemPrinter.print(null, formula, bounds);
 			PrintWriter writer;
-			writer = new PrintWriter("electrod.elo", "UTF-8");
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+			Date date = new Date();
+			String file = "electrod"+dateFormat.format(date)+".elo";
+			writer = new PrintWriter(file, "UTF-8");
 			writer.println(electrode);
 			writer.close();
-//			Runtime.getRuntime().exec("electrod electrode.elo").waitFor();
-			TemporalInstance res = ElectrodProblemReader.read(bounds, new File("electrod.xml"));
+//			Runtime.getRuntime().exec("electrod "+file).waitFor();
+//			TemporalInstance res = ElectrodProblemReader.read(bounds, new File("electrod.xml"));
 			
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
@@ -112,12 +122,15 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+//		} catch (ParserConfigurationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (SAXException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
 		}
 		return Solution.unsatisfiable(null, null);
 	}
@@ -128,6 +141,13 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 	public void free() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Deprecated
+	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+		Set<Solution> s = new HashSet<Solution>();
+		s.add(solve(formula,bounds));
+		return s.iterator();
 	}
 
 }
