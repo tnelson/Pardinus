@@ -104,15 +104,14 @@ public class ElectrodProblemPrinter {
 			}
 
 			@Override
-			public void debug(String debug) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void debug(String debug) {}
 		};
 		
 		opt.setReporter(reporter);
 		Bounds b = config!=null?bounds.integrated(config):bounds;
-		Translator.translate(formula, b, opt);
+		try {
+		Translator.translate(Expression.NONE.some().or(Expression.NONE.no()), b, opt);
+		} catch (Exception e) {}
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));
 		sb.append(printBounds((b)));
