@@ -344,13 +344,14 @@ final class SymmetryBreaker {
 	 * At the config stage, it suffices to check the stage bounds; at the integrated
 	 * stage we need to check if the relation is fixed at the stage bounds. Note that
 	 * relations that are fixed in the general bounds are already filtered by relParts.
+	 * 
 	 * @param stage_bounds
 	 * @param r
 	 * @return
 	 */
 	// [HASLab]
 	private boolean isConfigStage(Relation r) {
-		if ((stage_bounds instanceof PardinusBounds) && (((PardinusBounds) stage_bounds).integrated))
+		if ((stage_bounds instanceof PardinusBounds) && (((PardinusBounds) stage_bounds).integrated()))
 			return stage_bounds.relations().contains(r)
 					&& stage_bounds.lowerBound(r).size() == stage_bounds.upperBound(r).size();
 		else
