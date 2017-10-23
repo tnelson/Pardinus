@@ -180,6 +180,25 @@ public class PardinusBounds extends Bounds {
 		this.amalgamated = partial.clone();
 		this.amalgamated.merge(remainder);
 	}
+	
+	public PardinusBounds(PardinusBounds partial, boolean x) {
+		this(partial.universe().factory(), new HashMap<Relation, TupleSet>(), new HashMap<Relation, TupleSet>(), 
+				new ArrayList<Map<VarRelation, TupleSet>>(), new ArrayList<Map<VarRelation, TupleSet>>(),
+				0, partial.targets, partial.weights,
+				partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(),
+				null, partial.integrated, partial.trivial_config);
+
+		current = 0;
+		add();
+		
+		for (Relation r : partial.relations())
+			if (!(r instanceof VarRelation))
+				this.bound(r,partial.lowerBound(r),partial.upperBound(r));
+		
+		// TODO: trace bounds are not being correctly assigned
+		
+		this.amalgamated = partial.clone();
+	}
 
 	/**
 	 * Exactly bounds a relation with a given tuple set in the next position of
@@ -1019,6 +1038,10 @@ public class PardinusBounds extends Bounds {
 					unmodifiableMap(dereif), 
 					unmodifiableMap(deps));
 		}
+	}
+
+	public void slice() {
+		
 	}
 
 }
