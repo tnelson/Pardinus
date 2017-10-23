@@ -742,7 +742,6 @@ public class PardinusBounds extends Bounds {
 				for (VarRelation r : bnds.relationsVars().get(i))
 					this.bound(r, bnds.lowers_trace.get(i).get(r),
 							bnds.uppers_trace.get(i).get(r));
-				this.add();
 			}
 			for (Relation r : bounds.relations()) {
 				if (bnds.target(r) != null)
