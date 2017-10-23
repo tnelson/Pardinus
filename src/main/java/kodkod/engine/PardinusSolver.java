@@ -128,8 +128,11 @@ public class PardinusSolver implements
 		} else {
 
 			if (options.temporal()) {
-				KodkodSolver<PardinusBounds,ExtendedOptions> solver;
-				solver = new TemporalPardinusSolver(options);
+				TemporalSolver<ExtendedOptions> solver;
+				if (options.unbounded())
+					solver = new ElectrodSolver(options);
+				else 
+					solver = new TemporalPardinusSolver(options);
 				return solver;
 			} else {
 				ExtendedSolver solver = new ExtendedSolver(options);
@@ -146,7 +149,7 @@ public class PardinusSolver implements
 	public Solution solve(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
-		assert (!TemporalTranslator.isTemporal(formula) && bounds.relationsVars().isEmpty()) || options.temporal();
+		assert (!TemporalTranslator.isTemporal(formula) && bounds.relationsVars().get(0).isEmpty()) || options.temporal();
 		assert !options.unbounded() || options.temporal();
 
 		return solver.solve(formula, bounds);
@@ -163,8 +166,8 @@ public class PardinusSolver implements
 		assert !options.unbounded() || options.temporal();
 		assert options.solver().incremental();
 		
-		if (!(this.solver instanceof IterableSolver))
-			throw new UnsupportedOperationException();
+//		if (!(this.solver instanceof IterableSolver))
+//			throw new UnsupportedOperationException();
 
 		return ((IterableSolver<PardinusBounds,ExtendedOptions>) solver).solveAll(formula, bounds);				
 	}
