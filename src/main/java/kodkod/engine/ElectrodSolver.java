@@ -106,19 +106,19 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			PrintWriter writer;
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-"+bounds.hashCode());
 			Date date = new Date();
-			String file = "electrod"+dateFormat.format(date)+".elo";
-			writer = new PrintWriter(file, "UTF-8");
+			String file = "electrod"+dateFormat.format(date);
+			writer = new PrintWriter(file+".elo", "UTF-8");
 			writer.println(electrode);
 			writer.close();
-//			Runtime.getRuntime().exec("electrod "+file).waitFor();
-			TemporalInstance res = ElectrodProblemReader.read(bounds, new File("electrod.xml"));
+			Runtime.getRuntime().exec("./electrod "+file+".elo").waitFor();
+			TemporalInstance res = ElectrodProblemReader.read(bounds, new File(file+".xml"));
 			
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -128,9 +128,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
 		}
 		return Solution.unsatisfiable(null, null);
 	}
