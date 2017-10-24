@@ -82,9 +82,10 @@ public class ElectrodProblemPrinter {
 			@Override
 			public void reportLex(List<Entry<Relation, Tuple>> _original,
 					List<Entry<Relation, Tuple>> _permuted) {
-				temp.append(printTupleList(_original,false));
+				String tmp = printTupleList(_original,false);
+				temp.append(tmp.substring(0,tmp.length()-1));
 				temp.append(" <= ");
-				temp.append(printTupleList(_permuted,false));
+				temp.append(printTupleList(_permuted,false).substring(1));
 				temp.append(";\n");
 			}
 			
@@ -124,7 +125,7 @@ public class ElectrodProblemPrinter {
 		StringBuilder sb = new StringBuilder("univ : { ");
 		Iterator<Object> it = universe.iterator();
 		while (it.hasNext()) {
-			sb.append(it.next());
+			sb.append(normRel(it.next().toString()));
 			sb.append(" ");
 		}
 		sb.append("};\n\n");
@@ -147,7 +148,7 @@ public class ElectrodProblemPrinter {
 
 	private static String printSymmetries(String tmp) {
 		StringBuilder sb = new StringBuilder("sym\n");
-		sb.append(tmp);
+		sb.append(normRel(tmp));
 		sb.append("\n");
 		return sb.toString();
 	}
@@ -181,8 +182,9 @@ public class ElectrodProblemPrinter {
 	}
 
 	private static String printPartialIntance(Instance config) {
-		StringBuilder sb = new StringBuilder("inst\n");
-		if (config != null)
+		StringBuilder sb = new StringBuilder();
+		if (config != null) {
+			sb.append("inst\n");
 			for (Relation r : config.relations()) {
 				sb.append(normRel(r.toString()));
 				sb.append(" = ");
@@ -190,6 +192,7 @@ public class ElectrodProblemPrinter {
 				sb.append(";\n");
 			}
 		sb.append("\n");
+		}
 		return sb.toString();
 	}
 	
@@ -233,7 +236,7 @@ public class ElectrodProblemPrinter {
 	static String printTuple(Tuple t) {
 		StringBuilder sb = new StringBuilder(" ");
 		for (int i = 0; i < t.arity(); i++) {
-			sb.append(t.atom(i));
+			sb.append(normRel(t.atom(i).toString()));
 			sb.append(" ");
 		}
 		return sb.toString();
@@ -446,7 +449,9 @@ public class ElectrodProblemPrinter {
 			// [HASLab]
 			public void visit(UnaryTempFormula node) { 
 				keyword(node.op());
+				indent++;
 				visitChild(node.formula(), parenthesize(node.op(), node.formula()));
+				indent--;
 			}
 			
 			/** @ensures appends the given op and child to this.tokens; the child is 
@@ -753,5 +758,7 @@ public class ElectrodProblemPrinter {
 	private static String normRel(String s) {
 		return s.replace("/", "##").replace(".", "#");
 	}
+	
+	//TODO: 
 }
 
