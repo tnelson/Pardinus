@@ -99,9 +99,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 	 */
 	public Solution solve(Formula formula, PardinusBounds bounds) {
 		try {
-			String electrode = ElectrodProblemPrinter.print(null, formula, bounds);
+			String electrode = ElectrodProblemPrinter.print(formula, bounds);
 			PrintWriter writer;
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-"+bounds.hashCode());
 			Date date = new Date();
 			String file = "electrod"+dateFormat.format(date)+".elo";
 			writer = new PrintWriter(file, "UTF-8");
