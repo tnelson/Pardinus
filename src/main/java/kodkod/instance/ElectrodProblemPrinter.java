@@ -48,7 +48,6 @@ import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.engine.Solution;
 import kodkod.engine.bool.BooleanFormula;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -63,7 +62,7 @@ import kodkod.util.ints.SparseSequence;
 
 public class ElectrodProblemPrinter {
 
-	public static String print(Solution config, Formula formula, PardinusBounds bounds) {
+	public static String print(Formula formula, PardinusBounds bounds) {
 		Options opt = new ExtendedOptions();
 		StringBuilder temp = new StringBuilder();
 		Reporter reporter = new Reporter() {
@@ -108,13 +107,13 @@ public class ElectrodProblemPrinter {
 		};
 		
 		opt.setReporter(reporter);
-		Bounds b = config!=null?bounds.integrated(config):bounds;
+		Instance config = bounds.config;
 		try {
-		Translator.translate(Expression.NONE.some().or(Expression.NONE.no()), b, opt);
+		Translator.translate(Expression.NONE.some().or(Expression.NONE.no()), bounds, opt);
 		} catch (Exception e) {}
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));
-		sb.append(printBounds((b)));
+		sb.append(printBounds(bounds));
 		sb.append(printPartialIntance(config));
 		sb.append(printSymmetries(temp.toString()));
 		sb.append(printConstraint(formula));
@@ -181,13 +180,13 @@ public class ElectrodProblemPrinter {
 		return sb.toString();
 	}
 
-	private static String printPartialIntance(Solution config) {
+	private static String printPartialIntance(Instance config) {
 		StringBuilder sb = new StringBuilder("inst\n");
 		if (config != null)
-			for (Relation r : config.instance().relations()) {
+			for (Relation r : config.relations()) {
 				sb.append(r);
 				sb.append(" = ");
-				sb.append(printTupleList(config.instance().tuples(r)));
+				sb.append(printTupleList(config.tuples(r)));
 				sb.append(";\n");
 			}
 		sb.append("\n");
