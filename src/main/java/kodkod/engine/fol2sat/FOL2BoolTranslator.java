@@ -24,6 +24,7 @@ package kodkod.engine.fol2sat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +63,7 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprCompOperator;
 import kodkod.ast.operator.ExprOperator;
@@ -1089,7 +1091,12 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	
 	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanValue visit(UnaryTempFormula temporalFormula) {
-		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
+		RelationCollector col = new RelationCollector(new HashSet<Node>());
+		for (Relation r : temporalFormula.accept(col))
+			if (r instanceof VarRelation)
+				throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
+		BooleanValue ret = temporalFormula.formula().accept(this);
+		return cache(temporalFormula,ret);
 	}
 
 	// [HASLab] should be converted into standard Kodkod before FOL translation
@@ -1099,7 +1106,12 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 
 	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanMatrix visit(TempExpression temporalExpr) {
-		throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
+		RelationCollector col = new RelationCollector(new HashSet<Node>());
+		for (Relation r : temporalExpr.accept(col))
+			if (r instanceof VarRelation)
+				throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
+		BooleanMatrix ret = temporalExpr.expression().accept(this);
+		return cache(temporalExpr,ret);
 	}
 
 }
