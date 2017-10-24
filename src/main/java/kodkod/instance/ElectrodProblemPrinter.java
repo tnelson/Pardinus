@@ -160,7 +160,7 @@ public class ElectrodProblemPrinter {
 				sb.append("var ");
 			else
 				sb.append("const ");
-			sb.append(r.toString());
+			sb.append(normRel(r.toString()));
 			sb.append(" :");
 			sb.append(r.arity());
 			sb.append(" ");
@@ -184,7 +184,7 @@ public class ElectrodProblemPrinter {
 		StringBuilder sb = new StringBuilder("inst\n");
 		if (config != null)
 			for (Relation r : config.relations()) {
-				sb.append(r);
+				sb.append(normRel(r.toString()));
 				sb.append(" = ");
 				sb.append(printTupleList(config.tuples(r)));
 				sb.append(";\n");
@@ -325,7 +325,10 @@ public class ElectrodProblemPrinter {
 			
 			/*--------------LEAVES---------------*/
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
-			public void visit(Relation node) { append(node); }
+			public void visit(Relation node) { 
+				String s = String.valueOf(node);
+				append(normRel(s)); 
+			}
 
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
 			public void visit(Variable node) { append(node); }
@@ -746,5 +749,9 @@ public class ElectrodProblemPrinter {
 			}
 			
 		}
+	
+	private static String normRel(String s) {
+		return s.replace("/", "##").replace(".", "#");
+	}
 }
 
