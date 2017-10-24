@@ -99,9 +99,7 @@ public class ElectrodProblemPrinter {
 			public void detectingSymmetries(Bounds bounds) {}
 			
 			@Override
-			public void detectedSymmetries(Set<IntSet> parts) {
-				System.out.println("sym: "+parts.toString());
-			}
+			public void detectedSymmetries(Set<IntSet> parts) {}
 
 			@Override
 			public void debug(String debug) {}

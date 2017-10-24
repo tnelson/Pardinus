@@ -126,4 +126,6 @@ public class DecompFormulaSlicer {
 		}
 		return new SimpleEntry<Formula, Formula>(f1, f2);
 	}
+	
+	// TODO: temporal slicing will fail if temporal formulas over static relations
 }

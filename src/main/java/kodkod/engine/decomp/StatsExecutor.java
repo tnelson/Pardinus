@@ -30,12 +30,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
 import kodkod.engine.ExtendedSolver;
-import kodkod.engine.KodkodSolver;
 import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.config.Options;
-import kodkod.engine.config.PardinusOptions;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
@@ -47,11 +45,11 @@ import kodkod.instance.PardinusBounds;
  * 
  * @author Nuno Macedo // [HASLab] decomposed model finding
  */
-public class StatsExecutor extends DProblemExecutor {
+public class StatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> extends DProblemExecutor<S> {
 
 
 	/** the queue of solvers to be launched */
-	private final List<DProblem> problem_queue = new ArrayList<DProblem>();
+	private final List<DProblem<S>> problem_queue = new ArrayList<DProblem<S>>();
 
 	/** the number of effectively running solvers */
 	private final AtomicInteger running = new AtomicInteger(0);
@@ -63,7 +61,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
 	public StatsExecutor(Formula formula, PardinusBounds bounds,
-			ExtendedSolver solver1, AbstractSolver<? extends Bounds, ? extends PardinusOptions> solver2, int n, Reporter rep) {
+			ExtendedSolver solver1, S solver2, int n, Reporter rep) {
 		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
 	}
 
@@ -74,7 +72,7 @@ public class StatsExecutor extends DProblemExecutor {
 	 * @see kodkod.engine.decomp.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
-	public void end(DProblem sol) {
+	public void end(DProblem<S> sol) {
 		monitor.newSolution(sol);
 		running.decrementAndGet();
 	}
@@ -94,13 +92,13 @@ public class StatsExecutor extends DProblemExecutor {
 				Solution config = configs.next();
 				monitor.newConfig(config);
 				if (config.sat()) {
-					DProblem problem = new IProblem(config, this);
+					DProblem<S> problem = new IProblem<S>(config, this);
 					problem.setPriority(MIN_PRIORITY);
 					problem_queue.add(problem);
 				}
 			}
 			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
-				DProblem problem = problem_queue.remove(/* 0 */problem_queue.size() - 1);
+				DProblem<S> problem = problem_queue.remove(/* 0 */problem_queue.size() - 1);
 				executor.execute(problem);
 				running.incrementAndGet();
 			}

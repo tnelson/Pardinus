@@ -34,7 +34,6 @@ import kodkod.engine.config.PardinusOptions;
 import kodkod.engine.decomp.DProblemExecutor;
 import kodkod.engine.decomp.DProblemExecutorImpl;
 import kodkod.engine.decomp.StatsExecutor;
-import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 
@@ -117,9 +116,9 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 
 		if (options.decomposedMode() == DMode.EXHAUSTIVE)
-			executor = new StatsExecutor(formula, bounds, solver1, solver2, options.threads(), options.reporter());
+			executor = new StatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
 		else
-			executor = new DProblemExecutorImpl(options.reporter(), formula, bounds, solver1, solver2, options.threads(), options.decomposedMode() == DMode.HYBRID);
+			executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), options.decomposedMode() == DMode.HYBRID);
 		executor.start();
 		Solution sol = null;
 		try {
@@ -137,7 +136,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	 * 
 	 * @return the decomposed problem executor that solved the problem.
 	 */
-	public DProblemExecutor executor() {
+	public DProblemExecutor<S> executor() {
 		return executor;
 	}
 
@@ -155,22 +154,22 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		if (!options.configOptions().solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
-		return new DSolutionIterator(formula, bounds, options, solver1, solver2); 
+		return new DSolutionIterator<S>(formula, bounds, options, solver1, solver2); 
 	}
 	
-	private static class DSolutionIterator implements Iterator<Solution> {
-		private DProblemExecutor executor;
+	private static class DSolutionIterator<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> implements Iterator<Solution> {
+		private DProblemExecutor<S> executor;
 
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
-		DSolutionIterator(Formula formula, PardinusBounds bounds, DecomposedOptions options, ExtendedSolver solver1, AbstractSolver<? extends Bounds, ? extends PardinusOptions> solver2) {
+		DSolutionIterator(Formula formula, PardinusBounds bounds, DecomposedOptions options, ExtendedSolver solver1, S solver2) {
 			if (options.decomposedMode() == DMode.EXHAUSTIVE)
-				executor = new StatsExecutor(formula, bounds, solver1, solver2, options.threads(), options.reporter());
+				executor = new StatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
 			else if (options.decomposedMode() == DMode.HYBRID)
-				executor = new DProblemExecutorImpl(options.reporter(), formula, bounds, solver1, solver2, options.threads(), true);
+				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), true);
 			else
-				executor = new DProblemExecutorImpl(options.reporter(), formula, bounds, solver1, solver2, options.threads(), false);
+				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), false);
 			executor.start();
 		}
 		
