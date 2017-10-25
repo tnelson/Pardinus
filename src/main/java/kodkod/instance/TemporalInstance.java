@@ -58,7 +58,7 @@ public class TemporalInstance extends Instance {
 	 */
 	private final Set<VarRelation> varrelations;
 
-	private List<Instance> states;
+	public List<Instance> states;
 
 	/**
 	 * Creates a new temporal instance from a static instance that is a solution

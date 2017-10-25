@@ -82,6 +82,8 @@ public class ElectrodProblemPrinter {
 			@Override
 			public void reportLex(List<Entry<Relation, Tuple>> _original,
 					List<Entry<Relation, Tuple>> _permuted) {
+				if (_original.size()+_permuted.size()==0)
+					return;
 				String tmp = printTupleList(_original,false);
 				temp.append(tmp.substring(0,tmp.length()-1));
 				temp.append(" <= ");
@@ -145,6 +147,8 @@ public class ElectrodProblemPrinter {
 	}
 
 	private static String printSymmetries(String tmp) {
+		if (tmp.length() == 0)
+			return tmp;
 		StringBuilder sb = new StringBuilder("sym\n");
 		sb.append(normRel(tmp));
 		sb.append("\n");
@@ -753,10 +757,9 @@ public class ElectrodProblemPrinter {
 			
 		}
 	
-	private static String normRel(String s) {
+	public static String normRel(String s) {
 		return s.replace("/", "##").replace(".", "#");
 	}
 	
-	//TODO: 
 }
 
