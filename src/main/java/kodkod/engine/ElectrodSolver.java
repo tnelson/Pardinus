@@ -22,9 +22,12 @@
  */
 package kodkod.engine;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
@@ -110,15 +113,25 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			writer = new PrintWriter(file+".elo", "UTF-8");
 			writer.println(electrode);
 			writer.close();
-			Runtime.getRuntime().exec("./electrod "+file+".elo").waitFor();
-			TemporalInstance res = ElectrodProblemReader.read(bounds, new File(file+".xml"));
-			
+			String s = "./electrod -v "+file+".elo";
+			String[] p = { System.getenv("PATH")+":/usr/local/bin" };
+			InputStream is = Runtime.getRuntime().exec(s,p).getErrorStream();
+			InputStreamReader isr = new InputStreamReader(is);
+			BufferedReader buff = new BufferedReader (isr);
+			String line;
+			while((line = buff.readLine()) != null)
+			    System.out.println(line);
+
+			ElectrodProblemReader rd = new ElectrodProblemReader(bounds);
+			TemporalInstance res = rd.read(new File(file+".xml"));
+			return Solution.satisfiable(new Statistics(0, 0, 0, 0, 0), res);
+
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

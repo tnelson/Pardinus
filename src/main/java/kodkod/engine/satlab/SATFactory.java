@@ -214,9 +214,15 @@ public abstract class SATFactory {
 		final String executable = findStaticLibrary("glucose-syrup");
 		return externalFactory(executable==null ? "glucose-syrup" : executable, 
 				null, "-verb=0");
-	
 	}
-	
+
+	// [HASLab]
+	public static final SATFactory electrod() {
+		final String executable = findStaticLibrary("electrod");
+		return externalFactory(executable==null ? "electrod" : executable, 
+				null, new String[0]);
+	}
+
 	/**
 	 * The factory that produces instances of the yices solver.
 	 */

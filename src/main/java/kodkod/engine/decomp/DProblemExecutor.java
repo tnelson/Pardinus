@@ -30,8 +30,7 @@ import kodkod.ast.Formula;
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.config.PardinusOptions;
-import kodkod.instance.Bounds;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.instance.PardinusBounds;
 
 /**
@@ -49,7 +48,7 @@ import kodkod.instance.PardinusBounds;
  *
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  */
-abstract public class DProblemExecutor<S extends AbstractSolver<? extends Bounds, ? extends PardinusOptions>>
+abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOptions>>
 		extends Thread {
 
 	/** the decomposed problem bounds */

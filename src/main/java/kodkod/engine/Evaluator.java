@@ -32,6 +32,7 @@ import kodkod.engine.fol2sat.Translator;
 import kodkod.engine.ltl2fol.LTL2FOLTranslator;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Instance;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 
 /**
@@ -136,9 +137,16 @@ public final class Evaluator {
 	// [HASLab]
 	public TupleSet evaluate(Expression expression, int state){
 		if (expression == null) throw new NullPointerException("expression");
-		Expression e1 = LTL2FOLTranslator.convert(expression, state);
-		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
-		return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
+		if (instance instanceof TemporalInstance && ((TemporalInstance) instance).states != null) {
+			Instance i = ((TemporalInstance) instance).states.get(state);
+			final BooleanMatrix sol = Translator.evaluate(expression,i,options);
+			return i.universe().factory().setOf(expression.arity(), sol.denseIndices());
+		}
+		else {
+			Expression e1 = LTL2FOLTranslator.convert(expression, state);
+			final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
+			return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
+		}
 	}
 	
 	/**

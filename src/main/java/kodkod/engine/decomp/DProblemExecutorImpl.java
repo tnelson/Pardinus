@@ -133,7 +133,8 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 						running.decrementAndGet();
 					}
 					// iterate and launch
-					executor.execute(sol.next());
+					if (sol.hasNext())
+						executor.execute(sol.next());
 				}
 				// if it is unsat...
 				else {

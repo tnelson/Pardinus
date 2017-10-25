@@ -29,8 +29,6 @@ import kodkod.engine.IterableSolver;
 import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.PardinusOptions;
-import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 
 /**
@@ -121,6 +119,10 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 		return solution.sat();
 	}
 
+	public boolean hasNext() {
+		return solutions.hasNext();
+	}
+	
 	public DProblem<S> next() {
 		if (solutions.hasNext())
 			return this;
