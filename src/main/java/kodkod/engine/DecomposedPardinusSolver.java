@@ -192,7 +192,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		 * @see java.util.Iterator#next()
 		 */
 		public Solution next() {
-			if (!hasNext()) throw new NoSuchElementException();			
+			if (!hasNext()) return null;
 			try {
 				return executor.next();
 			} catch (InterruptedException e) {

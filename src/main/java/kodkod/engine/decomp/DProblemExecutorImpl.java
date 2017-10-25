@@ -135,6 +135,8 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					// iterate and launch
 					if (sol.hasNext())
 						executor.execute(sol.next());
+					else
+						running.decrementAndGet();
 				}
 				// if it is unsat...
 				else {
