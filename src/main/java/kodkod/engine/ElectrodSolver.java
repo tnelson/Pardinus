@@ -120,7 +120,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			BufferedReader buff = new BufferedReader (isr);
 			String line;
 			while((line = buff.readLine()) != null)
-			    System.out.println(line);
+			    System.err.println(line);
 
 			ElectrodProblemReader rd = new ElectrodProblemReader(bounds);
 			TemporalInstance res = rd.read(new File(file+".xml"));
