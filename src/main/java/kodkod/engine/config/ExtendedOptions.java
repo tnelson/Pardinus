@@ -57,6 +57,7 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		this.decomp_mode = options.decomp_mode;
 		this.config_options = options.config_options.clone();
 		this.trace_length = options.trace_length;
+		this.name = options.name;
 	}
 
 	// target-oriented solving
@@ -240,6 +241,7 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		c.setDecomposedMode(decomp_mode);
 		c.setConfigOptions(config_options);
 		c.setMaxTraceLength(trace_length);
+		c.name = name;
 		return c;
 	}
 
@@ -266,6 +268,23 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		b.append("\n run unbounded: ");
 		b.append(run_unbounded);
 		return b.toString();
+	}
+
+	private String name;
+	
+	@Override
+	public String uniqueName() {
+		if (name == null)
+			name = this.hashCode()+"";
+		return name;
+	}
+
+	@Override
+	public boolean setUniqueName(String name) {
+		if (this.name != null)
+			return false;
+		this.name = name;
+		return true;
 	}
 
 }

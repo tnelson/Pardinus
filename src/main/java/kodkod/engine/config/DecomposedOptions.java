@@ -109,4 +109,10 @@ public interface DecomposedOptions extends PardinusOptions {
 	 */
 	public void setConfigOptions(ExtendedOptions opt);
 
+	// TODO
+	public String uniqueName();
+
+	// TODO
+	public boolean setUniqueName(String name);
+
 }

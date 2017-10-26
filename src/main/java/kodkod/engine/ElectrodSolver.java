@@ -22,12 +22,9 @@
  */
 package kodkod.engine;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
@@ -107,9 +104,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 		try {
 			String electrode = ElectrodProblemPrinter.print(formula, bounds);
 			PrintWriter writer;
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-"+bounds.hashCode());
-			Date date = new Date();
-			String file = "electrod"+dateFormat.format(date);
+			File dir = new File(options.uniqueName());
+			if (!dir.exists()) dir.mkdir();
+			String file = dir+"/"+dir+"-"+bounds.hashCode();
 			writer = new PrintWriter(file+".elo", "UTF-8");
 			writer.println(electrode);
 			writer.close();
