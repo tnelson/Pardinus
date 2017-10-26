@@ -114,12 +114,11 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			writer.println(electrode);
 			writer.close();
 					
-			ProcessBuilder builder = new ProcessBuilder("./electrod","-v",file+".elo");
+			ProcessBuilder builder = new ProcessBuilder("electrod","-vv",file+".elo");
 			builder.redirectOutput(new File("electrod.log"));
 			builder.redirectError(new File("electrod.log"));
 			builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin");
 			System.out.println(builder.environment());
-			System.out.println(System.getenv());
 			Process p = builder.start();
 			p.waitFor();
 			
