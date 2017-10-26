@@ -113,15 +113,16 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			writer = new PrintWriter(file+".elo", "UTF-8");
 			writer.println(electrode);
 			writer.close();
-			String s = "./electrod -v "+file+".elo";
-			String[] p = { System.getenv("PATH")+":/usr/local/bin" };
-			InputStream is = Runtime.getRuntime().exec(s,p).getErrorStream();
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader buff = new BufferedReader (isr);
-			String line;
-			while((line = buff.readLine()) != null)
-			    System.err.println(line);
-
+					
+			ProcessBuilder builder = new ProcessBuilder("./electrod","-v",file+".elo");
+			builder.redirectOutput(new File("electrod.log"));
+			builder.redirectError(new File("electrod.log"));
+			builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin");
+			System.out.println(builder.environment());
+			System.out.println(System.getenv());
+			Process p = builder.start();
+			p.waitFor();
+			
 			ElectrodProblemReader rd = new ElectrodProblemReader(bounds);
 			TemporalInstance res = rd.read(new File(file+".xml"));
 			return Solution.satisfiable(new Statistics(0, 0, 0, 0, 0), res);
@@ -129,9 +130,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -139,6 +137,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
