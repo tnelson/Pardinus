@@ -117,14 +117,17 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			ProcessBuilder builder = new ProcessBuilder("electrod","-vv",file+".elo");
 			builder.redirectOutput(new File("electrod.log"));
 			builder.redirectError(new File("electrod.log"));
-			builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:i");
+			builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 			System.out.println(builder.environment());
 			Process p = builder.start();
 			p.waitFor();
 			
 			ElectrodProblemReader rd = new ElectrodProblemReader(bounds);
 			TemporalInstance res = rd.read(new File(file+".xml"));
-			return Solution.satisfiable(new Statistics(0, 0, 0, 0, 0), res);
+			if (res == null)
+				return Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
+			else
+				return Solution.satisfiable(new Statistics(0, 0, 0, 0, 0), res);
 
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
