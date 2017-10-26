@@ -118,7 +118,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			builder.redirectOutput(new File("electrod.log"));
 			builder.redirectError(new File("electrod.log"));
 			builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
-			System.out.println(builder.environment());
 			Process p = builder.start();
 			p.waitFor();
 			
