@@ -453,9 +453,6 @@ public class PardinusBounds extends Bounds {
 			}
 		}
 
-		for (Integer i : sol.instance().ints().toArray())
-			integrated.boundExactly(i, integrated.universe().factory().setOf(i));
-
 		integrated.resolve();
 
 		integrated.amalgamated = this.amalgamated;
