@@ -157,7 +157,7 @@ public class ElectrodReader {
 				List<Object> _buff = new ArrayList<Object>();
 				for (String x : buff_)
 					for (int i = 0; i < bounds.universe().size(); i++) {
-						if (bounds.universe().atom(i).toString().equals(x))
+						if (ElectrodPrinter.normRel(bounds.universe().atom(i).toString()).equals(x))
 							_buff.add(bounds.universe().atom(i));
 					}
 				buff.add(bounds.universe().factory().tuple(_buff));
