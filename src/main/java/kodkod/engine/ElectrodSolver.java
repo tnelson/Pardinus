@@ -27,13 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -117,9 +112,14 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 			Process p = builder.start();
 			p.waitFor();
+
+			// TODO: test return code of electrod and abort when failure
 			
 			ElectrodProblemReader rd = new ElectrodProblemReader(bounds);
 			TemporalInstance res = rd.read(new File(file+".xml"));
+
+			// TODO: get the stats from the header of the electrod solution
+			
 			if (res == null)
 				return Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
 			else
@@ -141,7 +141,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return Solution.unsatisfiable(null, null);
+		return Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
 	}
 
 	/**
@@ -155,8 +155,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 	@Override
 	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		Solution s = solve(formula,bounds);
-		Set<Solution> st = new HashSet<Solution>(Arrays.asList(s));
-		return st.iterator();
+		Solution[] ss = {s,Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null)};
+		return Arrays.asList(ss).iterator();
 	}
 
 }

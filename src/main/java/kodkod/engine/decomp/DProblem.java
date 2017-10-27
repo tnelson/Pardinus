@@ -84,22 +84,6 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 		this.formula = formula;
 	}
 
-	/**
-	 * 
-	 * @param manager
-	 * @param formula
-	 * @param bnds
-	 * @param sols
-	 */
-	DProblem(DProblemExecutor<S> manager, Formula formula,
-			PardinusBounds bnds, Iterator<Solution> sols) {
-		this.manager = manager;
-		this.solver = manager.solver_integrated;
-		this.bounds = bnds;
-		this.formula = formula;
-		this.solutions = sols;
-	}
-
 	public void run() {
 		if (solver instanceof IterableSolver<?, ?>) {
 			if (solutions == null) {
