@@ -219,7 +219,7 @@ public class ElectrodProblemPrinter {
 		Iterator<IndexedEntry<TupleSet>> it = intBounds.iterator();
 		while (it.hasNext()) {
 			sb.append("(");
-			sb.append(it.next());
+			sb.append(printTuple(it.next().value().iterator().next()));
 			sb.append(") ");
 		}
 		sb.append("}");
