@@ -25,7 +25,6 @@ package kodkod.instance;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import kodkod.ast.BinaryExpression;
@@ -70,37 +69,41 @@ import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.engine.bool.BooleanFormula;
+import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.fol2sat.Translator;
 import kodkod.util.ints.IndexedEntry;
-import kodkod.util.ints.IntSet;
 import kodkod.util.ints.SparseSequence;
 
 
 // TODO: get bounds after symmetry breaking for predicates
 
-public class ElectrodProblemPrinter {
+/**
+ * Translates an unbounded temporal model finding problem into an Electrod
+ * problem. This includes the bounds of the variables, the goal as a relational
+ * formula and the symmetry breaking predicate.
+ * 
+ * @author Nuno Macedo
+ */
+public class ElectrodPrinter {
 
+	/**
+	 * Translates and prints an unbounded temporal model finding problem into
+	 * Electrod. Intercepts the symmetry breaking predicate so that it can be used by Electrod.
+	 * 
+	 * @param formula
+	 *            the problem's formula.
+	 * @param bounds
+	 *            the problem's bounds.
+	 * @return the printed Electrod problem.
+	 */
 	public static String print(Formula formula, PardinusBounds bounds) {
+		// use the reporter to intercept the symmetry breaking predicate
 		Options opt = new ExtendedOptions();
 		StringBuilder temp = new StringBuilder();
-		Reporter reporter = new Reporter() {
-			
-			@Override
-			public void translatingToCNF(BooleanFormula circuit) {}
-			
-			@Override
-			public void translatingToBoolean(Formula formula, Bounds bounds) {}
-			
-			@Override
-			public void solvingCNF(int primaryVars, int vars, int clauses) {}
-			
-			@Override
-			public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
-			
+		Reporter reporter = new AbstractReporter() {
 			@Override
 			public void reportLex(List<Entry<Relation, Tuple>> _original,
 					List<Entry<Relation, Tuple>> _permuted) {
@@ -112,27 +115,16 @@ public class ElectrodProblemPrinter {
 				temp.append(printTupleList(_permuted,false).substring(1));
 				temp.append(";\n");
 			}
-			
-			@Override
-			public void optimizingBoundsAndFormula() {}
-			
-			@Override
-			public void generatingSBP() {}
-			
-			@Override
-			public void detectingSymmetries(Bounds bounds) {}
-			
-			@Override
-			public void detectedSymmetries(Set<IntSet> parts) {}
-
-			@Override
-			public void debug(String debug) {}
 		};
-		
 		opt.setReporter(reporter);
+
 		try {
-		Translator.translate(Expression.NONE.some().or(Expression.NONE.no()), bounds, opt);
-		} catch (Exception e) {}
+			Translator.translate(Expression.NONE.some().or(Expression.NONE.no()), bounds, opt);
+		} catch (Exception e) {
+			// this will always happen due to temporal relations but it's OK, we
+			// just want the symmetries.
+		}
+
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));
 		sb.append(printBounds(bounds));

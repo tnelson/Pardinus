@@ -37,7 +37,9 @@ import org.xml.sax.SAXException;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.instance.ElectrodProblemPrinter;
+import kodkod.engine.unbounded.ElectrodReader;
+import kodkod.engine.unbounded.InvalidUnboundedSolution;
+import kodkod.instance.ElectrodPrinter;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 
@@ -97,7 +99,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 	 */
 	public Solution solve(Formula formula, PardinusBounds bounds) {
 		try {
-			String electrode = ElectrodProblemPrinter.print(formula, bounds);
+			String electrode = ElectrodPrinter.print(formula, bounds);
 			PrintWriter writer;
 			File dir = new File(options.uniqueName());
 			if (!dir.exists()) dir.mkdir();
@@ -115,8 +117,14 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 
 			// TODO: test return code of electrod and abort when failure
 			
-			ElectrodProblemReader rd = new ElectrodProblemReader(bounds);
-			TemporalInstance res = rd.read(new File(file+".xml"));
+			ElectrodReader rd = new ElectrodReader(bounds);
+			TemporalInstance res = null;
+			try {
+				res = rd.read(new File(file+".xml"));
+			} catch (InvalidUnboundedSolution e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
 			// TODO: get the stats from the header of the electrod solution
 			
@@ -129,12 +137,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InterruptedException e) {

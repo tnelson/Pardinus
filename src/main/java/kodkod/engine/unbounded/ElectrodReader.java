@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package kodkod.engine;
+package kodkod.engine.unbounded;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import kodkod.ast.Relation;
-import kodkod.instance.ElectrodProblemPrinter;
+import kodkod.instance.ElectrodPrinter;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
@@ -52,7 +52,7 @@ import kodkod.instance.TupleSet;
  * 
  * @author Nuno Macedo
  */
-public class ElectrodProblemReader {
+public class ElectrodReader {
 
 	private List<Instance> insts;
 	private int loop;
@@ -65,7 +65,7 @@ public class ElectrodProblemReader {
 	 * @param bounds
 	 *            the original bounds of the solved problem.
 	 */
-	public ElectrodProblemReader(PardinusBounds bounds) {
+	public ElectrodReader(PardinusBounds bounds) {
 		this.insts = new ArrayList<Instance>();
 		this.loop = -1;
 		this.bounds = bounds;
@@ -79,45 +79,56 @@ public class ElectrodProblemReader {
 	 * @param file
 	 *            the XML Electrod solution to be parsed.
 	 * @return the parsed temporal instance or null if unsat.
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
+	 * @throws InvalidUnboundedSolution
+	 *             if the parsing fails.
 	 */
-	public TemporalInstance read(File file)
-			throws ParserConfigurationException, SAXException, IOException {
+	public TemporalInstance read(File file) throws InvalidUnboundedSolution {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);
 		factory.setIgnoringElementContentWhitespace(true);
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		Document doc = builder.parse(file);
-		Element root = doc.getDocumentElement();
-		NodeList elems = root.getChildNodes();
-		int c = 0;
-		for (int i = 0; i < elems.getLength(); i++) {
-			if (elems.item(i).getNodeName().equals("st")) {
-				if (elems.item(i).getAttributes().getNamedItem("loop-target")
-						.getNodeValue().equals("true"))
-					loop = c;
-				insts.add(state(elems.item(i)));
-				c++;
+		try {
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(file);
+			Element root = doc.getDocumentElement();
+			NodeList elems = root.getChildNodes();
+			int c = 0;
+			for (int i = 0; i < elems.getLength(); i++) {
+				if (elems.item(i).getNodeName().equals("st")) {
+					if (elems.item(i).getAttributes().getNamedItem("loop-target").getNodeValue()
+							.equals("true"))
+						loop = c;
+					insts.add(state(elems.item(i)));
+					c++;
+				}
 			}
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			throw new InvalidUnboundedSolution("Failed to parse Electrod XML.",
+					e);
 		}
-
 		if (insts.size() == 0)
 			return null;
+
 		return new TemporalInstance(insts, loop);
 	}
 
+	/**
+	 * Parses a single state of the trace as a static regular Kodkod
+	 * {@link Instance instance}.
+	 * 
+	 * @param node
+	 *            the XML node containing the state.
+	 * @return the static instance corresponding to the state.
+	 */
 	private Instance state(Node node) {
 		Instance inst = new Instance(bounds.universe());
 
-		// TODO: how to handle integers in unbounded problems?
+		// TODO: parse the integer solution back into Instance#ints()
 
 		for (Relation r : bounds.relations()) {
 			NodeList e = null;
 			for (int i = 0; i < node.getChildNodes().getLength(); i++) {
 				if (node.getChildNodes().item(i).getNodeName().equals("rel")) {
-					String nm = ElectrodProblemPrinter.normRel(r.toString());
+					String nm = ElectrodPrinter.normRel(r.toString());
 					if (node.getChildNodes().item(i).getAttributes()
 							.getNamedItem("name").getNodeValue().equals(nm))
 						e = node.getChildNodes().item(i).getChildNodes();
