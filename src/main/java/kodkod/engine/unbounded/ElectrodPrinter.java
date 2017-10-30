@@ -94,7 +94,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * operations and formulas over integers are supported, the conversion between
  * integer atoms and their numeric semantics is not.
  * 
- * @author Nuno Macedo
+ * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  */
 public class ElectrodPrinter {
 

@@ -50,7 +50,7 @@ import kodkod.instance.TupleSet;
  * Kodkod/Pardinus. Some renaming has been done between on the atoms/relations
  * in the translation to Electrod, which must be reverted.
  * 
- * @author Nuno Macedo
+ * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  */
 public class ElectrodReader {
 

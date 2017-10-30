@@ -23,13 +23,29 @@
 package kodkod.engine.unbounded;
 
 /**
- * A runtime exception thrown when an unbounded solution is found to be invalid.
+ * A runtime exception thrown when an unbounded solution is found to be invalid
+ * or fails to be parsed.
  * 
- * @author Nuno Macedo
+ * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  */
 public class InvalidUnboundedSolution extends RuntimeException {
 
 	private static final long serialVersionUID = -8319005004526959240L;
+
+	/**
+	 * Constructs an invalid unbounded solution exception with the given
+	 * message.
+	 */
+	InvalidUnboundedSolution(String message) {
+		super(message);
+	}
+
+	/**
+	 * Constructs an invalid unbounded solution exception with the given cause.
+	 */
+	InvalidUnboundedSolution(Throwable cause) {
+		super(cause);
+	}
 
 	/**
 	 * Constructs an invalid unbounded solution exception with the given message
@@ -37,9 +53,5 @@ public class InvalidUnboundedSolution extends RuntimeException {
 	 */
 	InvalidUnboundedSolution(String message, Throwable cause) {
 		super(message, cause);
-	}
-	
-	public InvalidUnboundedSolution(String message) {
-		super(message);
 	}
 }

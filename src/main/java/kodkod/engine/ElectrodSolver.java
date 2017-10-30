@@ -28,7 +28,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -95,9 +94,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 
 	/**
 	 * {@inheritDoc}
-	 * @throws UnsupportedEncodingException 
-	 * @throws FileNotFoundException 
-	 * @throws InvalidUnboundedProblem 
 	 */
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
@@ -151,7 +147,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		File xml = new File(file+".xml");
 		
 		if (!xml.exists())
-			throw new InvalidUnboundedSolution("XML solution file not found: "+file+".xml.");
+			throw new AbortedException("XML solution file not found: "+file+".xml.");
 		else {
 			rep.debug(file);
 
@@ -181,9 +177,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 * 
 	 * Electrod problems return a single solution, thus this iterator has
 	 * exactly one satisfiable element and one unsatisfiable.
-	 * @throws InvalidUnboundedProblem 
-	 * @throws UnsupportedEncodingException 
-	 * @throws FileNotFoundException 
 	 */
 	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		Solution s = solve(formula,bounds);

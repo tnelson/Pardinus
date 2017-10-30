@@ -36,8 +36,6 @@ import kodkod.instance.PardinusBounds;
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
- * @param <B>
- *            the class of bounds required by a concrete solver
  * @param <O>
  *            the class of options required by a concrete solver, which should
  *            at least consider unbounded configurations
@@ -46,9 +44,19 @@ import kodkod.instance.PardinusBounds;
 public interface UnboundedSolver<O extends UnboundedOptions> extends
 		TemporalSolver<O> {
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @throws InvalidUnboundedProblem
+	 *             if the problem is not supported by the unbounded solver.
+	 * @throws InvalidUnboundedSolution
+	 *             if the solver's output failed to be parsed.
+	 * @throws AbortedException
+	 *             if the solving process aborted.
+	 */
 	@Override
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution,
 			AbortedException;
-	
+
 }

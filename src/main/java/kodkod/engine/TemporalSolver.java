@@ -38,8 +38,15 @@ import kodkod.instance.PardinusBounds;
  *            the options containing
  *            {@link kodkod.engine.config.TemporalOptions temporal options}.
  */
-public interface TemporalSolver<O extends TemporalOptions> extends AbstractSolver<PardinusBounds, O> {
+public interface TemporalSolver<O extends TemporalOptions> extends
+		AbstractSolver<PardinusBounds, O> {
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Temporal problems require {@link PardinusBounds Pardinus bounds} to
+	 * bound relations over traces.
+	 */
 	@Override
 	public Solution solve(Formula formula, PardinusBounds bounds);
 
