@@ -22,7 +22,11 @@
  */
 package kodkod.engine;
 
+import kodkod.ast.Formula;
 import kodkod.engine.config.UnboundedOptions;
+import kodkod.engine.unbounded.InvalidUnboundedProblem;
+import kodkod.engine.unbounded.InvalidUnboundedSolution;
+import kodkod.instance.PardinusBounds;
 
 /**
  * An interface for unbounded relational constraint solvers. Pardinus
@@ -42,4 +46,9 @@ import kodkod.engine.config.UnboundedOptions;
 public interface UnboundedSolver<O extends UnboundedOptions> extends
 		TemporalSolver<O> {
 
+	@Override
+	public Solution solve(Formula formula, PardinusBounds bounds)
+			throws InvalidUnboundedProblem, InvalidUnboundedSolution,
+			AbortedException;
+	
 }
