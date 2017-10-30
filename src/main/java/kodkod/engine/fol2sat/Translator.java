@@ -631,6 +631,8 @@ public final class Translator {
 		options.reporter().translatingToCNF(circuit);
 		final int maxPrimaryVar = interpreter.factory().maxVariable();
 
+		// [HASLab] if temporal, throw a warning that will be reduced
+		
 		if (incremental) {
 			final Bool2CNFTranslator incrementer = Bool2CNFTranslator.translateIncremental(circuit, maxPrimaryVar, options.solver());
 			return new Translation.Incremental(completeBounds(), options, SymmetryDetector.partition(originalBounds), interpreter, incrementer);

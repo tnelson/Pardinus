@@ -73,13 +73,11 @@ import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.fol2sat.Translation.Whole;
 import kodkod.engine.fol2sat.Translator;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.SparseSequence;
 import kodkod.util.nodes.PrettyPrinter;
-
-
-// TODO: get bounds after symmetry breaking for predicates
 
 /**
  * Translates an unbounded temporal model finding problem into an Electrod
@@ -121,12 +119,8 @@ public class ElectrodPrinter {
 		};
 		opt.setReporter(reporter);
 
-		try {
-			Translator.translate(Expression.NONE.some().or(Expression.NONE.no()), bounds, opt);
-		} catch (Exception e) {
-			// this will always happen due to temporal relations but it's OK, we
-			// just want the symmetries.
-		}
+		Whole t = Translator.translate(formula, bounds, opt);
+		bounds = (PardinusBounds) t.bounds();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(printUniverse(bounds.universe()));

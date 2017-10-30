@@ -70,6 +70,7 @@ import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.Quantifier;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.engine.bool.BooleanAccumulator;
 import kodkod.engine.bool.BooleanConstant;
@@ -1091,25 +1092,32 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	
 	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanValue visit(UnaryTempFormula temporalFormula) {
-		RelationCollector col = new RelationCollector(new HashSet<Node>());
-		for (Relation r : temporalFormula.accept(col))
-			if (r instanceof VarRelation)
-				throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
+//		RelationCollector col = new RelationCollector(new HashSet<Node>());
+//		for (Relation r : temporalFormula.accept(col))
+//			if (r instanceof VarRelation)
+//				throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
 		BooleanValue ret = temporalFormula.formula().accept(this);
 		return cache(temporalFormula,ret);
 	}
 
 	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanValue visit(BinaryTempFormula temporalFormula) {
-		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
+		Formula f;
+		if (temporalFormula.op() == TemporalOperator.UNTIL)
+			f = temporalFormula.right();
+		else 
+			f = temporalFormula.left();
+//		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
+		BooleanValue ret = f.accept(this);
+		return cache(temporalFormula,ret);
 	}
 
 	// [HASLab] should be converted into standard Kodkod before FOL translation
 	public final BooleanMatrix visit(TempExpression temporalExpr) {
-		RelationCollector col = new RelationCollector(new HashSet<Node>());
-		for (Relation r : temporalExpr.accept(col))
-			if (r instanceof VarRelation)
-				throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
+//		RelationCollector col = new RelationCollector(new HashSet<Node>());
+//		for (Relation r : temporalExpr.accept(col))
+//			if (r instanceof VarRelation)
+//				throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
 		BooleanMatrix ret = temporalExpr.expression().accept(this);
 		return cache(temporalExpr,ret);
 	}
