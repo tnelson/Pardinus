@@ -120,8 +120,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
 		ProcessBuilder builder = new ProcessBuilder("electrod",Options.isDebug()?"-vv":"-v",file+".elo");
-		builder.redirectOutput(new File("electrod.log"));
-		builder.redirectError(new File("electrod.log"));
 		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 		int ret;
 		try {
