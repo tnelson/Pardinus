@@ -48,7 +48,8 @@ import kodkod.instance.TupleSet;
 /**
  * Processes the output of an Electrod solving process into a
  * {@link TemporalInstance temporal instance} that can be processed by
- * Kodkod/Pardinus.
+ * Kodkod/Pardinus. Some renaming has been done between on the atoms/relations
+ * in the translation to Electrod, which must be reverted.
  * 
  * @author Nuno Macedo
  */
@@ -113,7 +114,8 @@ public class ElectrodReader {
 
 	/**
 	 * Parses a single state of the trace as a static regular Kodkod
-	 * {@link Instance instance}.
+	 * {@link Instance instance}. Atoms and relations may have been renamed by
+	 * {@link ElectrodPrinter#normRel(String)}, which must be reverted.
 	 * 
 	 * @param node
 	 *            the XML node containing the state.

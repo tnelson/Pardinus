@@ -76,14 +76,16 @@ import kodkod.engine.config.Reporter;
 import kodkod.engine.fol2sat.Translator;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.SparseSequence;
+import kodkod.util.nodes.PrettyPrinter;
 
 
 // TODO: get bounds after symmetry breaking for predicates
 
 /**
  * Translates an unbounded temporal model finding problem into an Electrod
- * problem. This includes the bounds of the variables, the goal as a relational
- * formula and the symmetry breaking predicate.
+ * problem in its concrete syntax. This includes the universe, bounds of the
+ * variables, the goal as a relational formula and the symmetry breaking
+ * predicate.
  * 
  * @author Nuno Macedo
  */
@@ -91,7 +93,8 @@ public class ElectrodPrinter {
 
 	/**
 	 * Translates and prints an unbounded temporal model finding problem into
-	 * Electrod. Intercepts the symmetry breaking predicate so that it can be used by Electrod.
+	 * Electrod. Intercepts the symmetry breaking predicate so that it can be
+	 * used by Electrod.
 	 * 
 	 * @param formula
 	 *            the problem's formula.
@@ -109,10 +112,10 @@ public class ElectrodPrinter {
 					List<Entry<Relation, Tuple>> _permuted) {
 				if (_original.size()+_permuted.size()==0)
 					return;
-				String tmp = printTupleList(_original,false);
+				String tmp = printLexList(_original);
 				temp.append(tmp.substring(0,tmp.length()-1));
 				temp.append(" <= ");
-				temp.append(printTupleList(_permuted,false).substring(1));
+				temp.append(printLexList(_permuted).substring(1));
 				temp.append(";\n");
 			}
 		};
@@ -133,6 +136,12 @@ public class ElectrodPrinter {
 		return sb.toString();
 	}
 
+	/**
+	 * Print the universe of atoms.
+	 * 
+	 * @param universe the universe of atoms.
+	 * @return the universe in Electrod's concrete syntax.
+	 */
 	private static String printUniverse(Universe universe) {
 		StringBuilder sb = new StringBuilder("univ : { ");
 		Iterator<Object> it = universe.iterator();
@@ -144,6 +153,15 @@ public class ElectrodPrinter {
 		return sb.toString();
 	}
 
+	/**
+	 * Prints the goal formula, either a run or check command.
+	 * 
+	 * TODO: distinguish run from check
+	 * 
+	 * @param formula
+	 *            the goal formula.
+	 * @return the goal in Electrod's concrete syntax.
+	 */
 	private static String printConstraint(Formula formula) {
 		StringBuilder sb = new StringBuilder("run\n");
 		if (formula instanceof NaryFormula && ((NaryFormula) formula).op() == FormulaOperator.AND) {
@@ -158,18 +176,34 @@ public class ElectrodPrinter {
 		return sb.toString();
 	}
 
-	private static String printSymmetries(String tmp) {
-		if (tmp.length() == 0)
-			return tmp;
+	/**
+	 * Prints the symmetries of the problem, or nothing if no symmetries were
+	 * found, since this block is optional.
+	 * 
+	 * @param syms
+	 *            the symmetries.
+	 * @return the symmetries in Electrod's concrete syntax or empty.
+	 */
+	private static String printSymmetries(String syms) {
+		if (syms.length() == 0)
+			return syms;
 		StringBuilder sb = new StringBuilder("sym\n");
-		sb.append(normRel(tmp));
+		sb.append(normRel(syms));
 		sb.append("\n");
 		return sb.toString();
 	}
 
+	/**
+	 * Prints the bounds of the declared relations, distinguishing between
+	 * static and variable relations.
+	 * 
+	 * @param bounds
+	 *            the bounds.
+	 * @return the bounds in Electrod's concrete syntax.
+	 */
 	private static String printBounds(Bounds bounds) {
 		StringBuilder sb = new StringBuilder();
-		Bounds bnd = bounds; //. amalgamated();
+		Bounds bnd = bounds;
 		for (Relation r : bnd.relations()) {
 			if (r instanceof VarRelation)
 				sb.append("var ");
@@ -190,14 +224,21 @@ public class ElectrodPrinter {
 			sb.append(";\n");
 		}
 		sb.append("const ints :1 ");
-		sb.append(printTupleList(bnd.intBounds()));
+		sb.append(printIntList(bnd.intBounds()));
 		sb.append(";\n\n");
 		return sb.toString();
 	}
 
-	static String printTupleList(Collection<Tuple> col) {
+	/**
+	 * Prints a tuple list.
+	 * 
+	 * @param tuples
+	 *            the tuple list.
+	 * @return the tuple list in Electrod's concrete syntax.
+	 */
+	private static String printTupleList(Collection<Tuple> tuples) {
 		StringBuilder sb = new StringBuilder("{ ");
-		for (Tuple t : col) {
+		for (Tuple t : tuples) {
 			sb.append("(");
 			sb.append(printTuple(t));
 			sb.append(") ");
@@ -206,9 +247,15 @@ public class ElectrodPrinter {
 		return sb.toString();
 	}
 	
-	private static Object printTupleList(SparseSequence<TupleSet> intBounds) {
+	/**
+	 * Prints the integer list of atoms.
+	 * 
+	 * @param ints the integer list.
+	 * @return the integer list in Electrod's concrete syntax.
+	 */
+	private static Object printIntList(SparseSequence<TupleSet> ints) {
 		StringBuilder sb = new StringBuilder("{ ");
-		Iterator<IndexedEntry<TupleSet>> it = intBounds.iterator();
+		Iterator<IndexedEntry<TupleSet>> it = ints.iterator();
 		while (it.hasNext()) {
 			sb.append("(");
 			sb.append(printTuple(it.next().value().iterator().next()));
@@ -218,10 +265,17 @@ public class ElectrodPrinter {
 		return sb.toString();
 	}
 	
-	static String printTupleList(List<Entry<Relation, Tuple>> col, boolean b) {
+	/**
+	 * Prints the detected symmetries.
+	 * 
+	 * @param syms
+	 *            the detected symmetries.
+	 * @return the symmetries in Electrod's concrete syntax.
+	 */
+	private static String printLexList(List<Entry<Relation, Tuple>> syms) {
 		StringBuilder sb = new StringBuilder("");
 		sb.append("[ ");
-		for (Entry<Relation, Tuple> t : col) {
+		for (Entry<Relation, Tuple> t : syms) {
 			sb.append("( "); 
 			sb.append(t.getKey());
 			sb.append(printTuple(t.getValue()));
@@ -232,32 +286,43 @@ public class ElectrodPrinter {
 	}
 	
 	
-	static String printTuple(Tuple t) {
+	/**
+	 * Prints a tuple.
+	 * 
+	 * @param tuple
+	 *            the tuple.
+	 * @return the tuple in Electrod's concrete syntax.
+	 */
+	private static String printTuple(Tuple tuple) {
 		StringBuilder sb = new StringBuilder(" ");
-		for (int i = 0; i < t.arity(); i++) {
-			sb.append(normRel(t.atom(i).toString()));
+		for (int i = 0; i < tuple.arity(); i++) {
+			sb.append(normRel(tuple.atom(i).toString()));
 			sb.append(" ");
 		}
 		return sb.toString();
 	}
 	
-	static String printFormula(Formula f) {
-		final Formatter formatter = new Formatter(0,80);
-		f.accept(formatter);
+	/**
+	 * Prints a formula.
+	 * 
+	 * @param formula
+	 *            the formula.
+	 * @return the formula in Electrod's concrete syntax.
+	 */
+	private static String printFormula(Formula formula) {
+		final LTL2Electrod formatter = new LTL2Electrod(0,80);
+		formula.accept(formatter);
 		return formatter.tokens.toString();
 	
 	}
-		/**
-		 * Generates a buffer of tokens comprising the string representation
-		 * of a given node.  The buffer contains at least the parentheses 
-		 * needed to correctly represent the node's tree structure.
-		 * 
-		 * @specfield tokens: seq<Object> 
-		 * @author Emina Torlak
-		 */
-	private static class Formatter implements VoidVisitor {
-			final StringBuilder tokens ;
-			//final int offset;
+
+	/**
+	 * Prints a temporal formula into Electrod's concrete representation.
+	 * Adapted from Kodkod's {@link PrettyPrinter pretty printer}. Main change
+	 * is breaking the top level conjuncts into clauses.
+	 */
+	private static class LTL2Electrod implements VoidVisitor {
+			final StringBuilder tokens;
 			private final int lineLength;
 			private int indent, lineStart;
 			
@@ -265,10 +330,9 @@ public class ElectrodPrinter {
 			 * Constructs a new tokenizer.
 			 * @ensures no this.tokens
 			 */
-			Formatter(int offset, int line) {
+			LTL2Electrod(int offset, int line) {
 				assert offset >= 0 && offset < line;
 				this.tokens = new StringBuilder();
-				//this.offset = offset;
 				this.lineLength = line;
 				this.lineStart = 0;
 				this.indent = offset;
@@ -276,7 +340,6 @@ public class ElectrodPrinter {
 			}
 			
 			/*--------------FORMATTERS---------------*/
-			
 				
 			/** @ensures this.tokens' = concat [ this.tokens, " ", token, " " ]*/
 			private void infix(Object token) { 
@@ -412,7 +475,6 @@ public class ElectrodPrinter {
 				visitChild(node.expression(), parenthesize(node.expression()));
 			}
 			
-			
 			/** @ensures appends the given op and child to this.tokens; the child is 
 			 * parenthesized if it's not an instance of unary int expression or int constant. **/
 			public void visit(UnaryIntExpression node)  { 
@@ -445,7 +507,7 @@ public class ElectrodPrinter {
 			
 			/** @ensures appends the given op and child to this.tokens; the child is 
 			 * parenthesized if it's an instance of binary expression or an if expression. **/
-			// [HASLab]
+			// [HASLab] temporal formulas
 			public void visit(UnaryTempFormula node) { 
 				keyword(node.op());
 				indent++;
@@ -455,13 +517,11 @@ public class ElectrodPrinter {
 			
 			/** @ensures appends the given op and child to this.tokens; the child is 
 			 * parenthesized if it's an instance of binary expression or an if expression. **/
-			// [HASLab]
+			// [HASLab] temporal formulas
 			public void visit(TempExpression node) { 
 				visitChild(node.expression(), parenthesize(node.op(), node.expression()));
 				keyword(node.op());
 			}
-
-
 
 			/*--------------BINARY NODES---------------*/
 			
@@ -483,8 +543,6 @@ public class ElectrodPrinter {
 				visitChild(node.right(), parenthesize(op, node.right()));
 			}
 			
-			
-
 			/** @return true if the given operator is assocative */
 			private boolean associative(IntOperator op) { 
 				switch(op) { 
@@ -523,19 +581,20 @@ public class ElectrodPrinter {
 
 			/** @return true if the given temporal formula needs to be parenthesized, 
 			 * assumed to be always */
-			// [HASLab]
+			// [HASLab] temporal formulas
 			private boolean parenthesize(TemporalOperator op, Formula child) { 
 				return true;
 			}
 			
 			/** @return true if the given temporal expression needs to be parenthesized, 
 			 * assumed to be always */
-			// [HASLab]
+			// [HASLab] temporal formulas
 			private boolean parenthesize(TemporalOperator op, Expression child) { 
 				return true;
 			}
 
 			/** @ensures appends the tokenization of the given node to this.tokens */
+			// [HASLab] break conjuncts if top level
 			public void visit(BinaryFormula node) {
 				final FormulaOperator op = node.op();
 				final boolean pleft = parenthesize(op, node.left());
@@ -568,7 +627,7 @@ public class ElectrodPrinter {
 			}
 			
 			/** @ensures appends the tokenization of the given node to this.tokens */
-			// [HASLab]
+			// [HASLab] temporal formulas
 			public void visit(BinaryTempFormula node) {
 				final TemporalOperator op = node.op();
 				final boolean pleft = parenthesize(op, node.left());
@@ -664,6 +723,7 @@ public class ElectrodPrinter {
 				}
 			}
 			/** @ensures appends the tokenization of the given node to this.tokens */
+			// [HASLab] break conjuncts if top level
 			public void visit(NaryFormula node) {
 				final FormulaOperator op = node.op();
 				boolean parens = parenthesize(op, node.child(0));
@@ -754,8 +814,32 @@ public class ElectrodPrinter {
 			
 		}
 	
-	public static String normRel(String s) {
-		return s.replace("/", "##").replace(".", "#");
+	/**
+	 * Converts identifiers into a version that is compatible with Electrod by
+	 * removing '/' and '.' symbols.
+	 * 
+	 * TODO: dollar signs $ on skolemized variables
+	 * 
+	 * @param id
+	 *            the identifier.
+	 * @return the normalized identifier.
+	 */
+	public static String normRel(String id) {
+		return id.replace("/", "##").replace(".", "#");
+	}
+	
+	/**
+	 * Converts identifiers that are compatible with Electrod back to their
+	 * Kodkod internal representation.
+	 * 
+	 * TODO: dollar signs $ on skolemized variables
+	 * 
+	 * @param id
+	 *            the identifier.
+	 * @return the denormalized identifier.
+	 */
+	public static String denormRel(String id) {
+		return id.replace("##", "/").replace("#", ".");
 	}
 	
 }
