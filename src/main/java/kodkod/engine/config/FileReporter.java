@@ -124,6 +124,14 @@ public final class FileReporter implements Reporter {
 	}
 	
 	/**
+	 * @see kodkod.engine.config.Reporter#debug(String)
+	 */
+	// [HASLab]
+	public void warning(String warning) {
+		writer.println(warning);		
+	}
+	
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {

@@ -120,6 +120,14 @@ public final class ConsoleReporter implements Reporter {
 	public void debug(String debug) {
 		System.out.println(debug);
 	}
+
+	/**
+	 * @see kodkod.engine.config.Reporter#warning(String)
+	 */
+	// [HASLab]
+	public void warning(String warning) {
+		System.out.println(warning);
+	}
 	
 	/**
 	 * @see java.lang.Object#toString()

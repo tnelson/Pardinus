@@ -102,4 +102,10 @@ public abstract class AbstractReporter implements Reporter {
 	 */
 	// [HASLab]
 	public void debug(String debug){}
+	
+	/**
+	 * @see kodkod.engine.config.Reporter#warning(String)
+	 */
+	// [HASLab]
+	public void warning(String warning){}
 }

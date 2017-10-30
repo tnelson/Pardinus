@@ -114,5 +114,11 @@ public interface Reporter {
 	 */
 	// [HASLab] 
 	public void debug(String debug);
-	
+
+	/**
+	 * TODO
+	 */
+	// [HASLab] 
+	public void warning(String warning);
+
 }
