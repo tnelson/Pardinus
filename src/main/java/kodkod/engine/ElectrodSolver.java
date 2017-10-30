@@ -22,24 +22,25 @@
  */
 package kodkod.engine;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
-
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.Options;
+import kodkod.engine.config.Reporter;
+import kodkod.engine.unbounded.ElectrodPrinter;
 import kodkod.engine.unbounded.ElectrodReader;
+import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.engine.unbounded.InvalidUnboundedSolution;
-import kodkod.instance.ElectrodPrinter;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 
@@ -49,8 +50,8 @@ import kodkod.instance.TemporalInstance;
  * {@link kodkod.ast.Formula formula} in first order temporal relational logic;
  * finite unbounded temporal {@link PardinusBounds bounds} on the value of each
  * {@link Relation relation} constrained by the respective formula; and a set of
- * {@link ExtendedOptions options}, although there are currently no
- * particular options for unbounded temporal solving.
+ * {@link ExtendedOptions options}, although there are currently no particular
+ * options for unbounded temporal solving.
  * 
  * <p>
  * An {@link ElectrodSolver} takes as input a relational problem and produces a
@@ -58,26 +59,24 @@ import kodkod.instance.TemporalInstance;
  * one exists.
  * </p>
  * 
+ * <p>
+ * Although Electrod does not support solution iteration, it is implemented as
+ * an {@link IterableSolver} in order to be used by the Alloy Analyzer. This
+ * iterator contains one single satisfiable solution.
+ * </p>
+ * 
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
- *
  */
-public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, TemporalSolver<ExtendedOptions>, IterableSolver<PardinusBounds, ExtendedOptions> {
+public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
+		TemporalSolver<ExtendedOptions>,
+		IterableSolver<PardinusBounds, ExtendedOptions> {
 
 	private final ExtendedOptions options;
 
 	/**
-	 * Constructs a new Solver with the default options.
+	 * Constructs a new Electrod solver with the given options.
 	 * 
-	 * @ensures this.options' = new Options()
-	 */
-	public ElectrodSolver() {
-		this.options = new ExtendedOptions();
-	}
-
-	/**
-	 * Constructs a new Solver with the given options.
-	 * 
-	 * @ensures this.options' = options
+	 * @param options the solver options.
 	 * @throws NullPointerException
 	 *             options = null
 	 */
@@ -96,68 +95,108 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>, Tempora
 
 	/**
 	 * {@inheritDoc}
+	 * @throws UnsupportedEncodingException 
+	 * @throws FileNotFoundException 
+	 * @throws InvalidUnboundedProblem 
 	 */
-	public Solution solve(Formula formula, PardinusBounds bounds) {
+	public Solution solve(Formula formula, PardinusBounds bounds)
+			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
+		Reporter rep = options.reporter();
+		
+		// create a directory with the specified unique name
+		File dir = new File(options.uniqueName());
+		if (!dir.exists()) dir.mkdir();
+		
+		String file = dir+"/"+dir+"-"+bounds.hashCode();
+		PrintWriter writer;
 		try {
-			String electrode = ElectrodPrinter.print(formula, bounds);
-			PrintWriter writer;
-			File dir = new File(options.uniqueName());
-			if (!dir.exists()) dir.mkdir();
-			String file = dir+"/"+dir+"-"+bounds.hashCode();
-			writer = new PrintWriter(file+".elo", "UTF-8");
-			writer.println(electrode);
+			writer = new PrintWriter(file+".elo");
+			String electrod = ElectrodPrinter.print(formula, bounds);
+			writer.println(electrod);
 			writer.close();
-					
-			ProcessBuilder builder = new ProcessBuilder("electrod","-vv",file+".elo");
-			builder.redirectOutput(new File("electrod.log"));
-			builder.redirectError(new File("electrod.log"));
-			builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
-			Process p = builder.start();
-			p.waitFor();
-
-			// TODO: test return code of electrod and abort when failure
-			
-			ElectrodReader rd = new ElectrodReader(bounds);
-			TemporalInstance res = null;
-			try {
-				res = rd.read(new File(file+".xml"));
-			} catch (InvalidUnboundedSolution e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			// TODO: get the stats from the header of the electrod solution
-			
-			if (res == null)
-				return Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
-			else
-				return Solution.satisfiable(new Statistics(0, 0, 0, 0, 0), res);
-
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			rep.debug("New Electrod problem at "+dir+".");
+			rep.debug(electrod);
+		} catch (FileNotFoundException e) {
+			throw new AbortedException("Electrod problem generation failed.", e);
 		}
-		return Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
+		ProcessBuilder builder = new ProcessBuilder("electrod",Options.isDebug()?"-vv":"-v",file+".elo");
+		builder.redirectOutput(new File("electrod.log"));
+		builder.redirectError(new File("electrod.log"));
+		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
+		int ret;
+		try {
+			Process p = builder.start();
+
+			BufferedReader output = new BufferedReader(new InputStreamReader(
+					p.getInputStream()));
+			BufferedReader error = new BufferedReader(new InputStreamReader(
+					p.getErrorStream()));
+
+			String oline = "";
+			while ((oline = output.readLine()) != null)
+				rep.debug(oline);
+			while ((oline = error.readLine()) != null)
+				rep.warning(oline);
+
+			ret = p.waitFor();
+		} catch (InterruptedException e) {
+			throw new AbortedException("Electrod problem interrupted.", e);
+		} catch (IOException e) {
+			throw new AbortedException("Electrod process failed.", e);
+		}
+
+		if (ret != 0)
+			rep.warning("Electrod exit code: "+ret);
+		else
+			rep.debug("Electrod ran successfully.");
+		
+		File xml = new File(file+".xml");
+		
+		if (!xml.exists())
+			throw new InvalidUnboundedSolution("XML solution file not found: "+file+".xml.");
+		else {
+			rep.debug(file);
+
+			ElectrodReader rd = new ElectrodReader(bounds);
+			TemporalInstance res = rd.read(xml);
+			
+			// TODO: get the stats from the header of the electrod solution
+
+			Solution sol;
+			// ElectrodReader#read returns null if unsat
+			if (res == null)
+				sol = Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
+			else
+				sol = Solution.satisfiable(new Statistics(0, 0, 0, 0, 0), res);
+			
+			return sol;
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public void free() {
-		// TODO Auto-generated method stub
+	public void free() { }
 
-	}
-
-	@Override
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Electrod problems return a single solution, thus this iterator has
+	 * exactly one satisfiable element and one unsatisfiable.
+	 * @throws InvalidUnboundedProblem 
+	 * @throws UnsupportedEncodingException 
+	 * @throws FileNotFoundException 
+	 */
 	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		Solution s = solve(formula,bounds);
-		Solution[] ss = {s,Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null)};
+
+		Solution[] ss;
+		if (s.sat())
+			// TODO: get the stats from the header of the electrod solution
+			ss = new Solution[]{s,Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null)};
+		else
+			ss = new Solution[]{s};
+		
 		return Arrays.asList(ss).iterator();
 	}
 

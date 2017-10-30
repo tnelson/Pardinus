@@ -38,7 +38,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import kodkod.ast.Relation;
-import kodkod.instance.ElectrodPrinter;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;

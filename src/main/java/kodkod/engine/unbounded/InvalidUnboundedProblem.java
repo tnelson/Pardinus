@@ -27,7 +27,7 @@ package kodkod.engine.unbounded;
  * 
  * @author Nuno Macedo
  */
-public class InvalidUnboundedSolution extends RuntimeException {
+public class InvalidUnboundedProblem extends RuntimeException {
 
 	private static final long serialVersionUID = -8319005004526959240L;
 
@@ -35,11 +35,12 @@ public class InvalidUnboundedSolution extends RuntimeException {
 	 * Constructs an invalid unbounded solution exception with the given message
 	 * and cause.
 	 */
-	InvalidUnboundedSolution(String message, Throwable cause) {
+	InvalidUnboundedProblem(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
-	public InvalidUnboundedSolution(String message) {
-		super(message);
+
+	InvalidUnboundedProblem(Throwable cause) {
+		super(cause);
 	}
+	
 }
