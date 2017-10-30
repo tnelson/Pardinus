@@ -53,6 +53,7 @@ import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
 import kodkod.engine.config.Options;
 import kodkod.engine.decomp.DecompFormulaSlicer;
+import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
@@ -582,6 +583,10 @@ public final class Translator {
 	 */
 	private Translation toBoolean(AnnotatedNode<Formula> annotated, SymmetryBreaker breaker) {
 		
+		// [HASLab] if temporal, throw a warning that will be reduced
+		if (TemporalTranslator.isTemporal(annotated.node()))
+			options.reporter().debug("Temporal formula: will be reduced to possibly unsound static verison.");
+
 		options.reporter().translatingToBoolean(annotated.node(), bounds);
 		
 		final LeafInterpreter interpreter = LeafInterpreter.exact(bounds, options, incremental);
@@ -631,8 +636,6 @@ public final class Translator {
 		options.reporter().translatingToCNF(circuit);
 		final int maxPrimaryVar = interpreter.factory().maxVariable();
 
-		// [HASLab] if temporal, throw a warning that will be reduced
-		
 		if (incremental) {
 			final Bool2CNFTranslator incrementer = Bool2CNFTranslator.translateIncremental(circuit, maxPrimaryVar, options.solver());
 			return new Translation.Incremental(completeBounds(), options, SymmetryDetector.partition(originalBounds), interpreter, incrementer);
