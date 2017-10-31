@@ -897,11 +897,13 @@ public class PardinusBounds extends Bounds {
 			}
 		}
 		str.append("\nint bounds: ");
-		str.append("\n ");
 		str.append(intBounds());
 		str.append("\nloop: ");
-		str.append("\n ");
 		str.append(loop);
+		if (amalgamated!=null) {
+			str.append("\namalgamated:\n\t");
+			str.append(amalgamated.toString().replace("\n", "\n\t"));
+		}
 		return str.toString();
 	}
 	
