@@ -108,4 +108,5 @@ public abstract class AbstractReporter implements Reporter {
 	 */
 	// [HASLab]
 	public void warning(String warning){}
+
 }
