@@ -38,7 +38,7 @@ import kodkod.engine.config.Reporter;
 public class DMonitorImpl implements DMonitor {
 
 	private final Reporter rep;
-	
+
 	private int configs = 0;
 	private long config_times = -1;
 	private Statistics config_stats = null;
@@ -73,7 +73,8 @@ public class DMonitorImpl implements DMonitor {
 		}
 		config_times += config.stats().solvingTime();
 		configs++;
-		rep.debug("Config: "+configs+" "+config.outcome().toString()+"; "+ config.instance().relationTuples().toString());
+		rep.debug("Config: " + configs + " " + config.outcome().toString()
+				+ "; " + config.instance().relationTuples().toString());
 	}
 
 	/**
@@ -113,7 +114,7 @@ public class DMonitorImpl implements DMonitor {
 	 */
 	@Override
 	public void configsDone() {
-		rep.debug("Config: "+"Done");
+		rep.debug("Config: " + "Done");
 		configs_done = true;
 	}
 
@@ -125,9 +126,9 @@ public class DMonitorImpl implements DMonitor {
 		solutions.add(sol);
 		if (sol.sat()) {
 			sats++;
-			rep.debug("Solution: "+sats+" "+sol.getSolution().outcome());
+			rep.debug("Solution: " + sats + " " + sol.getSolution().outcome());
 		} else {
-			rep.debug("Solution: "+sol.getSolution().outcome());
+			rep.debug("Solution: " + sol.getSolution().outcome());
 		}
 		vars += sol.getSolution().stats().primaryVariables();
 		clauses += sol.getSolution().stats().clauses();
@@ -148,7 +149,7 @@ public class DMonitorImpl implements DMonitor {
 	public long getNumRuns() {
 		return solutions.size();
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -169,14 +170,15 @@ public class DMonitorImpl implements DMonitor {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void gotNext(boolean timeout) {}
+	public void gotNext(boolean timeout) {
+	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void amalgamatedWon() {
-		rep.debug("Amalgamated: "+"Done");
+		rep.debug("Amalgamated: " + "Done");
 		amalgamated_won = true;
 	}
 
@@ -193,7 +195,7 @@ public class DMonitorImpl implements DMonitor {
 	 */
 	@Override
 	public void terminated(boolean timeout) {
-		rep.debug("Solving: "+"Done");
+		rep.debug("Solving: " + "Done");
 	}
 
 }

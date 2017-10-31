@@ -59,8 +59,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(
-			200);
+	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(200);
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -163,8 +162,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 */
 	@Override
 	public void run() {
-		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(
-				200);
+		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(200);
 
 		// if hybrid mode, launch the amalgamated problem
 		if (hybrid) {
