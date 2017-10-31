@@ -41,6 +41,7 @@ import kodkod.ast.IntExpression;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
+import kodkod.ast.RelationPredicate.Name;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.bool.BooleanAccumulator;
@@ -422,33 +423,34 @@ public final class Translator {
 	 * @throws HigherOrderDeclException  this.originalFormula contains a higher order declaration that cannot
 	 * be skolemized, or it can be skolemized but this.options.skolemDepth < 0
 	 */
+	// [HASLab] break the formula for decomposed solving, but with symmetry breaking considerations
 	private Translation translate()   {
 		final AnnotatedNode<Formula> annotated_ = logging ? annotateRoots(originalFormula) : annotate(originalFormula);
 		// Remove bindings for unused relations/ints if this is not an incremental translation.  If it is
 		// an incremental translation, we have to keep all bindings since they may be used later on.
-		Formula actual = null;
+	
+		AnnotatedNode<Formula> annotated = annotated_;
 		
 		if (!incremental) {
+			// [HASLab] retain the relations of the complete formula
 			bounds.relations().retainAll(annotated_.relations());
 			if (!annotated_.usesInts()) bounds.ints().clear();
 			// [HASLab] if dealing with a decomposed problem, split the formula and 
-			// remove spurious variables;
+			// remove spurious variables from amalgamated;
 			if (bounds instanceof PardinusBounds) {
 				PardinusBounds pbounds = (PardinusBounds) bounds;
 				pbounds.relationsSymb().retainAll(annotated_.relations());
-
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
 					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula, pbounds);
-					pbounds.amalgamated().resolve();
 					pbounds.amalgamated().relations().retainAll(annotated_.relations());
+					pbounds.amalgamated().relationsSymb().retainAll(annotated_.relations());
 					if (!annotated_.usesInts()) pbounds.amalgamated().ints().clear();
-					actual = pbounds.integrated()?slices.getValue():slices.getKey();
-				} else {
-					actual = originalFormula;
-				}
+					Formula actual = pbounds.integrated()?slices.getValue():slices.getKey();
+					options.reporter().debug("Sliced formula: "+actual);
+					annotated = logging ? annotateRoots(actual) : annotate(actual);
+				} 
 			}
 		}
-		final AnnotatedNode<Formula> annotated = logging ? annotateRoots(actual) : annotate(actual);
 
 		// Detect symmetries.
 		final SymmetryBreaker breaker = new SymmetryBreaker(bounds, options.reporter());
@@ -456,7 +458,7 @@ public final class Translator {
 		// eliminate top-level predicates, and also by skolemizing.  Then translate the optimize
 		// formula and bounds to a circuit, augment the circuit with a symmetry breaking predicate 
 		// that eliminates any remaining symmetries, and translate everything to CNF.
-		return toBoolean(optimizeFormulaAndBounds(annotated, breaker), breaker);
+		return toBoolean(optimizeFormulaAndBounds(annotated, annotated_.predicates(), breaker), breaker);
 	}
 	
 	/**
@@ -479,7 +481,8 @@ public final class Translator {
 	 * @ensures this.options.reporter().optimizingBoundsAndFormula()
 	 * @return some f: AnnotatedNode<Formula> | meaning(f.node, this.bounds, this.options) = meaning(this.originalFormula, this.originalBounds, this.options)
 	 */
-	private AnnotatedNode<Formula> optimizeFormulaAndBounds(AnnotatedNode<Formula> annotated, SymmetryBreaker breaker) {	
+	// [HASLab] consider predicates that may not belong to the formula
+	private AnnotatedNode<Formula> optimizeFormulaAndBounds(AnnotatedNode<Formula> annotated, Map<Name,Set<RelationPredicate>> preds, SymmetryBreaker breaker) {	
 		options.reporter().optimizingBoundsAndFormula();
 
 		if (logging) {  
@@ -493,9 +496,9 @@ public final class Translator {
 			if (coreGranularity>1) { 
 				annotated = flatten(annotated, options.coreGranularity()==3);
 			}
-			return inlinePredicates(annotated, breaker.breakMatrixSymmetries(annotated.predicates(), false));		
+			return inlinePredicates(annotated, breaker.breakMatrixSymmetries(preds, false)); // [HASLab] predicate map
 		} else {  			
-			annotated = inlinePredicates(annotated, breaker.breakMatrixSymmetries(annotated.predicates(), true).keySet());
+			annotated = inlinePredicates(annotated, breaker.breakMatrixSymmetries(preds, true).keySet());  // [HASLab] predicate map
 			return options.skolemDepth()>=0 ? Skolemizer.skolemize(annotated, bounds, options) : annotated;
 		}
 	}
@@ -585,7 +588,7 @@ public final class Translator {
 		
 		// [HASLab] if temporal, throw a warning that will be reduced
 		if (TemporalTranslator.isTemporal(annotated.node()))
-			options.reporter().debug("Temporal formula: will be reduced to possibly unsound static verison.");
+			options.reporter().warning("Temporal formula: will be reduced to possibly unsound static version.");
 
 		options.reporter().translatingToBoolean(annotated.node(), bounds);
 		
