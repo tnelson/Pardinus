@@ -23,7 +23,6 @@
 package kodkod.engine;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -213,5 +212,13 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		
 	}
 	
+//	TODO: delete temp files
+//	if (!Options.isDebug()) {
+//	    File[] contents = dir.listFiles();
+//	    if (contents != null)
+//	        for (File f : contents)
+//	            f.delete();
+//	    dir.delete();
+//	}
 
 }
