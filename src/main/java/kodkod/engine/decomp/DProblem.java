@@ -76,11 +76,10 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 	 */
 	protected DProblem(DProblemExecutor<S> manager, Formula formula,
 			PardinusBounds bounds) {
+		assert bounds.resolved();
 		this.manager = manager;
 		this.solver = manager.solver_integrated;
 		this.bounds = bounds;
-		if (bounds instanceof PardinusBounds)
-			((PardinusBounds) this.bounds).resolve();
 		this.formula = formula;
 	}
 

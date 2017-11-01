@@ -88,8 +88,7 @@ final class SymmetryBreaker {
 	 * @ensures reporter.detectedSymmetries(this.symmteries')
 	 * @ensures this.bounds' = bounds && this.symmetries' = SymmetryDetector.partition(bounds) && no this.broken'
 	 **/
-	// [HASLab] public
-	public SymmetryBreaker(Bounds bounds, Reporter reporter) {
+	SymmetryBreaker(Bounds bounds, Reporter reporter) {
 		// [HASLab] if the bounds are for a decomposed problem, the bounds of the 
 		// amalgamated problem should be considered when calculating symmetries.
 		// [HASLab] the original bounds are used to set the relevant relations,
@@ -100,10 +99,12 @@ final class SymmetryBreaker {
 		// [HASLab] we can't simply use the stage bounds at the integrated stage
 		// because the fixed configurations would affect the symmetries.
 		stage_bounds = bounds;
-		if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).amalgamated() != null) 
+		if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).amalgamated() != null) {
 			bounds = ((PardinusBounds) bounds).amalgamated();
-
-		this.reporter = reporter; // [HASLab]
+			assert ((PardinusBounds) bounds).resolved();
+		}
+		
+		this.reporter = reporter; // [HASLab] preserve reporter
 		this.bounds = bounds; 
 		this.usize = bounds.universe().size();
 		reporter.detectingSymmetries(bounds);
@@ -210,9 +211,13 @@ final class SymmetryBreaker {
 					
 					// [HASLab] ignore symmetries that are not considered relevant at this stage 
 					// (should only occur on decomposed problems at the configuration stage).
-					if (!stage_bounds.relations().contains(r)) 
+					if (!stage_bounds.relations().contains(r))  {
+						if (stage_bounds instanceof PardinusBounds && ((PardinusBounds) stage_bounds).relationsSymb().contains(r)) 
+							throw new RuntimeException(); 
+					 else
 						continue; 
-					
+					}
+
 					if (!rparts.representatives.contains(sym.min())) 
 						continue;  // r does not range over sym
 					
@@ -543,15 +548,27 @@ final class SymmetryBreaker {
 					bounds.boundExactly(relation, f.setOf(2, ordering));
 					// [HASLab] in decomposed problems, stage bounds are those that will
 					// be effectively solved; for normal problems, stage bounds = bounds.
-					if (stage_bounds instanceof PardinusBounds) {
-						stage_bounds.boundExactly(first, f.setOf(f.tuple(1, domain.min())));
-						stage_bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
-						stage_bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
-						stage_bounds.boundExactly(relation, f.setOf(2, ordering));
+					if (stage_bounds != bounds) {
+						// [HASLab] it the total order does not occur in this stage, ignore
+						if (stage_bounds.lowerBound(ordered)!=null) {
+							// [HASLab] if the ordering bounds do not fit in the stage bounds 
+							// but did on amalgamated (tested above), then this was due to the 
+							// integration, and thus must guarantee that will be unsat
+							if ((!ordering.containsAll(stage_bounds.lowerBound(relation).indexView()) || 
+									!stage_bounds.upperBound(relation).indexView().containsAll(ordering))) {
+								stage_bounds.boundExactly(first, f.noneOf(1));
+								stage_bounds.boundExactly(last, f.noneOf(1));
+								stage_bounds.boundExactly(ordered, f.noneOf(1));
+								stage_bounds.boundExactly(relation, f.noneOf(2));
+								return null;
+							}
+							stage_bounds.boundExactly(first, f.setOf(f.tuple(1, domain.min())));
+							stage_bounds.boundExactly(last, f.setOf(f.tuple(1, domain.max())));
+							stage_bounds.boundExactly(ordered, bounds.upperBound(total.ordered()));
+							stage_bounds.boundExactly(relation, f.setOf(2, ordering));
+						}
 					}
-					
 					return Formula.TRUE;
-					
 				} else {
 					final Relation firstConst = Relation.unary("SYM_BREAK_CONST_"+first.name());
 					final Relation lastConst = Relation.unary("SYM_BREAK_CONST_"+last.name());
@@ -561,15 +578,29 @@ final class SymmetryBreaker {
 					bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
 					bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
 					bounds.boundExactly(relConst, f.setOf(2, ordering));
-					// [HASLab] in decomposed problems, stage bounds are those that will be solved
-					if (stage_bounds instanceof PardinusBounds) {
-						stage_bounds.boundExactly(firstConst, f.setOf(f.tuple(1, domain.min())));
-						stage_bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
-						stage_bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
-						stage_bounds.boundExactly(relConst, f.setOf(2, ordering));
+					// [HASLab] in decomposed problems, stage bounds are those that will
+					// be effectively solved; for normal problems, stage bounds = bounds.
+					if (stage_bounds != bounds) {
+						// [HASLab] it the total order does not occur in this stage, ignore
+						if (stage_bounds.lowerBound(ordered)!=null) {
+							// [HASLab] if the ordering bounds do not fit in the stage bounds 
+							// but did on amalgamated (tested above), then this was due to the 
+							// integration, and thus must guarantee that will be unsat
+							if ((!ordering.containsAll(stage_bounds.lowerBound(relation).indexView()) || 
+									!stage_bounds.upperBound(relation).indexView().containsAll(ordering))) {
+								stage_bounds.boundExactly(firstConst, f.noneOf(1));
+								stage_bounds.boundExactly(lastConst, f.noneOf(1));
+								stage_bounds.boundExactly(ordConst, f.noneOf(1));
+								stage_bounds.boundExactly(relConst, f.noneOf(2));
+								return null;
+							}
+							stage_bounds.boundExactly(firstConst, f.setOf(f.tuple(1, domain.min())));
+							stage_bounds.boundExactly(lastConst, f.setOf(f.tuple(1, domain.max())));
+							stage_bounds.boundExactly(ordConst, bounds.upperBound(total.ordered()));
+							stage_bounds.boundExactly(relConst, f.setOf(2, ordering));
+						}
 					}
 					return Formula.and(first.eq(firstConst), last.eq(lastConst), ordered.eq(ordConst), relation.eq(relConst));
-//					return first.eq(firstConst).and(last.eq(lastConst)).and( ordered.eq(ordConst)).and( relation.eq(relConst));
 				}
 
 			}

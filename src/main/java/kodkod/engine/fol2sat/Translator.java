@@ -424,26 +424,39 @@ public final class Translator {
 	 * be skolemized, or it can be skolemized but this.options.skolemDepth < 0
 	 */
 	// [HASLab] break the formula for decomposed solving, but with symmetry breaking considerations
-	private Translation translate()   {
-		final AnnotatedNode<Formula> annotated_ = logging ? annotateRoots(originalFormula) : annotate(originalFormula);
+	private Translation translate() {
+
+		// [HASLab] retrieve the additional formula imposed by the symbolic
+		// bounds, depending on execution stage
+		Formula x = Formula.TRUE;
+		if (!incremental && bounds instanceof PardinusBounds) {
+			PardinusBounds pbounds = (PardinusBounds) bounds;
+			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
+			if (options.decomposed() && pbounds.amalgamated() != null)
+				x = pbounds.amalgamated().resolve();
+			// [HASLab] otherwise use regular bounds
+			else
+				x = pbounds.resolve();
+		}
+		
+		// [HASLab] add the extra symbolic formula
+		final AnnotatedNode<Formula> annotated_ = logging ? annotateRoots(originalFormula.and(x)) : annotate(originalFormula.and(x));
 		// Remove bindings for unused relations/ints if this is not an incremental translation.  If it is
 		// an incremental translation, we have to keep all bindings since they may be used later on.
 	
 		AnnotatedNode<Formula> annotated = annotated_;
-		
 		if (!incremental) {
 			// [HASLab] retain the relations of the complete formula
 			bounds.relations().retainAll(annotated_.relations());
 			if (!annotated_.usesInts()) bounds.ints().clear();
-			// [HASLab] if dealing with a decomposed problem, split the formula and 
-			// remove spurious variables from amalgamated;
+			// [HASLab] if dealing with a decomposed problem, split and resolve
+			// the formula and remove spurious variables from amalgamated as well
 			if (bounds instanceof PardinusBounds) {
 				PardinusBounds pbounds = (PardinusBounds) bounds;
-				pbounds.relationsSymb().retainAll(annotated_.relations());
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
-					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula, pbounds);
+					Formula x2 = pbounds.resolve();
+					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula.and(x2), pbounds);
 					pbounds.amalgamated().relations().retainAll(annotated_.relations());
-					pbounds.amalgamated().relationsSymb().retainAll(annotated_.relations());
 					if (!annotated_.usesInts()) pbounds.amalgamated().ints().clear();
 					Formula actual = pbounds.integrated()?slices.getValue():slices.getKey();
 					options.reporter().debug("Sliced formula: "+actual);

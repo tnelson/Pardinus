@@ -475,8 +475,6 @@ public class PardinusBounds extends Bounds {
 			}
 		}
 
-		integrated.resolve();
-
 		integrated.amalgamated = this.amalgamated;
 		integrated.trivial_config = this.trivial_config;
 		integrated.integrated = true;
@@ -640,8 +638,12 @@ public class PardinusBounds extends Bounds {
 	}
 
 	public void bound(Relation relation, Expression upper) {
+		Expression r = ConstantExpression.NONE;
+		for (int i = 1; i < relation.arity(); i++)
+			r = r.product(ConstantExpression.NONE);
+
 		symbolic.checkBound(relation, upper);
-		lowers_symb.put(relation, ConstantExpression.NONE);
+		lowers_symb.put(relation, r);
 		uppers_symb.put(relation, upper);
 	}
 
@@ -659,7 +661,6 @@ public class PardinusBounds extends Bounds {
 
 	private final SymbolicStructures symbolic;
 	
-	// TODO: additional validations (arity, containment)
 	public Formula resolve() {
 		Formula xtra = ConstantFormula.TRUE;
 		for (Relation r : relations_symb) {
@@ -668,10 +669,17 @@ public class PardinusBounds extends Bounds {
 				continue;
 			TupleSet aux1 = symbolic.resolveLower(lowers_symb.get(r));
 			TupleSet aux2 = symbolic.resolveUpper(uppers_symb.get(r));
+			if (super.lowerBound(r) != null) {
+				if (!aux1.containsAll(super.lowerBound(r)))
+					return Formula.FALSE;
+				if (!super.lowerBound(r).containsAll(aux2))
+					return Formula.FALSE;
+			}
 			super.bound(r, aux1, aux2);
 			if (aux1.size() != aux2.size())
 				xtra = xtra.and(lowers_symb.get(r).in(r)).and(r.in(uppers_symb.get(r)));
 		}
+		relations_symb.clear();
 		return xtra;
 	}
 
@@ -688,6 +696,9 @@ public class PardinusBounds extends Bounds {
 	 */
 	public Expression reify(TupleSet tset) {
 		Expression r = ConstantExpression.NONE;
+		for (int i = 1; i < tset.arity(); i++)
+			r = r.product(ConstantExpression.NONE);
+		
 		Iterator<Tuple> it = tset.iterator();
 		while (it.hasNext()) {
 			Tuple u = it.next();
@@ -1067,8 +1078,8 @@ public class PardinusBounds extends Bounds {
 		}
 	}
 
-	public void config() {
-		
+	public boolean resolved() {
+		return relations_symb.isEmpty();
 	}
 
 }
