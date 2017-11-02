@@ -46,6 +46,7 @@ import kodkod.ast.IntComparisonFormula;
 import kodkod.ast.IntConstant;
 import kodkod.ast.IntExpression;
 import kodkod.ast.IntToExprCast;
+import kodkod.ast.LeafExpression;
 import kodkod.ast.MultiplicityFormula;
 import kodkod.ast.NaryExpression;
 import kodkod.ast.NaryFormula;
@@ -462,22 +463,22 @@ public class ElectrodPrinter {
 			/** @return true if the given expression should be parenthesized when a 
 			 * child of a compound parent */
 			private boolean parenthesize(Expression child) { 
-				return child instanceof BinaryExpression || child instanceof IfExpression; 
+				// [HASLab] abuse parenthesis
+				return !(child instanceof LeafExpression);
 			}
 			
 			/** @return true if the given expression should be parenthesized when a 
 			 * child of a compound parent */
 			private boolean parenthesize(IntExpression child) { 
-				return !(child instanceof UnaryIntExpression || 
-						 child instanceof IntConstant || 
-						 child instanceof ExprToIntCast); 
+				// [HASLab] abuse parenthesis
+				return true;
 			}
 			
 			/** @return true if the given formula should be parenthesized when a 
 			 * child of a compound parent */
 			private boolean parenthesize(Formula child) { 
-				return !(child instanceof NotFormula || child instanceof ConstantFormula || 
-						 child instanceof RelationPredicate);
+				// [HASLab] abuse parenthesis
+				return !(child instanceof ConstantFormula);
 			}
 			
 			/** @ensures appends the given op and child to this.tokens; the child is 
