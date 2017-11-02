@@ -1088,34 +1088,30 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		return cache(intComp, ret);
 	}
 	
-	// [HASLab] should be converted into standard Kodkod before FOL translation
+	// [HASLab] will ignore the temporal operator and assume static version
+	// Guarantees that the process terminates and is sound for static relations
 	public final BooleanValue visit(UnaryTempFormula temporalFormula) {
-//		RelationCollector col = new RelationCollector(new HashSet<Node>());
-//		for (Relation r : temporalFormula.accept(col))
-//			if (r instanceof VarRelation)
-//				throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
 		BooleanValue ret = temporalFormula.formula().accept(this);
 		return cache(temporalFormula,ret);
 	}
 
-	// [HASLab] should be converted into standard Kodkod before FOL translation
+	// [HASLab] will ignore the temporal operator and assume static version
+	// Guarantees that the process terminates and is sound for static relations
 	public final BooleanValue visit(BinaryTempFormula temporalFormula) {
 		Formula f;
 		if (temporalFormula.op() == TemporalOperator.UNTIL)
 			f = temporalFormula.right();
-		else 
+		else if (temporalFormula.op() == TemporalOperator.RELEASE)
+			f = temporalFormula.left().or(temporalFormula.right());
+		else
 			f = temporalFormula.left();
-//		throw new UnsupportedOperationException("Temporal formula: "+temporalFormula);
 		BooleanValue ret = f.accept(this);
 		return cache(temporalFormula,ret);
 	}
 
-	// [HASLab] should be converted into standard Kodkod before FOL translation
+	// [HASLab] will ignore the temporal operator and assume static version
+	// Guarantees that the process terminates and is sound for static relations
 	public final BooleanMatrix visit(TempExpression temporalExpr) {
-//		RelationCollector col = new RelationCollector(new HashSet<Node>());
-//		for (Relation r : temporalExpr.accept(col))
-//			if (r instanceof VarRelation)
-//				throw new UnsupportedOperationException("Temporal expression: "+temporalExpr);
 		BooleanMatrix ret = temporalExpr.expression().accept(this);
 		return cache(temporalExpr,ret);
 	}
