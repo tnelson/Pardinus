@@ -683,6 +683,13 @@ public class PardinusBounds extends Bounds {
 		return xtra;
 	}
 
+	/**
+	 * Tests whether this bounds must be resolved.
+	 * @return whether this needs resolving.
+	 */
+	public boolean resolved() {
+		return relations_symb.isEmpty();
+	}
 
 	/**
 	 * Given a tuple set, returns an expression representing it by composing the
@@ -1076,10 +1083,6 @@ public class PardinusBounds extends Bounds {
 					unmodifiableMap(dereif), 
 					unmodifiableMap(deps));
 		}
-	}
-
-	public boolean resolved() {
-		return relations_symb.isEmpty();
 	}
 
 }
