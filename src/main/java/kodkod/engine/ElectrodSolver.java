@@ -71,6 +71,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		IterableSolver<PardinusBounds, ExtendedOptions> {
 
 	private final ExtendedOptions options;
+	private String file;
 
 	/**
 	 * Constructs a new Electrod solver with the given options.
@@ -103,11 +104,11 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		File dir = new File(options.uniqueName());
 		if (!dir.exists()) dir.mkdir();
 		
-		String file = dir+"/"+dir+"-"+bounds.hashCode();
+		file = dir+"/"+dir+"-"+bounds.hashCode();
 		PrintWriter writer;
 		try {
 			writer = new PrintWriter(file+".elo");
-			String electrod = ElectrodPrinter.print(formula, bounds);
+			String electrod = ElectrodPrinter.print(formula, bounds, rep);
 			writer.println(electrod);
 			writer.close();
 			rep.debug("New Electrod problem at "+dir+".");
@@ -170,7 +171,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	/**
 	 * {@inheritDoc}
 	 */
-	public void free() { }
+	public void free() {}
 
 	/**
 	 * {@inheritDoc}

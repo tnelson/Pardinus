@@ -25,6 +25,7 @@ package kodkod.engine.unbounded;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import kodkod.ast.BinaryExpression;
@@ -70,7 +71,7 @@ import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.engine.config.AbstractReporter;
+import kodkod.engine.bool.BooleanFormula;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
@@ -82,6 +83,7 @@ import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 import kodkod.util.ints.IndexedEntry;
+import kodkod.util.ints.IntSet;
 import kodkod.util.ints.SparseSequence;
 import kodkod.util.nodes.PrettyPrinter;
 
@@ -108,16 +110,35 @@ public class ElectrodPrinter {
 	 *            the problem's formula.
 	 * @param bounds
 	 *            the problem's bounds.
+	 * @param rep 
 	 * @return the printed Electrod problem.
 	 * @throws InvalidUnboundedProblem
 	 *             if the problem is not supported by Electrod.
 	 */
-	public static String print(Formula formula, PardinusBounds bounds)
+	public static String print(Formula formula, PardinusBounds bounds, Reporter rep)
 			throws InvalidUnboundedProblem {
 		// use a reporter to intercept the symmetry breaking predicate
 		Options opt = new ExtendedOptions();
 		StringBuilder temp = new StringBuilder();
-		Reporter reporter = new AbstractReporter() {
+		Reporter reporter = new Reporter() {
+			
+			@Override
+			public void warning(String warning) {
+				rep.warning(warning);
+			}
+			
+			@Override
+			public void translatingToCNF(BooleanFormula circuit) {}
+			
+			@Override
+			public void translatingToBoolean(Formula formula, Bounds bounds) {}
+			
+			@Override
+			public void solvingCNF(int primaryVars, int vars, int clauses) {}
+			
+			@Override
+			public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
+			
 			@Override
 			public void reportLex(List<Entry<Relation, Tuple>> _original,
 					List<Entry<Relation, Tuple>> _permuted) {
@@ -128,6 +149,25 @@ public class ElectrodPrinter {
 				temp.append(" <= ");
 				temp.append(printLexList(_permuted).substring(1));
 				temp.append(";\n");
+			}
+			
+			@Override
+			public void optimizingBoundsAndFormula() {}
+			
+			@Override
+			public void generatingSBP() {}
+			
+			@Override
+			public void detectingSymmetries(Bounds bounds) {}
+			
+			@Override
+			public void detectedSymmetries(Set<IntSet> parts) {
+				rep.detectedSymmetries(parts);
+			}
+			
+			@Override
+			public void debug(String debug) {
+				rep.debug(debug);
 			}
 		};
 		opt.setReporter(reporter);
