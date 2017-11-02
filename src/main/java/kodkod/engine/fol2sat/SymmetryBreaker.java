@@ -89,6 +89,13 @@ final class SymmetryBreaker {
 	 * @ensures this.bounds' = bounds && this.symmetries' = SymmetryDetector.partition(bounds) && no this.broken'
 	 **/
 	SymmetryBreaker(Bounds bounds, Reporter reporter) {
+		// [HASLab] everything must be resolved at this stage
+		if (bounds instanceof PardinusBounds) {
+			assert ((PardinusBounds) bounds).resolved();
+			if (((PardinusBounds) bounds).amalgamated() != null)
+				assert ((PardinusBounds) bounds).amalgamated().resolved();
+		}
+
 		// [HASLab] if the bounds are for a decomposed problem, the bounds of the 
 		// amalgamated problem should be considered when calculating symmetries.
 		// [HASLab] the original bounds are used to set the relevant relations,
@@ -99,10 +106,8 @@ final class SymmetryBreaker {
 		// [HASLab] we can't simply use the stage bounds at the integrated stage
 		// because the fixed configurations would affect the symmetries.
 		stage_bounds = bounds;
-		if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).amalgamated() != null) {
+		if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).amalgamated() != null) 
 			bounds = ((PardinusBounds) bounds).amalgamated();
-			assert ((PardinusBounds) bounds).resolved();
-		}
 		
 		this.reporter = reporter; // [HASLab] preserve reporter
 		this.bounds = bounds; 
@@ -211,12 +216,8 @@ final class SymmetryBreaker {
 					
 					// [HASLab] ignore symmetries that are not considered relevant at this stage 
 					// (should only occur on decomposed problems at the configuration stage).
-					if (!stage_bounds.relations().contains(r))  {
-						if (stage_bounds instanceof PardinusBounds && ((PardinusBounds) stage_bounds).relationsSymb().contains(r)) 
-							throw new RuntimeException(); 
-					 else
+					if (!stage_bounds.relations().contains(r))
 						continue; 
-					}
 
 					if (!rparts.representatives.contains(sym.min())) 
 						continue;  // r does not range over sym
@@ -241,11 +242,6 @@ final class SymmetryBreaker {
 						// which case atSameIndex will fail, but we still need to process it.
 						if (permIndex==entry.index() || (!(permValue instanceof BooleanConstant) && atSameIndex(original, permValue, permuted, entry.value())))
 							continue;
-						
-//						if (!isConfigAtIntegrated(r)) {} // this is also wrong
-//						else if (permIndex==entry.index() || (atSameIndex(original, permValue, permuted, entry.value())))
-//							continue;
-
 						
 						// [HASLab] we know that boolean constants only occur at
 						// configuration matrices; otherwise behave as usual.

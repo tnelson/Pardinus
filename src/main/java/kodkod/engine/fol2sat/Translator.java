@@ -428,39 +428,39 @@ public final class Translator {
 
 		// [HASLab] retrieve the additional formula imposed by the symbolic
 		// bounds, depending on execution stage
-		Formula x = Formula.TRUE;
+		Formula symbFormO = Formula.TRUE;
 		if (!incremental && bounds instanceof PardinusBounds) {
 			PardinusBounds pbounds = (PardinusBounds) bounds;
 			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
 			if (options.decomposed() && pbounds.amalgamated() != null)
-				x = pbounds.amalgamated().resolve();
+				symbFormO = pbounds.amalgamated().resolve();
 			// [HASLab] otherwise use regular bounds
 			else
-				x = pbounds.resolve();
+				symbFormO = pbounds.resolve();
 		}
 		
 		// [HASLab] add the extra symbolic formula
-		final AnnotatedNode<Formula> annotated_ = logging ? annotateRoots(originalFormula.and(x)) : annotate(originalFormula.and(x));
+		final AnnotatedNode<Formula> originalAnnotated = logging ? annotateRoots(originalFormula.and(symbFormO)) : annotate(originalFormula.and(symbFormO));
 		// Remove bindings for unused relations/ints if this is not an incremental translation.  If it is
 		// an incremental translation, we have to keep all bindings since they may be used later on.
 	
-		AnnotatedNode<Formula> annotated = annotated_;
+		AnnotatedNode<Formula> actualAnnotated = originalAnnotated;
 		if (!incremental) {
 			// [HASLab] retain the relations of the complete formula
-			bounds.relations().retainAll(annotated_.relations());
-			if (!annotated_.usesInts()) bounds.ints().clear();
+			bounds.relations().retainAll(originalAnnotated.relations());
+			if (!originalAnnotated.usesInts()) bounds.ints().clear();
 			// [HASLab] if dealing with a decomposed problem, split and resolve
 			// the formula and remove spurious variables from amalgamated as well
 			if (bounds instanceof PardinusBounds) {
 				PardinusBounds pbounds = (PardinusBounds) bounds;
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
-					Formula x2 = pbounds.resolve();
-					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula.and(x2), pbounds);
-					pbounds.amalgamated().relations().retainAll(annotated_.relations());
-					if (!annotated_.usesInts()) pbounds.amalgamated().ints().clear();
+					Formula symbFormA = pbounds.resolve();
+					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula.and(symbFormA), pbounds);
+					pbounds.amalgamated().relations().retainAll(originalAnnotated.relations());
+					if (!originalAnnotated.usesInts()) pbounds.amalgamated().ints().clear();
 					Formula actual = pbounds.integrated()?slices.getValue():slices.getKey();
 					options.reporter().debug("Sliced formula: "+actual);
-					annotated = logging ? annotateRoots(actual) : annotate(actual);
+					actualAnnotated = logging ? annotateRoots(actual) : annotate(actual);
 				} 
 			}
 		}
@@ -471,7 +471,7 @@ public final class Translator {
 		// eliminate top-level predicates, and also by skolemizing.  Then translate the optimize
 		// formula and bounds to a circuit, augment the circuit with a symmetry breaking predicate 
 		// that eliminates any remaining symmetries, and translate everything to CNF.
-		return toBoolean(optimizeFormulaAndBounds(annotated, annotated_.predicates(), breaker), breaker);
+		return toBoolean(optimizeFormulaAndBounds(actualAnnotated, originalAnnotated.predicates(), breaker), breaker);
 	}
 	
 	/**
@@ -494,7 +494,8 @@ public final class Translator {
 	 * @ensures this.options.reporter().optimizingBoundsAndFormula()
 	 * @return some f: AnnotatedNode<Formula> | meaning(f.node, this.bounds, this.options) = meaning(this.originalFormula, this.originalBounds, this.options)
 	 */
-	// [HASLab] consider predicates that may not belong to the formula
+	// [HASLab] consider predicates that may not belong to the formula but that
+	// may break the symmetries (for decomposed model finding)
 	private AnnotatedNode<Formula> optimizeFormulaAndBounds(AnnotatedNode<Formula> annotated, Map<Name,Set<RelationPredicate>> preds, SymmetryBreaker breaker) {	
 		options.reporter().optimizingBoundsAndFormula();
 
@@ -514,6 +515,7 @@ public final class Translator {
 			annotated = inlinePredicates(annotated, breaker.breakMatrixSymmetries(preds, true).keySet());  // [HASLab] predicate map
 			return options.skolemDepth()>=0 ? Skolemizer.skolemize(annotated, bounds, options) : annotated;
 		}
+		
 	}
 
 	/**
@@ -622,11 +624,11 @@ public final class Translator {
 			return toCNF((BooleanFormula)factory.accumulate(circuit), interpreter, log);
 		} else {
 			final BooleanValue circuit = (BooleanValue)FOL2BoolTranslator.translate(annotated, interpreter);
-			BooleanValue x = breaker.generateSBP(interpreter, options); // [HASLab] for Electrod we need symmetries even when trivial
+			BooleanValue sbp = breaker.generateSBP(interpreter, options); // [HASLab] for Electrod we need symmetries even when trivial
 			if (circuit.op()==Operator.CONST) { 
 				return trivial((BooleanConstant)circuit, null, bounds.relations());
 			} 
-			return toCNF((BooleanFormula)factory.and(circuit, x), interpreter, null);
+			return toCNF((BooleanFormula)factory.and(circuit, sbp), interpreter, null);
 		}
 	}
 	
@@ -769,7 +771,6 @@ public final class Translator {
 		}
 		
 		// [HASLab] consider the remainder bounds in decomposed problems.
-		// TODO: what about variables only symbolically bound?
 		if (optimized instanceof PardinusBounds && ((PardinusBounds) original).amalgamated() != null) {
 			PardinusBounds b = ((PardinusBounds) original).amalgamated();
 			for(Relation r : b.relations()) {
