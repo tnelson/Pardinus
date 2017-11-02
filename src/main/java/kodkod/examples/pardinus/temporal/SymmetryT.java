@@ -50,6 +50,7 @@ public final class SymmetryT implements DModel {
 	final private int n, m;
 
 	private final Relation r, s;
+	private final Relation b1,b2,b3,a1,a2,a3;
 	private final Universe u;
 
 	public enum VariantBounds {
@@ -60,17 +61,31 @@ public final class SymmetryT implements DModel {
 		V1, V2, V3, V4;
 	}
 
+	public enum VariantOrder {
+		V1, V2, V3, V4;
+	}
+
 	VariantBounds v1;
 	VariantFormulas v2;
+	VariantOrder v3;
 
 	public SymmetryT(String[] args) {
 		this.n = Integer.valueOf(args[0]);
 		this.m = n;
 		this.v1 = VariantBounds.valueOf(args[1]);
 		this.v2 = VariantFormulas.valueOf(args[2]);
+		this.v3 = VariantOrder.valueOf(args[3]);
 
 		r = Relation.unary("r");
 		s = VarRelation.unary("s");
+
+		a1 = Relation.binary("a_next");
+		a2 = Relation.unary("a_first");
+		a3 = Relation.unary("a_last");
+
+		b1 = Relation.binary("b_next");
+		b2 = Relation.unary("b_first");
+		b3 = Relation.unary("b_last");
 
 		final List<String> atoms = new ArrayList<String>(2 * n);
 		for (int i = 0; i < m; i++)
@@ -101,6 +116,12 @@ public final class SymmetryT implements DModel {
 			upper_r = lower_r;
 
 		bnd.bound(r, lower_r, upper_r);
+		
+		if (v3 == VariantOrder.V2 || v3 == VariantOrder.V3) {
+			bnd.bound(a1, upper_r.product(upper_r));
+			bnd.bound(a2, upper_r);
+			bnd.bound(a3, upper_r);
+		}
 
 		return bnd;
 	}
@@ -127,6 +148,12 @@ public final class SymmetryT implements DModel {
 
 		bnd.bound(s, lower_b, upper_b);
 
+		if (v3 == VariantOrder.V3 || v3 == VariantOrder.V4) {
+			bnd.bound(b1, upper_b.product(upper_b));
+			bnd.bound(b2, upper_b);
+			bnd.bound(b3, upper_b);
+		}
+
 		return bnd;
 	}
 
@@ -135,8 +162,10 @@ public final class SymmetryT implements DModel {
 		Formula x15 = r.one();
 
 		Formula x12 = x15;
-		return (v2 == VariantFormulas.V1 || v2 == VariantFormulas.V2) ? x12
+		Formula f = (v2 == VariantFormulas.V1 || v2 == VariantFormulas.V2) ? x12
 				: Formula.TRUE;
+		
+		return f.and(v3 == VariantOrder.V2 || v3 == VariantOrder.V3?a1.totalOrder(r, a2, a3).and(a2.in(a1.join(r))):Formula.TRUE);
 	}
 
 	@Override
@@ -144,8 +173,10 @@ public final class SymmetryT implements DModel {
 		Formula x14 = s.one().always();
 
 		Formula f2 = x14;
-		return (v2 == VariantFormulas.V2 || v2 == VariantFormulas.V3) ? f2
+		Formula f = (v2 == VariantFormulas.V2 || v2 == VariantFormulas.V3) ? f2
 				: Formula.TRUE;
+
+		return f.and(v3 == VariantOrder.V3 || v3 == VariantOrder.V4?b1.totalOrder(s, b2, b3).and(b2.in(b1.join(s))):Formula.TRUE);
 	}
 
 	@Override
