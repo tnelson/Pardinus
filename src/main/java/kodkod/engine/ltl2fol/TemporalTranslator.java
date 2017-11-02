@@ -102,7 +102,6 @@ public class TemporalTranslator {
 	 */
 	public static Formula translate(Formula formula) {
 		Formula nnfFormula = NNFReplacer.nnf(formula);
-
 		return LTL2FOLTranslator.translate(nnfFormula);
 	}
 

@@ -45,7 +45,7 @@ import kodkod.instance.Universe;
  *
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class TemporalBoundsExpander {
+class TemporalBoundsExpander {
 
 	/**
 	 * Create a new universe by duplicating the original one and creating a
@@ -106,7 +106,7 @@ public class TemporalBoundsExpander {
 	 *            The number of distinguished states in the trace.
 	 * @return
 	 */
-	public static PardinusBounds expand(PardinusBounds bounds, int traceLength) {
+	static PardinusBounds expand(PardinusBounds bounds, int traceLength) {
 		Universe u = createUniverse(bounds, traceLength);
 		return expand(bounds, traceLength, u);
 	}
