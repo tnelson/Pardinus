@@ -142,7 +142,10 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	/**
 	 * Releases the resources, if any.
 	 */
-	public void free() {}
+	public void free() {
+		solver1.free();
+		solver2.free();
+	}
 
 	@Override
 	public ExtendedOptions options() {
@@ -212,13 +215,5 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		
 	}
 	
-//	TODO: delete temp files
-//	if (!Options.isDebug()) {
-//	    File[] contents = dir.listFiles();
-//	    if (contents != null)
-//	        for (File f : contents)
-//	            f.delete();
-//	    dir.delete();
-//	}
 
 }
