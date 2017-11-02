@@ -26,18 +26,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Formula;
-import kodkod.ast.Relation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.config.DecomposedOptions.DMode;
-import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.decomp.DModel;
@@ -49,7 +46,6 @@ import kodkod.examples.pardinus.temporal.SymmetryT.VariantBounds;
 import kodkod.examples.pardinus.temporal.SymmetryT.VariantFormulas;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Assert;
@@ -58,8 +54,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tests whether the symmetries are being correctly calculated for decomposed
@@ -85,29 +79,17 @@ public class SymmetryTests {
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
 		opt.setMaxTraceLength(1);
-		Reporter rep = new AbstractReporter() {
-		    private Logger LOGGER = LoggerFactory.getLogger(Reporter.class);
-
+		Reporter rep = new SLF4JReporter() {
 			private Bounds bounds;
 
 			@Override
-			public void translatingToBoolean(Formula formula, Bounds bounds) {
-				if (Options.isDebug()) {
-					LOGGER.debug("Final problem:\n"+formula.toString()+"\n"+bounds.toString());
-				}
-			}
-
-			@Override
 			public void detectingSymmetries(Bounds bounds) {
-				if (Options.isDebug())
-					LOGGER.debug("Original bounds:\n"+bounds);
+				super.detectingSymmetries(bounds);
 				this.bounds = bounds;
 			}
 
 			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
-				if (last!=null) return;
-				
 				last = new HashSet<IntSet>(parts);
 				Set<Set<Object>> x = new HashSet<Set<Object>>();
 				for (IntSet y : parts) {
@@ -117,27 +99,9 @@ public class SymmetryTests {
 					x.add(z);
 				}
 				if (Options.isDebug())
-					LOGGER.debug("Detected symmetries: " + x.toString());
+					super.debug("symmetry: " + x.toString());
 			}
 
-			@Override
-			public void reportLex(List<Entry<Relation, Tuple>> _original,
-					List<Entry<Relation, Tuple>> _permuted) {
-				if (Options.isDebug())
-					LOGGER.debug("lex: "+_original.toString() + " < " + _permuted.toString());
-			}
-			
-			@Override
-			public void debug(String debug) {
-				if (Options.isDebug())
-					LOGGER.debug(debug);
-			}
-
-			@Override
-			public void warning(String warning) {
-				LOGGER.warn(warning);
-			}
-			
 		};
 
 		opt.setReporter(rep);
@@ -292,6 +256,7 @@ public class SymmetryTests {
 
 		}
 		Set<IntSet> decomp_syms = last;
+		dsolver.free();
 		last = null;
 
 		System.out.println("----- Solving in batch -----");

@@ -26,28 +26,25 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Formula;
-import kodkod.ast.Relation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
-import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
+import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.examples.pardinus.temporal.SymmetryT;
 import kodkod.examples.pardinus.temporal.SymmetryT.VariantBounds;
 import kodkod.examples.pardinus.temporal.SymmetryT.VariantFormulas;
 import kodkod.examples.pardinus.temporal.SymmetryT.VariantOrder;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Assert;
@@ -56,8 +53,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tests whether the symmetries are being correctly calculated for decomposed
@@ -82,20 +77,12 @@ public class SymmetryTests {
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
-		Reporter rep = new AbstractReporter() {
-		    private Logger LOGGER = LoggerFactory.getLogger(Reporter.class);
-
+		Reporter rep = new SLF4JReporter() {
 			private Bounds bounds;
 
 			@Override
-			public void translatingToBoolean(Formula formula, Bounds bounds) {
-				if (Options.isDebug())
-					LOGGER.debug("to bool: " + formula.toString() + ", "
-						+ bounds.toString().replaceAll("[\r\n]+", " "));
-			}
-
-			@Override
 			public void detectingSymmetries(Bounds bounds) {
+				super.detectingSymmetries(bounds);
 				this.bounds = bounds;
 			}
 
@@ -110,27 +97,9 @@ public class SymmetryTests {
 					x.add(z);
 				}
 				if (Options.isDebug())
-					LOGGER.debug("symmetry: " + x.toString());
+					super.debug("symmetry: " + x.toString());
 			}
 
-			@Override
-			public void reportLex(List<Entry<Relation, Tuple>> _original,
-					List<Entry<Relation, Tuple>> _permuted) {
-				if (Options.isDebug())
-					LOGGER.debug("lex: "+_original.toString() + " < " + _permuted.toString());
-			}
-			
-			@Override
-			public void debug(String debug) {
-				if (Options.isDebug())
-					LOGGER.debug(debug);
-			}
-
-			@Override
-			public void warning(String warning) {
-				LOGGER.warn(warning);
-			}
-			
 		};
 
 		opt.setReporter(rep);
@@ -285,7 +254,9 @@ public class SymmetryTests {
 				System.out.println();
 		}
 		Set<IntSet> decomp_syms = last;
-
+		dsolver.free();
+		last = null;
+		
 		System.out.println("----- Solving in batch -----");
 
 		opt.setRunDecomposed(false);
@@ -301,7 +272,8 @@ public class SymmetryTests {
 		} else
 			System.out.println();
 		Set<IntSet> batch_syms = last;
-
+		solver.free();
+		
 		// if config is trivially unsat, then time symmetries are not found on partial problem
 		Assert.assertTrue(batch_syms.equals(decomp_syms) || (decomp_counter == 1 && batch_syms.size() == decomp_syms.size()+1));
 		Assert.assertEquals(batch_counter, Math.min(1,decomp_counter));
