@@ -151,7 +151,9 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	@Override
 	public Formula visit(RelationPredicate relationPredicate) {
 		if (TemporalTranslator.isTemporal(relationPredicate))
-			return relationPredicate.toConstraints().always().accept(this);
+			// [HASLab] cannot simply expand since it would loose symmetry breaking
+			// return relationPredicate.toConstraints().always().accept(this);
+			throw new UnsupportedOperationException("Total orders over variable relations still no supported.");
 		else
 			return relationPredicate;
 	}
@@ -465,7 +467,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 				s = s.join(TRACE);
 			variables.add(s);
 		} else
-			throw new UnsupportedOperationException("vars");
+			throw new UnsupportedOperationException("No more vars.");
 	}
 
 	private void popVariable() {
