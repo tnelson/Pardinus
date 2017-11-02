@@ -22,10 +22,12 @@
  */
 package kodkod.engine;
 
+import java.io.File;
 import java.util.Iterator;
 
 import kodkod.ast.Formula;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.ltl2fol.TemporalTranslator;
@@ -93,7 +95,20 @@ public class PardinusSolver implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public void free() {}
+	public void free() {
+		solver.free();
+		if (!Options.isDebug()) {
+			File dir = new File(options.uniqueName());
+			if (dir.exists()) {
+				File[] contents = dir.listFiles();
+			    if (contents != null)
+			        for (File f : contents)
+			            f.delete();
+			    dir.delete();
+			}
+		}
+		
+	}
 
 	/**
 	 * Calculates the solver that will be used, given the specified options.
