@@ -3,18 +3,14 @@ package kodkod.test.pardinus.decomp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
-import kodkod.ast.Decl;
 import kodkod.ast.Formula;
-import kodkod.ast.Relation;
 import kodkod.engine.DecomposedPardinusSolver;
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.bool.BooleanFormula;
+import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
@@ -25,7 +21,6 @@ import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant1;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP.Variant2;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.Tuple;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
@@ -47,11 +42,7 @@ public class RedBlackTests {
 		opt2.setRunTarget(false);
 		opt2.setSolver(SATFactory.PMaxSAT4J);
 		opt.setConfigOptions(opt2);
-		Reporter rep = new Reporter() {
-			@Override
-			public void translatingToCNF(BooleanFormula circuit) {
-			}
-			
+		Reporter rep = new AbstractReporter() {
 			@Override
 			public void translatingToBoolean(Formula formula, Bounds bounds) {
 				System.out.println("to bool: " + formula.toString() + ", "
@@ -59,36 +50,8 @@ public class RedBlackTests {
 			}
 			
 			@Override
-			public void solvingCNF(int primaryVars, int vars, int clauses) {
-			}
-			
-			@Override
-			public void skolemizing(Decl decl, Relation skolem,
-					List<Decl> context) {
-			}
-			
-			@Override
-			public void optimizingBoundsAndFormula() {
-			}
-			
-			@Override
-			public void generatingSBP() {
-			}
-			
-			@Override
-			public void detectingSymmetries(Bounds bounds) {
-			}
-			
-			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
 				System.out.println("symmetry: " + parts.toString());
-			}
-			
-			@Override
-			public void reportLex(List<Entry<Relation, Tuple>> original,
-					List<Entry<Relation, Tuple>> permuted) {
-				// TODO Auto-generated method stub
-				
 			}
 
 			@Override

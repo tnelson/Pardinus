@@ -244,7 +244,6 @@ public final class RunTestModel {
 	private static Solution go_batch(PardinusBounds b1, Bounds b2, Formula f1, Formula f2) {
 		PardinusBounds x = new PardinusBounds(b1, b2);
 		PardinusBounds y = x.amalgamated();
-		y.resolve();
 
 		Solver solver = new Solver(psolver.options());
 		return solver.solve(f1.and(f2), y);

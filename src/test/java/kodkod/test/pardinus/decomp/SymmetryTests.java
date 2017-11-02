@@ -30,21 +30,22 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import kodkod.ast.Decl;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
-import kodkod.engine.bool.BooleanFormula;
 import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.examples.pardinus.decomp.SymmetryP.VariantBounds;
 import kodkod.examples.pardinus.decomp.SymmetryP.VariantFormulas;
+import kodkod.examples.pardinus.decomp.SymmetryP.VariantOrder;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
@@ -82,45 +83,29 @@ public class SymmetryTests {
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
-		Reporter rep = new Reporter() {
+		Reporter rep = new AbstractReporter() {
 		    private Logger LOGGER = LoggerFactory.getLogger(Reporter.class);
 
 			private Bounds bounds;
 
 			@Override
-			public void translatingToCNF(BooleanFormula circuit) {
-			}
-
-			@Override
 			public void translatingToBoolean(Formula formula, Bounds bounds) {
-				LOGGER.debug("to bool: " + formula.toString() + ", "
-						+ bounds.toString().replaceAll("[\r\n]+", " "));
-			}
-
-			@Override
-			public void solvingCNF(int primaryVars, int vars, int clauses) {
-			}
-
-			@Override
-			public void skolemizing(Decl decl, Relation skolem,
-					List<Decl> context) {
-			}
-
-			@Override
-			public void optimizingBoundsAndFormula() {
-			}
-
-			@Override
-			public void generatingSBP() {
+				if (Options.isDebug()) {
+					LOGGER.debug("Final problem:\n"+formula.toString()+"\n"+bounds.toString());
+				}
 			}
 
 			@Override
 			public void detectingSymmetries(Bounds bounds) {
+				if (Options.isDebug())
+					LOGGER.debug("Original bounds:\n"+bounds);
 				this.bounds = bounds;
 			}
 
 			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
+				if (last!=null) return;
+				
 				last = new HashSet<IntSet>(parts);
 				Set<Set<Object>> x = new HashSet<Set<Object>>();
 				for (IntSet y : parts) {
@@ -129,21 +114,28 @@ public class SymmetryTests {
 						z.add(bounds.universe().atom(w));
 					x.add(z);
 				}
-				LOGGER.debug("symmetry: " + x.toString());
+				if (Options.isDebug())
+					LOGGER.debug("Detected symmetries: " + x.toString());
 			}
 
 			@Override
 			public void reportLex(List<Entry<Relation, Tuple>> _original,
 					List<Entry<Relation, Tuple>> _permuted) {
-				LOGGER.debug("lex: "+_original.toString() + " < " + _permuted.toString());
-				
+				if (Options.isDebug())
+					LOGGER.debug("lex: "+_original.toString() + " < " + _permuted.toString());
 			}
 			
 			@Override
 			public void debug(String debug) {
-				LOGGER.debug(debug);
+				if (Options.isDebug())
+					LOGGER.debug(debug);
 			}
 
+			@Override
+			public void warning(String warning) {
+				LOGGER.warn(warning);
+			}
+			
 		};
 
 		opt.setReporter(rep);
@@ -151,55 +143,116 @@ public class SymmetryTests {
 
 	private VariantBounds v1;
 	private VariantFormulas v2;
+	private VariantOrder v3;
 
-	public SymmetryTests(VariantBounds v1, VariantFormulas v2) {
+	public SymmetryTests(VariantBounds v1, VariantFormulas v2, VariantOrder v3) {
 		this.v1 = v1;
 		this.v2 = v2;
+		this.v3 = v3;
 	}
 
-	@Parameters(name = "{0} {1}")
+	@Parameters(name = "{0} {1} {2}")
 	public static Collection<Object[]> data() {
 		Object[][] data = new Object[][] {
-				{ VariantBounds.V1, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
-				{ VariantBounds.V2, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  asymmetric b2
-				{ VariantBounds.V3, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
-				{ VariantBounds.V4, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
-				{ VariantBounds.V5, VariantFormulas.V1 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
-				{ VariantBounds.V6, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
-				{ VariantBounds.V7, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     constant b1,   symmetric b2
-				{ VariantBounds.V8, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  constant b2
-				{ VariantBounds.V9, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     empty b1,      symmetric b2
-				{ VariantBounds.V0, VariantFormulas.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  empty b2
-				{ VariantBounds.V1, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
-				{ VariantBounds.V2, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
-				{ VariantBounds.V3, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
-				{ VariantBounds.V4, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
-				{ VariantBounds.V5, VariantFormulas.V2 }, // unsat, p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
-				{ VariantBounds.V6, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
-				{ VariantBounds.V7, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, constant b1,   symmetric b2
-				{ VariantBounds.V8, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  constant b2
-				{ VariantBounds.V9, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, empty b1,      symmetric b2
-				{ VariantBounds.V0, VariantFormulas.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  empty b2
-				{ VariantBounds.V1, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  symmetric b2
-				{ VariantBounds.V2, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  asymmetric b2
-				{ VariantBounds.V3, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
-				{ VariantBounds.V4, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
-				{ VariantBounds.V5, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
-				{ VariantBounds.V6, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
-				{ VariantBounds.V7, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, constant b1,   symmetric b2
-				{ VariantBounds.V8, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  constant b2
-				{ VariantBounds.V9, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, empty b1,      symmetric b2
-				{ VariantBounds.V0, VariantFormulas.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  empty b2
-				{ VariantBounds.V1, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  symmetric b2
-				{ VariantBounds.V2, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  asymmetric b2
-				{ VariantBounds.V3, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
-				{ VariantBounds.V4, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
-				{ VariantBounds.V5, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
-				{ VariantBounds.V6, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
-				{ VariantBounds.V7, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     constant b1,   symmetric b2
-				{ VariantBounds.V8, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  constant b2
-				{ VariantBounds.V9, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     empty b1,      symmetric b2
-				{ VariantBounds.V0, VariantFormulas.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  empty b2
+				{ VariantBounds.V1, VariantFormulas.V1, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V1, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V1, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V1, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V1, VariantOrder.V1 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V1, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V2, VariantOrder.V1 }, // unsat, p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V4, VariantOrder.V1 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V4, VariantOrder.V1 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V4, VariantOrder.V1 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V4, VariantOrder.V1 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V4, VariantOrder.V1 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V4, VariantOrder.V1 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+
+				{ VariantBounds.V1, VariantFormulas.V1, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V1, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V1, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V1, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V1, VariantOrder.V2 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V1, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V2, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V2, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V2, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V2, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V2, VariantOrder.V2 }, // unsat, p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V2, VariantOrder.V2 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V3, VariantOrder.V2 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V3, VariantOrder.V2 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V3, VariantOrder.V2 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V3, VariantOrder.V2 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V3, VariantOrder.V2 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V3, VariantOrder.V2 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V4, VariantOrder.V2 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V4, VariantOrder.V2 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V4, VariantOrder.V2 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V4, VariantOrder.V2 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V4, VariantOrder.V2 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V4, VariantOrder.V2 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+
+				{ VariantBounds.V1, VariantFormulas.V1, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V1, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V1, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V1, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V1, VariantOrder.V3 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V1, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V2, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V2, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V2, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V2, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V2, VariantOrder.V3 }, // unsat, p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V2, VariantOrder.V3 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V3, VariantOrder.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V3, VariantOrder.V3 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V3, VariantOrder.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V3, VariantOrder.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V3, VariantOrder.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V3, VariantOrder.V3 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V4, VariantOrder.V3 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V4, VariantOrder.V3 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V4, VariantOrder.V3 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V4, VariantOrder.V3 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V4, VariantOrder.V3 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V4, VariantOrder.V3 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+
+				{ VariantBounds.V1, VariantFormulas.V1, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V1, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V1, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V1, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V1, VariantOrder.V4 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V1, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V2, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V2, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V2, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V2, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V2, VariantOrder.V4 }, // unsat, p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V2, VariantOrder.V4 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V3, VariantOrder.V4 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V3, VariantOrder.V4 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V3, VariantOrder.V4 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V3, VariantOrder.V4 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V3, VariantOrder.V4 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V3, VariantOrder.V4 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
+				{ VariantBounds.V1, VariantFormulas.V4, VariantOrder.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  symmetric b2
+				{ VariantBounds.V2, VariantFormulas.V4, VariantOrder.V4 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  asymmetric b2
+				{ VariantBounds.V3, VariantFormulas.V4, VariantOrder.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V4, VariantFormulas.V4, VariantOrder.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, symmetric b2
+				{ VariantBounds.V5, VariantFormulas.V4, VariantOrder.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
+				{ VariantBounds.V6, VariantFormulas.V4, VariantOrder.V4 }, // sat,   p1 trivial,     p2 trivial,     asymmetric b1, asymmetric b2
 				};
 		return Arrays.asList(data);
 	}
@@ -208,7 +261,7 @@ public class SymmetryTests {
 	public void test() {
 		int n = 3;
 
-		String[] args = new String[] { n + "", v1.name(), v2.name() };
+		String[] args = new String[] { n + "", v1.name(), v2.name(), v3.name() };
 		DModel model = new SymmetryP(args);
 
 		opt.setBitwidth(model.getBitwidth());
@@ -236,6 +289,7 @@ public class SymmetryTests {
 
 		}
 		Set<IntSet> decomp_syms = last;
+		last = null;
 
 		System.out.println("----- Solving in batch -----");
 
