@@ -25,6 +25,7 @@ package kodkod.engine.decomp;
 import java.util.Iterator;
 
 import kodkod.ast.Formula;
+import kodkod.engine.DProblemExecutor;
 import kodkod.engine.IterableSolver;
 import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;

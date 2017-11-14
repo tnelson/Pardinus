@@ -23,6 +23,7 @@
 package kodkod.engine.decomp;
 
 import kodkod.engine.AbstractSolver;
+import kodkod.engine.DProblemExecutor;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.instance.PardinusBounds;

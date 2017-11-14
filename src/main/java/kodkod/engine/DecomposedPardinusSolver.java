@@ -34,9 +34,6 @@ import kodkod.engine.config.DecomposedOptions;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.PardinusOptions;
-import kodkod.engine.decomp.DProblemExecutor;
-import kodkod.engine.decomp.DProblemExecutorImpl;
-import kodkod.engine.decomp.StatsExecutor;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 
@@ -96,7 +93,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	 * Solves a decomposed model finding problem, comprised by a pair of
 	 * {@link kodkod.ast.Formula formulas} and a pair of
 	 * {@link kodkod.instance.Bounds bounds}. Essentially launches an
-	 * {@link kodkod.engine.decomp.DProblemExecutor executor} to handle the
+	 * {@link kodkod.engine.DProblemExecutor executor} to handle the
 	 * decomposed problem in parallel, given the defined
 	 * {@link kodkod.pardinus.decomp.DOptions options}.
 	 * @param f1
@@ -119,7 +116,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 
 		if (options.decomposedMode() == DMode.EXHAUSTIVE)
-			executor = new StatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
+			executor = new DStatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
 		else
 			executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), options.decomposedMode() == DMode.HYBRID);
 		executor.start();
@@ -171,7 +168,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		 */
 		DSolutionIterator(Formula formula, PardinusBounds bounds, DecomposedOptions options, ExtendedSolver solver1, S solver2) {
 			if (options.decomposedMode() == DMode.EXHAUSTIVE)
-				executor = new StatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
+				executor = new DStatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
 			else if (options.decomposedMode() == DMode.HYBRID)
 				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), true);
 			else
@@ -207,7 +204,10 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		public Solution next() {
 			if (!hasNext()) return null;
 			try {
-				return executor.next();
+				Solution sol = executor.next();
+				if (DProblemExecutor.isPoison(sol)) // poison, failed
+					throw new RuntimeException("Integrated solver failed.");
+				return sol;
 			} catch (InterruptedException e) {
 				try {
 					executor.terminate();

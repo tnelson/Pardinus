@@ -20,17 +20,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.engine.decomp;
+package kodkod.engine;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import kodkod.ast.Formula;
-import kodkod.engine.ExtendedSolver;
-import kodkod.engine.AbstractSolver;
-import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.decomp.DMonitor;
+import kodkod.engine.decomp.DProblem;
 import kodkod.instance.PardinusBounds;
 
 /**
@@ -52,14 +51,14 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 		extends Thread {
 
 	/** the decomposed problem bounds */
-	protected final PardinusBounds bounds;
+	public final PardinusBounds bounds;
 
 	/** the decomposed problem formulas */
-	protected final Formula formula;
+	public final Formula formula;
 
 	/** the underlying solvers */
-	protected final ExtendedSolver solver_partial;
-	protected final S solver_integrated;
+	public final ExtendedSolver solver_partial;
+	public final S solver_integrated;
 
 	/**
 	 * the executor managing the launching of the threads
@@ -157,5 +156,13 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 			boolean timeout = executor.awaitTermination(0, TimeUnit.HOURS);
 			monitor.terminated(timeout);
 		}
+	}
+	
+	static Solution poison() {
+		return Solution.unsatisfiable(new Statistics(-1,-1,-1,-1,-1),null);
+	}
+	
+	static boolean isPoison(Solution sol) {
+		return sol.stats().primaryVariables() == -1;
 	}
 }

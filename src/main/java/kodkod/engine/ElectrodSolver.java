@@ -140,8 +140,10 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			throw new AbortedException("Electrod process failed.", e);
 		}
 
-		if (ret != 0)
+		if (ret != 0) {
 			rep.warning("Electrod exit code: "+ret);
+			throw new AbortedException("Electrod exit code: "+ret);
+		}
 		else
 			rep.debug("Electrod ran successfully.");
 		

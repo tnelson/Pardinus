@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.engine.decomp;
+package kodkod.engine;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,12 +29,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
-import kodkod.engine.ExtendedSolver;
-import kodkod.engine.AbstractSolver;
-import kodkod.engine.Solution;
-import kodkod.engine.Solver;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.decomp.DMonitorImpl;
+import kodkod.engine.decomp.DProblem;
+import kodkod.engine.decomp.IProblem;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 
@@ -45,7 +44,7 @@ import kodkod.instance.PardinusBounds;
  * 
  * @author Nuno Macedo // [HASLab] decomposed model finding
  */
-public class StatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> extends DProblemExecutor<S> {
+public class DStatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> extends DProblemExecutor<S> {
 
 
 	/** the queue of solvers to be launched */
@@ -58,9 +57,9 @@ public class StatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOpti
 	 * Constructs an implementation of a decomposed problem solver to retrieve the problem's stats.
 	 * @param rep 
 	 *
-	 * @see kodkod.engine.decomp.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
+	 * @see kodkod.engine.DProblemExecutor#DProblemExecutor(Formula, Formula, Bounds, Bounds, Solver, int)
 	 */
-	public StatsExecutor(Formula formula, PardinusBounds bounds,
+	public DStatsExecutor(Formula formula, PardinusBounds bounds,
 			ExtendedSolver solver1, S solver2, int n, Reporter rep) {
 		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
 	}
@@ -69,7 +68,7 @@ public class StatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOpti
 	 * Registers the solution but never shuts down the executor, since every
 	 * integrated problem is expected to terminate.
 	 * 
-	 * @see kodkod.engine.decomp.DProblemExecutor#end(kkpartition.PProblem)
+	 * @see kodkod.engine.DProblemExecutor#end(kkpartition.PProblem)
 	 */
 	@Override
 	public void end(DProblem<S> sol) {
@@ -110,7 +109,7 @@ public class StatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOpti
 	/**
 	 * Waits until every problem terminates or there is a timeout.
 	 * 
-	 * @see kodkod.engine.decomp.DProblemExecutor#next()
+	 * @see kodkod.engine.DProblemExecutor#next()
 	 */
 	public Solution next() throws InterruptedException {
 		boolean timeout = executor.awaitTermination(3, TimeUnit.HOURS);
@@ -122,6 +121,12 @@ public class StatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOpti
 	public boolean hasNext() throws InterruptedException {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public void failed(Throwable e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

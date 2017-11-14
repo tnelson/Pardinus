@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.engine.decomp;
+package kodkod.engine;
 
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
@@ -29,12 +29,12 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
-import kodkod.engine.ExtendedSolver;
-import kodkod.engine.AbstractSolver;
-import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.decomp.DMonitorImpl;
+import kodkod.engine.decomp.DProblem;
+import kodkod.engine.decomp.IProblem;
 import kodkod.instance.PardinusBounds;
 
 /**
@@ -47,7 +47,7 @@ import kodkod.instance.PardinusBounds;
  * @param <S>
  *            The solver that will be used to handle integrated problems.
  *
- * @see kodkod.engine.decomp.DProblemExecutor
+ * @see kodkod.engine.DProblemExecutor
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  */
 public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, ExtendedOptions>>
@@ -173,6 +173,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				&& (running.get() == 0 || (amalgamated != null && running
 						.get() == 1))) {
 			try {
+				solution_queue.put(poison());
 				terminate();
 			} catch (InterruptedException e1) {
 				// was interrupted in the meantime
