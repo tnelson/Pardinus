@@ -23,6 +23,10 @@
 package kodkod.engine;
 
 import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -172,7 +176,14 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), true);
 			else
 				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), false);
-			executor.start();
+			ExecutorService ex = Executors.newSingleThreadExecutor();
+			Future<?> fut = ex.submit(executor);
+			try {
+				fut.get();
+			} catch (InterruptedException | ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		/**

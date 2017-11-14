@@ -114,6 +114,12 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 	public abstract void end(DProblem<S> sol);
 
 	/**
+	 * TODO
+	 * @param e
+	 */
+	public abstract void failed(Throwable e);
+
+	/**
 	 * Starts the solving process.
 	 */
 	public abstract void run();

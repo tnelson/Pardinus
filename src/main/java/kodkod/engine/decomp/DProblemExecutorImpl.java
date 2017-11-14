@@ -33,6 +33,7 @@ import kodkod.engine.ExtendedSolver;
 import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.PardinusBounds;
 
@@ -157,6 +158,28 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		}
 	}
 
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void failed(Throwable e) {
+		solver_partial.options().reporter().warning("Integrated solver failed.");
+		if (Options.isDebug())
+			solver_partial.options().reporter().debug(e.getStackTrace().toString());
+		running.decrementAndGet();
+		// if last running integrated...
+		if (monitor.isConfigsDone()
+				&& (running.get() == 0 || (amalgamated != null && running
+						.get() == 1))) {
+			try {
+				terminate();
+			} catch (InterruptedException e1) {
+				// was interrupted in the meantime
+			}
+		}
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */

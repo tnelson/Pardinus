@@ -84,18 +84,22 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 	}
 
 	public void run() {
-		if (solver instanceof IterableSolver<?, ?>) {
-			if (solutions == null) {
-				solutions = ((IterableSolver) solver).solveAll(formula, bounds);
+		try {
+			if (solver instanceof IterableSolver<?, ?>) {
+				if (solutions == null) {
+					solutions = ((IterableSolver) solver).solveAll(formula, bounds);
+					solver.free();
+				}
+				if (solutions!=null)
+					solution = solutions.next();
+			} else {
+				solution = ((AbstractSolver) solver).solve(formula, bounds);
 				solver.free();
 			}
-			if (solutions!=null)
-				solution = solutions.next();
-		} else {
-			solution = ((AbstractSolver) solver).solve(formula, bounds);
-			solver.free();
+			manager.end(this);
+		} catch (Exception e) {
+			manager.failed(e);
 		}
-		manager.end(this);
 	}
 
 	public boolean sat() {
