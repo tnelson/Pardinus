@@ -155,14 +155,14 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			ElectrodReader rd = new ElectrodReader(bounds);
 			TemporalInstance res = rd.read(xml);
 			
-			// TODO: get the stats from the header of the electrod solution
+			Statistics st = new Statistics(rd.nbvars, 0,0, rd.ctime, rd.atime);
 
 			Solution sol;
 			// ElectrodReader#read returns null if unsat
 			if (res == null)
-				sol = Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
+				sol = Solution.unsatisfiable(st, null);
 			else
-				sol = Solution.satisfiable(new Statistics(0, 0, 0, 0, 0), res);
+				sol = Solution.satisfiable(st, res);
 			
 			return sol;
 		}

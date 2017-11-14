@@ -56,6 +56,7 @@ public class ElectrodReader {
 
 	private List<Instance> insts;
 	private int loop;
+	public int nbvars, ctime, atime;
 	private PardinusBounds bounds;
 
 	/**
@@ -90,6 +91,9 @@ public class ElectrodReader {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(file);
 			Element root = doc.getDocumentElement();
+			nbvars = Integer.valueOf(root.getAttributes().getNamedItem("nbvars").getNodeValue());
+			ctime = Integer.valueOf(root.getAttributes().getNamedItem("conversion-time").getNodeValue());
+			atime = Integer.valueOf(root.getAttributes().getNamedItem("analysis-time").getNodeValue());
 			NodeList elems = root.getChildNodes();
 			int c = 0;
 			for (int i = 0; i < elems.getLength(); i++) {
