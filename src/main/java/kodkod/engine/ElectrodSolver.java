@@ -104,7 +104,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		File dir = new File(options.uniqueName());
 		if (!dir.exists()) dir.mkdir();
 		
-		file = dir+"/"+dir+"-"+bounds.hashCode();
+		file = dir+"/"+String.format("%05d", bounds.integration);
 		PrintWriter writer;
 		try {
 			writer = new PrintWriter(file+".elo");

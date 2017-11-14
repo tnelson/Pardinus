@@ -121,7 +121,8 @@ public class PardinusBounds extends Bounds {
 	private PardinusBounds amalgamated;
 	public Instance config;
 	public boolean trivial_config;
-
+	public int integration = 0;
+	
 	/* Constructors */
 
 	/**
@@ -166,7 +167,7 @@ public class PardinusBounds extends Bounds {
 			Map<Relation, Expression> lowers_s,
 			Map<Relation, Expression> uppers_s, SymbolicStructures symbolic,
 			SparseSequence<TupleSet> intbounds, PardinusBounds amalg,
-			boolean integrated, boolean trivial_config, Instance config) {
+			boolean integrated, boolean trivial_config, Instance config, int integration) {
 		super(factory, lower, upper, intbounds);
 		this.targets = target;
 		this.weights = weights;
@@ -182,6 +183,7 @@ public class PardinusBounds extends Bounds {
 		this.symbolic = new SymbolicStructures(symbolic.reif,symbolic.dereif,symbolic.deps);
 		this.relations_symb = symb_relations(lowers_symb, uppers_symb);
 		this.config = config;
+		this.integration = integration;
 	}
 
 	/**
@@ -197,7 +199,7 @@ public class PardinusBounds extends Bounds {
 				.upperBounds(), partial.lowers_trace, partial.uppers_trace,
 				partial.loop(), partial.targets, partial.weights,
 				partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(),
-				null, partial.integrated, partial.trivial_config,partial.config);
+				null, partial.integrated, partial.trivial_config,partial.config,partial.integration);
 
 		// TODO: trace bounds are not being correctly assigned
 		
@@ -210,7 +212,7 @@ public class PardinusBounds extends Bounds {
 				new ArrayList<Map<VarRelation, TupleSet>>(), new ArrayList<Map<VarRelation, TupleSet>>(),
 				0, partial.targets, partial.weights,
 				partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(),
-				null, partial.integrated, partial.trivial_config,partial.config);
+				null, partial.integrated, partial.trivial_config, partial.config, partial.integration);
 
 		current = 0;
 		add();
@@ -460,7 +462,8 @@ public class PardinusBounds extends Bounds {
 			throw new IllegalArgumentException("Not decomposed bounds.");
 		if (!sol.sat())
 			throw new IllegalArgumentException("Can't integrate unsat.");
-
+		
+		integration++;
 		
 		PardinusBounds integrated = amalgamated.clone();
 		integrated.config = sol.instance();
@@ -478,6 +481,7 @@ public class PardinusBounds extends Bounds {
 		integrated.amalgamated = this.amalgamated;
 		integrated.trivial_config = this.trivial_config;
 		integrated.integrated = true;
+		integrated.integration = this.integration;
 		
 		return integrated;
 	}
@@ -828,7 +832,8 @@ public class PardinusBounds extends Bounds {
 				unmodifiableMap(targets), unmodifiableMap(weights),
 				unmodifiableMap(lowers_symb), unmodifiableMap(uppers_symb),
 				symbolic.unmodifiableView(), unmodifiableSequence(super.intBounds()),
-				amalgamated==null?null:amalgamated.unmodifiableView(), integrated, trivial_config,config);
+				amalgamated==null?null:amalgamated.unmodifiableView(), integrated, 
+				trivial_config,config,integration);
 	}
 
 	/**
@@ -854,7 +859,7 @@ public class PardinusBounds extends Bounds {
 					new LinkedHashMap<Relation, Expression>(uppers_symb),
 					symbolic.clone(),
 					super.intBounds().clone(), amalgamated == null?null:amalgamated.clone(),
-					integrated, trivial_config,config);
+					integrated, trivial_config, config, integration);
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
 		}
