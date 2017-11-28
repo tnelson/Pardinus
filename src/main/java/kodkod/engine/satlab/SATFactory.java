@@ -217,9 +217,16 @@ public abstract class SATFactory {
 	}
 
 	// [HASLab]
-	public static final SATFactory electrod() {
-		final String executable = findStaticLibrary("electrod");
-		return externalFactory(executable==null ? "electrod" : executable, 
+	public static final SATFactory electrodS() {
+		final String executable = findStaticLibrary("electrodS");
+		return externalFactory(executable==null ? "electrodS" : executable, 
+				null, new String[0]);
+	}
+
+	// [HASLab]
+	public static final SATFactory electrodX() {
+		final String executable = findStaticLibrary("electrodX");
+		return externalFactory(executable==null ? "electrodX" : executable, 
 				null, new String[0]);
 	}
 

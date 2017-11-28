@@ -36,6 +36,7 @@ import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.unbounded.ElectrodPrinter;
 import kodkod.engine.unbounded.ElectrodReader;
 import kodkod.engine.unbounded.InvalidUnboundedProblem;
@@ -116,22 +117,29 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		} catch (FileNotFoundException e) {
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
-		ProcessBuilder builder = new ProcessBuilder("electrod",Options.isDebug()?"-vv":"-v",file+".elo");
+		ProcessBuilder builder;
+		if (options.solver().toString().equals("electrodX")) {
+			builder = new ProcessBuilder("electrod",Options.isDebug()?"-vv":"-v",file+".elo");
+		} else {
+			builder = new ProcessBuilder("electrod",Options.isDebug()?"-vv":"-v","-t","NuSMV",file+".elo");
+			
+		}
 		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
+		builder.redirectErrorStream(true);
 		int ret;
 		try {
 			Process p = builder.start();
 
 			BufferedReader output = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
-			BufferedReader error = new BufferedReader(new InputStreamReader(
-					p.getErrorStream()));
+//			BufferedReader error = new BufferedReader(new InputStreamReader(
+//					p.getErrorStream()));
 
 			String oline = "";
 			while ((oline = output.readLine()) != null)
 				rep.debug(oline);
-			while ((oline = error.readLine()) != null)
-				rep.warning(oline);
+//			while ((oline = error.readLine()) != null)
+//				rep.warning(oline);
 
 			ret = p.waitFor();
 		} catch (InterruptedException e) {

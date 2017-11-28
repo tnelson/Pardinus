@@ -89,7 +89,7 @@ public class SymmetryTests {
 
 			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
-				last = new HashSet<IntSet>(parts);
+				if (last==null) last = new HashSet<IntSet>(parts);
 				Set<Set<Object>> x = new HashSet<Set<Object>>();
 				for (IntSet y : parts) {
 					Set<Object> z = new HashSet<Object>();

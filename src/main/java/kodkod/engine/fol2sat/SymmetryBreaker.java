@@ -283,6 +283,7 @@ final class SymmetryBreaker {
 								
 				// [HASLab] report lexes
 				reporter.reportLex(_original,_permuted);
+				reporter.debug("act: "+original.toString()+" < "+permuted.toString());
 				sbp.add(leq(factory, original, permuted));
 				original.clear();
 				permuted.clear();
@@ -337,6 +338,11 @@ final class SymmetryBreaker {
 			}
 		};
 		Collections.sort(relParts, cmp);
+		String s = "Sorted: "; // [HASLab]
+		for (int i = 0; i < relParts.size(); i++)
+			s+=relParts.get(i).relation;
+		reporter.debug(s);
+			
 		return relParts;
 	}
 	
