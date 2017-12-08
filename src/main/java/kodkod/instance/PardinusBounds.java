@@ -26,6 +26,7 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static kodkod.util.ints.Ints.unmodifiableSequence;
 
+import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -329,10 +330,18 @@ public class PardinusBounds extends Bounds {
 	 */
 	@Override
 	public Map<Relation, TupleSet> lowerBounds() {
-		Map<Relation, TupleSet> aux = new HashMap<Relation, TupleSet>(
-				lowers_trace.get(current));
-		aux.putAll(super.lowerBounds());
-		return aux;
+		// [HASLab] shallow clone of both static and dynamic bounds
+		Map<Relation,TupleSet> res = new AbstractMap<Relation, TupleSet>() {
+			@Override
+			public Set<java.util.Map.Entry<Relation, TupleSet>> entrySet() {
+				Set<java.util.Map.Entry<Relation, TupleSet>> x = new HashSet<Map.Entry<Relation,TupleSet>>();
+				x.addAll(PardinusBounds.super.lowerBounds().entrySet());
+				for (java.util.Map.Entry<VarRelation, TupleSet> e : lowers_trace.get(current).entrySet())
+					x.add(new SimpleEntry<Relation,TupleSet>(e.getKey(),e.getValue()));
+				return x;
+			}
+		};
+		return unmodifiableMap(res);
 	}
 
 	/**
@@ -357,10 +366,18 @@ public class PardinusBounds extends Bounds {
 	 */
 	@Override
 	public Map<Relation, TupleSet> upperBounds() {
-		Map<Relation, TupleSet> aux = new HashMap<Relation, TupleSet>(
-				uppers_trace.get(current));
-		aux.putAll(super.upperBounds());
-		return aux;
+		// [HASLab] shallow clone of both static and dynamic bounds
+		Map<Relation,TupleSet> res = new AbstractMap<Relation, TupleSet>() {
+			@Override
+			public Set<java.util.Map.Entry<Relation, TupleSet>> entrySet() {
+				Set<java.util.Map.Entry<Relation, TupleSet>> x = new HashSet<Map.Entry<Relation,TupleSet>>();
+				x.addAll(PardinusBounds.super.upperBounds().entrySet());
+				for (java.util.Map.Entry<VarRelation, TupleSet> e : uppers_trace.get(current).entrySet())
+					x.add(new SimpleEntry<Relation,TupleSet>(e.getKey(),e.getValue()));
+				return x;
+			}
+		};
+		return unmodifiableMap(res);
 	}
 
 	/**
@@ -421,9 +438,9 @@ public class PardinusBounds extends Bounds {
 	public void setTarget(Relation r, TupleSet target) {
 		if (!relations().contains(r))
 			throw new IllegalArgumentException("r !in this.relations");
-		if (!upperBounds().get(r).containsAll(target))
+		if (!upperBound(r).containsAll(target))
 			throw new IllegalArgumentException("target.tuples !in upper.tuples");
-		if (!target.containsAll(lowerBounds().get(r)))
+		if (!target.containsAll(lowerBound(r)))
 			throw new IllegalArgumentException("lower.tuples !in target.tuples");
 		targets.put(r, target.clone().unmodifiableView());
 	}

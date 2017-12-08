@@ -119,12 +119,12 @@ class TemporalBoundsExpander {
 		bounds.first();
 		for (Relation r : bounds.relations()) {
 			if (r instanceof VarRelation) {
-				TupleSet tupleSetL = convert(bounds.lowerBounds().get(r), u);
-				TupleSet tupleSetU = convert(bounds.upperBounds().get(r), u);
+				TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
+				TupleSet tupleSetU = convert(bounds.upperBound(r), u);
 				newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime), tupleSetU.product(tupleSetTime));
 			} else {
-				TupleSet tupleSetL = convert(bounds.lowerBounds().get(r), u);
-				TupleSet tupleSetU = convert(bounds.upperBounds().get(r), u);
+				TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
+				TupleSet tupleSetU = convert(bounds.upperBound(r), u);
 				newBounds.bound(r, tupleSetL, tupleSetU);			}
 		}
 
