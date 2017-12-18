@@ -880,6 +880,7 @@ public class ElectrodPrinter {
 	 * @return the normalized identifier.
 	 */
 	static String normRel(String id) {
+		if (id.isEmpty()) return "unnamed#unnamed";
 		return id.replace("/", "##").replace(".", "#");
 	}
 	
@@ -894,6 +895,7 @@ public class ElectrodPrinter {
 	 * @return the denormalized identifier.
 	 */
 	static String denormRel(String id) {
+		if (id.equals("unnamed#unnamed")) return "";
 		return id.replace("##", "/").replace("#", ".");
 	}
 	
