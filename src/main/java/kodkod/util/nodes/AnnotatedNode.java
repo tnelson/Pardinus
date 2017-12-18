@@ -28,6 +28,7 @@ import static kodkod.ast.RelationPredicate.Name.TOTAL_ORDERING;
 import static kodkod.ast.operator.FormulaOperator.AND;
 import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
+import static kodkod.ast.operator.TemporalOperator.ALWAYS;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -61,6 +62,7 @@ import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprCastOperator;
 import kodkod.ast.operator.FormulaOperator;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.AbstractVoidVisitor;
 import kodkod.util.collections.ArrayStack;
@@ -468,7 +470,11 @@ public final class AnnotatedNode<N extends Node> {
 		 */
 		// [HASLab]
 		public void visit(UnaryTempFormula tempFormula) {
-			visited(tempFormula);
+			final TemporalOperator op = tempFormula.op();
+			if (!negated && op==ALWAYS) 
+				tempFormula.formula().accept(this);
+			else
+				visited(tempFormula);
 		}
 		/**
 		 * Calls visited(tempFormula); tempFormula's children are not top-level formulas
