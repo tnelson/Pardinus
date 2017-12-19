@@ -446,7 +446,7 @@ public class ElectrodPrinter {
 			}
 
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
-			public void visit(Variable node) { append(node); }
+			public void visit(Variable node) { append(normRel(node.name())); }
 
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
 			public void visit(ConstantExpression node) { append(node); }
