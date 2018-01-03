@@ -186,7 +186,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 */
 	@Override
 	public void run() {
-		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(200);
 
 		// if hybrid mode, launch the amalgamated problem
 		if (hybrid) {
@@ -197,44 +196,48 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			amalgamated = amalg;
 		}
 
-		Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
-		boolean first = true;
+		launchBatch(true);
+	}
+	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
+	
+	void launchBatch(boolean first) {
+		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(200);
 
-		while (configs.hasNext() && !executor.isShutdown()) {
-			// collects a batch of configurations
-			while (configs.hasNext() && problem_queue.size() < 200) {
-				Solution config = configs.next();
+		// collects a batch of configurations
+		while (configs.hasNext() && problem_queue.size() < 200) {
+			Solution config = configs.next();
 
-				if (config.unsat()) {
-					// when there is no configuration no solver will ever
-					// callback so it must be terminated here
-					if (first)
-						try {
-							terminate();
-							solution_queue.put(config);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-				} else {
-					monitor.newConfig(config);
-					DProblem<S> problem = new IProblem<S>(config, this);
-					problem.setPriority(MIN_PRIORITY);
-					problem_queue.add(problem);
-				}
-				first = false;
+			if (config.unsat()) {
+				// when there is no configuration no solver will ever
+				// callback so it must be terminated here
+				if (first)
+					try {
+						terminate();
+						solution_queue.put(config);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+			} else {
+				monitor.newConfig(config);
+				DProblem<S> problem = new IProblem<S>(config, this);
+				problem.setPriority(MIN_PRIORITY);
+				problem_queue.add(problem);
 			}
-			// launches a batch of integrated problems
-			while (!problem_queue.isEmpty() && !executor.isShutdown()) {
-				DProblem<S> problem = problem_queue.remove();
-				try {
-					executor.execute(problem);
-				} catch (RejectedExecutionException e) {
-					// if it was shutdown in the meantime
-				}
-				running.incrementAndGet();
-			}
+			first = false;
 		}
-		monitor.configsDone();
+		// launches a batch of integrated problems
+		while (!problem_queue.isEmpty() && !executor.isShutdown()) {
+			DProblem<S> problem = problem_queue.remove();
+			try {
+				executor.execute(problem);
+			} catch (RejectedExecutionException e) {
+				// if it was shutdown in the meantime
+			}
+			running.incrementAndGet();
+		}
+		
+		if (!configs.hasNext()) 
+			monitor.configsDone();
 	}
 
 	/**
@@ -265,6 +268,9 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		// for an output
 		if (buffer != null)
 			return true;
+		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone())
+			launchBatch(false);
+			
 		if (executor.isShutdown() && running.get() == 0)
 			return !solution_queue.isEmpty();
 		// if there are integrated problems still running, can't just test for
