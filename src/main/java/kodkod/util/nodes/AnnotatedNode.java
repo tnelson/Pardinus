@@ -470,11 +470,7 @@ public final class AnnotatedNode<N extends Node> {
 		 */
 		// [HASLab]
 		public void visit(UnaryTempFormula tempFormula) {
-			final TemporalOperator op = tempFormula.op();
-			if (!negated && op==ALWAYS) 
-				tempFormula.formula().accept(this);
-			else
-				visited(tempFormula);
+			visited(tempFormula);
 		}
 		/**
 		 * Calls visited(tempFormula); tempFormula's children are not top-level formulas
