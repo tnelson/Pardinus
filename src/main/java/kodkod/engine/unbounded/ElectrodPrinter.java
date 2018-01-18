@@ -805,19 +805,20 @@ public class ElectrodPrinter {
 			
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(ProjectExpression node) {
-				append("project");
-				append("[");
-				node.expression().accept(this);
-				comma();
-				append("<");
-				final Iterator<IntExpression> cols = node.columns();
-				cols.next().accept(this);
-				while(cols.hasNext()) { 
-					comma();
-					cols.next().accept(this);
-				}
-				append(">");
-				append("]");
+				if (node.arity() > 1)
+					throw new IllegalArgumentException("No support for non-unary projections: "+node);
+				if (!(node.column(0) instanceof IntConstant))
+					throw new IllegalArgumentException("No support for non-constant projections: "+node);
+				
+				int col = ((IntConstant) node.column(0)).value();
+				int arity = node.expression().arity();
+				Expression f = node.expression();
+				for (int i = 0; i < col; i++)
+					f = (Expression.UNIV).join(f);
+				for (int i = col+1; i < arity; i++)
+					f = f.join(Expression.UNIV);
+
+				f.accept(this);
 			}
 			
 			/** @ensures this.tokens' = concat[ this.tokens, "Int","[",
