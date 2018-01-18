@@ -656,7 +656,7 @@ public class ElectrodPrinter {
 				if (pleft) indent++;
 				visitChild(node.left(), pleft);
 				if (pleft) indent--;
-				if (op == FormulaOperator.AND && indent==0)
+				if (op == FormulaOperator.AND)
 					append(";");
 				else
 					infix(op);
@@ -733,8 +733,13 @@ public class ElectrodPrinter {
 			public void visit(Comprehension node) {
 				append("{");
 				node.decls().accept(this);
-				infix("|");
+				infix("{");
+				indent++;
+				newline();
 				node.formula().accept(this);
+				indent--;
+				newline();
+				append("}");
 				append("}");	
 			}
 			
@@ -753,11 +758,13 @@ public class ElectrodPrinter {
 			public void visit(QuantifiedFormula node) {
 				keyword(node.quantifier());
 				node.decls().accept(this);
-				infix("|");
+				infix("{");
 				indent++;
 				newline();
 				node.formula().accept(this);
+				newline();
 				indent--;
+				append("}");
 			}
 			
 			/*--------------NARY NODES---------------*/
@@ -806,19 +813,7 @@ public class ElectrodPrinter {
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(ProjectExpression node) {
 				if (node.arity() > 1)
-					throw new IllegalArgumentException("No support for non-unary projections: "+node);
-				if (!(node.column(0) instanceof IntConstant))
-					throw new IllegalArgumentException("No support for non-constant projections: "+node);
-				
-				int col = ((IntConstant) node.column(0)).value();
-				int arity = node.expression().arity();
-				Expression f = node.expression();
-				for (int i = 0; i < col; i++)
-					f = (Expression.UNIV).join(f);
-				for (int i = col+1; i < arity; i++)
-					f = f.join(Expression.UNIV);
-
-				f.accept(this);
+					throw new IllegalArgumentException("No support for projections: "+node);
 			}
 			
 			/** @ensures this.tokens' = concat[ this.tokens, "Int","[",
