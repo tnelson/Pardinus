@@ -656,7 +656,7 @@ public class ElectrodPrinter {
 				if (pleft) indent++;
 				visitChild(node.left(), pleft);
 				if (pleft) indent--;
-				if (op == FormulaOperator.AND)
+				if (op == FormulaOperator.AND && indent == 0)
 					append(";");
 				else
 					infix(op);
