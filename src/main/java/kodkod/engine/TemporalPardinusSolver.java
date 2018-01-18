@@ -124,7 +124,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole translation = null;
-			int traceLength = 0;
+			int traceLength = options.minTraceLength()-1;
 			while (!isSat && traceLength <= options.maxTraceLength()) {
 				startTransl = System.currentTimeMillis();
 				// increase while UNSAT and below max
@@ -252,11 +252,12 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private int trivial;
 		private final PardinusBounds tempBounds;
 		private final ExtendedOptions opt; // [HASLab] temporal
-		private int current_trace = 0;
+		private int current_trace;
 		private boolean incremented = false;
 
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			this.translTime = System.currentTimeMillis();
+			current_trace = options.minTraceLength()-1;
 			do {
 				current_trace++;
 				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
@@ -505,7 +506,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private Solution nextNonTrivialSolution() {
 			final TMode mode = opt.targetMode();
 			boolean isSat = false;
-			int traceLength = 1;
+			int traceLength = opt.minTraceLength();
 			long solveTime = 0;
 			Translation.Whole transl = null;
 			int primaryVars = -1;

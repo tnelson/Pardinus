@@ -378,7 +378,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			if (posts > 0) {
 				return v2.some().and(forceNextExists(v2, posts).and(e));
 			} else {
-				return v2.some().and(e);
+				return v2.some().and(e); 
 			}
 		default:
 			return e;

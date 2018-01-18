@@ -56,6 +56,8 @@ public interface TemporalOptions extends PardinusOptions {
 	 */
 	public int maxTraceLength();
 
+	public int minTraceLength();
+
 	/**
 	 * Updates the maximum trace length that will be explored by the temporal
 	 * model finder. {@link UnboundedSolver unbounded temporal solvers} will
@@ -65,5 +67,8 @@ public interface TemporalOptions extends PardinusOptions {
 	 *            the new maximum trace length.
 	 */
 	public void setMaxTraceLength(int traceLength);
+	
+	public void setMinTraceLength(int traceLength);
+
 
 }

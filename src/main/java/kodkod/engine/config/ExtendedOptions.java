@@ -57,6 +57,7 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		this.decomp_mode = options.decomp_mode;
 		this.config_options = options.config_options.clone();
 		this.trace_length = options.trace_length;
+		this.min_trace_length = options.min_trace_length;
 		this.name = options.name;
 	}
 
@@ -166,7 +167,8 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 	
 	private boolean run_temporal = false;
 	private int trace_length = 2;
-	
+	private int min_trace_length = 1;
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -188,6 +190,13 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 	public int maxTraceLength() {
 		return trace_length;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public int minTraceLength() {
+		return min_trace_length;
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -195,6 +204,14 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 	public void setMaxTraceLength(int trace_length) {
 		this.trace_length = trace_length;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	public void setMinTraceLength(int trace_length) {
+		this.min_trace_length = trace_length;
+	}
+
 
 	// unbounded solving
 	private boolean run_unbounded = false;
@@ -241,6 +258,7 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		c.setDecomposedMode(decomp_mode);
 		c.setConfigOptions(config_options);
 		c.setMaxTraceLength(trace_length);
+		c.setMinTraceLength(min_trace_length);
 		c.name = name;
 		return c;
 	}
@@ -263,6 +281,8 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		b.append(threads);
 		b.append("\n run temporal: ");
 		b.append(run_temporal);
+		b.append("\n min trace length: ");
+		b.append(min_trace_length);
 		b.append("\n max trace length: ");
 		b.append(trace_length);
 		b.append("\n run unbounded: ");
