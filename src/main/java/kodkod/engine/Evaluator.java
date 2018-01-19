@@ -198,18 +198,4 @@ public final class Evaluator {
 		return options + "\n" + instance;
 	}
 
-	public int steps() {
-		final BooleanMatrix sol = Translator.evaluate(TemporalTranslator.LAST,instance,options);
-		TupleSet ts = instance.universe().factory().setOf(1, sol.denseIndices());	
-		System.out.println("steps: "+sol.denseIndices()+", "+ts);
-		return -1;
-	}
-
-	public int loop() {
-		final BooleanMatrix sol = Translator.evaluate(TemporalTranslator.LOOP,instance,options);
-		TupleSet ts = instance.universe().factory().setOf(1, sol.denseIndices());	
-		System.out.println("loop: "+sol.denseIndices()+", "+ts);
-		return -1;
-	}
-
 }
