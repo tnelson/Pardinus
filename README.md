@@ -5,9 +5,9 @@ Pardinus is Kodkod's (slightly bulkier) Iberian cousin
 
 This repository includes the source code for the Pardinus solver, an extension to the [Kodkod](http://alloy.mit.edu/kodkod/index.html) solver for relational logic. It extends Kodkod with the following functionalities:
 * Target-oriented and weighted-target oriented model finding
-* Decomposed parallelized model finding
 * Model finding over temporal relational formulas
-* Support for unbounded relational model finding (planned)
+* Decomposed parallelized model finding
+* Support for unbounded relational model finding
 
 Pardinus is developed at the High-Assurance Software Laboratory ([HASLab](http://haslab.di.uminho.pt)), from INESC TEC and University of Minho, and is led by Alcino Cunha and Nuno Macedo. It is used as a back-end for [Electrum Analyzer](), an extension to the Alloy Analyzer.
 
