@@ -22,9 +22,14 @@ Pardinus can be built and run following the instructions from [Kodkod](https://g
 - Eduardo Pessoa, 2015 - 2016
 
 ## History
+### Pardinus (1.0) (January 2017)
+<!--- FM 18 -->
+- Support for unbounded model finding in SMV through [Electrod](https://github.com/grayswandyr/electrod/releases/tag/0.1)
+- Support for [Electrum Analyzer 1.0](https://github.com/haslab/Electrum/releases/tag/v1.0)
+
 ### Pardinus (0.3.1) (September 2016) 
 <!--- TACAS 17 -->
-- Support for relative bounds on decomposed model finding
+- Support for symbolic bounds on decomposed model finding
 
 ### Pardinus (0.3.0) (September 2016) 
 <!--- TRUST Workshop 16 -->
