@@ -107,6 +107,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		String file = dir.toString()+File.separatorChar+String.format("%05d", bounds.integration);
 		PrintWriter writer;
 		try {
+			if (!Options.isDebug())
+				new File(file+".elo").deleteOnExit();
 			writer = new PrintWriter(file+".elo");
 			String electrod = ElectrodPrinter.print(formula, bounds, rep);
 			writer.println(electrod);
@@ -150,6 +152,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		
 		File xml = new File(file+".xml");
 		
+		if (!Options.isDebug())
+			xml.deleteOnExit();
+
 		if (!xml.exists())
 			throw new AbortedException("XML solution file not found: "+file+".xml.");
 		else {
