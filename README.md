@@ -44,10 +44,10 @@ point to the JDK 8 home directory.
   `$ waf configure --prefix=. --libdir=lib build install`  
 
 ## Collaborators
-- Alcino Cunha, 2013 - present
-- Nuno Macedo, 2013 - present
-- Tiago Guimarães, 2013 - 2014
-- Eduardo Pessoa, 2015 - 2016
+- Nuno Macedo, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - present
+- Alcino Cunha, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - present
+- Eduardo Pessoa, HASLab, INESC TEC & Universidade do Minho, Portugal, 2015 - 2016
+- Tiago Guimarães, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - 2014
 
 ## History
 ### Pardinus ([1.0.0](https://github.com/haslab/Pardinus/releases/tag/v1.0)) (January 2017)
