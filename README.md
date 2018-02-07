@@ -12,7 +12,7 @@ This repository includes the source code for the Pardinus solver, an extension t
 
 Pardinus is developed at the High-Assurance Software Laboratory ([HASLab](http://haslab.di.uminho.pt)), from INESC TEC and University of Minho, and is led by Alcino Cunha and Nuno Macedo. It is used as a back-end for [Electrum Analyzer](https://github.com/haslab/Electrum), which is itself an extension to the Alloy Analyzer.
 
-Pardinus is open-source and available under the [MIT license](LICENSE), as is Kodkod. However, the implementation relies on third-party solvers ([SAT4J](http://www.sat4j.org), [MiniSat](http://minisat.se), [Glucose/Syrup](http://www.labri.fr/perso/lsimon/glucose/), [(P)Lingeling](http://fmv.jku.at/lingeling/), [Yices](http://yices.csl.sri.com)), and [Electrod](https://github.com/grayswandyr/electrod/), some of which are released under stricter licenses (see the various LICENSE files in the distribution for details).
+Pardinus is open-source and available under the [MIT license](LICENSE), as is Kodkod. However, the implementation relies on third-party solvers ([SAT4J](http://www.sat4j.org), [MiniSat](http://minisat.se), [Glucose/Syrup](http://www.labri.fr/perso/lsimon/glucose/), [(P)Lingeling](http://fmv.jku.at/lingeling/), [Yices](http://yices.csl.sri.com), and [Electrod](https://github.com/grayswandyr/electrod/)), some of which are released under stricter licenses (see the various LICENSE files in the distribution for details).
 
 ## Building Pardinus
 
