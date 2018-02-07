@@ -55,7 +55,7 @@ point to the JDK 8 home directory.
 - Support for unbounded model finding in SMV through [Electrod](https://github.com/grayswandyr/electrod/releases/tag/0.1)
 - Support for [Electrum Analyzer 1.0](https://github.com/haslab/Electrum/releases/tag/v1.0)
 
-### Pardinus ([0.3.1](https://github.com/haslab/Pardinus/releases/tag/v0.3.1)) (September 2016) 
+### Pardinus ([0.3.1](https://github.com/haslab/Pardinus/releases/tag/v0.3.1)) (November 2016) 
 <!--- TACAS 17 submission --->
 - Support for symbolic bound declaration
 - Described in the ATVA 17 [paper](https://doi.org/10.1007/978-3-319-68167-2_23)
