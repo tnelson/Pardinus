@@ -63,7 +63,7 @@ point to the JDK 8 home directory.
 ### Pardinus ([0.3.0](https://github.com/haslab/Pardinus/releases/tag/v0.3.0)) (September 2016) 
 <!--- TRUST Workshop 16 --->
 - Initial support for (past and future) temporal model finding
-- Support for [Electrum Analyzer 0.2]()
+- Support for [Electrum Analyzer 0.2](https://github.com/haslab/Electrum/releases/tag/v0.2)
 
 ### Pardinus ([0.2.0](https://github.com/haslab/Pardinus/releases/tag/v0.2.0)) (April 2016) 
 <!--- ASE16 submission --->
