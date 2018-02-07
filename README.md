@@ -5,7 +5,7 @@ Pardinus is Kodkod's (slightly bulkier) Iberian cousin.
 
 This repository includes the source code for the Pardinus solver, an extension to the [Kodkod](http://alloy.mit.edu/kodkod/index.html) solver for relational logic. It extends Kodkod with the following functionalities:
 * Target-oriented and weighted-target oriented model finding
-* Model finding over temporal relational formulas
+* Model finding over (past and future) temporal relational formulas
 * Symbolic bound declarations
 * Decomposed parallelized model finding
 * Unbounded relational model finding
@@ -62,7 +62,7 @@ point to the JDK 8 home directory.
 
 ### Pardinus ([0.3.0](https://github.com/haslab/Pardinus/releases/tag/v0.3.0)) (September 2016) 
 <!--- TRUST Workshop 16 --->
-- Initial support for temporal model finding
+- Initial support for (past and future) temporal model finding
 - Support for [Electrum Analyzer 0.2]()
 
 ### Pardinus ([0.2.0](https://github.com/haslab/Pardinus/releases/tag/v0.2.0)) (April 2016) 
