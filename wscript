@@ -30,20 +30,33 @@ def build(bld):
     bld(rule = 'unzip ${SRC} -x *src.jar',
         source = 'sat4j-pb-v20130525.zip',
         target = 'org.sat4j.pb.jar')
+    bld(rule = 'wget -O slf4j-api-1.7.25.jar "http://search.maven.org/remotecontent?filepath=org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar"',
+        target = 'slf4j-api-1.7.25.jar')
     bld.add_group()
 
-    if bld.options.lib:
-        bld(features  = 'javac jar',
-            name      = 'kodkod',
-            srcdir    = 'src/main/java', 
-            outdir    = 'kodkod',
-            compat    = '1.8',
-            classpath = ['.', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'],
-            manifest  = 'src/MANIFEST',
-            basedir   = 'kodkod',
-            destfile  = 'kodkod.jar')
+    bld(features  = 'javac jar',
+        name      = 'pardinus',
+        srcdir    = 'src/main/java', 
+        outdir    = 'pardinus',
+        compat    = '1.8',
+        classpath = ['.', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar', 'slf4j-api-1.7.25.jar'],
+        manifest  = 'src/MANIFEST',
+        basedir   = 'pardinus',
+        destfile  = 'pardinus.jar')
     
-    bld.install_files('${LIBDIR}', ['org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar'])
+    bld(features  = 'javac jar',
+        name      = 'examples',
+        use       = 'pardinus',
+        srcdir    = 'src/main/java', 
+        outdir    = 'examples',
+        compat    = '1.8',
+        classpath = ['.', 'pardinus.jar', 'org.sat4j.core.jar', 'org.sat4j.maxsat.jar', 'org.sat4j.pb.jar', 'slf4j-api-1.7.25.jar'],
+        manifest  = 'src/MANIFEST',
+        basedir   = 'examples',
+        destfile  = 'examples.jar')
+    
+
+    bld.install_files('${LIBDIR}', ['pardinus.jar', 'examples.jar'])
 
 def distclean(ctx):
     from waflib import Scripting
@@ -65,18 +78,18 @@ def test(bld):
         target = 'hamcrest-core.jar')
     bld.add_group()
 
-    cp = ['.', 'kodkod.jar', 'org.sat4j.core.jar', 'junit.jar', 'hamcrest-core.jar']
+    cp = ['.', 'pardinus.jar', 'org.sat4j.core.jar', 'junit.jar', 'hamcrest-core.jar']
     bld(features  = 'javac',
         name      = 'test',
         srcdir    = 'src/test/java',
         classpath = cp, 
-        use       = ['kodkod'])
+        use       = ['pardinus'])
     bld.add_group()
 
     bld(rule = 'java -cp {classpath} -Djava.library.path={libpath} {junit} {test}'.format(classpath = ':'.join(cp),
                                                                                           libpath = bld.env.LIBDIR,
                                                                                           junit = 'org.junit.runner.JUnitCore',
-                                                                                          test = 'kodkod.test.AllTests'),
+                                                                                          test = 'pardinus.test.AllTests'),
         always = True) 
 
 
