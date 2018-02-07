@@ -1,7 +1,7 @@
 Pardinus
 =======
 
-Pardinus is Kodkod's (slightly bulkier) Iberian cousin
+Pardinus is Kodkod's (slightly bulkier) Iberian cousin.
 
 This repository includes the source code for the Pardinus solver, an extension to the [Kodkod](http://alloy.mit.edu/kodkod/index.html) solver for relational logic. It extends Kodkod with the following functionalities:
 * Target-oriented and weighted-target oriented model finding
@@ -10,7 +10,7 @@ This repository includes the source code for the Pardinus solver, an extension t
 * Decomposed parallelized model finding
 * Unbounded relational model finding
 
-Pardinus is developed at the High-Assurance Software Laboratory ([HASLab](http://haslab.di.uminho.pt)), from INESC TEC and University of Minho, and is led by Alcino Cunha and Nuno Macedo. It is used as a back-end for [Electrum Analyzer](), which is itself an extension to the Alloy Analyzer.
+Pardinus is developed at the High-Assurance Software Laboratory ([HASLab](http://haslab.di.uminho.pt)), from INESC TEC and University of Minho, and is led by Alcino Cunha and Nuno Macedo. It is used as a back-end for [Electrum Analyzer](https://github.com/haslab/Electrum), which is itself an extension to the Alloy Analyzer.
 
 Pardinus is open-source and available under the [MIT license](LICENSE), as is Kodkod. However, the implementation relies on third-party solvers ([SAT4J](http://www.sat4j.org), [MiniSat](http://minisat.se), [Glucose/Syrup](http://www.labri.fr/perso/lsimon/glucose/), [(P)Lingeling](http://fmv.jku.at/lingeling/), [Yices](http://yices.csl.sri.com)), and [Electrod](https://github.com/grayswandyr/electrod/), some of which are released under stricter licenses (see the various LICENSE files in the distribution for details).
 
@@ -24,22 +24,22 @@ Pardinus can be built and run following the instructions from [Kodkod](https://g
 
 ## History
 ### Pardinus (1.0.0) (January 2017)
-<!--- FM 18 -->
+<!--- FM,ABZ 18 submissions --->
 - Support for unbounded model finding in SMV through [Electrod](https://github.com/grayswandyr/electrod/releases/tag/0.1)
 - Support for [Electrum Analyzer 1.0](https://github.com/haslab/Electrum/releases/tag/v1.0)
 
 ### Pardinus (0.3.1) (September 2016) 
-<!--- TACAS 17 -->
+<!--- TACAS 17 submission --->
 - Support for symbolic bound declaration
 - Described in the ATVA 17 [paper](https://doi.org/10.1007/978-3-319-68167-2_23)
 
 ### Pardinus (0.3.0) (September 2016) 
-<!--- TRUST Workshop 16 -->
+<!--- TRUST Workshop 16 --->
 - Initial support for temporal model finding
 - Support for [Electrum Analyzer 0.2]()
 
 ### Pardinus (0.2.0) (April 2016) 
-<!--- ASE16 submission -->
+<!--- ASE16 submission --->
 - Initial support for decomposed model finding
 - Support for Syrup (parallel Glucose)
 
