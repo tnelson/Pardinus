@@ -14,7 +14,34 @@ Pardinus is developed at the High-Assurance Software Laboratory ([HASLab](http:/
 
 Pardinus is open-source and available under the [MIT license](LICENSE), as is Kodkod. However, the implementation relies on third-party solvers ([SAT4J](http://www.sat4j.org), [MiniSat](http://minisat.se), [Glucose/Syrup](http://www.labri.fr/perso/lsimon/glucose/), [(P)Lingeling](http://fmv.jku.at/lingeling/), [Yices](http://yices.csl.sri.com)), and [Electrod](https://github.com/grayswandyr/electrod/), some of which are released under stricter licenses (see the various LICENSE files in the distribution for details).
 
-Pardinus can be built and run following the instructions from [Kodkod](https://github.com/emina/kodkod/blob/master/README.md#building-and-installing-kodkod).
+## Building Pardinus
+
+Pardinus inherits [Kodkod](https://github.com/emina/kodkod/blob/master/README.md#building-and-installing-kodkod)'s 
+building and running instructions.
+
+Kodkod uses the [Waf](https://github.com/waf-project/waf) build
+system, which requires Python 2.5 or later. You will also need Java 8
+and a C/C++ compiler, and your JAVA_HOME environment variable needs to
+point to the JDK 8 home directory.
+
+* Set the JAVA_HOME variable. For example, on OS X:
+
+  ``$ export JAVA_HOME=`/usr/libexec/java_home` ``
+
+* Clone the Pardinus repository:
+
+  `$ git clone https://github.com/haslab/Pardinus.git`  
+  `$ cd Pardinus`  
+
+* Download Waf 1.8.12 and make it executable:
+
+  `$ wget --no-check-certificate https://waf.io/waf-1.8.12`  
+  `$ chmod u+x waf-1.8.12`   
+  `$ alias waf=$PWD/waf-1.8.12`
+
+* Build the native libraries, ``pardinus.jar``, and ``examples.jar`` and install them into the ``pardinus/lib`` directory:
+
+  `$ waf configure --prefix=. --libdir=lib build install`  
 
 ## Collaborators
 - Alcino Cunha, 2013 - present
