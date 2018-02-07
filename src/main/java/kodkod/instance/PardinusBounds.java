@@ -472,7 +472,7 @@ public class PardinusBounds extends Bounds {
 		return integrated;
 	}
 	
-	public PardinusBounds integrated(Solution sol) {
+	public synchronized PardinusBounds integrated(Solution sol) {
 		if (integrated)
 			throw new IllegalArgumentException("Already integrated.");
 		if (amalgamated == null)
