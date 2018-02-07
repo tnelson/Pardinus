@@ -50,17 +50,17 @@ point to the JDK 8 home directory.
 - Eduardo Pessoa, 2015 - 2016
 
 ## History
-### Pardinus (1.0.0) (January 2017)
+### Pardinus ([1.0.0](https://github.com/haslab/Pardinus/releases/tag/v1.0)) (January 2017)
 <!--- FM,ABZ 18 submissions --->
 - Support for unbounded model finding in SMV through [Electrod](https://github.com/grayswandyr/electrod/releases/tag/0.1)
 - Support for [Electrum Analyzer 1.0](https://github.com/haslab/Electrum/releases/tag/v1.0)
 
-### Pardinus (0.3.1) (September 2016) 
+### Pardinus ([0.3.1](https://github.com/haslab/Pardinus/releases/tag/v0.3.1)) (September 2016) 
 <!--- TACAS 17 submission --->
 - Support for symbolic bound declaration
 - Described in the ATVA 17 [paper](https://doi.org/10.1007/978-3-319-68167-2_23)
 
-### Pardinus (0.3.0) (September 2016) 
+### Pardinus ([0.3.0](https://github.com/haslab/Pardinus/releases/tag/v0.3.0)) (September 2016) 
 <!--- TRUST Workshop 16 --->
 - Initial support for temporal model finding
 - Support for [Electrum Analyzer 0.2]()
