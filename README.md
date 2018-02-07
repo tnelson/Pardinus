@@ -65,7 +65,7 @@ point to the JDK 8 home directory.
 - Initial support for temporal model finding
 - Support for [Electrum Analyzer 0.2]()
 
-### Pardinus (0.2.0) (April 2016) 
+### Pardinus ([0.2.0](https://github.com/haslab/Pardinus/releases/tag/v0.2.0)) (April 2016) 
 <!--- ASE16 submission --->
 - Initial support for decomposed model finding
 - Support for Syrup (parallel Glucose)
