@@ -50,7 +50,7 @@ point to the JDK 8 home directory.
 - Tiago Guimarães, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - 2014
 
 ## History
-### Pardinus ([1.0.0](https://github.com/haslab/Pardinus/releases/tag/v1.0)) (January 2017)
+### Pardinus ([1.0.0](https://github.com/haslab/Pardinus/releases/tag/v1.0)) (January 2018)
 <!--- FM,ABZ 18 submissions --->
 - Support for unbounded model finding in SMV through [Electrod](https://github.com/grayswandyr/electrod/releases/tag/0.1)
 - Support for [Electrum Analyzer 1.0](https://github.com/haslab/Electrum/releases/tag/v1.0)
