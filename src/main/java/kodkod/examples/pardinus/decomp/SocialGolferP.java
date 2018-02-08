@@ -150,18 +150,8 @@ public final class SocialGolferP {
 			final int size = Integer.parseInt(args[3]);
 			if (players<1 || groups<1 || weeks<1 || size<1) usage();
 			final SocialGolferP model = new SocialGolferP();
-//			final Formula f = model.schedule();
-			final Bounds b = model.bounds(players, groups, weeks, size);
-//			System.out.println(PrettyPrinter.print(f, 2));
-//			System.out.println(b);
-//			final Solver s = new Solver();
-//			s.options().setSolver(SATFactory.MiniSat);
-//			s.options().setBitwidth(32-Integer.numberOfLeadingZeros(groups*weeks));
-////			s.options().setReporter(new ConsoleReporter());
-//			s.options().setSymmetryBreaking(1000);
-//			final Solution sol = s.solve(f, b);
+model.bounds(players, groups, weeks, size);
 
-			PardinusSolver psolver;
 			ExtendedOptions opt, opt2;
 			
 			opt = new ExtendedOptions();
@@ -174,7 +164,7 @@ public final class SocialGolferP {
 			opt2.setReporter(new ConsoleReporter());
 			opt.setConfigOptions(opt2);
 			opt.setReporter(new ConsoleReporter());
-			psolver = new PardinusSolver(opt);
+			new PardinusSolver(opt);
 			
 //			Solution solution = psolver.solve(model.schedule1().and(model.schedule2()).and(model.schedule3()), Formula.TRUE, b, new Bounds(b.universe()));
 

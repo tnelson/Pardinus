@@ -1317,7 +1317,6 @@ public class PTCRISP {
 //		Solution sol = solver.solve(formula1().and(formula2()), b3);
 //		System.out.println(sol.toString());
 		
-		PardinusSolver psolver;
 		ExtendedOptions opt, opt2;
 		
 		opt = new ExtendedOptions();
@@ -1333,7 +1332,7 @@ public class PTCRISP {
 //		opt2.setSolver(SATFactory.PMaxSAT4J);
 		opt.setConfigOptions(opt2);
 		opt.setReporter(new ConsoleReporter());
-		psolver = new PardinusSolver(opt);
+		new PardinusSolver(opt);
 		
 //		Bounds b3 = bounds1();
 //		Bounds b2 = bounds2();

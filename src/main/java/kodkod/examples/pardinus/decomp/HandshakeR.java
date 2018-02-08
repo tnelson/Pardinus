@@ -203,7 +203,7 @@ public class HandshakeR implements DModel {
 	}
 
 	public Bounds bounds2() {
-		final TupleFactory f = u.factory();
+		u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 		b.bound(shaken, Person.product(Person));
 

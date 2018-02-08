@@ -208,7 +208,7 @@ public class RedBlackTreeR implements DModel {
 		final PardinusBounds b = new PardinusBounds(u);
 
 		final TupleSet nb = f.range(f.tuple("Node0"), f.tuple("Node"+(n-1)));
-		final TupleSet cb = f.range(f.tuple("Red"), f.tuple("Black"));
+		f.range(f.tuple("Red"), f.tuple("Black"));
 		final TupleSet kb = f.range(f.tuple(Integer.valueOf(0)), f.tuple(Integer.valueOf(n-1)));
 
 		if (v2 == Variant2.V2)

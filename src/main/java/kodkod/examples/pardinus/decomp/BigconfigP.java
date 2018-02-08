@@ -281,15 +281,14 @@ public class BigconfigP {
 		try {
 			final int hq = Integer.parseInt(args[0]);
 			final int sub = Integer.parseInt(args[1]);
-			final int partial = args.length > 3 ? Integer.parseInt(args[3]) : 0;
-			final Formula f1 = model.declarations1().and(model.invariants1());
-			final Formula f2 = model.show();
+			Integer.parseInt(args[3]);
+			model.declarations1().and(model.invariants1());
+			model.show();
 			universe = universe(hq + sub);
 
-			final Bounds b1 = model.bounds1(hq, sub, hq + sub);
-			final Bounds b2 = model.bounds2(hq, sub, hq + sub);
+			model.bounds1(hq, sub, hq + sub);
+			model.bounds2(hq, sub, hq + sub);
 
-			PardinusSolver psolver;
 			ExtendedOptions opt, opt2;
 			
 			opt = new ExtendedOptions();
@@ -300,7 +299,7 @@ public class BigconfigP {
 			opt2 = new ExtendedOptions(opt);
 			opt2.setRunTarget(false);
 			opt.setConfigOptions(opt2);
-			psolver = new PardinusSolver(opt);
+			new PardinusSolver(opt);
 			long start = System.currentTimeMillis();
 			
 //			psolver.solve(f1, f2, b1, b2);

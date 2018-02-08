@@ -344,9 +344,9 @@ public class DijkstraR implements DModel {
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 		
-		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+(states-1)));
-		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process"+(processes-1)));
-		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex"+(mutexes-1)));
+		f.range(f.tuple("State0"), f.tuple("State"+(states-1)));
+		f.range(f.tuple("Process0"), f.tuple("Process"+(processes-1)));
+		f.range(f.tuple("Mutex0"), f.tuple("Mutex"+(mutexes-1)));
 		
 		b.bound(holds, State.product(Process).product(Mutex));
 		b.bound(waits, State.product(Process).product(Mutex));
