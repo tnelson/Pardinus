@@ -335,8 +335,8 @@ public class SpanR implements DModel {
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet pb = f.range(f.tuple("Root"), f.tuple("Process"+ (n_ps-1)));
-		final TupleSet lb = f.range(f.tuple("Lvl0"), f.tuple("Lvl"+ (n_ps-1)));
+		f.range(f.tuple("Root"), f.tuple("Process"+ (n_ps-1)));
+		f.range(f.tuple("Lvl0"), f.tuple("Lvl"+ (n_ps-1)));
 		final TupleSet sb = f.range(f.tuple("State0"), f.tuple("State"+ (n_ts-1)));
 
 		b.boundExactly(State, sb);

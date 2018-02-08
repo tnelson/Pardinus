@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 
-solvers = ['minisat', 'minisatp', 'glucose', 'lingeling', 'plingeling']
+solvers = ['minisat', 'minisatp', 'glucose', 'lingeling', 'plingeling', 'electrod']
 
 def options(opt):
     opt.recurse(solvers)

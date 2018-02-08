@@ -191,11 +191,10 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		// if hybrid mode, launch the amalgamated problem
 		if (hybrid) {
 			DProblem<S> amalg = new DProblem<S>(this);
-			amalg.setPriority(MAX_PRIORITY);
 			executor.execute(amalg);
 			running.incrementAndGet();
 			amalgamated = amalg;
-		}
+		} 
 
 		launchBatch(true);
 	}
@@ -221,7 +220,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			} else {
 				monitor.newConfig(config);
 				DProblem<S> problem = new IProblem<S>(config, this);
-				problem.setPriority(MIN_PRIORITY);
 				problem_queue.add(problem);
 			}
 			first = false;

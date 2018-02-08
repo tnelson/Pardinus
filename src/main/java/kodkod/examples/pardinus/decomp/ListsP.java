@@ -278,7 +278,7 @@ public final class ListsP {
 
 		final int max = scope - 1;
 
-		TupleSet tb = f.range(f.tuple("Thing0"), f.tuple("Thing" + max));
+		f.range(f.tuple("Thing0"), f.tuple("Thing" + max));
 		TupleSet lb = f.range(f.tuple("List0"), f.tuple("List" + max));
 
 		b.boundExactly(List, lb);
@@ -353,7 +353,6 @@ public final class ListsP {
 //			s = solver.solve(f, b1);
 //			System.out.println(s);
 
-			PardinusSolver psolver;
 			ExtendedOptions opt, opt2;
 			
 			opt = new ExtendedOptions();
@@ -366,7 +365,7 @@ public final class ListsP {
 			opt2.setSymmetryBreaking(20);
 
 			opt.setConfigOptions(opt2);
-			psolver = new PardinusSolver(opt);
+			new PardinusSolver(opt);
 			
 		
 			System.out.println("checking reflexive: "+f1);

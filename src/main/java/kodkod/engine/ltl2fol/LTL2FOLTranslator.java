@@ -445,7 +445,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			variables.add(getVariable().join(TRACE));
 			break;
 		case PREVIOUS:
-			variables.add(getVariable().join(TRACE.transpose()));
+			variables.add(getVariable().join(PREFIX.transpose()));
 			break;
 		default:
 			Variable v = Variable.unary("t" + totalVariablesIt);

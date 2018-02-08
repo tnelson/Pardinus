@@ -36,7 +36,6 @@ import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
-import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.unbounded.ElectrodPrinter;
 import kodkod.engine.unbounded.ElectrodReader;
 import kodkod.engine.unbounded.InvalidUnboundedProblem;
@@ -72,7 +71,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		IterableSolver<PardinusBounds, ExtendedOptions> {
 
 	private final ExtendedOptions options;
-	private String file;
 
 	/**
 	 * Constructs a new Electrod solver with the given options.
@@ -100,29 +98,30 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
 		Reporter rep = options.reporter();
-		
+
 		// create a directory with the specified unique name
-		File dir = new File(options.uniqueName());
+		String temp=System.getProperty("java.io.tmpdir");
+		File dir = new File(temp+File.separatorChar+options.uniqueName());
 		if (!dir.exists()) dir.mkdir();
 		
-		file = dir+"/"+String.format("%05d", bounds.integration);
+		String file = dir.toString()+File.separatorChar+String.format("%05d", bounds.integration);
 		PrintWriter writer;
 		try {
+			if (!Options.isDebug())
+				new File(file+".elo").deleteOnExit();
 			writer = new PrintWriter(file+".elo");
 			String electrod = ElectrodPrinter.print(formula, bounds, rep);
 			writer.println(electrod);
 			writer.close();
 			rep.debug("New Electrod problem at "+dir+".");
-			rep.debug(electrod);
 		} catch (FileNotFoundException e) {
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
 		ProcessBuilder builder;
 		if (options.solver().toString().equals("electrodX")) {
-			builder = new ProcessBuilder("electrod",Options.isDebug()?"-vv":"-v",file+".elo");
+			builder = new ProcessBuilder("electrod",Options.isDebug()?"-v":"--",file+".elo");
 		} else {
-			builder = new ProcessBuilder("electrod",Options.isDebug()?"-vv":"-v","-t","NuSMV",file+".elo");
-			
+			builder = new ProcessBuilder("electrod",Options.isDebug()?"-v":"--","-t","NuSMV",file+".elo");
 		}
 		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 		builder.redirectErrorStream(true);
@@ -132,14 +131,10 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 
 			BufferedReader output = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
-//			BufferedReader error = new BufferedReader(new InputStreamReader(
-//					p.getErrorStream()));
 
 			String oline = "";
 			while ((oline = output.readLine()) != null)
 				rep.debug(oline);
-//			while ((oline = error.readLine()) != null)
-//				rep.warning(oline);
 
 			ret = p.waitFor();
 		} catch (InterruptedException e) {
@@ -157,6 +152,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		
 		File xml = new File(file+".xml");
 		
+		if (!Options.isDebug())
+			xml.deleteOnExit();
+
 		if (!xml.exists())
 			throw new AbortedException("XML solution file not found: "+file+".xml.");
 		else {
