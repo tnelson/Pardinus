@@ -28,7 +28,7 @@ def build(bld):
         source = 'build.sh',
         target = 'plingeling')
     
-    bld.install_files('${LIBDIR}', 'plingeling', chmod=755)
+    bld.install_files('${LIBDIR}', 'plingeling', chmod=493)
 
 def distclean(ctx):
     from waflib import Scripting
