@@ -43,8 +43,6 @@ point to the JDK 8 home directory.
 
   `$ waf configure --prefix=. --libdir=lib build install`  
 
-* For support for unbounded model checking, run the `waf` command above with option `--electrod` (may take awhile).
-
 ## Collaborators
 - Nuno Macedo, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - present
 - Alcino Cunha, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - present
