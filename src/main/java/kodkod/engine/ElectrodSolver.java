@@ -121,7 +121,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		if (options.solver().toString().equals("electrodX")) {
 			builder = new ProcessBuilder("electrod",Options.isDebug()?"-v":"--",file+".elo");
 		} else {
-			builder = new ProcessBuilder("electrod",Options.isDebug()?"-v":"--","-t","NuSMV",file+".elo");
+			builder = new ProcessBuilder("electrod","-t","NuSMV",Options.isDebug()?"-v":"--",file+".elo");
 		}
 		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 		builder.redirectErrorStream(true);
