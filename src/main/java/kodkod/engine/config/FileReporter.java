@@ -124,12 +124,18 @@ public final class FileReporter implements Reporter {
 	}
 	
 	/**
-	 * @see kodkod.engine.config.Reporter#debug(String)
+	 * @see kodkod.engine.config.Reporter#warning(String)
 	 */
 	// [HASLab]
 	public void warning(String warning) {
 		writer.println(warning);		
 	}
+
+	/**
+	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
+	 */
+	// [HASLab]
+	public void reportConfigs(int permuted) {}
 	
 	/**
 	 * @see java.lang.Object#toString()

@@ -99,6 +99,9 @@ public class SLF4JReporter implements Reporter {
 		LOGGER.info("translating to cnf ...");
 	}
 	
+	/**
+	 * @see kodkod.engine.config.Reporter#translatingToBoolean(Formula, Bounds)
+	 */
 	public void translatingToBoolean(Formula formula, Bounds bounds) {
 		if (Options.isDebug())
 			LOGGER.debug("Final problem:\n"+formula.toString()+"\n"+bounds.toString());
@@ -106,23 +109,43 @@ public class SLF4JReporter implements Reporter {
 			LOGGER.info("translating to boolean ...");
 	}
 
+	/**
+	 * @see kodkod.engine.config.Reporter#translatingToBoolean(Formula, Bounds)
+	 */
 	public void detectedSymmetries(Set<IntSet> parts) {
 		LOGGER.info("detected " + parts.size() + " equivalence classes of atoms ...");
 	}
 
+	/**
+	 * @see kodkod.engine.config.Reporter#reportLex(List, List)
+	 */
 	public void reportLex(List<Entry<Relation, Tuple>> _original,
 			List<Entry<Relation, Tuple>> _permuted) {
 		if (Options.isDebug())
 			LOGGER.debug("lex: "+_original.toString() + " < " + _permuted.toString());
 	}
 	
+	/**
+	 * @see kodkod.engine.config.Reporter#debug(String)
+	 */
 	public void debug(String debug) {
 		if (Options.isDebug())
 			LOGGER.debug(debug);
 	}
 
+	/**
+	 * @see kodkod.engine.config.Reporter#warning(String)
+	 */
 	public void warning(String warning) {
 		LOGGER.warn(warning);
+	}
+
+	/**
+	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
+	 */
+	public void reportConfigs(int configs) {
+		if (Options.isDebug())
+			LOGGER.debug("found at least "+configs+" configs...");
 	}
 
 }

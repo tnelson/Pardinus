@@ -236,7 +236,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			}
 			running.incrementAndGet();
 		}
-		
 		if (!configs.hasNext()) 
 			monitor.configsDone();
 	}

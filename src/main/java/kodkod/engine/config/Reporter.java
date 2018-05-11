@@ -120,5 +120,11 @@ public interface Reporter {
 	 */
 	// [HASLab] 
 	public void warning(String warning);
+	
+	/**
+	 * TODO
+	 */
+	// [HASLab]
+	public void reportConfigs(int configs);
 
 }

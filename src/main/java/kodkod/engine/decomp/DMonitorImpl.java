@@ -75,6 +75,7 @@ public class DMonitorImpl implements DMonitor {
 		configs++;
 		rep.debug("Config: " + configs + " " + config.outcome().toString()
 				+ "; " + config.instance().relationTuples().toString());
+		if (configs>=200) rep.reportConfigs(configs);
 	}
 
 	/**

@@ -169,6 +169,9 @@ public class ElectrodPrinter {
 			public void debug(String debug) {
 				rep.debug(debug);
 			}
+
+			@Override
+			public void reportConfigs(int permuted) {}
 		};
 		opt.setReporter(reporter);
 
