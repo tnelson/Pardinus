@@ -115,6 +115,9 @@ public abstract class SATFactory {
 		public String toString() { return "MiniSat"; }
 	};
 	
+	// [HASLab] get from kodkod
+	public static final SATFactory CryptoMiniSat = null;
+	
 	/**
 	 * The factory the produces {@link SATProver proof logging} 
 	 * instances of the MiniSat solver.  Note that core

@@ -109,17 +109,18 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			if (!(sol instanceof IProblem)) {
 				// store the sat or unsat solution
 				solution_queue.put(sol.getSolution());
-				running.set(1);
+//				running.set(1);
 				monitor.amalgamatedWon();
-				// terminate the integrated problems
-				if (!executor.isTerminated())
-					terminate();
+//				 terminate the integrated problems
+//				if (!executor.isTerminated())
+//					terminate();
 				// if sat, iterate and launch
 				if (sol.sat()) {
 					amalgamated = sol.next();
-					amalgamated.start();
-				} else
+					executor.execute(amalgamated);
+				} else {
 					running.decrementAndGet();
+				}
 			}
 			// if an integrated terminates...
 			else {
@@ -128,12 +129,12 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					// store the sat solution
 					solution_queue.put(sol.getSolution());
 					// terminate the amalgamated problem
-					if (hybrid && amalgamated.isAlive()) {
+					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
 						running.decrementAndGet();
 					}
 					// iterate and launch
-					if (sol.hasNext())
+					if (sol.hasNext() && !monitor.isAmalgamated())
 						executor.execute(sol.next());
 					else
 						running.decrementAndGet();
@@ -142,7 +143,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				else {
 					running.decrementAndGet();
 					// if last running integrated...
-					if (running.get() == 0 || (amalgamated != null && running.get() == 1)) {
+					if (running.get() == 0 && !monitor.isAmalgamated()) {
 						if (monitor.isConfigsDone())
 							// store the unsat solution
 							solution_queue.put(sol.getSolution());
@@ -153,6 +154,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			}
 			monitor.newSolution(sol);
 		} catch (InterruptedException | IllegalThreadStateException e1) {
+			e1.printStackTrace();
 			// was interrupted in the meantime
 		} catch (RejectedExecutionException e) {
 			// was shutdown in the meantime
@@ -267,7 +269,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		// for an output
 		if (buffer != null)
 			return true;
-		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone())
+		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
 			launchBatch(false);
 			
 		if (executor.isShutdown() && running.get() == 0)

@@ -128,7 +128,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		int ret;
 		try {
 			Process p = builder.start();
-
+			
 			BufferedReader output = new BufferedReader(new InputStreamReader(
 					p.getInputStream()));
 
