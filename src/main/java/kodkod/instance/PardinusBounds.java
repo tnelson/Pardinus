@@ -27,9 +27,7 @@ import static java.util.Collections.unmodifiableMap;
 import static kodkod.util.ints.Ints.unmodifiableSequence;
 
 import java.util.AbstractMap;
-import java.util.AbstractSet;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +47,7 @@ import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Solution;
+import kodkod.engine.config.Reporter;
 import kodkod.engine.fol2sat.RelationCollector;
 import kodkod.util.ints.SparseSequence;
 
@@ -100,6 +99,9 @@ public class PardinusBounds extends Bounds {
 	private final List<Map<VarRelation, TupleSet>> uppers_trace;
 	private final List<Map<VarRelation, TupleSet>> lowers_trace;
 	private final List<Set<VarRelation>> relations_vars;
+	private final List<Map<VarRelation, Expression>> uppers_symb_trace;
+	private final List<Map<VarRelation, Expression>> lowers_symb_trace;
+	private final List<Set<VarRelation>> relations_symb_vars;
 
 	// TODO: guarantee that the same relations are bound for every step
 	
@@ -110,18 +112,13 @@ public class PardinusBounds extends Bounds {
 	 */
 	private int current = 0;
 
-	/**
-	 * The loop of the bound trace, i.e., the position to which the iterator
-	 * moves after the last position of the finite prefix.
-	 */
-	private int loop;
-
 	/* Decomposed bounds */
 
 	private boolean integrated;
 	private PardinusBounds amalgamated;
-	public Instance config;
 	public boolean trivial_config;
+	
+	/** Statistics, how many times has this bound been integrated. */
 	public int integration = 0;
 	
 	/* Constructors */
@@ -140,14 +137,16 @@ public class PardinusBounds extends Bounds {
 		this.weights = new LinkedHashMap<Relation, Integer>();
 		this.uppers_trace = new ArrayList<Map<VarRelation, TupleSet>>();
 		this.lowers_trace = new ArrayList<Map<VarRelation, TupleSet>>();
+		this.uppers_symb_trace = new ArrayList<Map<VarRelation, Expression>>();
+		this.lowers_symb_trace = new ArrayList<Map<VarRelation, Expression>>();
 		this.relations_vars = relations(this.lowers_trace, this.uppers_trace);
-		this.loop = 0;
+		this.relations_symb_vars = relations(this.lowers_symb_trace, this.uppers_symb_trace);
 		this.amalgamated = null;
 		this.trivial_config = false;
 		this.integrated = false;
 		this.lowers_symb = new LinkedHashMap<Relation, Expression>();
 		this.uppers_symb = new LinkedHashMap<Relation, Expression>();
-		this.relations_symb = symb_relations(lowers_symb, uppers_symb);
+		this.relations_symb = relations(lowers_symb, uppers_symb);
 		this.symbolic = new SymbolicStructures();
 		add();
 	}
@@ -163,27 +162,30 @@ public class PardinusBounds extends Bounds {
 	private PardinusBounds(TupleFactory factory,
 			Map<Relation, TupleSet> lower, Map<Relation, TupleSet> upper,
 			List<Map<VarRelation, TupleSet>> lowers_t,
-			List<Map<VarRelation, TupleSet>> uppers_t, int loop,
+			List<Map<VarRelation, TupleSet>> uppers_t, 
+			List<Map<VarRelation, Expression>> lowers_s_t,
+			List<Map<VarRelation, Expression>> uppers_s_t, 
 			Map<Relation, TupleSet> target, Map<Relation, Integer> weights,
 			Map<Relation, Expression> lowers_s,
 			Map<Relation, Expression> uppers_s, SymbolicStructures symbolic,
 			SparseSequence<TupleSet> intbounds, PardinusBounds amalg,
-			boolean integrated, boolean trivial_config, Instance config, int integration) {
+			boolean integrated, boolean trivial_config, int integration) {
 		super(factory, lower, upper, intbounds);
 		this.targets = target;
 		this.weights = weights;
 		this.uppers_trace = uppers_t;
 		this.lowers_trace = lowers_t;
-		this.loop = loop;
+		this.uppers_symb_trace = uppers_s_t;
+		this.lowers_symb_trace = lowers_s_t;
 		this.relations_vars = relations(this.lowers_trace, this.uppers_trace);
+		this.relations_symb_vars = relations(this.lowers_symb_trace, this.uppers_symb_trace);
 		this.amalgamated = amalg;
 		this.trivial_config = trivial_config;
 		this.integrated = integrated;
 		this.lowers_symb = lowers_s;
 		this.uppers_symb = uppers_s;
 		this.symbolic = new SymbolicStructures(symbolic.reif,symbolic.dereif,symbolic.deps);
-		this.relations_symb = symb_relations(lowers_symb, uppers_symb);
-		this.config = config;
+		this.relations_symb = relations(lowers_symb, uppers_symb);
 		this.integration = integration;
 	}
 
@@ -198,33 +200,35 @@ public class PardinusBounds extends Bounds {
 	public PardinusBounds(PardinusBounds partial, Bounds remainder) {
 		this(partial.universe().factory(), partial.lowerBounds(), partial
 				.upperBounds(), partial.lowers_trace, partial.uppers_trace,
-				partial.loop(), partial.targets, partial.weights,
+				partial.lowers_symb_trace, partial.uppers_symb_trace,
+				partial.targets, partial.weights,
 				partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(),
-				null, partial.integrated, partial.trivial_config,partial.config,partial.integration);
+				null, partial.integrated, partial.trivial_config,partial.integration);
 
-		// TODO: trace bounds are not being correctly assigned
-		
 		this.amalgamated = partial.clone();
 		this.amalgamated.merge(remainder);
 	}
 	
-	public PardinusBounds(PardinusBounds partial, boolean x) {
-		this(partial.universe().factory(), new HashMap<Relation, TupleSet>(), new HashMap<Relation, TupleSet>(), 
+	/**
+	 * Automatic partition into static/relation bounds.
+	 * 
+	 * @param amalg
+	 * @param x
+	 */
+	public PardinusBounds(PardinusBounds amalg, boolean x) {
+		// Create a new bound with static information
+		this(amalg.universe().factory(), amalg.lowers, amalg.uppers,
 				new ArrayList<Map<VarRelation, TupleSet>>(), new ArrayList<Map<VarRelation, TupleSet>>(),
-				0, partial.targets, partial.weights,
-				partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(),
-				null, partial.integrated, partial.trivial_config, partial.config, partial.integration);
-
-		current = 0;
+				new ArrayList<Map<VarRelation, Expression>>(), new ArrayList<Map<VarRelation, Expression>>(),
+				amalg.targets, amalg.weights, amalg.lowers_symb,
+				amalg.uppers_symb, amalg.symbolic, amalg.intBounds(), null, amalg.integrated,
+				amalg.trivial_config, amalg.integration);
+		// TODO: is it problematic to use the same #SymbolicStructures?
+		
+		first();
 		add();
 		
-		for (Relation r : partial.relations())
-			if (!(r instanceof VarRelation))
-				this.bound(r,partial.lowerBound(r),partial.upperBound(r));
-		
-		// TODO: trace bounds are not being correctly assigned
-		
-		this.amalgamated = partial.clone();
+		this.amalgamated = amalg.clone();
 	}
 
 	/**
@@ -241,8 +245,7 @@ public class PardinusBounds extends Bounds {
 			return;
 		}
 		checkBound(r.arity(), tuples);
-		final TupleSet unmodifiableTuplesCopy = tuples.clone()
-				.unmodifiableView();
+		final TupleSet unmodifiableTuplesCopy = tuples.clone().unmodifiableView();
 		lowers_trace.get(current).put((VarRelation) r, unmodifiableTuplesCopy);
 		uppers_trace.get(current).put((VarRelation) r, unmodifiableTuplesCopy);
 	}
@@ -333,10 +336,10 @@ public class PardinusBounds extends Bounds {
 		// [HASLab] shallow clone of both static and dynamic bounds
 		Map<Relation,TupleSet> res = new AbstractMap<Relation, TupleSet>() {
 			@Override
-			public Set<java.util.Map.Entry<Relation, TupleSet>> entrySet() {
-				Set<java.util.Map.Entry<Relation, TupleSet>> x = new HashSet<Map.Entry<Relation,TupleSet>>();
+			public Set<Map.Entry<Relation, TupleSet>> entrySet() {
+				Set<Map.Entry<Relation, TupleSet>> x = new HashSet<Map.Entry<Relation,TupleSet>>();
 				x.addAll(PardinusBounds.super.lowerBounds().entrySet());
-				for (java.util.Map.Entry<VarRelation, TupleSet> e : lowers_trace.get(current).entrySet())
+				for (Map.Entry<VarRelation, TupleSet> e : lowers_trace.get(current).entrySet())
 					x.add(new SimpleEntry<Relation,TupleSet>(e.getKey(),e.getValue()));
 				return x;
 			}
@@ -369,10 +372,10 @@ public class PardinusBounds extends Bounds {
 		// [HASLab] shallow clone of both static and dynamic bounds
 		Map<Relation,TupleSet> res = new AbstractMap<Relation, TupleSet>() {
 			@Override
-			public Set<java.util.Map.Entry<Relation, TupleSet>> entrySet() {
-				Set<java.util.Map.Entry<Relation, TupleSet>> x = new HashSet<Map.Entry<Relation,TupleSet>>();
+			public Set<Map.Entry<Relation, TupleSet>> entrySet() {
+				Set<Map.Entry<Relation, TupleSet>> x = new HashSet<Map.Entry<Relation,TupleSet>>();
 				x.addAll(PardinusBounds.super.upperBounds().entrySet());
-				for (java.util.Map.Entry<VarRelation, TupleSet> e : uppers_trace.get(current).entrySet())
+				for (Map.Entry<VarRelation, TupleSet> e : uppers_trace.get(current).entrySet())
 					x.add(new SimpleEntry<Relation,TupleSet>(e.getKey(),e.getValue()));
 				return x;
 			}
@@ -483,17 +486,13 @@ public class PardinusBounds extends Bounds {
 		integration++;
 		
 		PardinusBounds integrated = amalgamated.clone();
-		integrated.config = sol.instance();
 
 		if (sol.stats().primaryVariables() == 0)
 			trivial_config = true;
 
-		for (Relation e : this.relations()) {
-			if (getTupleConfiguration(e.name(), sol.instance()) != null) {
-				integrated.boundExactly(e,
-						getTupleConfiguration(e.name(), sol.instance()));
-			}
-		}
+		for (Relation e : this.relations())
+			if (getTupleConfiguration(e.name(), sol.instance()) != null)
+				integrated.boundExactly(e,getTupleConfiguration(e.name(), sol.instance()));
 
 		integrated.amalgamated = this.amalgamated;
 		integrated.trivial_config = this.trivial_config;
@@ -504,11 +503,9 @@ public class PardinusBounds extends Bounds {
 	}
 
 	private static TupleSet getTupleConfiguration(String name, Instance s) {
-		for (Relation r : s.relationTuples().keySet()) {
-			if (r.name().equals(name)) {
+		for (Relation r : s.relationTuples().keySet())
+			if (r.name().equals(name))
 				return s.relationTuples().get(r);
-			}
-		}
 		return null;
 	}
 
@@ -527,7 +524,7 @@ public class PardinusBounds extends Bounds {
 	 * position of the finite prefix trace is the previous position.
 	 */
 	public void next() {
-		current = current < uppers_trace.size() - 1 ? current + 1 : loop;
+		current = current < uppers_trace.size() - 1 ? current + 1 : current;
 	}
 
 	/**
@@ -559,35 +556,15 @@ public class PardinusBounds extends Bounds {
 	}
 	
 	/**
-	 * The position succeeding the (virtual) position of the iterator.
-	 * 
-	 * @return the succeeding position.
-	 */
-	public int nextIndex() {
-		return current;
-	}
-
-	/**
-	 * The position preceding the (virtual) position of the iterator.
-	 * 
-	 * @return the preceding position.
-	 * @throws NoSuchElementException
-	 *             if there is no previous position.
-	 */
-	public int previousIndex() {
-		if (hasPrevious())
-			return current - 1;
-		else
-			throw new NoSuchElementException();
-	}
-
-	/**
 	 * Removes the bound in the position succeeding the iterator from the trace.
 	 */
 	public void remove() {
 		lowers_trace.remove(current);
 		uppers_trace.remove(current);
 		relations_vars.remove(current);
+		lowers_symb_trace.remove(current);
+		uppers_symb_trace.remove(current);
+		relations_symb_vars.remove(current);
 	}
 
 	/**
@@ -599,27 +576,12 @@ public class PardinusBounds extends Bounds {
 		Map<VarRelation, TupleSet> uppers = new HashMap<VarRelation, TupleSet>();
 		this.lowers_trace.add(current, lowers);
 		this.uppers_trace.add(current, uppers);
-		this.relations_vars.add(current,
-				(Set<VarRelation>) Bounds.relations(lowers, uppers));
-	}
-
-	/**
-	 * The position to which the trace loops after the finite prefix.
-	 * 
-	 * @return the loop position.
-	 */
-	public int loop() {
-		return loop;
-	}
-
-	/**
-	 * Updates the position to which the trace loops after the finite prefix.
-	 * 
-	 * @param loop
-	 *            the new loop position.
-	 */
-	public void setLoop(int loop) {
-		this.loop = loop;
+		this.relations_vars.add(current,(Set<VarRelation>) Bounds.relations(lowers, uppers));
+		Map<VarRelation, Expression> lowers_s = new HashMap<VarRelation, Expression>();
+		Map<VarRelation, Expression> uppers_s = new HashMap<VarRelation, Expression>();
+		this.lowers_symb_trace.add(current, lowers_s);
+		this.uppers_symb_trace.add(current, uppers_s);
+		this.relations_symb_vars.add(current,(Set<VarRelation>) Bounds.relations(lowers_s, uppers_s));
 	}
 
 	/**
@@ -627,9 +589,9 @@ public class PardinusBounds extends Bounds {
 	 * trace bound, i.e., variable relations bound in this position.
 	 */
 	@Deprecated
-	public Set<VarRelation> varRelations() {
-		Set<VarRelation> aux = new HashSet<VarRelation>(
-				relations_vars.get(current));
+	public Set<VarRelation> relationsVar() {
+		Set<VarRelation> aux = new HashSet<VarRelation>(lowers_trace.get(current).keySet());
+		aux.addAll(lowers_symb_trace.get(current).keySet());
 		return aux;
 	}
 
@@ -643,9 +605,10 @@ public class PardinusBounds extends Bounds {
 	 *            the upper bounds.
 	 * @return the relations defined by the bounds at each position.
 	 */
-	private static List<Set<VarRelation>> relations(
-			List<Map<VarRelation, TupleSet>> lowers,
-			List<Map<VarRelation, TupleSet>> uppers) {
+	private static <T> List<Set<VarRelation>> relations(
+			List<Map<VarRelation, T>> lowers,
+			List<Map<VarRelation, T>> uppers) {
+		// TODO: override methods to propagate changes so that #add()/#remove() become simpler
 		List<Set<VarRelation>> relations = new ArrayList<Set<VarRelation>>();
 		for (int i = 0; i < uppers.size(); i++) {
 			relations.add((Set<VarRelation>) Bounds.relations(lowers.get(i),
@@ -654,53 +617,149 @@ public class PardinusBounds extends Bounds {
 		return relations;
 	}
 
-	public List<Set<VarRelation>> relationsVars() {
+	public List<Set<VarRelation>> boundTrace() {
 		return relations_vars;
 	}
 
-	public void bound(Relation relation, Expression upper) {
-		Expression r = ConstantExpression.NONE;
-		for (int i = 1; i < relation.arity(); i++)
-			r = r.product(ConstantExpression.NONE);
-
-		symbolic.checkBound(relation, upper);
-		lowers_symb.put(relation, r);
-		uppers_symb.put(relation, upper);
+	public void bound(Relation r, Expression upper) {
+		
+		Expression rr = ConstantExpression.NONE;
+		for (int i = 1; i < r.arity(); i++)
+			rr = rr.product(ConstantExpression.NONE);
+		symbolic.checkBound(r, upper);
+		
+		if (!(r instanceof VarRelation)) {
+			lowers_symb.put(r, rr);
+			uppers_symb.put(r, upper);
+		} else {
+			lowers_symb_trace.get(current).put((VarRelation) r, rr);
+			uppers_symb_trace.get(current).put((VarRelation) r, upper);
+		}
+		
 	}
 
-	public void boundExactly(Relation relation, Expression upper) {
-		symbolic.checkBound(relation, upper);
-		lowers_symb.put(relation, upper);
-		uppers_symb.put(relation, upper);
+	public void boundExactly(Relation r, Expression upper) {
+		symbolic.checkBound(r, upper);
+		
+		if (!(r instanceof VarRelation)) {
+			lowers_symb.put(r, upper);
+			uppers_symb.put(r, upper);
+		} else {
+			lowers_symb_trace.get(current).put((VarRelation) r, upper);
+			uppers_symb_trace.get(current).put((VarRelation) r, upper);
+		}
 	}
 
-	public void bound(Relation relation, Expression lower, Expression upper) {
-		symbolic.checkBound(relation, lower.union(upper));
-		lowers_symb.put(relation, lower);
-		uppers_symb.put(relation, upper);
+	public void bound(Relation r, Expression lower, Expression upper) {
+		symbolic.checkBound(r, lower.union(upper));
+		
+		if (!(r instanceof VarRelation)) {
+			lowers_symb.put(r, lower);
+			uppers_symb.put(r, upper);
+		} else {
+			lowers_symb_trace.get(current).put((VarRelation) r, lower);
+			uppers_symb_trace.get(current).put((VarRelation) r, upper);
+		}
 	}
+
+	public Set<Relation> relationsSymb() {
+		Set<Relation> aux = new HashSet<Relation>(relations_symb_vars.get(current));
+		aux.addAll(relations_symb);
+		return aux;
+	}
+
+	public Expression lowerSymbBounds(Relation r) {
+		if (r instanceof VarRelation)
+			return lowers_symb_trace.get(current).get(r);
+		else
+			return lowers_symb.get(r);
+	}
+
+	public Expression upperSymbBounds(Relation r) {
+		if (r instanceof VarRelation)
+			return uppers_symb_trace.get(current).get(r);
+		else
+			return uppers_symb.get(r);
+	}
+
+	public Map<Relation, Expression> lowerSymbBounds() {
+		// [HASLab] shallow clone of both static and dynamic bounds
+		Map<Relation,Expression> res = new AbstractMap<Relation, Expression>() {
+			@Override
+			public Set<Map.Entry<Relation, Expression>> entrySet() {
+				Set<Map.Entry<Relation, Expression>> x = new HashSet<Map.Entry<Relation,Expression>>();
+				x.addAll(lowers_symb.entrySet());
+				for (Map.Entry<VarRelation,Expression> e : lowers_symb_trace.get(current).entrySet())
+					x.add(new SimpleEntry<Relation,Expression>(e.getKey(),e.getValue()));
+				return x;
+			}
+		};
+		return unmodifiableMap(res);
+	}
+
+	public Map<Relation, Expression> upperSymbBounds() {
+		// [HASLab] shallow clone of both static and dynamic bounds
+		Map<Relation,Expression> res = new AbstractMap<Relation, Expression>() {
+			@Override
+			public Set<Map.Entry<Relation, Expression>> entrySet() {
+				Set<Map.Entry<Relation, Expression>> x = new HashSet<Map.Entry<Relation,Expression>>();
+				x.addAll(uppers_symb.entrySet());
+				for (Map.Entry<VarRelation,Expression> e : uppers_symb_trace.get(current).entrySet())
+					x.add(new SimpleEntry<Relation,Expression>(e.getKey(),e.getValue()));
+				return x;
+			}
+		};
+		return unmodifiableMap(res);	}
 
 	private final SymbolicStructures symbolic;
 	
-	public Formula resolve() {
+	public Formula resolve(Reporter reporter) {
 		Formula xtra = ConstantFormula.TRUE;
 		for (Relation r : relations_symb) {
-			if (super.relations().contains(r)
-					&& super.lowerBound(r).size() == super.upperBound(r).size())
+			TupleSet pre1 = super.lowerBound(r);
+			TupleSet pre2 = super.upperBound(r);
+			if (super.relations().contains(r) && pre1.size() == pre2.size())
 				continue;
 			TupleSet aux1 = symbolic.resolveLower(lowers_symb.get(r));
 			TupleSet aux2 = symbolic.resolveUpper(uppers_symb.get(r));
-			if (super.lowerBound(r) != null) {
-				if (!aux1.containsAll(super.lowerBound(r)))
+			if (pre1 != null) {
+				if (!aux1.containsAll(pre1))
 					return Formula.FALSE;
-				if (!super.lowerBound(r).containsAll(aux2))
+				if (!pre2.containsAll(aux2))
 					return Formula.FALSE;
 			}
-			super.bound(r, aux1, aux2);
+			bound(r, aux1, aux2);
+			reporter.debug("Resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
+			
 			if (aux1.size() != aux2.size())
 				xtra = xtra.and(lowers_symb.get(r).in(r)).and(r.in(uppers_symb.get(r)));
 		}
 		relations_symb.clear();
+		
+		for (int i = 0; i < uppers_symb_trace.size(); i++) {
+			for (Relation r : relations_symb_vars.get(i)) {
+				TupleSet pre1 = lowers_trace.get(i).get(r);
+				TupleSet pre2 = uppers_trace.get(i).get(r);
+
+				if (relations_vars.get(i).contains(r) && pre1.size() == pre2.size())
+					continue;
+				TupleSet aux1 = symbolic.resolveLower(lowers_symb_trace.get(i).get(r));
+				TupleSet aux2 = symbolic.resolveUpper(uppers_symb_trace.get(i).get(r));
+				if (pre1 != null) {
+					if (!aux1.containsAll(pre1))
+						return Formula.FALSE;
+					if (!pre2.containsAll(aux2))
+						return Formula.FALSE;
+				}
+				bound(r, aux1, aux2);
+				reporter.debug("Resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
+
+				if (aux1.size() != aux2.size())
+					xtra = xtra.and(lowers_symb_trace.get(i).get(r).in(r)).and(r.in(uppers_symb_trace.get(i).get(r)));
+			}
+			relations_symb_vars.get(i).clear();
+		}
+		reporter.debug("Additional resolution formula: "+xtra);
 		return xtra;
 	}
 
@@ -738,75 +797,6 @@ public class PardinusBounds extends Bounds {
 		return r;
 	}
 
-	private static <T extends Relation> Set<T> symb_relations(
-			final Map<T, Expression> lowers, final Map<T, Expression> uppers) {
-		return new AbstractSet<T>() {
-
-			public Iterator<T> iterator() {
-				return new Iterator<T>() {
-					final Iterator<T> itr = uppers.keySet().iterator();
-					T last = null;
-
-					public boolean hasNext() {
-						return itr.hasNext();
-					}
-
-					public T next() {
-						return last = itr.next();
-					}
-
-					public void remove() {
-						itr.remove();
-						lowers.remove(last);
-					}
-				};
-			}
-
-			public int size() {
-				return uppers.size();
-			}
-
-			public boolean contains(Object key) {
-				return uppers.containsKey(key);
-			}
-
-			public boolean remove(Object key) {
-				return (uppers.remove(key) != null)
-						&& (lowers.remove(key) != null);
-			}
-
-			public boolean removeAll(Collection<?> c) {
-				return uppers.keySet().removeAll(c)
-						&& lowers.keySet().removeAll(c);
-			}
-
-			public boolean retainAll(Collection<?> c) {
-				return uppers.keySet().retainAll(c)
-						&& lowers.keySet().retainAll(c);
-			}
-		};
-	}
-
-	public Set<Relation> relationsSymb() {
-		return relations_symb;
-	}
-
-	public Expression lowerSymbBounds(Relation r) {
-		return lowers_symb.get(r);
-	}
-
-	public Expression upperSymbBounds(Relation r) {
-		return uppers_symb.get(r);
-	}
-
-	public Map<Relation, Expression> lowerSymbBounds() {
-		return unmodifiableMap(lowers_symb);
-	}
-
-	public Map<Relation, Expression> upperSymbBounds() {
-		return unmodifiableMap(uppers_symb);
-	}
-
 	/**
 	 * Merges the information of another Bounds object into <this>.
 	 * Non-mergeable data is overridden.
@@ -821,10 +811,11 @@ public class PardinusBounds extends Bounds {
 			PardinusBounds bnds = (PardinusBounds) bounds;
 			for (Relation r : bnds.relationsSymb())
 				this.bound(r, bnds.lowerSymbBounds(r), bnds.upperSymbBounds(r));
-			for (int i = 0; i < bnds.relationsVars().size(); i++) {
-				for (VarRelation r : bnds.relationsVars().get(i))
-					this.bound(r, bnds.lowers_trace.get(i).get(r),
-							bnds.uppers_trace.get(i).get(r));
+			for (int i = 0; i < bnds.boundTrace().size(); i++) {
+				for (VarRelation r : bnds.boundTrace().get(i))
+					this.bound(r, bnds.lowers_trace.get(i).get(r),bnds.uppers_trace.get(i).get(r));
+				for (VarRelation r : bnds.relations_symb_vars.get(i))
+					this.bound(r, bnds.lowers_symb_trace.get(i).get(r),bnds.uppers_symb_trace.get(i).get(r));
 			}
 			for (Relation r : bounds.relations()) {
 				if (bnds.target(r) != null)
@@ -834,7 +825,6 @@ public class PardinusBounds extends Bounds {
 			}
 			this.symbolic.merge(bnds.symbolic);
 			this.integrated = bnds.integrated;
-			this.loop = bnds.loop;
 			this.trivial_config = bnds.trivial_config;
 		}	
 	}
@@ -845,12 +835,13 @@ public class PardinusBounds extends Bounds {
 	public PardinusBounds unmodifiableView() {
 		return new PardinusBounds(universe().factory(),
 				super.lowerBounds(), super.upperBounds(),
-				unmodifiableList(lowers_trace), unmodifiableList(uppers_trace), loop,
+				unmodifiableList(lowers_trace), unmodifiableList(uppers_trace),
+				unmodifiableList(lowers_symb_trace), unmodifiableList(uppers_symb_trace),
 				unmodifiableMap(targets), unmodifiableMap(weights),
 				unmodifiableMap(lowers_symb), unmodifiableMap(uppers_symb),
 				symbolic.unmodifiableView(), unmodifiableSequence(super.intBounds()),
 				amalgamated==null?null:amalgamated.unmodifiableView(), integrated, 
-				trivial_config,config,integration);
+				trivial_config,integration);
 	}
 
 	/**
@@ -865,18 +856,24 @@ public class PardinusBounds extends Bounds {
 				l1.add(new LinkedHashMap<VarRelation, TupleSet>(lowers_trace.get(i)));
 				l2.add(new LinkedHashMap<VarRelation, TupleSet>(uppers_trace.get(i)));
 			}
+			List<Map<VarRelation, Expression>> k1 = new ArrayList<Map<VarRelation, Expression>>();
+			List<Map<VarRelation, Expression>> k2 = new ArrayList<Map<VarRelation, Expression>>();
+			for (int i = 0; i < lowers_trace.size(); i++) {
+				k1.add(new LinkedHashMap<VarRelation, Expression>(lowers_symb_trace.get(i)));
+				k2.add(new LinkedHashMap<VarRelation, Expression>(uppers_symb_trace.get(i)));
+			}
 				
 			return new PardinusBounds(universe().factory(),
 					new LinkedHashMap<Relation, TupleSet>(super.lowerBounds()),
 					new LinkedHashMap<Relation, TupleSet>(super.upperBounds()),
-					l1,l2,loop,
+					l1,l2,k1,k2,
 					new LinkedHashMap<Relation, TupleSet>(targets),
 					new LinkedHashMap<Relation, Integer>(weights),
 					new LinkedHashMap<Relation, Expression>(lowers_symb),
 					new LinkedHashMap<Relation, Expression>(uppers_symb),
 					symbolic.clone(),
 					super.intBounds().clone(), amalgamated == null?null:amalgamated.clone(),
-					integrated, trivial_config, config, integration);
+					integrated, trivial_config, integration);
 		} catch (CloneNotSupportedException cnse) {
 			throw new InternalError(); // should not be reached
 		}
@@ -888,10 +885,9 @@ public class PardinusBounds extends Bounds {
 	@Override
 	public String toString() {
 		final StringBuilder str = new StringBuilder();
-		str.append("static relation bounds:");
+		str.append("static relation bounds - ");
 		for (Map.Entry<Relation, TupleSet> entry : super.lowerBounds()
 				.entrySet()) {
-			str.append("\n ");
 			str.append(entry.getKey());
 			str.append(": [");
 			str.append(entry.getValue());
@@ -900,11 +896,10 @@ public class PardinusBounds extends Bounds {
 				str.append(", ");
 				str.append(upper);
 			}
-			str.append("]");
+			str.append("] ");
 		}
-		str.append("\nsymbolic static relation bounds:");
-		for (Entry<Relation, Expression> entry : this.lowerSymbBounds().entrySet()) {
-			str.append("\n ");
+		str.append("\nsymbolic static relation bounds - ");
+		for (Entry<Relation, Expression> entry : lowers_symb.entrySet()) {
 			str.append(entry.getKey());
 			str.append(": [");
 			str.append(entry.getValue());
@@ -913,13 +908,12 @@ public class PardinusBounds extends Bounds {
 				str.append(", ");
 				str.append(upper);
 			}
-			str.append("]");
+			str.append("] ");
 		}
 		for (int i = 0; i < lowers_trace.size(); i++) {
-			str.append("\nvariable relation bounds at " + i + ":");
+			str.append("\nvariable relation bounds at " + i + " -");
 			for (Map.Entry<VarRelation, TupleSet> entry : lowers_trace.get(i)
 					.entrySet()) {
-				str.append("\n ");
 				str.append(entry.getKey());
 				str.append(": [");
 				str.append(entry.getValue());
@@ -928,18 +922,26 @@ public class PardinusBounds extends Bounds {
 					str.append(", ");
 					str.append(upper);
 				}
-				TupleSet target = targets.get(entry.getKey());
-				if (target != null && !target.isEmpty()) {
+				str.append("] ");
+			}
+		}
+		for (int i = 0; i < lowers_symb_trace.size(); i++) {
+			str.append("\nvariable symbolic relation bounds at " + i + " -");
+			for (Map.Entry<VarRelation, Expression> entry : lowers_symb_trace.get(i)
+					.entrySet()) {
+				str.append(entry.getKey());
+				str.append(": [");
+				str.append(entry.getValue());
+				Expression upper = uppers_symb_trace.get(i).get(entry.getKey());
+				if (!upper.equals(entry.getValue())) {
 					str.append(", ");
-					str.append(target);
+					str.append(upper);
 				}
-				str.append("]");
+				str.append("] ");
 			}
 		}
 		str.append("\nint bounds: ");
 		str.append(intBounds());
-		str.append("\nloop: ");
-		str.append(loop);
 		if (amalgamated!=null) {
 			str.append("\namalgamated:\n\t");
 			str.append(amalgamated.toString().replace("\n", "\n\t"));
@@ -1044,7 +1046,7 @@ public class PardinusBounds extends Bounds {
 		 */
 		private TupleSet resolveLower(Expression bound) {
 			Map<Relation,TupleSet> us = new HashMap<Relation, TupleSet>();
-			us.putAll(lowers);
+			us.putAll(lowers); //No! possibly var!
 			us.putAll(dereif);
 			Instance i = new Instance(universe(), lowers, intBounds());
 			Evaluator eval = new Evaluator(i);

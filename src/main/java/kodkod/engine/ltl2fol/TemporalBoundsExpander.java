@@ -126,12 +126,12 @@ class TemporalBoundsExpander {
 	 * @return the expanded bounds with the new universe
 	 */
 	private static PardinusBounds expand(PardinusBounds bounds, int traceLen, Universe u) {
+		if (bounds.boundTrace().size() > 1) 
+			throw new UnsupportedOperationException("Expansion of trace bounds not yet supported.");
+
 		for (Relation r : bounds.relationsSymb())
 			if (bounds.upperBound(r) == null)
 				throw new UnsupportedOperationException("Expansion of symbolic bounds not yet supported.");
-		
-		if (bounds.relationsVars().size() > 1) 
-			throw new UnsupportedOperationException("Expansion of trace bounds not yet supported.");
 
 		PardinusBounds newBounds = new PardinusBounds(u);
 		TupleSet tupleSetTime = u.factory().range(

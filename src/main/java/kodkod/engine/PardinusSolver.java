@@ -164,7 +164,7 @@ public class PardinusSolver implements
 	public Solution solve(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
-		assert (!TemporalTranslator.isTemporal(formula) && bounds.relationsVars().get(0).isEmpty()) || options.temporal();
+		assert (!TemporalTranslator.isTemporal(formula) && bounds.boundTrace().get(0).isEmpty()) || options.temporal();
 		assert !options.unbounded() || options.temporal();
 
 		return solver.solve(formula, bounds);
@@ -177,7 +177,7 @@ public class PardinusSolver implements
 	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
-		assert (!TemporalTranslator.isTemporal(formula) && bounds.relationsVars().isEmpty()) || options.temporal();
+		assert (!TemporalTranslator.isTemporal(formula) && bounds.boundTrace().isEmpty()) || options.temporal();
 		assert !options.unbounded() || options.temporal();
 		assert options.solver().incremental();
 		

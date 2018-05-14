@@ -433,10 +433,10 @@ public final class Translator {
 			PardinusBounds pbounds = (PardinusBounds) bounds;
 			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
 			if (options.decomposed() && pbounds.amalgamated() != null)
-				symbFormO = pbounds.amalgamated().resolve();
+				symbFormO = pbounds.amalgamated().resolve(options.reporter());
 			// [HASLab] otherwise use regular bounds
 			else
-				symbFormO = pbounds.resolve();
+				symbFormO = pbounds.resolve(options.reporter());
 		}
 		
 		// [HASLab] add the extra symbolic formula
@@ -454,7 +454,7 @@ public final class Translator {
 			if (bounds instanceof PardinusBounds) {
 				PardinusBounds pbounds = (PardinusBounds) bounds;
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
-					Formula symbFormA = pbounds.resolve();
+					Formula symbFormA = pbounds.resolve(options.reporter());
 					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula.and(symbFormA), pbounds);
 					pbounds.amalgamated().relations().retainAll(originalAnnotated.relations());
 					if (!originalAnnotated.usesInts()) pbounds.amalgamated().ints().clear();

@@ -115,7 +115,7 @@ public class Bounds implements Cloneable {
 	 *         bounds
 	 */
 	// [HASLab] protected, generic types
-	protected static <T extends Relation> Set<T> relations(final Map<T, TupleSet> lowers, final Map<T, TupleSet> uppers) { 
+	protected static <T extends Relation> Set<T> relations(final Map<T, ?> lowers, final Map<T, ?> uppers) { 
 		return new AbstractSet<T>() {
 
 			public Iterator<T> iterator() {

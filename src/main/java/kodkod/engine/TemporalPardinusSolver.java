@@ -138,7 +138,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				transTime += endTransl - startTransl;
 
 				if (translation.trivial() && traceLength == options.maxTraceLength())
-					return trivial(translation, endTransl - startTransl, bounds.varRelations());
+					return trivial(translation, endTransl - startTransl, bounds.relationsVar());
 				
 				final SATSolver cnf = translation.cnf();
 
@@ -151,7 +151,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				traceLength++;
 			}
 			final Statistics stats = new Statistics(translation, transTime, solveTime);
-			return isSat ? sat(translation, stats, bounds.varRelations()) : unsat(translation, stats);
+			return isSat ? sat(translation, stats, bounds.relationsVar()) : unsat(translation, stats);
 		} catch (SATAbortedException sae) {
 			throw new AbortedException(sae);
 		}
@@ -260,6 +260,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			current_trace = options.minTraceLength()-1;
 			do {
 				current_trace++;
+				bounds.resolve(options.reporter());
 				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
 				this.extformula = TemporalTranslator.translate(formula);
 				this.translation = Translator.translate(extformula, extbounds, options);
@@ -354,7 +355,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), tempBounds.varRelations()));
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), tempBounds.relationsVar()));
 				// add the negation of the current model to the solver
 				final int[] notModel = new int[primaryVars];
 				for (int i = 1; i <= primaryVars; i++) {
@@ -387,7 +388,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private Solution nextTrivialSolution() {
 			final Translation.Whole transl = this.translation;
 
-			final Solution sol = trivial(transl, translTime, tempBounds.varRelations()); // this also frees up solver resources, if unsat
+			final Solution sol = trivial(transl, translTime, tempBounds.relationsVar()); // this also frees up solver resources, if unsat
 
 			if (sol.instance() == null) {
 				translation = null; // unsat, no more solutions
@@ -602,7 +603,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), tempBounds.varRelations()));
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), tempBounds.relationsVar()));
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver
 											// resources, if any
