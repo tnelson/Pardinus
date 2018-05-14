@@ -79,10 +79,7 @@ public class SLF4JReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#detectingSymmetries(kodkod.instance.Bounds)
 	 */
 	public void detectingSymmetries(Bounds bounds){
-		if (Options.isDebug())
-			LOGGER.debug("Original bounds:\n"+bounds);
-		else
-			LOGGER.info("detecting symmetries ...");
+		LOGGER.info("detecting symmetries ...");
 	}
 	
 	/**
