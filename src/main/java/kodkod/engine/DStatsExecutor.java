@@ -103,7 +103,7 @@ public class DStatsExecutor<S extends AbstractSolver<PardinusBounds, ExtendedOpt
 			}
 		}
 		executor.shutdown();
-		monitor.configsDone();
+		monitor.configsDone(false);
 	}
 
 	/**

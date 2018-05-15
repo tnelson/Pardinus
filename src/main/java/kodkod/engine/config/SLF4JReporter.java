@@ -100,8 +100,10 @@ public class SLF4JReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#translatingToBoolean(Formula, Bounds)
 	 */
 	public void translatingToBoolean(Formula formula, Bounds bounds) {
-		if (Options.isDebug())
-			LOGGER.debug("Final problem:\n"+formula.toString()+"\n"+bounds.toString());
+		if (Options.isDebug()) {
+			debug("Final problem formula: "+formula);
+			debug("Final problem bounds: "+bounds);
+		}
 		else
 			LOGGER.info("translating to boolean ...");
 	}
@@ -119,15 +121,19 @@ public class SLF4JReporter implements Reporter {
 	public void reportLex(List<Entry<Relation, Tuple>> _original,
 			List<Entry<Relation, Tuple>> _permuted) {
 		if (Options.isDebug())
-			LOGGER.debug("lex: "+_original.toString() + " < " + _permuted.toString());
+			debug("lex: "+_original.toString() + " < " + _permuted.toString());
 	}
 	
 	/**
 	 * @see kodkod.engine.config.Reporter#debug(String)
 	 */
 	public void debug(String debug) {
-		if (Options.isDebug())
-			LOGGER.debug(debug);
+		if (Options.isDebug()) {
+			if (debug.length() >= 120)
+				LOGGER.debug(debug.substring(0, 120)+"...");
+			else
+				LOGGER.debug(debug);
+		}
 	}
 
 	/**
@@ -142,7 +148,7 @@ public class SLF4JReporter implements Reporter {
 	 */
 	public void reportConfigs(int configs) {
 		if (Options.isDebug())
-			LOGGER.debug("found at least "+configs+" configs...");
+			debug("found at least "+configs+" configs...");
 	}
 
 }

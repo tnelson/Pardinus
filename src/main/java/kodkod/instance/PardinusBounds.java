@@ -729,7 +729,7 @@ public class PardinusBounds extends Bounds {
 					return Formula.FALSE;
 			}
 			bound(r, aux1, aux2);
-			reporter.debug("Resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
+			reporter.debug("resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
 			
 			if (aux1.size() != aux2.size())
 				xtra = xtra.and(lowers_symb.get(r).in(r)).and(r.in(uppers_symb.get(r)));
@@ -752,7 +752,7 @@ public class PardinusBounds extends Bounds {
 						return Formula.FALSE;
 				}
 				bound(r, aux1, aux2);
-				reporter.debug("Resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
+				reporter.debug("resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
 
 				if (aux1.size() != aux2.size())
 					xtra = xtra.and(lowers_symb_trace.get(i).get(r).in(r)).and(r.in(uppers_symb_trace.get(i).get(r)));

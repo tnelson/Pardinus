@@ -75,7 +75,6 @@ public class DMonitorImpl implements DMonitor {
 		configs++;
 		rep.debug("Config: " + configs + " " + config.outcome().toString()
 				+ "; " + config.instance().relationTuples().toString());
-		if (configs>=200) rep.reportConfigs(configs);
 	}
 
 	/**
@@ -114,9 +113,12 @@ public class DMonitorImpl implements DMonitor {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void configsDone() {
-		rep.debug("Config: " + "Done");
-		configs_done = true;
+	public void configsDone(boolean next) {
+		if (configs>=50) rep.reportConfigs(configs);
+		if (!next) {
+			rep.debug("Config: " + "Done");
+			configs_done = true;
+		}
 	}
 
 	/**

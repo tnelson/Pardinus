@@ -68,8 +68,9 @@ public interface DMonitor {
 
 	/**
 	 * Reports that every partial solution (configuration) has been generated.
+	 * @param b 
 	 */
-	public void configsDone();
+	public void configsDone(boolean b);
 
 	/**
 	 * Whether every partial solution (configuration) has been generated (but

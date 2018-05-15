@@ -60,7 +60,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(20);
+	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(2);
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -203,10 +203,10 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
 	
 	void launchBatch(boolean first) {
-		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(200);
+		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(50);
 
 		// collects a batch of configurations
-		while (configs.hasNext() && problem_queue.size() < 200) {
+		while (configs.hasNext() && problem_queue.size() < 50) {
 			Solution config = configs.next();
 
 			if (config.unsat()) {
@@ -236,8 +236,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			}
 			running.incrementAndGet();
 		}
-		if (!configs.hasNext()) 
-			monitor.configsDone();
+		monitor.configsDone(configs.hasNext());
 	}
 
 	/**
