@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1048,7 +1049,13 @@ public class PardinusBounds extends Bounds {
 			Map<Relation,TupleSet> us = new HashMap<Relation, TupleSet>();
 			us.putAll(lowers); //No! possibly var!
 			us.putAll(dereif);
-			Instance i = new Instance(universe(), lowers, intBounds());
+			us.putAll(lowers_trace.get(0)); // TODO: actual support for trace bounds!
+			Instance i = new Instance(universe(), us, intBounds());
+			if (!lowers_trace.get(0).isEmpty()) {
+				List<Instance> aux = new LinkedList<Instance>();
+				aux.add(i);
+				i = new TemporalInstance(aux, 0);
+			}
 			Evaluator eval = new Evaluator(i);
 			return eval.evaluate(bound);
 		}
@@ -1067,7 +1074,13 @@ public class PardinusBounds extends Bounds {
 			Map<Relation,TupleSet> us = new HashMap<Relation, TupleSet>();
 			us.putAll(uppers);
 			us.putAll(dereif);
-			Instance i = new Instance(universe(), uppers, intBounds());
+			us.putAll(uppers_trace.get(0)); // TODO: actual support for trace bounds!
+			Instance i = new Instance(universe(), us, intBounds());
+			if (!uppers_trace.get(0).isEmpty()) {
+				List<Instance> aux = new LinkedList<Instance>();
+				aux.add(i);
+				i = new TemporalInstance(aux, 0);
+			}
 			Evaluator eval = new Evaluator(i);
 			return eval.evaluate(e);
 		}
