@@ -27,7 +27,9 @@ import static java.util.Collections.unmodifiableMap;
 import static kodkod.util.ints.Ints.unmodifiableSequence;
 
 import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,7 +42,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import kodkod.ast.ConstantExpression;
-import kodkod.ast.ConstantFormula;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Node;
@@ -664,9 +665,62 @@ public class PardinusBounds extends Bounds {
 	}
 
 	public Set<Relation> relationsSymb() {
-		Set<Relation> aux = new HashSet<Relation>(relations_symb_vars.get(current));
-		aux.addAll(relations_symb);
-		return aux;
+		return new AbstractSet<Relation>() {
+
+			public Iterator<Relation> iterator() {
+				return new Iterator<Relation>() {
+					Iterator<Relation> itr = uppers_symb.keySet().iterator();
+					private boolean second = false;
+					Relation last = null;
+
+					public boolean hasNext() {
+						if (!second && !itr.hasNext()) {
+							itr = (Iterator<Relation>)(Iterator<? extends Relation>) uppers_symb_trace.get(current).keySet().iterator();
+							second = true;
+						}
+						return itr.hasNext();
+					}
+
+					public Relation next() {
+						if (!hasNext()) 
+							throw new NoSuchElementException();
+						return last = itr.next();
+					}
+
+					public void remove() {
+						itr.remove();
+						if (second)
+							lowers_symb_trace.get(current).remove(last);
+						else
+							lowers_symb.remove(last);
+					}
+				};
+			}
+
+			public int size() {
+				return uppers_symb.size() + uppers_symb_trace.get(current).size();
+			}
+
+			public boolean contains(Object key) {
+				return uppers_symb.containsKey(key) || uppers_symb_trace.get(current).containsKey(key);
+			}
+
+			public boolean remove(Object key) {
+				return ((uppers_symb.remove(key) != null) && (lowers_symb.remove(key) != null)) ||
+						((uppers_symb_trace.get(current).remove(key) != null) && (lowers_symb_trace.get(current).remove(key) != null));
+			}
+
+			public boolean removeAll(Collection<?> c) {
+				return uppers_symb.keySet().removeAll(c) && lowers_symb.keySet().removeAll(c) && 
+						uppers_symb_trace.get(current).keySet().removeAll(c) && lowers_symb_trace.get(current).keySet().removeAll(c);
+			}
+
+			public boolean retainAll(Collection<?> c) {
+				return uppers_symb.keySet().retainAll(c) && lowers_symb.keySet().retainAll(c) &&
+						uppers_symb_trace.get(current).keySet().retainAll(c) && lowers_symb_trace.get(current).keySet().retainAll(c);
+			}
+		};
+		
 	}
 
 	public Expression lowerSymbBounds(Relation r) {
@@ -714,54 +768,60 @@ public class PardinusBounds extends Bounds {
 
 	private final SymbolicStructures symbolic;
 	
-	public Formula resolve(Reporter reporter) {
-		Formula xtra = ConstantFormula.TRUE;
-		for (Relation r : relations_symb) {
-			TupleSet pre1 = super.lowerBound(r);
-			TupleSet pre2 = super.upperBound(r);
-			if (super.relations().contains(r) && pre1.size() == pre2.size())
-				continue;
-			TupleSet aux1 = symbolic.resolveLower(lowers_symb.get(r));
-			TupleSet aux2 = symbolic.resolveUpper(uppers_symb.get(r));
-			if (pre1 != null) {
-				if (!aux1.containsAll(pre1))
-					return Formula.FALSE;
-				if (!pre2.containsAll(aux2))
-					return Formula.FALSE;
-			}
-			bound(r, aux1, aux2);
-			reporter.debug("resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
-			
-			if (aux1.size() != aux2.size())
-				xtra = xtra.and(lowers_symb.get(r).in(r)).and(r.in(uppers_symb.get(r)));
+	private Formula aux (Relation r, Reporter reporter) {
+		if (!relationsSymb().contains(r))
+			return null;
+		
+		Formula f = null;
+		
+		for (Relation dep : symbolic.deps.get(r)) {
+			Formula tmp = aux(dep,reporter); 
+			if (tmp != null) f = f==null?tmp:f.and(tmp);
 		}
-		relations_symb.clear();
+		
+		TupleSet pre1 = super.lowerBound(r);
+		TupleSet pre2 = super.upperBound(r);
+		if (super.relations().contains(r) && pre1.size() == pre2.size())
+			return null;
+		TupleSet aux1 = symbolic.resolveLower(lowerSymbBounds(r));
+		TupleSet aux2 = symbolic.resolveUpper(upperSymbBounds(r));
+		if (pre1 != null) {
+			if (!aux1.containsAll(pre1))
+				return Formula.FALSE;
+			if (!pre2.containsAll(aux2))
+				return Formula.FALSE;
+		}
+		bound(r, aux1, aux2);
+		reporter.debug("resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
+		
+		if (aux1.size() != aux2.size()) {
+			Formula x;
+			if (lowerSymbBounds(r).equals(Expression.NONE))
+				x = r.in(upperSymbBounds(r));
+			else 
+				x = lowerSymbBounds(r).in(r).and(r.in(upperSymbBounds(r)));
+			f = f==null?x:f.and(x);
+		}
+
+		relationsSymb().remove(r);
+		
+		return f==null?Formula.TRUE:f;
+	}
+	
+	public Formula resolve(Reporter reporter) {
+		Formula xtra = null;
 		
 		for (int i = 0; i < uppers_symb_trace.size(); i++) {
-			for (Relation r : relations_symb_vars.get(i)) {
-				TupleSet pre1 = lowers_trace.get(i).get(r);
-				TupleSet pre2 = uppers_trace.get(i).get(r);
-
-				if (relations_vars.get(i).contains(r) && pre1.size() == pre2.size())
-					continue;
-				TupleSet aux1 = symbolic.resolveLower(lowers_symb_trace.get(i).get(r));
-				TupleSet aux2 = symbolic.resolveUpper(uppers_symb_trace.get(i).get(r));
-				if (pre1 != null) {
-					if (!aux1.containsAll(pre1))
-						return Formula.FALSE;
-					if (!pre2.containsAll(aux2))
-						return Formula.FALSE;
-				}
-				bound(r, aux1, aux2);
-				reporter.debug("resolved "+r+" from ["+pre1+","+pre2+"] into ["+aux1+","+aux2+"]");
-
-				if (aux1.size() != aux2.size())
-					xtra = xtra.and(lowers_symb_trace.get(i).get(r).in(r)).and(r.in(uppers_symb_trace.get(i).get(r)));
+			Set<Relation> rs = new HashSet<Relation>(relationsSymb());
+			for (Relation r : rs) {
+				Formula f = aux(r,reporter);
+				if (f != null)
+					xtra = xtra==null?f:xtra.and(f);
 			}
-			relations_symb_vars.get(i).clear();
 		}
+		
 		reporter.debug("Additional resolution formula: "+xtra);
-		return xtra;
+		return xtra==null?Formula.TRUE:xtra;
 	}
 
 	/**
@@ -1051,7 +1111,7 @@ public class PardinusBounds extends Bounds {
 			us.putAll(dereif);
 			us.putAll(lowers_trace.get(0)); // TODO: actual support for trace bounds!
 			Instance i = new Instance(universe(), us, intBounds());
-			if (!lowers_trace.get(0).isEmpty()) {
+			if (!lowers_trace.get(0).isEmpty() || !uppers_symb_trace.get(0).isEmpty()) { // TODO: essentially test whether temporal bounds
 				List<Instance> aux = new LinkedList<Instance>();
 				aux.add(i);
 				i = new TemporalInstance(aux, 0);
@@ -1076,7 +1136,7 @@ public class PardinusBounds extends Bounds {
 			us.putAll(dereif);
 			us.putAll(uppers_trace.get(0)); // TODO: actual support for trace bounds!
 			Instance i = new Instance(universe(), us, intBounds());
-			if (!uppers_trace.get(0).isEmpty()) {
+			if (!uppers_trace.get(0).isEmpty() || !uppers_symb_trace.get(0).isEmpty()) { // TODO: essentially test whether temporal bounds
 				List<Instance> aux = new LinkedList<Instance>();
 				aux.add(i);
 				i = new TemporalInstance(aux, 0);
