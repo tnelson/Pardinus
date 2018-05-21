@@ -118,10 +118,12 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
 		ProcessBuilder builder;
+		final String executable = findStaticLibrary("electrod");
+
 		if (options.solver().toString().equals("electrodX")) {
-			builder = new ProcessBuilder("electrod",Options.isDebug()?"-v":"--",file+".elo");
+			builder = new ProcessBuilder(executable==null ? "electrod" : executable,Options.isDebug()?"-v":"--",file+".elo");
 		} else {
-			builder = new ProcessBuilder("electrod","-t","NuSMV",Options.isDebug()?"-v":"--",file+".elo");
+			builder = new ProcessBuilder(executable==null ? "electrod" : executable,"-t","NuSMV",Options.isDebug()?"-v":"--",file+".elo");
 		}
 		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 		builder.redirectErrorStream(true);
@@ -176,6 +178,18 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		}
 	}
 
+	private static String findStaticLibrary(String name) { 
+		final String[] dirs = System.getProperty("java.library.path").split(System.getProperty("path.separator"));
+		
+		for(int i = dirs.length-1; i >= 0; i--) {
+			final File file = new File(dirs[i]+File.separator+name);
+			if (file.canExecute())
+				return file.getAbsolutePath();
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */
