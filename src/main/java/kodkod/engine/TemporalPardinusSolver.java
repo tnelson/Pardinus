@@ -260,7 +260,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			current_trace = options.minTraceLength()-1;
 			do {
 				current_trace++;
-				bounds.resolve(options.reporter());
 				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
 				this.extformula = TemporalTranslator.translate(formula);
 				this.translation = Translator.translate(extformula, extbounds, options);

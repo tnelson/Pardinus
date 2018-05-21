@@ -221,7 +221,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			rt = getQuantifierSince(left, right, quantificationPostLeftf, quantificationPostRight);
 			popVariable();
 			break;
-		default:
+		case TRIGGER: default:
 			throw new UnsupportedOperationException("Unsupported binary temporal operator:" + binaryTempFormula.op());
 		}
 		popVariable();

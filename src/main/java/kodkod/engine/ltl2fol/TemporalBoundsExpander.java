@@ -139,9 +139,9 @@ class TemporalBoundsExpander {
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + (traceLen - 1) }));
 		bounds.first();
 		for (Relation r : bounds.relations()) {
+			TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
+			TupleSet tupleSetU = convert(bounds.upperBound(r), u);
 			if (r instanceof VarRelation) {
-				TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
-				TupleSet tupleSetU = convert(bounds.upperBound(r), u);
 				newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime), tupleSetU.product(tupleSetTime));
 				if (bounds.target(r) != null) {
 					TupleSet tupleSetT = convert(bounds.target(r), u);
@@ -150,8 +150,6 @@ class TemporalBoundsExpander {
 				if (bounds.weight(r) != null) 
 					newBounds.setWeight(((VarRelation) r).expanded, bounds.weight(r));
 			} else {
-				TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
-				TupleSet tupleSetU = convert(bounds.upperBound(r), u);
 				newBounds.bound(r, tupleSetL, tupleSetU);			
 				if (bounds.target(r) != null) {
 					TupleSet tupleSetT = convert(bounds.target(r), u);

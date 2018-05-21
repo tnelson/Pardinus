@@ -36,6 +36,7 @@ import static kodkod.ast.operator.TemporalOperator.ONCE;
 import static kodkod.ast.operator.TemporalOperator.PREVIOUS;
 import static kodkod.ast.operator.TemporalOperator.RELEASE;
 import static kodkod.ast.operator.TemporalOperator.SINCE;
+import static kodkod.ast.operator.TemporalOperator.TRIGGER;
 import static kodkod.ast.operator.TemporalOperator.UNTIL;
 
 import java.util.Arrays;
@@ -404,9 +405,19 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Composes this and the specified formula with release.  The effect
-     * of this method is the same as calling this.compose(RELEASE, formula).
-     * @return this.compose(RELEASE, formula)
+     * Composes this and the specified formula with trigger.  The effect
+     * of this method is the same as calling this.compose(TRIGGER, formula).
+     * @return this.compose(TRIGGER, formula)
+     */
+    // [HASLab]
+    public final Formula trigger(Formula formula) {
+        return compose(TRIGGER, formula);
+    }
+
+    /**
+     * Composes this and the specified formula with since.  The effect
+     * of this method is the same as calling this.compose(SINCE, formula).
+     * @return this.compose(SINCE, formula)
      */
     // [HASLab]
     public final Formula since(Formula formula) {

@@ -5,7 +5,7 @@ Pardinus is Kodkod's (slightly bulkier) Iberian cousin.
 
 This repository includes the source code for the Pardinus solver, an extension to the [Kodkod](http://alloy.mit.edu/kodkod/index.html) solver for relational logic. It extends Kodkod with the following functionalities:
 * Target-oriented and weighted-target oriented model finding
-* Model finding over (past and future) temporal relational formulas
+* Model finding over (past and future) LTL relational formulas
 * Symbolic bound declarations
 * Decomposed parallelized model finding
 * Unbounded relational model finding

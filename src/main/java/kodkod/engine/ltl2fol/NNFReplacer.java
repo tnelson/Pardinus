@@ -266,7 +266,7 @@ public class NNFReplacer extends AbstractReplacer {
 		
 		if (negated) {
 			switch (tf.op()) {
-			case UNTIL: case RELEASE: case SINCE:
+			case UNTIL: case RELEASE: case SINCE: case TRIGGER:
 				return cache(tf,tf.left().accept(this).compose(tf.op(),tf.right().accept(this)));
 			default:
 				negated = !negated;

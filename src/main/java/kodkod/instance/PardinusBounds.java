@@ -829,7 +829,7 @@ public class PardinusBounds extends Bounds {
 	 * @return whether this needs resolving.
 	 */
 	public boolean resolved() {
-		return relations_symb.isEmpty();
+		return relationsSymb().isEmpty();
 	}
 
 	/**
