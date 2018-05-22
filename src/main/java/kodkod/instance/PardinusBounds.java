@@ -229,6 +229,20 @@ public class PardinusBounds extends Bounds {
 		
 		first();
 		add();
+
+		// the automatic partition splits static / variable relations
+		// however, symbolic bounds of static relations may refer to variable relations
+		// (even indirectly, for instance, if a var sig extends a static sig)
+		// in this automatic splitting they are irrelevant any way, since static are resolved first
+		List<Relation> problematic = new LinkedList<Relation>();
+		Set<Relation> rs = relationsSymb(); 
+		for (Relation r : rs)
+			for (Relation d : symbolic.deps.get(r))
+				if (d instanceof VarRelation)
+					problematic.add(r);
+		
+		for (Relation r : problematic)
+			rs.remove(r);
 		
 		this.amalgamated = amalg.clone();
 	}
