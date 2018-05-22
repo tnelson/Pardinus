@@ -179,7 +179,7 @@ public abstract class SATFactory {
 	 * A statically compiled version of plingeling is assumed to be available in a
 	 * java.library.path directory.  
 	 * 
-	 * <p>Plingling takes as input two optional parameters: {@code threads}, specifying how
+	 * <p>Plingeling takes as input two optional parameters: {@code threads}, specifying how
 	 * many worker threads to use, and {@code portfolio}, specifying whether the threads should
 	 * run in portfolio mode (no sharing of clauses) or sharing mode. If {@code threads}
 	 * is null, the solver uses one worker per core.  If {@code portfolio} is null, it is set to 
