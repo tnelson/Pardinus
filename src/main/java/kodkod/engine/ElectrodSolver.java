@@ -29,14 +29,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.satlab.ExternalSolver;
 import kodkod.engine.unbounded.ElectrodPrinter;
 import kodkod.engine.unbounded.ElectrodReader;
 import kodkod.engine.unbounded.InvalidUnboundedProblem;
@@ -100,8 +103,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
 		Reporter rep = options.reporter();
 		
-
-
 		// create a directory with the specified unique name
 		String temp=System.getProperty("java.io.tmpdir");
 		File dir = new File(temp+File.separatorChar+options.uniqueName());
@@ -121,18 +122,21 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
 		ProcessBuilder builder;
-		final String executable = findStaticLibrary("electrod");
-
-		if (options.solver().toString().equals("electrodX")) {
-			builder = new ProcessBuilder(executable==null ? "electrod" : executable,Options.isDebug()?"-v":"--",file+".elo");
-		} else {
-			builder = new ProcessBuilder(executable==null ? "electrod" : executable,"-t","NuSMV",Options.isDebug()?"-v":"--",file+".elo");
-		}
+		List<String> args = new ArrayList<String>();
+		args.add(options.solver().toString());
+		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
+		args.add(Options.isDebug()?"-v":"--");
+		args.add(file+".elo");
+				
+		builder = new ProcessBuilder(args);
+		
 		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 		builder.redirectErrorStream(true);
 		int ret = -1;
 		final Process p;
 		try {
+			options.reporter().solvingCNF(-1, -1, -1);
+
 			p = builder.start();
 			try {
 				
@@ -190,8 +194,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			ElectrodReader rd = new ElectrodReader(bounds);
 			TemporalInstance res = rd.read(xml);
 			
-			options.reporter().solvingCNF(rd.nbvars, -1, -1);
-
 			Statistics st = new Statistics(rd.nbvars, 0,0, rd.ctime, rd.atime);
 
 			Solution sol;

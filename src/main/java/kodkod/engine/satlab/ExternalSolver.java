@@ -38,12 +38,13 @@ import java.util.List;
  * executed in a separate process.
  * @author Emina Torlak
  */
-final class ExternalSolver implements SATSolver {
+// [HASLab] public
+final public class ExternalSolver implements SATSolver {
 	private final StringBuilder buffer;
 	private final int capacity = 8192;
 	private final boolean deleteTemp;
 	private final String executable, inTemp;
-	private final String[] options;
+	public final String[] options; // [HASLab]
 	private final RandomAccessFile cnf;
 	private final BitSet solution;
 	private volatile Boolean sat;
