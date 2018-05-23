@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -98,6 +99,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
 		Reporter rep = options.reporter();
+		
+
 
 		// create a directory with the specified unique name
 		String temp=System.getProperty("java.io.tmpdir");
@@ -127,24 +130,46 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		}
 		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 		builder.redirectErrorStream(true);
-		int ret;
+		int ret = -1;
+		final Process p;
 		try {
-			Process p = builder.start();
-			
-			BufferedReader output = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
+			p = builder.start();
+			try {
+				
+				BufferedReader output = new BufferedReader(new InputStreamReader(
+						p.getInputStream()));
+				
+	    		Runtime.getRuntime().addShutdownHook(new Thread() {
+	    			@Override
+	    			public void run() {
+	    				try {
+	    					Field f = p.getClass().getDeclaredField("pid");
+	    					f.setAccessible(true);
+	    					System.out.println("Process ID : " + f.get(p));
+	    					Runtime.getRuntime().exec("kill -SIGTERM "+f.get(p));
 
-			String oline = "";
-			while ((oline = output.readLine()) != null)
-				rep.debug(oline);
+	    				} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
+	    					// TODO Auto-generated catch block
+	    					e.printStackTrace();
+	    				}
+//	    					p.destroy();
+	    			}   
+	    		}); 
 
-			ret = p.waitFor();
-		} catch (InterruptedException e) {
-			throw new AbortedException("Electrod problem interrupted.", e);
-		} catch (IOException e) {
-			throw new AbortedException("Electrod process failed.", e);
+				String oline = "";
+				while ((oline = output.readLine()) != null)
+					rep.debug(oline);
+
+				ret = p.waitFor();
+			} catch (InterruptedException e) {
+//				p.destroy();
+				throw new AbortedException("Electrod problem interrupted.", e);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
-
+		
 		if (ret != 0) {
 			rep.warning("Electrod exit code: "+ret);
 			throw new AbortedException("Electrod exit code: "+ret);
@@ -165,6 +190,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			ElectrodReader rd = new ElectrodReader(bounds);
 			TemporalInstance res = rd.read(xml);
 			
+			options.reporter().solvingCNF(rd.nbvars, -1, -1);
+
 			Statistics st = new Statistics(rd.nbvars, 0,0, rd.ctime, rd.atime);
 
 			Solution sol;
