@@ -114,7 +114,7 @@ public class DMonitorImpl implements DMonitor {
 	 */
 	@Override
 	public void configsDone(boolean next) {
-		if (configs>=50) rep.reportConfigs(configs);
+		rep.reportConfigs(configs, config_stats.primaryVariables(), config_stats.variables(), config_stats.clauses());
 		if (!next) {
 			rep.debug("Config: " + "Done");
 			configs_done = true;

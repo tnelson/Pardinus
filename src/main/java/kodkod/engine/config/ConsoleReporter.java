@@ -133,7 +133,7 @@ public final class ConsoleReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
 	 */
 	// [HASLab]
-	public void reportConfigs(int configs) {
+	public void reportConfigs(int configs, int vars, int pvars, int clauses) {
 		System.out.println("found at least "+configs+" configs...");
 	}
 	

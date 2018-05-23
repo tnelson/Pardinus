@@ -125,6 +125,6 @@ public interface Reporter {
 	 * TODO
 	 */
 	// [HASLab]
-	public void reportConfigs(int configs);
+	public void reportConfigs(int configs, int primaryVars, int vars, int clauses);
 
 }

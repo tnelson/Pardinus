@@ -72,6 +72,7 @@ import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
 import kodkod.engine.bool.BooleanFormula;
+import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
@@ -120,24 +121,12 @@ public class ElectrodPrinter {
 		// use a reporter to intercept the symmetry breaking predicate
 		Options opt = new ExtendedOptions();
 		StringBuilder temp = new StringBuilder();
-		Reporter reporter = new Reporter() {
+		Reporter reporter = new AbstractReporter() {
 			
 			@Override
 			public void warning(String warning) {
 				rep.warning(warning);
 			}
-			
-			@Override
-			public void translatingToCNF(BooleanFormula circuit) {}
-			
-			@Override
-			public void translatingToBoolean(Formula formula, Bounds bounds) {}
-			
-			@Override
-			public void solvingCNF(int primaryVars, int vars, int clauses) {}
-			
-			@Override
-			public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
 			
 			@Override
 			public void reportLex(List<Entry<Relation, Tuple>> _original,
@@ -152,15 +141,6 @@ public class ElectrodPrinter {
 			}
 			
 			@Override
-			public void optimizingBoundsAndFormula() {}
-			
-			@Override
-			public void generatingSBP() {}
-			
-			@Override
-			public void detectingSymmetries(Bounds bounds) {}
-			
-			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
 				rep.detectedSymmetries(parts);
 			}
@@ -170,8 +150,6 @@ public class ElectrodPrinter {
 				rep.debug(debug);
 			}
 
-			@Override
-			public void reportConfigs(int permuted) {}
 		};
 		opt.setReporter(reporter);
 

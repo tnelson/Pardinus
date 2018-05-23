@@ -146,7 +146,7 @@ public class SLF4JReporter implements Reporter {
 	/**
 	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
 	 */
-	public void reportConfigs(int configs) {
+	public void reportConfigs(int configs, int vars, int pvars, int clauses) {
 		if (Options.isDebug())
 			debug("found at least "+configs+" configs...");
 	}

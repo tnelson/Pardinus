@@ -113,6 +113,6 @@ public abstract class AbstractReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
 	 */
 	// [HASLab]
-	public void reportConfigs(int configs){}
+	public void reportConfigs(int configs, int primaryVars, int vars, int clauses){}
 
 }

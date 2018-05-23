@@ -135,7 +135,7 @@ public final class FileReporter implements Reporter {
 	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
 	 */
 	// [HASLab]
-	public void reportConfigs(int permuted) {}
+	public void reportConfigs(int permuted, int vars, int pvars, int clauses) {}
 	
 	/**
 	 * @see java.lang.Object#toString()
