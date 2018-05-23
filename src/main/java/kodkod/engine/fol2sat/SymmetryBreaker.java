@@ -261,6 +261,7 @@ final class SymmetryBreaker {
 							} 
 						}
 					}
+					// [HASLab] redo all this!!
 					// [HASLab] TODO: optimize this: [T, ...] < [F, ...] = F, [F, ...] < [T, ...] = T
 					for (Integer index : aux.keySet()) {
 						Entry<Integer, BooleanValue> e1 = aux.get(index).getKey();
@@ -269,9 +270,13 @@ final class SymmetryBreaker {
 						if (e1.getKey() > e2.getKey() && !(e2.getValue() == BooleanConstant.TRUE)) {
 							original.add(e2.getValue());
 							permuted.add(e1.getValue());
+							_original.add(null); // this will allows to identify F < T below
+							_permuted.add(null);
 						} else if (e1.getKey() < e2.getKey() && !(e1.getValue() == BooleanConstant.TRUE)) {
 							original.add(e1.getValue());
 							permuted.add(e2.getValue());
+							_original.add(null); // this will allows to identify F < T below
+							_permuted.add(null);
 						} else {
 							// [HASLab] this happens because I can't filter the fixed bounds from total orders
 							// since the bounds are cloned at the translator and the TOTALORDER is lost for 
@@ -282,7 +287,16 @@ final class SymmetryBreaker {
 				}
 								
 				// [HASLab] report lexes
-				reporter.reportLex(_original,_permuted);
+				final List<Entry<Relation, Tuple>> _foriginal = new ArrayList<Entry<Relation, Tuple>>(_original.size());
+				final List<Entry<Relation, Tuple>> _fpermuted = new ArrayList<Entry<Relation, Tuple>>(_original.size());
+				for (int i = 0; i < _original.size(); i ++) {
+					 // identify F < T and ignore remaineder
+					if (_original.get(i) == null && _permuted.get(i) == null) break;
+					_foriginal.add(_original.get(i));
+					_fpermuted.add(_permuted.get(i));
+				}
+				reporter.reportLex(_foriginal,_fpermuted);
+				
 				reporter.debug("act: "+original.toString()+" < "+permuted.toString());
 				sbp.add(leq(factory, original, permuted));
 				original.clear();
