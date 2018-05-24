@@ -43,7 +43,8 @@ final public class ExternalSolver implements SATSolver {
 	private final StringBuilder buffer;
 	private final int capacity = 8192;
 	private final boolean deleteTemp;
-	private final String executable, inTemp;
+	private final String inTemp;
+	public final String executable; // [HASLab]
 	public final String[] options; // [HASLab]
 	private final RandomAccessFile cnf;
 	private final BitSet solution;

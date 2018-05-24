@@ -123,7 +123,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		}
 		ProcessBuilder builder;
 		List<String> args = new ArrayList<String>();
-		args.add(options.solver().toString());
+		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
 		args.add(Options.isDebug()?"-v":"--");
 		args.add(file+".elo");
@@ -151,7 +151,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 //	    					Field f = p.getClass().getDeclaredField("pid");
 //	    					f.setAccessible(true);
 //	    					System.out.println("Process ID : " + f.get(p));
-//	    					Runtime.getRuntime().exec("kill "+f.get(p));
+//	    					Runtime.getRuntime().exec("kill SIGTERM"+f.get(p));
 //
 //	    				} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
 //	    					// TODO Auto-generated catch block
@@ -207,18 +207,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		}
 	}
 
-	private static String findStaticLibrary(String name) { 
-		final String[] dirs = System.getProperty("java.library.path").split(System.getProperty("path.separator"));
-		
-		for(int i = dirs.length-1; i >= 0; i--) {
-			final File file = new File(dirs[i]+File.separator+name);
-			if (file.canExecute())
-				return file.getAbsolutePath();
-		}
-		
-		return null;
-	}
-	
 	/**
 	 * {@inheritDoc}
 	 */
