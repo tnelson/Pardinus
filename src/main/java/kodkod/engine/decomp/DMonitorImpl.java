@@ -73,8 +73,11 @@ public class DMonitorImpl implements DMonitor {
 		}
 		config_times += config.stats().solvingTime();
 		configs++;
-		rep.debug("Config: " + configs + " " + config.outcome().toString()
-				+ "; " + config.instance().relationTuples().toString());
+		if (config.sat())
+			rep.debug("Config: " + configs + " " + config.outcome().toString()
+					+ "; " + config.instance().relationTuples().toString());
+		else 
+			rep.debug("Config: " + configs + " " + config.outcome().toString());
 	}
 
 	/**

@@ -214,6 +214,8 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				// callback so it must be terminated here
 				if (first)
 					try {
+						// get the stats from the unsat
+						monitor.newConfig(config);
 						terminate();
 						solution_queue.put(config);
 					} catch (InterruptedException e) {

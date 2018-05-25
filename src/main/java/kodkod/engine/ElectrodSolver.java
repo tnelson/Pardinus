@@ -146,17 +146,17 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	    		Runtime.getRuntime().addShutdownHook(new Thread() {
 	    			@Override
 	    			public void run() {
-	    				p.destroy();
-//	    				try {
-//	    					Field f = p.getClass().getDeclaredField("pid");
-//	    					f.setAccessible(true);
-//	    					System.out.println("Process ID : " + f.get(p));
-//	    					Runtime.getRuntime().exec("kill SIGTERM"+f.get(p));
-//
-//	    				} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
-//	    					// TODO Auto-generated catch block
-//	    					e.printStackTrace();
-//	    				}
+//	    				p.destroy();
+	    				try {
+	    					Field f = p.getClass().getDeclaredField("pid");
+	    					f.setAccessible(true);
+	    					System.out.println("Process ID : " + f.get(p));
+	    					Runtime.getRuntime().exec("kill -SIGTERM "+f.get(p));
+
+	    				} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
+	    					// TODO Auto-generated catch block
+	    					e.printStackTrace();
+	    				}
 	    			}   
 	    		}); 
 
