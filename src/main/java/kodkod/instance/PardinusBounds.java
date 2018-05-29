@@ -116,8 +116,8 @@ public class PardinusBounds extends Bounds {
 
 	/* Decomposed bounds */
 
-	private boolean integrated;
-	private PardinusBounds amalgamated;
+	public boolean integrated;
+	public PardinusBounds amalgamated;
 	public boolean trivial_config;
 	
 	/** Statistics, how many times has this bound been integrated. */

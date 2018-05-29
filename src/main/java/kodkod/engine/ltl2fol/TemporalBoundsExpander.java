@@ -167,6 +167,11 @@ class TemporalBoundsExpander {
 		newBounds.bound(TemporalTranslator.LOOP, tupleSetTime.product(tupleSetTime));
 		newBounds.bound(TemporalTranslator.TRACE, tupleSetTime.product(tupleSetTime));
 		
+		newBounds.amalgamated = bounds.amalgamated;
+		newBounds.trivial_config = bounds.trivial_config;
+		newBounds.integrated = bounds.integrated;
+		newBounds.integration = bounds.integration;
+		
 		if (bounds.amalgamated() != null) {
 			PardinusBounds newAmalg = expand(bounds.amalgamated(), traceLen, u);
 			newBounds = new PardinusBounds(newBounds,newAmalg);
