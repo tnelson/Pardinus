@@ -153,7 +153,7 @@ class TemporalBoundsExpander {
 				newBounds.bound(r, tupleSetL, tupleSetU);			
 				if (bounds.target(r) != null) {
 					TupleSet tupleSetT = convert(bounds.target(r), u);
-					newBounds.setTarget(r, tupleSetT.product(tupleSetTime));
+					newBounds.setTarget(r, tupleSetT);
 				}
 				if (bounds.weight(r) != null) 
 					newBounds.setWeight(r, bounds.weight(r));
