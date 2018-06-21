@@ -126,6 +126,7 @@ class TemporalBoundsExpander {
 	 * @return the expanded bounds with the new universe
 	 */
 	private static PardinusBounds expand(PardinusBounds bounds, int traceLen, Universe u) {
+		int unr = 2;
 		if (bounds.boundTrace().size() > 1) 
 			throw new UnsupportedOperationException("Expansion of trace bounds not yet supported.");
 
@@ -137,6 +138,9 @@ class TemporalBoundsExpander {
 		TupleSet tupleSetTime = u.factory().range(
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + "0" }),
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + (traceLen - 1) }));
+		TupleSet tupleSetTime_unr = u.factory().range(
+				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + "0_0" }),
+				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + (traceLen - 1) +"_"+unr}));
 		bounds.first();
 		for (Relation r : bounds.relations()) {
 			TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
@@ -153,7 +157,7 @@ class TemporalBoundsExpander {
 				newBounds.bound(r, tupleSetL, tupleSetU);			
 				if (bounds.target(r) != null) {
 					TupleSet tupleSetT = convert(bounds.target(r), u);
-					newBounds.setTarget(r, tupleSetT.product(tupleSetTime));
+					newBounds.setTarget(r, tupleSetT);
 				}
 				if (bounds.weight(r) != null) 
 					newBounds.setWeight(r, bounds.weight(r));
@@ -166,7 +170,14 @@ class TemporalBoundsExpander {
 		newBounds.bound(TemporalTranslator.PREFIX, tupleSetTime.product(tupleSetTime));
 		newBounds.bound(TemporalTranslator.LOOP, tupleSetTime.product(tupleSetTime));
 		newBounds.bound(TemporalTranslator.TRACE, tupleSetTime.product(tupleSetTime));
-		
+
+		newBounds.bound(TemporalTranslator.STATE_UNR, tupleSetTime);
+		newBounds.bound(TemporalTranslator.FIRST_UNR, tupleSetTime);
+		newBounds.bound(TemporalTranslator.LAST_UNR, tupleSetTime);
+		newBounds.bound(TemporalTranslator.PREFIX_UNR, tupleSetTime.product(tupleSetTime));
+		newBounds.bound(TemporalTranslator.LOOP_UNR, tupleSetTime.product(tupleSetTime));
+		newBounds.bound(TemporalTranslator.TRACE_UNR, tupleSetTime.product(tupleSetTime));
+
 		newBounds.amalgamated = bounds.amalgamated;
 		newBounds.trivial_config = bounds.trivial_config;
 		newBounds.integrated = bounds.integrated;
