@@ -39,8 +39,15 @@ import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractReplacer;
-import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.INFINITE;
+import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.LAST_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.LOOP_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.STATE_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.TRACE_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.UNROLL_MAP;
+import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.LAST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.LOOP;
 import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX;
@@ -95,10 +102,28 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		LTL2FOLTranslator translator = new LTL2FOLTranslator();
 		
 		Formula order = PREFIX.totalOrder(STATE, FIRST, LAST);
-		Formula loopDecl = LOOP.partialFunction(LAST, STATE);
-		Expression nextDecl = PREFIX.union(LOOP);
+		Formula loopDecl = LOOP.lone();
+		Expression nextDecl = PREFIX.union(LAST.product(LOOP));
 		Formula nextFnct = TRACE.eq(nextDecl);
 
+//		Formula order_unr = PREFIX_UNR.totalOrder(STATE_UNR, FIRST_UNR, LAST_UNR);
+		Formula order_unr_last = LAST_UNR.join(PREFIX_UNR).no();
+		
+		Variable v = Variable.unary("v");
+		Formula order_unr_trace1 = v.join(PREFIX_UNR).one().forAll(v.oneOf(STATE_UNR.difference(LAST_UNR)));
+		Formula order_unr_trace2 = PREFIX_UNR.join(v).one().forAll(v.oneOf(STATE_UNR.difference(FIRST_UNR)));
+		Formula order_unr_trace3 = FIRST_UNR.join(PREFIX_UNR.reflexiveClosure()).eq(STATE_UNR);
+		
+		Formula loopDecl_unr = LOOP_UNR.lone();
+		Expression nextDecl_unr = PREFIX_UNR.union(LAST_UNR.product(LOOP_UNR));
+		Formula nextFnct_unr = TRACE_UNR.eq(nextDecl_unr);
+
+		Formula mapping_unr = (LOOP_UNR).join(UNROLL_MAP).eq(LOOP);
+		Formula mapping_unr2 = UNROLL_MAP.function(STATE_UNR, STATE);
+		
+		v = Variable.unary("v");
+		Formula unrolls = ((v.join(TRACE_UNR).join(UNROLL_MAP)).eq(v.join(UNROLL_MAP).join(TRACE))).forAll(v.oneOf(STATE_UNR));
+		
 		translator.resetPostVariables();
 		translator.pushVariable();
 
@@ -108,7 +133,8 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			result = exists.and(result);
 		}
 		
-		return Formula.and(result, order, loopDecl, nextFnct);
+		return Formula.and(result, order, loopDecl, nextFnct
+				, loopDecl_unr, nextFnct_unr, mapping_unr, mapping_unr2, unrolls, order_unr_last, order_unr_trace1, order_unr_trace2, order_unr_trace3);
 	}
 
 	/**
@@ -143,7 +169,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	public Expression visit(Relation relation) {
 		maxPostDepth = currentPostDepth > maxPostDepth ? currentPostDepth : maxPostDepth;
 		if (TemporalTranslator.isTemporal(relation))
-			return ((VarRelation) relation).expanded.join(getVariable());
+			return ((VarRelation) relation).expanded.join(getVariable().join(UNROLL_MAP));
 		else
 			return relation;
 	}
@@ -259,12 +285,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft)
 					.forSome(
 							r.oneOf(getVariableLastQuantificationUntil(false).join(
-									TRACE.reflexiveClosure())));
+									TRACE_UNR.reflexiveClosure())));
 		} else {
 			return right.and(nfleft)
 					.forSome(
 							r.oneOf(getVariableLastQuantificationUntil(false).join(
-									TRACE.reflexiveClosure())));
+									TRACE_UNR.reflexiveClosure())));
 		}
 	}
 	
@@ -283,21 +309,21 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft)
 					.forSome(
 							r.oneOf(getVariableLastQuantificationUntil(false).join(
-									TRACE.transpose().reflexiveClosure())));
+									TRACE_UNR.transpose().reflexiveClosure())));
 		} else {
 			return right.and(nfleft)
 					.forSome(
 							r.oneOf(getVariableLastQuantificationUntil(false).join(
-									TRACE.transpose().reflexiveClosure())));
+									TRACE_UNR.transpose().reflexiveClosure())));
 		}
 	}
 	
 	private Expression upTo(Expression t1, Expression t2, boolean inc1, boolean inc2) {
-		Formula c = t2.in(t1.join(PREFIX.reflexiveClosure()));
-		Expression exp1 = inc1?PREFIX.reflexiveClosure():PREFIX.closure();
-		Expression exp2 = inc2?PREFIX.reflexiveClosure():PREFIX.closure();
-		Expression exp11 = inc1?TRACE.reflexiveClosure():TRACE.closure();
-		Expression exp12 = inc2?TRACE.reflexiveClosure():TRACE.closure();
+		Formula c = t2.in(t1.join(PREFIX_UNR.reflexiveClosure()));
+		Expression exp1 = inc1?PREFIX_UNR.reflexiveClosure():PREFIX_UNR.closure();
+		Expression exp2 = inc2?PREFIX_UNR.reflexiveClosure():PREFIX_UNR.closure();
+		Expression exp11 = inc1?TRACE_UNR.reflexiveClosure():TRACE_UNR.closure();
+		Expression exp12 = inc2?TRACE_UNR.reflexiveClosure():TRACE_UNR.closure();
 		Expression e1 = (t1.join(exp1)).intersection(t2.join(exp2.transpose()));
 		Expression e21 = (t1.join(exp11)).intersection(t2.join(exp12.transpose()));
 		Expression e22 = (t2.join(exp1)).intersection(t1.join(exp2.transpose()));
@@ -314,7 +340,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfright;
 
 		alw = INFINITE.and(always.forAll(v.oneOf(getVariableLastQuantificationRelease(false, true).join(
-				TRACE.reflexiveClosure()))));
+				TRACE_UNR.reflexiveClosure()))));
 
 		if (rightFormula > 0) {
 			nfleft = (forceNextExists(l, rightFormula).and(right)).forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(
@@ -326,11 +352,11 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		if (leftFormula > 0) {
 			nfright = (forceNextExists(r, leftFormula).and(left)).and(nfleft).forSome(
 					r.oneOf(getVariableLastQuantificationRelease(false, true).join(
-							TRACE.reflexiveClosure())));
+							TRACE_UNR.reflexiveClosure())));
 		} else {
 			nfright = left.and(nfleft).forSome(
 					r.oneOf(getVariableLastQuantificationRelease(false, true).join(
-							TRACE.reflexiveClosure())));
+							TRACE_UNR.reflexiveClosure())));
 		}
 		return alw.or(nfright);
 	}
@@ -341,30 +367,30 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		switch (op) {
 		case ALWAYS:
 			v = (Variable) getVariable();
-			return INFINITE.and(e.forAll(v.oneOf(quantification.join(TRACE.reflexiveClosure()))));
+			return INFINITE.and(e.forAll(v.oneOf(quantification.join(TRACE_UNR.reflexiveClosure()))));
 		case EVENTUALLY:
 			v = (Variable) getVariable();
 			if (posts > 0) {
 				return forceNextExists(v, posts).and(e).forSome(
-						v.oneOf(quantification.join(TRACE.reflexiveClosure())));
+						v.oneOf(quantification.join(TRACE_UNR.reflexiveClosure())));
 			} else {
-				return e.forSome(v.oneOf(quantification.join(TRACE.reflexiveClosure())));
+				return e.forSome(v.oneOf(quantification.join(TRACE_UNR.reflexiveClosure())));
 			}
 		case HISTORICALLY:
 			v = (Variable) getVariable();
 			if (posts > 0) {
 				return forceNextExists(v, posts).and(e).forAll(
-						v.oneOf(quantification.join(TRACE.transpose().reflexiveClosure())));
+						v.oneOf(quantification.join(PREFIX_UNR.transpose().reflexiveClosure())));
 			} else {
-				return e.forAll(v.oneOf(quantification.join(TRACE.transpose().reflexiveClosure())));
+				return e.forAll(v.oneOf(quantification.join(PREFIX_UNR.transpose().reflexiveClosure())));
 			}
 		case ONCE:
 			v = (Variable) getVariable();
 			if (posts > 0) {
 				return forceNextExists(v, posts).and(e).forSome(
-						v.oneOf(quantification.join(TRACE.transpose().reflexiveClosure())));
+						v.oneOf(quantification.join(PREFIX_UNR.transpose().reflexiveClosure())));
 			} else {
-				return e.forSome(v.oneOf(quantification.join(TRACE.transpose().reflexiveClosure())));
+				return e.forSome(v.oneOf(quantification.join(PREFIX_UNR.transpose().reflexiveClosure())));
 			}
 		case NEXT: 
 			Expression v1 = getVariable();
@@ -386,9 +412,9 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	}
 
 	private Formula forceNextExists(Expression exp, int x) {
-		Expression e = exp.join(TRACE);
+		Expression e = exp.join(TRACE_UNR);
 		for (int i = 1; i < x; i++) {
-			e = e.join(TRACE);
+			e = e.join(TRACE_UNR);
 		}
 		return e.some();
 	}
@@ -435,17 +461,17 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	private void pushVariable() {
 		if (!thereAreVariables()) {
-			variables.add(FIRST);
+			variables.add(FIRST_UNR);
 			return;
 		}
 
 		switch (getOperator()) {
 		case NEXT:
 		case PRIME:
-			variables.add(getVariable().join(TRACE));
+			variables.add(getVariable().join(TRACE_UNR));
 			break;
 		case PREVIOUS:
-			variables.add(getVariable().join(PREFIX.transpose()));
+			variables.add(getVariable().join(PREFIX_UNR.transpose()));
 			break;
 		default:
 			Variable v = Variable.unary("t" + totalVariablesIt);
@@ -462,9 +488,9 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 */
 	private void pushVariable(int state) {
 		if (!thereAreVariables()) {
-			Expression s = FIRST;
+			Expression s = FIRST_UNR;
 			for (int i = 0; i < state; i++)
-				s = s.join(TRACE);
+				s = s.join(TRACE_UNR);
 			variables.add(s);
 		} else
 			throw new UnsupportedOperationException("No more vars.");

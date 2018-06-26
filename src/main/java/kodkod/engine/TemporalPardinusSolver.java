@@ -130,7 +130,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				// increase while UNSAT and below max
 				do {
 					traceLength++;
-					Bounds extbounds = TemporalTranslator.translate(bounds, traceLength);
+					Bounds extbounds = TemporalTranslator.translate(bounds, traceLength, 1);
 					translation = Translator.translate(extformula, extbounds, options);
 				} while (translation.trivial() && traceLength <= options.maxTraceLength());
 
@@ -260,7 +260,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			current_trace = options.minTraceLength()-1;
 			do {
 				current_trace++;
-				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
+				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace, 1);
 				this.extformula = TemporalTranslator.translate(formula);
 				this.translation = Translator.translate(extformula, extbounds, options);
 			} while (this.translation.trivial() && current_trace <= options.maxTraceLength());
@@ -323,7 +323,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (incremented) {
 					long translStart = System.currentTimeMillis();
-					Bounds extbounds = TemporalTranslator.translate(tempBounds, current_trace);
+					Bounds extbounds = TemporalTranslator.translate(tempBounds, current_trace, 1);
 					translation = Translator.translate(extformula, extbounds, opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
@@ -449,7 +449,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (!options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");
 			this.translTime = System.currentTimeMillis();
-			Bounds extbounds = TemporalTranslator.translate(bounds, 1);
+			Bounds extbounds = TemporalTranslator.translate(bounds, 1, 1);
 			this.extformula = TemporalTranslator.translate(formula);
 			this.translation = Translator.translate(extformula, extbounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
@@ -514,7 +514,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			while (!isSat && traceLength <= opt.maxTraceLength()) {
 				if (traceLength > 1) {
 					long translStart = System.currentTimeMillis();
-					Bounds extbounds = TemporalTranslator.translate(tempBounds, traceLength);
+					Bounds extbounds = TemporalTranslator.translate(tempBounds, traceLength, 1);
 					translation = Translator.translate(extformula, extbounds, opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;

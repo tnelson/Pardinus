@@ -81,7 +81,7 @@ public class TemporalInstance extends Instance {
 		end = Integer.valueOf(tuple_last.atom(0).toString().substring(4));
 		TupleSet tupleset_loop = eval.evaluate(TemporalTranslator.LOOP);
 		if (tupleset_loop.iterator().hasNext())
-			loop = Integer.valueOf(tupleset_loop.iterator().next().atom(1).toString().substring(4));
+			loop = Integer.valueOf(tupleset_loop.iterator().next().atom(0).toString().substring(4));
 		else 
 			loop = -1;
 		this.varrelations = varrelations;

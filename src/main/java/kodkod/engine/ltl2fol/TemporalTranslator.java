@@ -60,15 +60,17 @@ public class TemporalTranslator {
 	public static final Relation LAST = Relation.unary("last");
 	public static final Relation PREFIX = Relation.binary("prefix");
 	public static final Relation TRACE = Relation.binary("trace");
-	public static final Relation LOOP = Relation.binary("loop");
+	public static final Relation LOOP = Relation.unary("loop");
 
 	public static final Relation STATE_UNR = Relation.unary(STATEATOM_UNR);
 	public static final Relation FIRST_UNR = Relation.unary("first_unr");
 	public static final Relation LAST_UNR = Relation.unary("last_unr");
 	public static final Relation PREFIX_UNR = Relation.binary("prefix_unr");
 	public static final Relation TRACE_UNR = Relation.binary("trace_unr");
-	public static final Relation LOOP_UNR = Relation.binary("loop_unr");
+	public static final Relation LOOP_UNR = Relation.unary("loop_unr");
 
+	public static final Relation UNROLL_MAP = Relation.binary("unroll_map");
+	
 	/**
 	 * The constraint forcing the time trace to be infinite. Forces the loop to
 	 * exist.
@@ -91,8 +93,8 @@ public class TemporalTranslator {
 	 *            the trace length.
 	 * @return the temporal bounds expanded into standard bounds.
 	 */
-	public static Bounds translate(PardinusBounds bounds, int traceLength) {
-		return TemporalBoundsExpander.expand(bounds, traceLength);
+	public static Bounds translate(PardinusBounds bounds, int traceLength, int unrolls) {
+		return TemporalBoundsExpander.expand(bounds, traceLength, unrolls);
 	}
 
 	/**
