@@ -22,9 +22,14 @@
  */
 package kodkod.engine.ltl2fol;
 
+import static kodkod.engine.ltl2fol.TemporalTranslator.LAST_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.LOOP_UNR;
+import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX_UNR;
+
 import java.util.HashSet;
 
 import kodkod.ast.BinaryTempFormula;
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
@@ -59,15 +64,15 @@ public class TemporalTranslator {
 	public static final Relation FIRST = Relation.unary("first");
 	public static final Relation LAST = Relation.unary("last");
 	public static final Relation PREFIX = Relation.binary("prefix");
-	public static final Relation TRACE = Relation.binary("trace");
 	public static final Relation LOOP = Relation.unary("loop");
+	public static final Expression TRACE = PREFIX.union(LAST.product(LOOP));
 
 	public static final Relation STATE_UNR = Relation.unary(STATEATOM_UNR);
 	public static final Relation FIRST_UNR = Relation.unary("first_unr");
 	public static final Relation LAST_UNR = Relation.unary("last_unr");
 	public static final Relation PREFIX_UNR = Relation.binary("prefix_unr");
-	public static final Relation TRACE_UNR = Relation.binary("trace_unr");
 	public static final Relation LOOP_UNR = Relation.unary("loop_unr");
+	public static final Expression TRACE_UNR = PREFIX_UNR.union(LAST_UNR.product(LOOP_UNR));
 
 	public static final Relation UNROLL_MAP = Relation.binary("unroll_map");
 	

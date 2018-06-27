@@ -103,11 +103,11 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		
 		Formula order = PREFIX.totalOrder(STATE, FIRST, LAST);
 		Formula loopDecl = LOOP.lone();
-		Expression nextDecl = PREFIX.union(LAST.product(LOOP));
-		Formula nextFnct = TRACE.eq(nextDecl);
+//		Expression nextDecl = PREFIX.union(LAST.product(LOOP));
+//		Formula nextFnct = TRACE.eq(nextDecl);
 
 //		Formula order_unr = PREFIX_UNR.totalOrder(STATE_UNR, FIRST_UNR, LAST_UNR);
-		Formula order_unr_last = LAST_UNR.join(PREFIX_UNR).no();
+//		Formula order_unr_last = LAST_UNR.join(PREFIX_UNR).no();
 		
 		Variable v = Variable.unary("v");
 		Formula order_unr_trace1 = v.join(PREFIX_UNR).one().forAll(v.oneOf(STATE_UNR.difference(LAST_UNR)));
@@ -115,8 +115,8 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula order_unr_trace3 = FIRST_UNR.join(PREFIX_UNR.reflexiveClosure()).eq(STATE_UNR);
 		
 		Formula loopDecl_unr = LOOP_UNR.lone();
-		Expression nextDecl_unr = PREFIX_UNR.union(LAST_UNR.product(LOOP_UNR));
-		Formula nextFnct_unr = TRACE_UNR.eq(nextDecl_unr);
+//		Expression nextDecl_unr = PREFIX_UNR.union(LAST_UNR.product(LOOP_UNR));
+//		Formula nextFnct_unr = TRACE_UNR.eq(nextDecl_unr);
 
 		Formula mapping_unr = (LOOP_UNR).join(UNROLL_MAP).eq(LOOP);
 		Formula mapping_unr2 = UNROLL_MAP.function(STATE_UNR, STATE);
@@ -133,8 +133,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			result = exists.and(result);
 		}
 		
-		return Formula.and(result, order, loopDecl, nextFnct
-				, loopDecl_unr, nextFnct_unr, mapping_unr, mapping_unr2, unrolls, order_unr_last, order_unr_trace1, order_unr_trace2, order_unr_trace3);
+		return Formula.and(result, order, loopDecl, loopDecl_unr, mapping_unr, mapping_unr2, unrolls, order_unr_trace1, order_unr_trace2, order_unr_trace3);
 	}
 
 	/**
