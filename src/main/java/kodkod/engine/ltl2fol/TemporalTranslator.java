@@ -22,10 +22,6 @@
  */
 package kodkod.engine.ltl2fol;
 
-import static kodkod.engine.ltl2fol.TemporalTranslator.LAST_UNR;
-import static kodkod.engine.ltl2fol.TemporalTranslator.LOOP_UNR;
-import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX_UNR;
-
 import java.util.HashSet;
 
 import kodkod.ast.BinaryTempFormula;
@@ -56,16 +52,16 @@ import kodkod.instance.PardinusBounds;
 public class TemporalTranslator {
 
 	/** The name assigned to {@link #STATE state} atoms. */
-	public static final String STATEATOM = "Time";
+//	public static final String STATEATOM = "Time";
 	public static final String STATEATOM_UNR = "TimeUnr";
 
 	/** Relations representing the explicit trace of the temporal problem. **/
-	public static final Relation STATE = Relation.unary(STATEATOM);
-	public static final Relation FIRST = Relation.unary("first");
-	public static final Relation LAST = Relation.unary("last");
-	public static final Relation PREFIX = Relation.binary("prefix");
-	public static final Relation LOOP = Relation.unary("loop");
-	public static final Expression TRACE = PREFIX.union(LAST.product(LOOP));
+//	public static final Relation STATE = Relation.unary(STATEATOM);
+//	public static final Relation FIRST = Relation.unary("first");
+//	public static final Relation LAST = Relation.unary("last");
+//	public static final Relation PREFIX = Relation.binary("prefix");
+//	public static final Relation LOOP = Relation.unary("loop");
+//	public static final Expression TRACE = PREFIX.union(LAST.product(LOOP));
 
 	public static final Relation STATE_UNR = Relation.unary(STATEATOM_UNR);
 	public static final Relation FIRST_UNR = Relation.unary("first_unr");
@@ -80,7 +76,7 @@ public class TemporalTranslator {
 	 * The constraint forcing the time trace to be infinite. Forces the loop to
 	 * exist.
 	 */
-	public static final Formula INFINITE = TemporalTranslator.LOOP.one();
+	public static final Formula INFINITE = TemporalTranslator.LOOP_UNR.one();
 
 	/**
 	 * Translates {@link kodkod.instance.TemporalBounds temporal bound} into

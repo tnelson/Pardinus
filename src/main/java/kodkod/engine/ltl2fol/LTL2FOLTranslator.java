@@ -47,12 +47,6 @@ import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX_UNR;
 import static kodkod.engine.ltl2fol.TemporalTranslator.STATE_UNR;
 import static kodkod.engine.ltl2fol.TemporalTranslator.TRACE_UNR;
 import static kodkod.engine.ltl2fol.TemporalTranslator.UNROLL_MAP;
-import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST;
-import static kodkod.engine.ltl2fol.TemporalTranslator.LAST;
-import static kodkod.engine.ltl2fol.TemporalTranslator.LOOP;
-import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX;
-import static kodkod.engine.ltl2fol.TemporalTranslator.STATE;
-import static kodkod.engine.ltl2fol.TemporalTranslator.TRACE;
 
 
 /**
@@ -101,8 +95,8 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	public static Formula translate(Formula tempFormula) {
 		LTL2FOLTranslator translator = new LTL2FOLTranslator();
 		
-		Formula order = PREFIX.totalOrder(STATE, FIRST, LAST);
-		Formula loopDecl = LOOP.lone();
+//		Formula order = PREFIX.totalOrder(STATE, FIRST, LAST);
+//		Formula loopDecl = LOOP.lone();
 //		Expression nextDecl = PREFIX.union(LAST.product(LOOP));
 //		Formula nextFnct = TRACE.eq(nextDecl);
 
@@ -118,22 +112,22 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 //		Expression nextDecl_unr = PREFIX_UNR.union(LAST_UNR.product(LOOP_UNR));
 //		Formula nextFnct_unr = TRACE_UNR.eq(nextDecl_unr);
 
-		Formula mapping_unr = (LOOP_UNR).join(UNROLL_MAP).eq(LOOP);
-		Formula mapping_unr2 = UNROLL_MAP.function(STATE_UNR, STATE);
+//		Formula mapping_unr = (LOOP_UNR).join(UNROLL_MAP).eq(LOOP);
+		Formula mapping_unr2 = UNROLL_MAP.function(STATE_UNR, STATE_UNR);
 		
-		v = Variable.unary("v");
-		Formula unrolls = ((v.join(TRACE_UNR).join(UNROLL_MAP)).eq(v.join(UNROLL_MAP).join(TRACE))).forAll(v.oneOf(STATE_UNR));
+		v = Variable.unary("v"); // false for last of prefix
+		Formula unrolls = ((v.join(TRACE_UNR).join(UNROLL_MAP)).eq(v.join(UNROLL_MAP).join(TRACE_UNR))).forAll(v.oneOf(STATE_UNR));
 		
 		translator.resetPostVariables();
 		translator.pushVariable();
 
 		Formula result = tempFormula.accept(translator);
 		if (translator.maxPostDepth > 0) {
-			Formula exists = translator.forceNextExists(FIRST, translator.maxPostDepth);
+			Formula exists = translator.forceNextExists(FIRST_UNR, translator.maxPostDepth);
 			result = exists.and(result);
 		}
 		
-		return Formula.and(result, order, loopDecl, loopDecl_unr, mapping_unr, mapping_unr2, unrolls, order_unr_trace1, order_unr_trace2, order_unr_trace3);
+		return Formula.and(result, loopDecl_unr, mapping_unr2, /*unrolls,*/ order_unr_trace1, order_unr_trace2, order_unr_trace3);
 	}
 
 	/**

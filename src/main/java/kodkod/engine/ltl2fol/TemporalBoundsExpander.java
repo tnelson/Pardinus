@@ -64,8 +64,8 @@ class TemporalBoundsExpander {
 		while (it.hasNext())
 			newAtoms.add(it.next());
 
-		for (int i = 0; i < numberOfTimes; i++)
-			newAtoms.add(TemporalTranslator.STATEATOM + i);
+//		for (int i = 0; i < numberOfTimes; i++)
+//			newAtoms.add(TemporalTranslator.STATEATOM + i);
 
 		for (int j = 0; j < numberOfUnrolls; j++)
 			for (int i = 0; i < numberOfTimes; i++)
@@ -138,28 +138,32 @@ class TemporalBoundsExpander {
 				throw new UnsupportedOperationException("Expansion of symbolic bounds not yet supported.");
 
 		PardinusBounds newBounds = new PardinusBounds(u);
-		TupleSet tupleSetTime = u.factory().range(
-				u.factory().tuple(TemporalTranslator.STATEATOM + "0"),
-				u.factory().tuple(TemporalTranslator.STATEATOM + (traceLen - 1)));
+//		TupleSet tupleSetTime = u.factory().range(
+//				u.factory().tuple(TemporalTranslator.STATEATOM + "0"),
+//				u.factory().tuple(TemporalTranslator.STATEATOM + (traceLen - 1)));
 		TupleSet tupleSetTime_unr_last = u.factory().range(
 				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + "0"+"_"+(unr - 1)),
 				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + (traceLen - 1)+"_"+(unr - 1)));
 				
-		TupleSet last = u.factory().setOf(u.factory().tuple(TemporalTranslator.STATEATOM + (traceLen - 1)));
-		TupleSet trace = u.factory().noneOf(2);
-		for (int i = 0; i < traceLen-1; i++)
-			trace.add(u.factory().tuple(TemporalTranslator.STATEATOM + i,TemporalTranslator.STATEATOM + (i+1)));
+//		TupleSet last = u.factory().setOf(u.factory().tuple(TemporalTranslator.STATEATOM + (traceLen - 1)));
+//		TupleSet trace = u.factory().noneOf(2);
+//		for (int i = 0; i < traceLen-1; i++)
+//			trace.add(u.factory().tuple(TemporalTranslator.STATEATOM + i,TemporalTranslator.STATEATOM + (i+1)));
 			
-		newBounds.boundExactly(TemporalTranslator.STATE, tupleSetTime);
-		newBounds.boundExactly(TemporalTranslator.FIRST, u.factory().setOf(u.factory().tuple(TemporalTranslator.STATEATOM + "0")));
-		newBounds.boundExactly(TemporalTranslator.LAST, last);
-		newBounds.boundExactly(TemporalTranslator.PREFIX, trace);
-		newBounds.bound(TemporalTranslator.LOOP, tupleSetTime);
+//		newBounds.boundExactly(TemporalTranslator.STATE, tupleSetTime);
+//		newBounds.boundExactly(TemporalTranslator.FIRST, u.factory().setOf(u.factory().tuple(TemporalTranslator.STATEATOM + "0")));
+//		newBounds.boundExactly(TemporalTranslator.LAST, last);
+//		newBounds.boundExactly(TemporalTranslator.PREFIX, trace);
+//		newBounds.bound(TemporalTranslator.LOOP, tupleSetTime);
 		
 		TupleSet tupleSetTime_unr = u.factory().range(
 				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + "0_0"),
 				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + (traceLen - 1) +"_"+(unr - 1)));
-
+		
+		TupleSet tupleSetTime_unr_first = u.factory().range(
+				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + "0_0"),
+				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + (traceLen - 1)+"_"+"0"));
+		
 		TupleSet tupleSetTime_unr_first_lasts = u.factory().range(
 				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + "0_0"),
 				u.factory().tuple(TemporalTranslator.STATEATOM_UNR + (traceLen - 1)+"_"+"0"));
@@ -197,12 +201,12 @@ class TemporalBoundsExpander {
 		TupleSet unrollMap = u.factory().noneOf(2);
 		TupleSet unrollMap_l = u.factory().noneOf(2);
 		for (int i = 0; i < traceLen; i++) {
-			unrollMap_l.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + 0, TemporalTranslator.STATEATOM + i }));
-			unrollMap.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + 0, TemporalTranslator.STATEATOM + i }));
+			unrollMap_l.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + 0, TemporalTranslator.STATEATOM_UNR + i + "_" + 0 }));
+			unrollMap.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + 0, TemporalTranslator.STATEATOM_UNR + i + "_" + 0 }));
 		}
 		for (int i = 0; i < traceLen; i++)
 			for (int j = 1; j < unr; j++) 
-				unrollMap.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + j, TemporalTranslator.STATEATOM + i }));
+				unrollMap.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + j, TemporalTranslator.STATEATOM_UNR + i + "_" + 0 }));
 
 		newBounds.bound(TemporalTranslator.UNROLL_MAP, unrollMap_l, unrollMap);
 
@@ -211,10 +215,10 @@ class TemporalBoundsExpander {
 			TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
 			TupleSet tupleSetU = convert(bounds.upperBound(r), u);
 			if (r instanceof VarRelation) {
-				newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime), tupleSetU.product(tupleSetTime));
+				newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime_unr_first), tupleSetU.product(tupleSetTime_unr_first));
 				if (bounds.target(r) != null) {
 					TupleSet tupleSetT = convert(bounds.target(r), u);
-					newBounds.setTarget(((VarRelation) r).expanded, tupleSetT.product(tupleSetTime));
+					newBounds.setTarget(((VarRelation) r).expanded, tupleSetT.product(tupleSetTime_unr_first));
 				}
 				if (bounds.weight(r) != null) 
 					newBounds.setWeight(((VarRelation) r).expanded, bounds.weight(r));
