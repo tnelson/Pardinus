@@ -66,7 +66,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 * Variables to handle the depth of nested post operators within the current
 	 * temporal formula.
 	 */
-	private int currentPostDepth, maxPostDepth;
+	private int currentPostDepth, maxPostDepth, n;
 
 	/**
 	 * Translates an LTL temporal formula into its standard Kodkod FOL
@@ -75,8 +75,9 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 * @param relations
 	 *            the expanded static versions of the variable relations.
 	 */
-	private LTL2FOLTranslator() {
+	private LTL2FOLTranslator(int n) {
 		super(new HashSet<Node>());
+		this.n = n;
 	}
 
 	/**
@@ -92,8 +93,8 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 *            the LTL formula to be converted.
 	 * @return the resulting FOL formula.
 	 */
-	public static Formula translate(Formula tempFormula) {
-		LTL2FOLTranslator translator = new LTL2FOLTranslator();
+	public static Formula translate(Formula tempFormula, int n) {
+		LTL2FOLTranslator translator = new LTL2FOLTranslator(n);
 		
 //		Formula order = PREFIX.totalOrder(STATE, FIRST, LAST);
 //		Formula loopDecl = LOOP.lone();
@@ -113,21 +114,21 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 //		Formula nextFnct_unr = TRACE_UNR.eq(nextDecl_unr);
 
 //		Formula mapping_unr = (LOOP_UNR).join(UNROLL_MAP).eq(LOOP);
-		Formula mapping_unr2 = UNROLL_MAP.function(STATE_UNR, STATE_UNR);
+//		Formula mapping_unr2 = UNROLL_MAP.function(STATE_UNR, STATE_UNR);
 		
-		v = Variable.unary("v"); // false for last of prefix
-		Formula unrolls = ((v.join(TRACE_UNR).join(UNROLL_MAP)).eq(v.join(UNROLL_MAP).join(TRACE_UNR))).forAll(v.oneOf(STATE_UNR));
+//		v = Variable.unary("v"); // false for last of prefix
+//		Formula unrolls = ((v.join(TRACE_UNR).join(UNROLL_MAP)).eq(v.join(UNROLL_MAP).join(TRACE_UNR))).forAll(v.oneOf(STATE_UNR));
 		
 		translator.resetPostVariables();
 		translator.pushVariable();
 
 		Formula result = tempFormula.accept(translator);
-		if (translator.maxPostDepth > 0) {
+		if (translator.maxPostDepth < 0) {
 			Formula exists = translator.forceNextExists(FIRST_UNR, translator.maxPostDepth);
 			result = exists.and(result);
 		}
 		
-		return Formula.and(result, loopDecl_unr, mapping_unr2, /*unrolls,*/ order_unr_trace1, order_unr_trace2, order_unr_trace3);
+		return Formula.and(result, loopDecl_unr, order_unr_trace1, order_unr_trace2, order_unr_trace3);
 	}
 
 	/**
@@ -142,7 +143,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 * @return the resulting FOL formula.
 	 */
 	public static Expression convert(Expression tempExpression, int state) {
-		LTL2FOLTranslator translator = new LTL2FOLTranslator();
+		LTL2FOLTranslator translator = new LTL2FOLTranslator(-1);
 
 		translator.resetPostVariables();
 		translator.pushVariable(state);
@@ -161,8 +162,15 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	@Override
 	public Expression visit(Relation relation) {
 		maxPostDepth = currentPostDepth > maxPostDepth ? currentPostDepth : maxPostDepth;
-		if (TemporalTranslator.isTemporal(relation))
+		if (TemporalTranslator.isTemporal(relation)) {
+			Expression aux = FIRST_UNR;
+			for (int i = 0; i < n; i++) {
+				if (getVariable().toString().equals(aux.toString())) 
+					return ((VarRelation) relation).expanded.join(getVariable());
+				aux = aux.join(TRACE_UNR);
+			}
 			return ((VarRelation) relation).expanded.join(getVariable().join(UNROLL_MAP));
+		}
 		else
 			return relation;
 	}
@@ -267,14 +275,14 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable r = getVariableUntil(true);
 		Variable l = getVariableUntil(false);
 		Formula nfleft;
-		if (postDepthLeft > 0) {
+		if (postDepthLeft < 0) {
 			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l.oneOf(upTo(getVariableLastQuantificationUntil(
 					false),r,true,false)));
 		} else {
 			nfleft = left.forAll(l.oneOf(upTo(getVariableLastQuantificationUntil(false),r,true,false)));
 		}
 
-		if (postDepthRight > 0) {
+		if (postDepthRight < 0) {
 			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft)
 					.forSome(
 							r.oneOf(getVariableLastQuantificationUntil(false).join(
@@ -291,14 +299,14 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable r = getVariableSince(true);
 		Variable l = getVariableSince(false);
 		Formula nfleft;
-		if (postDepthLeft > 0) {
+		if (postDepthLeft < 0) {
 			nfleft = (forceNextExists(l, postDepthLeft).and(left)).forAll(l.oneOf(upTo(r,getVariableLastQuantificationUntil(
 					false),false,true)));
 		} else {
 			nfleft = left.forAll(l.oneOf(upTo(r,getVariableLastQuantificationUntil(false),false,true)));
 		}
 
-		if (postDepthRight > 0) {
+		if (postDepthRight < 0) {
 			return (forceNextExists(r, postDepthRight).and(right)).and(nfleft)
 					.forSome(
 							r.oneOf(getVariableLastQuantificationUntil(false).join(
@@ -335,14 +343,14 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		alw = INFINITE.and(always.forAll(v.oneOf(getVariableLastQuantificationRelease(false, true).join(
 				TRACE_UNR.reflexiveClosure()))));
 
-		if (rightFormula > 0) {
+		if (rightFormula < 0) {
 			nfleft = (forceNextExists(l, rightFormula).and(right)).forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(
 					false, true),r,true,true)));
 		} else {
 			nfleft = right.forAll(l.oneOf(upTo(getVariableLastQuantificationRelease(false, true),r,true,true)));
 		}
 
-		if (leftFormula > 0) {
+		if (leftFormula < 0) {
 			nfright = (forceNextExists(r, leftFormula).and(left)).and(nfleft).forSome(
 					r.oneOf(getVariableLastQuantificationRelease(false, true).join(
 							TRACE_UNR.reflexiveClosure())));
@@ -363,7 +371,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			return INFINITE.and(e.forAll(v.oneOf(quantification.join(TRACE_UNR.reflexiveClosure()))));
 		case EVENTUALLY:
 			v = (Variable) getVariable();
-			if (posts > 0) {
+			if (posts < 0) {
 				return forceNextExists(v, posts).and(e).forSome(
 						v.oneOf(quantification.join(TRACE_UNR.reflexiveClosure())));
 			} else {
@@ -371,7 +379,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			}
 		case HISTORICALLY:
 			v = (Variable) getVariable();
-			if (posts > 0) {
+			if (posts < 0) {
 				return forceNextExists(v, posts).and(e).forAll(
 						v.oneOf(quantification.join(PREFIX_UNR.transpose().reflexiveClosure())));
 			} else {
@@ -379,7 +387,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			}
 		case ONCE:
 			v = (Variable) getVariable();
-			if (posts > 0) {
+			if (posts < 0) {
 				return forceNextExists(v, posts).and(e).forSome(
 						v.oneOf(quantification.join(PREFIX_UNR.transpose().reflexiveClosure())));
 			} else {
@@ -387,14 +395,14 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			}
 		case NEXT: 
 			Expression v1 = getVariable();
-			if (posts > 0) {
+			if (posts < 0) {
 				return forceNextExists(v1, posts).and(e);
 			} else {
-				return v1.some().and(e);
+				return /*v1.some().and*/(e);
 			}
 		case PREVIOUS:
 			Expression v2 = getVariable();
-			if (posts > 0) {
+			if (posts < 0) {
 				return v2.some().and(forceNextExists(v2, posts).and(e));
 			} else {
 				return v2.some().and(e); 

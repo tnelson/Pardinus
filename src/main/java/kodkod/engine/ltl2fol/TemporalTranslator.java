@@ -23,16 +23,48 @@
 package kodkod.engine.ltl2fol;
 
 import java.util.HashSet;
+import java.util.Iterator;
 
+import kodkod.ast.BinaryExpression;
+import kodkod.ast.BinaryFormula;
+import kodkod.ast.BinaryIntExpression;
 import kodkod.ast.BinaryTempFormula;
+import kodkod.ast.ComparisonFormula;
+import kodkod.ast.Comprehension;
+import kodkod.ast.ConstantExpression;
+import kodkod.ast.ConstantFormula;
+import kodkod.ast.Decl;
+import kodkod.ast.Decls;
+import kodkod.ast.ExprToIntCast;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
+import kodkod.ast.IfExpression;
+import kodkod.ast.IfIntExpression;
+import kodkod.ast.IntComparisonFormula;
+import kodkod.ast.IntConstant;
+import kodkod.ast.IntExpression;
+import kodkod.ast.IntToExprCast;
+import kodkod.ast.MultiplicityFormula;
+import kodkod.ast.NaryExpression;
+import kodkod.ast.NaryFormula;
+import kodkod.ast.NaryIntExpression;
 import kodkod.ast.Node;
+import kodkod.ast.NotFormula;
+import kodkod.ast.ProjectExpression;
+import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
+import kodkod.ast.RelationPredicate;
+import kodkod.ast.SumExpression;
 import kodkod.ast.TempExpression;
+import kodkod.ast.UnaryExpression;
+import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.VarRelation;
+import kodkod.ast.Variable;
+import kodkod.ast.operator.TemporalOperator;
+import kodkod.ast.RelationPredicate.Function;
 import kodkod.ast.visitor.AbstractDetector;
+import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 
@@ -111,9 +143,9 @@ public class TemporalTranslator {
 	 *            the temporal formula to be expanded.
 	 * @return the static version of the temporal formula.
 	 */
-	public static Formula translate(Formula formula) {
+	public static Formula translate(Formula formula, int n) {
 		Formula nnfFormula = NNFReplacer.nnf(formula);
-		return LTL2FOLTranslator.translate(nnfFormula);
+		return LTL2FOLTranslator.translate(nnfFormula, n);
 	}
 
 	/**
@@ -149,5 +181,87 @@ public class TemporalTranslator {
 		};
 		return (boolean) node.accept(det);
 	}
+	
+	/** Count the height of the given Kodkod AST tree. */
+	public static int countHeight(Node node) {
+		ReturnVisitor<Integer,Integer,Integer,Integer> vis = new ReturnVisitor<Integer,Integer,Integer,Integer>() {
+			private int max(int a, int b)                 { return (a>=b) ? a : b; }
+			private int max(int a, int b, int c)          { return (a>=b) ? (a>=c ? a : c) : (b>=c ? b: c); }
+			public Integer visit(Relation x)              { return 0; }
+			public Integer visit(IntConstant x)           { return 0; }
+			public Integer visit(ConstantFormula x)       { return 0; }
+			public Integer visit(Variable x)              { return 0; }
+			public Integer visit(ConstantExpression x)    { return 0; }
+			public Integer visit(NotFormula x)            { return x.formula().accept(this); }
+			public Integer visit(UnaryTempFormula x)      { 
+				int n = 0;
+				if (x.op().equals(TemporalOperator.ONCE)||x.op().equals(TemporalOperator.HISTORICALLY)||x.op().equals(TemporalOperator.PREVIOUS)) 
+					n = 1;
+				int l = x.formula().accept(this);
+				return n + l; } // [HASLab] temporal nodes
+			public Integer visit(IntToExprCast x)         { return x.intExpr().accept(this); }
+			public Integer visit(Decl x)                  { return x.expression().accept(this); }
+			public Integer visit(ExprToIntCast x)         { return x.expression().accept(this); }
+			public Integer visit(UnaryExpression x)       { return x.expression().accept(this); }
+			public Integer visit(TempExpression x)        { return x.expression().accept(this); } // [HASLab] temporal nodes
+			public Integer visit(UnaryIntExpression x)    { return x.intExpr().accept(this); }
+			public Integer visit(MultiplicityFormula x)   { return x.expression().accept(this); }
+			public Integer visit(BinaryExpression x)      { return max(x.left().accept(this), x.right().accept(this)); }
+			public Integer visit(ComparisonFormula x)     { return max(x.left().accept(this), x.right().accept(this)); }
+			public Integer visit(BinaryFormula x)         { return max(x.left().accept(this), x.right().accept(this)); }
+			public Integer visit(BinaryTempFormula x)     { 
+				int n = 0;
+				if (x.op().equals(TemporalOperator.SINCE)||x.op().equals(TemporalOperator.TRIGGER)) 
+					n = 1;
+				int l = max(x.left().accept(this), x.right().accept(this));
+				return n + l; } // [HASLab] temporal nodes
+			public Integer visit(BinaryIntExpression x)   { return max(x.left().accept(this), x.right().accept(this)); }
+			public Integer visit(IntComparisonFormula x)  { return max(x.left().accept(this), x.right().accept(this)); }
+			public Integer visit(IfExpression x)          { return max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this)); }
+			public Integer visit(IfIntExpression x)       { return max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this)); }
+			public Integer visit(SumExpression x)         { return max(x.decls().accept(this), x.intExpr().accept(this)); }
+			public Integer visit(QuantifiedFormula x)     { return max(x.decls().accept(this), x.formula().accept(this)); }
+			public Integer visit(Comprehension x)         { return max(x.decls().accept(this), x.formula().accept(this)); }
+			public Integer visit(Decls x) {
+				int max = 0, n = x.size();
+				for(int i=0; i<n; i++) max = max(max, x.get(i).accept(this));
+				return max;
+			}
+			public Integer visit(ProjectExpression x) {
+				int max = x.expression().accept(this);
+				for(Iterator<IntExpression> t = x.columns(); t.hasNext();) { max = max(max, t.next().accept(this)); }
+				return max;
+			}
+			public Integer visit(RelationPredicate x) {
+				if (x instanceof Function) {
+					Function f = ((Function)x);
+					return max(f.domain().accept(this), f.range().accept(this));
+				}
+				return 0;
+			}
+			public Integer visit(NaryExpression x) {
+				int max = 0;
+				for(int m=0, n=x.size(), i=0; i<n; i++) { m=x.child(i).accept(this); if (i==0 || max<m) max=m; }
+				return max;
+			}
+			public Integer visit(NaryIntExpression x) {
+				int max = 0;
+				for(int m=0, n=x.size(), i=0; i<n; i++) { m=x.child(i).accept(this); if (i==0 || max<m) max=m; }
+				return max;
+			}
+			public Integer visit(NaryFormula x) {
+				int max = 0;
+				for(int m=0, n=x.size(), i=0; i<n; i++) {
+					m=x.child(i).accept(this); 
+					if (i==0 || max<m) 
+						max=m; 
+					}
+				return max;
+			}
+		};
+		Object ans = node.accept(vis);
+		if (ans instanceof Integer) return ((Integer)ans).intValue()+1; else return 1;
+	}
+
 
 }

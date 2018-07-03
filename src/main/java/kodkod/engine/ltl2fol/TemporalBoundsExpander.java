@@ -180,35 +180,26 @@ class TemporalBoundsExpander {
 
 		TupleSet trace_unr = u.factory().noneOf(2);
 		TupleSet trace_unr_l = u.factory().noneOf(2);
-		for (int i = 0; i < traceLen-1; i++) {
-			trace_unr.add(u.factory().tuple(TemporalTranslator.STATEATOM_UNR + i+"_"+0,TemporalTranslator.STATEATOM_UNR + (i+1)+"_"+0));
+		for (int i = 0; i < traceLen-1; i++) { // add the prefix to lower
 			trace_unr_l.add(u.factory().tuple(TemporalTranslator.STATEATOM_UNR + i+"_"+0,TemporalTranslator.STATEATOM_UNR + (i+1)+"_"+0));
 		}
-		if (1 < unr)
-			for (int k = 0; k < traceLen; k++) 
-				trace_unr.add(u.factory().tuple(TemporalTranslator.STATEATOM_UNR + (traceLen-1)+"_"+0,TemporalTranslator.STATEATOM_UNR + k+"_"+1));
-		for (int j = 1; j < unr; j++) {
-			for (int i = 0; i < traceLen-1; i++) 
-				for (int k = i+1; k < traceLen; k++) 
-					trace_unr.add(u.factory().tuple(TemporalTranslator.STATEATOM_UNR + i+"_"+j,TemporalTranslator.STATEATOM_UNR + k+"_"+j));
+		for (int j = 0; j < unr; j++) {
+			for (int i = 0; i < traceLen-1; i++) // add the successor in non-loop
+				trace_unr.add(u.factory().tuple(TemporalTranslator.STATEATOM_UNR + i+"_"+j,TemporalTranslator.STATEATOM_UNR + (i+1)+"_"+j));
 			if (j < unr - 1)
-				for (int k = 0; k < traceLen; k++) 
+				for (int k = 0; k < traceLen; k++)  // add the possible successors in loop
 					trace_unr.add(u.factory().tuple(TemporalTranslator.STATEATOM_UNR + (traceLen-1)+"_"+j,TemporalTranslator.STATEATOM_UNR + k+"_"+(j+1)));
 		}
 		
 		newBounds.bound(TemporalTranslator.PREFIX_UNR, trace_unr_l, trace_unr); 
 
 		TupleSet unrollMap = u.factory().noneOf(2);
-		TupleSet unrollMap_l = u.factory().noneOf(2);
 		for (int i = 0; i < traceLen; i++) {
-			unrollMap_l.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + 0, TemporalTranslator.STATEATOM_UNR + i + "_" + 0 }));
 			unrollMap.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + 0, TemporalTranslator.STATEATOM_UNR + i + "_" + 0 }));
-		}
-		for (int i = 0; i < traceLen; i++)
 			for (int j = 1; j < unr; j++) 
 				unrollMap.add(u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM_UNR + i + "_" + j, TemporalTranslator.STATEATOM_UNR + i + "_" + 0 }));
-
-		newBounds.bound(TemporalTranslator.UNROLL_MAP, unrollMap_l, unrollMap);
+		}
+		newBounds.bound(TemporalTranslator.UNROLL_MAP, unrollMap, unrollMap);
 
 		bounds.first();
 		for (Relation r : bounds.relations()) {
