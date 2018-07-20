@@ -106,7 +106,7 @@ public final class Evaluator {
 	public boolean evaluate(Formula formula){
 		if (formula == null) throw new NullPointerException("formula");
 		if (TemporalTranslator.isTemporal(formula)) { // [HASLab]
-			return (Translator.evaluate(LTL2FOLTranslator.translate(formula), instance, options)).booleanValue();
+			return (Translator.evaluate(LTL2FOLTranslator.translate(formula, false, false), instance, options)).booleanValue(); // TODO: this is broken
 		} else
 			return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
@@ -143,7 +143,7 @@ public final class Evaluator {
 			return i.universe().factory().setOf(expression.arity(), sol.denseIndices());
 		}
 		else {
-			Expression e1 = LTL2FOLTranslator.convert(expression, state);
+			Expression e1 = LTL2FOLTranslator.translate(expression, state, false, false); // TODO: this is broken
 			final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
 			return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 		}

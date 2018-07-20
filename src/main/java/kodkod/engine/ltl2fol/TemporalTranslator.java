@@ -22,6 +22,7 @@
  */
 package kodkod.engine.ltl2fol;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -67,9 +68,10 @@ import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.Tuple;
 
 /**
- * Translates temporal problems, i.e., formulas with
+ * Expands temporal problems into plain problems, i.e., formulas with
  * {@link kodkod.ast.operator.TemporalOperator temporal operators} and bounds
  * over {@link kodkod.ast.VarRelation variable relations}, into regular Kodkod
  * static problems, i.e., standard {@link kodkod.ast.Formula formulas} and
@@ -78,74 +80,91 @@ import kodkod.instance.PardinusBounds;
  *
  * Relations are introduced to explicitly model the (bounded) temporal trace,
  * and variable relations are expanded to static ones that refer to that trace.
+ * To provide sound loop bounded model checking semantics for past operators,
+ * loops are unrolled according to the past operator depth.
  *
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public class TemporalTranslator {
 
 	/** The name assigned to {@link #STATE state} atoms. */
-//	public static final String STATEATOM = "Time";
-	public static final String STATEATOM_UNR = "TimeUnr";
+	public static final String STATEATOM = "Time";
 
 	/** Relations representing the explicit trace of the temporal problem. **/
-//	public static final Relation STATE = Relation.unary(STATEATOM);
-//	public static final Relation FIRST = Relation.unary("first");
-//	public static final Relation LAST = Relation.unary("last");
-//	public static final Relation PREFIX = Relation.binary("prefix");
-//	public static final Relation LOOP = Relation.unary("loop");
-//	public static final Expression TRACE = PREFIX.union(LAST.product(LOOP));
-
-	public static final Relation STATE_UNR = Relation.unary(STATEATOM_UNR);
-	public static final Relation FIRST_UNR = Relation.unary("first_unr");
-	public static final Relation LAST_UNR = Relation.unary("last_unr");
-	public static final Relation PREFIX_UNR = Relation.binary("prefix_unr");
-	public static final Relation LOOP_UNR = Relation.unary("loop_unr");
-	public static final Expression TRACE_UNR = PREFIX_UNR.union(LAST_UNR.product(LOOP_UNR));
-
+	public static final Relation STATE = Relation.unary(STATEATOM);
+	public static final Relation FIRST = Relation.unary("first");
+	public static final Relation LAST = Relation.unary("last");
+	public static final Relation PREFIX = Relation.binary("prefix");
+	public static final Relation LOOP = Relation.unary("loop");
+	public static final Expression TRACE = PREFIX.union(LAST.product(LOOP));
 	public static final Relation UNROLL_MAP = Relation.binary("unroll_map");
 	
+	public static final String STATE_SEP = "_";
+
 	/**
 	 * The constraint forcing the time trace to be infinite. Forces the loop to
 	 * exist.
 	 */
-	public static final Formula INFINITE = TemporalTranslator.LOOP_UNR.one();
+	public static final Formula INFINITE = TemporalTranslator.LOOP.one();
+
+	/** The original temporal formula. */
+	private final Formula formula;
+	/** The original variable bounds. */
+	private final PardinusBounds bounds;
+	/** The past operator depth. */
+	public final int past_depth;
+	/** Whether the formula has an "alaways" operator. */
+	private boolean has_always;
 
 	/**
-	 * Translates {@link kodkod.instance.TemporalBounds temporal bound} into
-	 * standard bounds by expanding the bound trace over
-	 * {@link kodkod.ast.VarRelation variable relations} by appending the
-	 * {@link #STATE state sig} to the bound. The bounds of static relations
-	 * should remain unchanged. The temporal options will define the maximum
-	 * size of the trace.
+	 * Constructs a new temporal translator to expand temporal formulas and variable
+	 * bounds.
 	 * 
-	 * @see TemporalBoundsExpander
-	 * 
-	 * @param bounds
-	 *            the temporal bounds to be expanded.
-	 * @param traceLength
-	 *            the trace length.
-	 * @return the temporal bounds expanded into standard bounds.
+	 * @param form
+	 *            the original temporal formula.
+	 * @param bnds
+	 *            the original variable bounds.
 	 */
-	public static Bounds translate(PardinusBounds bounds, int traceLength, int unrolls) {
-		return TemporalBoundsExpander.expand(bounds, traceLength, unrolls);
+	public TemporalTranslator(Formula form, PardinusBounds bnds) {
+		this.formula = NNFReplacer.nnf(form);
+		this.bounds = bnds;
+		this.past_depth = countHeight(formula);
+		this.has_always = hasAlways(formula);
 	}
 
 	/**
-	 * Converts an LTL temporal formula into its FOL static representation,
-	 * provided the temporal options. The formula is previously converted into
-	 * negative normal form (NNF) to guarantee the correct translation of the
-	 * temporal operators. The {@link kodkod.ast.VarRelation variable relations}
-	 * contain themselves their representation into the expanded static shape.
+	 * Translates {@link PardinusBounds temporal bound} into standard bounds by
+	 * expanding the bound trace over {@link kodkod.ast.VarRelation variable
+	 * relations} by appending the {@link #STATE state sig} to the bound. The bounds
+	 * of static relations should remain unchanged. The size of the bounds depends
+	 * on the trace length passed. Unrolls must be applied if there are past
+	 * operators. If the formula contains "always" operator, the bounds can be
+	 * optimized.
+	 * 
+	 * @see TemporalBoundsExpander
+	 * 
+	 * @param traceLength
+	 *            the current trace length.
+	 * @return the temporal bounds expanded into standard bounds.
+	 */
+	public Bounds expand(int traceLength) {
+		return TemporalBoundsExpander.expand(bounds, traceLength, past_depth, has_always);
+	}
+
+	/**
+	 * Converts an LTL temporal formula into its FOL static representation. The
+	 * formula is previously converted into negative normal form (NNF) to guarantee
+	 * the correct translation of the temporal operators. The
+	 * {@link kodkod.ast.VarRelation variable relations} contain themselves their
+	 * representation into the expanded static shape. If there are no past operators
+	 * or there are "always" operators, the translation can be simplified.
 	 * 
 	 * @see LTL2FOLTranslator
 	 * 
-	 * @param formula
-	 *            the temporal formula to be expanded.
 	 * @return the static version of the temporal formula.
 	 */
-	public static Formula translate(Formula formula, int n) {
-		Formula nnfFormula = NNFReplacer.nnf(formula);
-		return LTL2FOLTranslator.translate(nnfFormula, n);
+	public Formula translate() {
+		return LTL2FOLTranslator.translate(formula, past_depth > 1, has_always);
 	}
 
 	/**
@@ -181,87 +200,204 @@ public class TemporalTranslator {
 		};
 		return (boolean) node.accept(det);
 	}
-	
-	/** Count the height of the given Kodkod AST tree. */
-	public static int countHeight(Node node) {
-		ReturnVisitor<Integer,Integer,Integer,Integer> vis = new ReturnVisitor<Integer,Integer,Integer,Integer>() {
-			private int max(int a, int b)                 { return (a>=b) ? a : b; }
-			private int max(int a, int b, int c)          { return (a>=b) ? (a>=c ? a : c) : (b>=c ? b: c); }
-			public Integer visit(Relation x)              { return 0; }
-			public Integer visit(IntConstant x)           { return 0; }
-			public Integer visit(ConstantFormula x)       { return 0; }
-			public Integer visit(Variable x)              { return 0; }
-			public Integer visit(ConstantExpression x)    { return 0; }
-			public Integer visit(NotFormula x)            { return x.formula().accept(this); }
-			public Integer visit(UnaryTempFormula x)      { 
+
+	/** Count the depth of past operators of the given AST tree. */
+	private static int countHeight(Node node) {
+		ReturnVisitor<Integer, Integer, Integer, Integer> vis = new ReturnVisitor<Integer, Integer, Integer, Integer>() {
+			private int max(int a, int b) {
+				return (a >= b) ? a : b;
+			}
+
+			private int max(int a, int b, int c) {
+				return (a >= b) ? (a >= c ? a : c) : (b >= c ? b : c);
+			}
+
+			public Integer visit(Relation x) {
+				return 0;
+			}
+
+			public Integer visit(IntConstant x) {
+				return 0;
+			}
+
+			public Integer visit(ConstantFormula x) {
+				return 0;
+			}
+
+			public Integer visit(Variable x) {
+				return 0;
+			}
+
+			public Integer visit(ConstantExpression x) {
+				return 0;
+			}
+
+			public Integer visit(NotFormula x) {
+				return x.formula().accept(this);
+			}
+
+			public Integer visit(UnaryTempFormula x) {
 				int n = 0;
-				if (x.op().equals(TemporalOperator.ONCE)||x.op().equals(TemporalOperator.HISTORICALLY)||x.op().equals(TemporalOperator.PREVIOUS)) 
+				if (x.op().equals(TemporalOperator.ONCE) || x.op().equals(TemporalOperator.HISTORICALLY)
+						|| x.op().equals(TemporalOperator.PREVIOUS))
 					n = 1;
 				int l = x.formula().accept(this);
-				return n + l; } // [HASLab] temporal nodes
-			public Integer visit(IntToExprCast x)         { return x.intExpr().accept(this); }
-			public Integer visit(Decl x)                  { return x.expression().accept(this); }
-			public Integer visit(ExprToIntCast x)         { return x.expression().accept(this); }
-			public Integer visit(UnaryExpression x)       { return x.expression().accept(this); }
-			public Integer visit(TempExpression x)        { return x.expression().accept(this); } // [HASLab] temporal nodes
-			public Integer visit(UnaryIntExpression x)    { return x.intExpr().accept(this); }
-			public Integer visit(MultiplicityFormula x)   { return x.expression().accept(this); }
-			public Integer visit(BinaryExpression x)      { return max(x.left().accept(this), x.right().accept(this)); }
-			public Integer visit(ComparisonFormula x)     { return max(x.left().accept(this), x.right().accept(this)); }
-			public Integer visit(BinaryFormula x)         { return max(x.left().accept(this), x.right().accept(this)); }
-			public Integer visit(BinaryTempFormula x)     { 
+				return n + l;
+			} // [HASLab] temporal nodes
+
+			public Integer visit(IntToExprCast x) {
+				return x.intExpr().accept(this);
+			}
+
+			public Integer visit(Decl x) {
+				return x.expression().accept(this);
+			}
+
+			public Integer visit(ExprToIntCast x) {
+				return x.expression().accept(this);
+			}
+
+			public Integer visit(UnaryExpression x) {
+				return x.expression().accept(this);
+			}
+
+			public Integer visit(TempExpression x) {
+				return x.expression().accept(this);
+			} // [HASLab] temporal nodes
+
+			public Integer visit(UnaryIntExpression x) {
+				return x.intExpr().accept(this);
+			}
+
+			public Integer visit(MultiplicityFormula x) {
+				return x.expression().accept(this);
+			}
+
+			public Integer visit(BinaryExpression x) {
+				return max(x.left().accept(this), x.right().accept(this));
+			}
+
+			public Integer visit(ComparisonFormula x) {
+				return max(x.left().accept(this), x.right().accept(this));
+			}
+
+			public Integer visit(BinaryFormula x) {
+				return max(x.left().accept(this), x.right().accept(this));
+			}
+
+			public Integer visit(BinaryTempFormula x) {
 				int n = 0;
-				if (x.op().equals(TemporalOperator.SINCE)||x.op().equals(TemporalOperator.TRIGGER)) 
+				if (x.op().equals(TemporalOperator.SINCE) || x.op().equals(TemporalOperator.TRIGGER))
 					n = 1;
 				int l = max(x.left().accept(this), x.right().accept(this));
-				return n + l; } // [HASLab] temporal nodes
-			public Integer visit(BinaryIntExpression x)   { return max(x.left().accept(this), x.right().accept(this)); }
-			public Integer visit(IntComparisonFormula x)  { return max(x.left().accept(this), x.right().accept(this)); }
-			public Integer visit(IfExpression x)          { return max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this)); }
-			public Integer visit(IfIntExpression x)       { return max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this)); }
-			public Integer visit(SumExpression x)         { return max(x.decls().accept(this), x.intExpr().accept(this)); }
-			public Integer visit(QuantifiedFormula x)     { return max(x.decls().accept(this), x.formula().accept(this)); }
-			public Integer visit(Comprehension x)         { return max(x.decls().accept(this), x.formula().accept(this)); }
+				return n + l;
+			} // [HASLab] temporal nodes
+
+			public Integer visit(BinaryIntExpression x) {
+				return max(x.left().accept(this), x.right().accept(this));
+			}
+
+			public Integer visit(IntComparisonFormula x) {
+				return max(x.left().accept(this), x.right().accept(this));
+			}
+
+			public Integer visit(IfExpression x) {
+				return max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this));
+			}
+
+			public Integer visit(IfIntExpression x) {
+				return max(x.condition().accept(this), x.thenExpr().accept(this), x.elseExpr().accept(this));
+			}
+
+			public Integer visit(SumExpression x) {
+				return max(x.decls().accept(this), x.intExpr().accept(this));
+			}
+
+			public Integer visit(QuantifiedFormula x) {
+				return max(x.decls().accept(this), x.formula().accept(this));
+			}
+
+			public Integer visit(Comprehension x) {
+				return max(x.decls().accept(this), x.formula().accept(this));
+			}
+
 			public Integer visit(Decls x) {
 				int max = 0, n = x.size();
-				for(int i=0; i<n; i++) max = max(max, x.get(i).accept(this));
+				for (int i = 0; i < n; i++)
+					max = max(max, x.get(i).accept(this));
 				return max;
 			}
+
 			public Integer visit(ProjectExpression x) {
 				int max = x.expression().accept(this);
-				for(Iterator<IntExpression> t = x.columns(); t.hasNext();) { max = max(max, t.next().accept(this)); }
+				for (Iterator<IntExpression> t = x.columns(); t.hasNext();) {
+					max = max(max, t.next().accept(this));
+				}
 				return max;
 			}
+
 			public Integer visit(RelationPredicate x) {
 				if (x instanceof Function) {
-					Function f = ((Function)x);
+					Function f = ((Function) x);
 					return max(f.domain().accept(this), f.range().accept(this));
 				}
 				return 0;
 			}
+
 			public Integer visit(NaryExpression x) {
 				int max = 0;
-				for(int m=0, n=x.size(), i=0; i<n; i++) { m=x.child(i).accept(this); if (i==0 || max<m) max=m; }
+				for (int m = 0, n = x.size(), i = 0; i < n; i++) {
+					m = x.child(i).accept(this);
+					if (i == 0 || max < m)
+						max = m;
+				}
 				return max;
 			}
+
 			public Integer visit(NaryIntExpression x) {
 				int max = 0;
-				for(int m=0, n=x.size(), i=0; i<n; i++) { m=x.child(i).accept(this); if (i==0 || max<m) max=m; }
+				for (int m = 0, n = x.size(), i = 0; i < n; i++) {
+					m = x.child(i).accept(this);
+					if (i == 0 || max < m)
+						max = m;
+				}
 				return max;
 			}
+
 			public Integer visit(NaryFormula x) {
 				int max = 0;
-				for(int m=0, n=x.size(), i=0; i<n; i++) {
-					m=x.child(i).accept(this); 
-					if (i==0 || max<m) 
-						max=m; 
-					}
+				for (int m = 0, n = x.size(), i = 0; i < n; i++) {
+					m = x.child(i).accept(this);
+					if (i == 0 || max < m)
+						max = m;
+				}
 				return max;
 			}
 		};
 		Object ans = node.accept(vis);
-		if (ans instanceof Integer) return ((Integer)ans).intValue()+1; else return 1;
+		if (ans instanceof Integer)
+			return ((Integer) ans).intValue() + 1;
+		else
+			return 1;
 	}
 
+	/** Tests whether an always operator occurs in the given AST tree. */
+	private static boolean hasAlways(Node node) {
+		final AbstractDetector detector = new AbstractDetector(Collections.emptySet()) {
+			public Boolean visit(UnaryTempFormula form) {
+				if (form.op() == TemporalOperator.ALWAYS)
+					return cache(form, Boolean.TRUE);
+				return super.visit(form);
+			}
+		};
+		return (Boolean) node.accept(detector);
+	}
+	
+	/** Interprets the step of a state tuple from its name. */
+	public static int interpretState(Tuple tuple) {
+		String label = tuple.atom(0).toString();
+		String[] labelS = label.split(STATE_SEP);
+		return Integer.valueOf(labelS[0].substring(4)); 
+	}
 
 }

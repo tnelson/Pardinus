@@ -17,9 +17,13 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.ltl2fol.LTL2FOLTranslator;
+import kodkod.engine.ltl2fol.NNFReplacer;
+import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.Universe;
 
 public class PastTests {
@@ -54,7 +58,7 @@ public class PastTests {
 	public final void test() {
 		n = 4;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
+		
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).in(S))).next();
@@ -63,14 +67,46 @@ public class PastTests {
 		Formula f4 = ((Af.join(An).in(S))).next().next().next().next();
 		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
+		return;
+	}
+	
+	@Test
+	public final void testP() {
+		n = 4;
+		doBounds();
+		
+		Formula f = An.totalOrder(A, Af, Al);
+		Formula f0 = S.eq(Af);
+		Formula f1 = ((Af.join(An).in(S.prime())));
+		Formula f2 = (S.prime().eq(Af.join(An).join(An))).next();
+		Formula f3 = (S.prime().eq(Af.join(An).join(An).join(An))).next().next();
+		Formula f4 = ((Af.join(An).in(S.prime()))).next().next().next();
+		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
+		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
+		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
+		ExtendedOptions options = new ExtendedOptions();
+		Solver solver = new Solver(options);
+		Solution sol = solver.solve(ff, bb);
+		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
+		assertTrue(sol.sat());
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -78,7 +114,6 @@ public class PastTests {
 	public final void test1() {
 		n = 4;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 1);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).in(S))).next();
@@ -87,14 +122,18 @@ public class PastTests {
 		Formula f4 = ((Af.join(An).in(S))).next().next().next().next();
 		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
+		
+		// force wrong unrolls
+		tt = NNFReplacer.nnf(tt);
+		Bounds bb = TemporalBoundsExpander.expand(b, n, 1, false);
+		Formula ff = LTL2FOLTranslator.translate(tt, false, false);
 		
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+//		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -102,7 +141,6 @@ public class PastTests {
 	public final void test2() {
 		n = 6;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 3);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).in(S))).next();
@@ -115,14 +153,18 @@ public class PastTests {
 				(S.eq(Af.join(An).join(An).join(An).join(An)).and(S.eq(Af.join(An).join(An).join(An).join(An).join(An)).once())).once()
 				)).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
-		Formula ff = TemporalTranslator.translate(tt,n);
-		
+	
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(3, TemporalTranslator.countHeight(tt));
+		assertEquals(3, trans.past_depth);
 		return;
 	}
 
@@ -130,7 +172,6 @@ public class PastTests {
 	public final void test3() {
 		n = 6;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).in(S))).next();
@@ -143,14 +184,18 @@ public class PastTests {
 				(S.eq(Af.join(An).join(An).join(An).join(An)).and(S.eq(Af.join(An).join(An).join(An).join(An).join(An)).once())).once()
 				)).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		// force wrong unrolls
+		tt = NNFReplacer.nnf(tt);
+		Bounds bb = TemporalBoundsExpander.expand(b, n, 2, true);
+		Formula ff = LTL2FOLTranslator.translate(tt, true, false);
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(3, TemporalTranslator.countHeight(tt));
+//		assertEquals(3, trans.past_depth);
 		return;
 	}
 	
@@ -158,20 +203,23 @@ public class PastTests {
 	public final void testB1() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).eq(S))).next().always();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
-		
+	
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -179,20 +227,22 @@ public class PastTests {
 	public final void testB2() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).eq(S))).next().always();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
-		
+	
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -200,20 +250,22 @@ public class PastTests {
 	public final void testB3() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).eq(S))).next().always();
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -221,20 +273,23 @@ public class PastTests {
 	public final void testB4() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).eq(S))).always().next();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -242,20 +297,22 @@ public class PastTests {
 	public final void testB5() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).eq(S))).next().always();
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
-		
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -263,20 +320,22 @@ public class PastTests {
 	public final void testB6() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).eq(S))).next().always();
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
-		
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -284,20 +343,23 @@ public class PastTests {
 	public final void testC1() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).always().next();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
-		
+	
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -305,20 +367,23 @@ public class PastTests {
 	public final void testC2() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -326,20 +391,23 @@ public class PastTests {
 	public final void testC3() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -347,20 +415,23 @@ public class PastTests {
 	public final void testC4() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -368,20 +439,22 @@ public class PastTests {
 	public final void testD1() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).always().next();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -389,20 +462,23 @@ public class PastTests {
 	public final void testD2() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
+		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
 		
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -410,20 +486,22 @@ public class PastTests {
 	public final void testD3() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -431,20 +509,23 @@ public class PastTests {
 	public final void testD4() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -452,20 +533,22 @@ public class PastTests {
 	public final void testD5() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		assertFalse(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 	
@@ -473,20 +556,23 @@ public class PastTests {
 	public final void testD6() {
 		n = 2;
 		doBounds();
-		Bounds bb = TemporalTranslator.translate(b, n, 2);
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
 		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
-		Formula ff = TemporalTranslator.translate(tt,n);
 		
+		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		Bounds bb = trans.expand(n);
+		Formula ff = trans.translate();
+
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
+		new TemporalInstance(sol.instance(), b.relationsVar());
 		assertTrue(sol.sat());
-		assertEquals(2, TemporalTranslator.countHeight(tt));
+		assertEquals(2, trans.past_depth);
 		return;
 	}
 }

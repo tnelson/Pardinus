@@ -118,8 +118,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 
 		try {
 			long startTransl = System.currentTimeMillis();
-			Formula extformula = TemporalTranslator.translate(formula, -1);
-			int unrolls = TemporalTranslator.countHeight(formula);
+			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds);
+			Formula extformula = tmptrans.translate();
 			long endTransl = System.currentTimeMillis();
 			long transTime = endTransl - startTransl;
 			boolean isSat = false;
@@ -131,7 +131,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				// increase while UNSAT and below max
 				do {
 					traceLength++;
-					Bounds extbounds = TemporalTranslator.translate(bounds, traceLength, unrolls);
+					Bounds extbounds = tmptrans.expand(traceLength);
 					translation = Translator.translate(extformula, extbounds, options);
 				} while (translation.trivial() && traceLength <= options.maxTraceLength());
 
@@ -256,15 +256,16 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private final ExtendedOptions opt; // [HASLab] temporal
 		private int current_trace;
 		private boolean incremented = false;
-
+		private TemporalTranslator tmptrans;
+		
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			this.translTime = System.currentTimeMillis();
 			current_trace = options.minTraceLength()-1;
 			do {
 				current_trace++;
-				this.unrolls = TemporalTranslator.countHeight(formula);
-				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace, unrolls);
-				this.extformula = TemporalTranslator.translate(formula, current_trace);
+				this.tmptrans = new TemporalTranslator(formula, bounds);
+				Bounds extbounds = tmptrans.expand(current_trace);
+				this.extformula = tmptrans.translate();
 				this.translation = Translator.translate(extformula, extbounds, options);
 			} while (this.translation.trivial() && current_trace <= options.maxTraceLength());
 
@@ -326,7 +327,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (incremented) {
 					long translStart = System.currentTimeMillis();
-					Bounds extbounds = TemporalTranslator.translate(tempBounds, current_trace, unrolls);
+					Bounds extbounds = tmptrans.expand(current_trace);
 					translation = Translator.translate(extformula, extbounds, opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
@@ -447,13 +448,15 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private Map<String, Integer> weights; // [HASLab] signature weights
 		private final PardinusBounds tempBounds;
 		private final Formula extformula;
+		private TemporalTranslator tmptrans;
 
 		TSolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			if (!options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");
 			this.translTime = System.currentTimeMillis();
-			Bounds extbounds = TemporalTranslator.translate(bounds, 1, 1);
-			this.extformula = TemporalTranslator.translate(formula, 1);
+			tmptrans = new TemporalTranslator(formula, bounds);
+			Bounds extbounds = tmptrans.expand(1);
+			this.extformula = tmptrans.translate();
 			this.translation = Translator.translate(extformula, extbounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.opt = options;
@@ -517,7 +520,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			while (!isSat && traceLength <= opt.maxTraceLength()) {
 				if (traceLength > 1) {
 					long translStart = System.currentTimeMillis();
-					Bounds extbounds = TemporalTranslator.translate(tempBounds, 1, 1);
+					Bounds extbounds = tmptrans.expand(1);
 					translation = Translator.translate(extformula, extbounds, opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
