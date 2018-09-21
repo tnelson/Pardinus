@@ -86,26 +86,37 @@ import kodkod.instance.Tuple;
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public class TemporalTranslator {
+	
+	public static final boolean alt = true;
 
 	/** The name assigned to {@link #STATE state} atoms. */
 	public static final String STATEATOM = "Time";
 
 	/** Relations representing the explicit trace of the temporal problem. **/
 	public static final Relation STATE = Relation.unary(STATEATOM);
-	public static final Relation FIRST = Relation.unary("first");
-	public static final Relation LAST = Relation.unary("last");
-	public static final Relation PREFIX = Relation.binary("prefix");
+	public static final Relation FIRST = Relation.unary("S/first");
+	public static final Relation LAST = Relation.unary("S/last");
+	public static final Relation PREFIX = Relation.binary("S/next");
 	public static final Relation LOOP = Relation.unary("loop");
 	public static final Expression TRACE = PREFIX.union(LAST.product(LOOP));
-	public static final Relation UNROLL_MAP = Relation.binary("unroll_map");
-	
+
+	public static final Relation LAST_ = Relation.unary("S/last_"); 			// alt = true
+	public static final Relation UNROLL_MAP = Relation.binary("unroll_map"); 	// alt = true
+
+	public static final Relation LEVEL = Relation.unary("Level"); 				// alt = false
+	public static final Relation L_FIRST = Relation.unary("L/first"); 			// alt = false
+	public static final Relation L_LAST = Relation.unary("L/last"); 			// alt = false
+	public static final Relation L_PREFIX = Relation.binary("L/next"); 			// alt = false
+
 	public static final String STATE_SEP = "_";
 
 	/**
 	 * The constraint forcing the time trace to be infinite. Forces the loop to
 	 * exist.
 	 */
-	public static final Formula INFINITE = TemporalTranslator.LOOP.one();
+	public static final Formula INFINITE = LOOP.one();
+
+	public static final Expression START = L_FIRST.product(FIRST).union(L_FIRST.join(L_PREFIX.closure()).product(LOOP));
 
 	/** The original temporal formula. */
 	private final Formula formula;
