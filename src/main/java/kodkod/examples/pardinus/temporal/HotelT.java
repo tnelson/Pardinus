@@ -54,6 +54,7 @@ public class HotelT implements DModel {
 	private final Relation key, key_first, key_last, key_next;
 	private final Relation room, guest, rkeys;
 	private final VarRelation current, lastkey, occupant, gkeys;
+	private final Universe u;
 
 	public enum Variant {
 		INTERVENES, NOINTERVENES;
@@ -75,8 +76,20 @@ public class HotelT implements DModel {
 		lastkey = VarRelation.nary("FrontDesk#lastKey", 2);
 		occupant = VarRelation.nary("FrontDesk#occupant", 2);
 		gkeys = VarRelation.nary("Guest#gkeys", 2);
+		
+		List<String> atoms = new ArrayList<String>(3 * n);
+		for (int i = 0; i < n; i++) {
+			atoms.add("Key" + i);
+		}
+		for (int i = 0; i < n; i++) {
+			atoms.add("Room" + i);
+		}
+		for (int i = 0; i < n; i++) {
+			atoms.add("Guest" + i);
+		}
+		u = new Universe(atoms);
 	}
-
+	
 	private Formula init() {
 		Variable r = Variable.unary("r");
 		Formula x158 = r.join(lastkey).eq(r.join(current));
@@ -305,19 +318,6 @@ public class HotelT implements DModel {
 	}
 	
 	public PardinusBounds bounds1() {
-		final List<String> atoms = new ArrayList<String>(3 * n);
-		for (int i = 0; i < n; i++) {
-			atoms.add("Key" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Room" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Guest" + i);
-		}
-
-		Universe u = new Universe(atoms);
-
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
@@ -337,18 +337,6 @@ public class HotelT implements DModel {
 	}
 
 	public PardinusBounds bounds2() {
-		final List<String> atoms = new ArrayList<String>(3 * n);
-		for (int i = 0; i < n; i++) {
-			atoms.add("Key" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Room" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Guest" + i);
-		}
-
-		Universe u = new Universe(atoms);
 
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
