@@ -22,15 +22,9 @@
  */
 package kodkod.instance;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 
@@ -50,13 +44,7 @@ public class TemporalInstance extends Instance {
 	/**
 	 * Variables representing the shape of the trace of the solution.
 	 */
-	public final int loop, end;
-
-	/**
-	 * The original variable relations that gave rise to the expanded static
-	 * problem.
-	 */
-	private final Set<VarRelation> varrelations;
+	public final int loop;
 
 	public List<Instance> states;
 
@@ -70,15 +58,15 @@ public class TemporalInstance extends Instance {
 	 * 
 	 * @param instance
 	 *            the expanded static solution to the problem
+	 * @param tmptrans 
 	 * @param varrelations
 	 *            the original variable relations
 	 */
-	@Deprecated
-	public TemporalInstance(Instance instance, Set<VarRelation> varrelations) {
+	public TemporalInstance(Instance instance) {
 		super(instance.universe(), new LinkedHashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
 		Evaluator eval = new Evaluator(instance);
 		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST).iterator().next();
-		end = TemporalTranslator.interpretState(tuple_last);
+		int end = TemporalTranslator.interpretState(tuple_last);
 		TupleSet tupleset_loop = eval.evaluate(TemporalTranslator.LOOP);
 		if (tupleset_loop.iterator().hasNext()) {
 			Tuple tuple_loop = tupleset_loop.iterator().next();
@@ -86,17 +74,15 @@ public class TemporalInstance extends Instance {
 		}
 		else 
 			loop = -1;
-		this.varrelations = varrelations;
+		
 	}
 
 	public TemporalInstance(List<Instance> instances, int loop) {
 		super(instances.get(0).universe());
-		this.varrelations = new HashSet<VarRelation>();
 		this.states = instances;
 		this.loop = loop;
-		this.end = instances.size()-1;
 	}
-	
+
 	
 	/**
 	 * {@inheritDoc}
@@ -105,27 +91,12 @@ public class TemporalInstance extends Instance {
 	 */
 	@Override
 	public String toString() {
-		Evaluator eval = new Evaluator(this);
 		StringBuilder sb = new StringBuilder();
-		sb.append("\nstatic relations: ");
-		Map<Relation, TupleSet> map = new HashMap<Relation, TupleSet>();
-		for (Relation r : super.relations()) {
-			TupleSet ts = eval.evaluate(r, 0);
-			map.put(r, ts);
+		for (int i = 0; i < states.size(); i++) {
+			sb.append(states.get(i).toString());
+			sb.append("\n");
 		}
-		sb.append(map.toString());
-		for (int i = 0; i <= end; i++) {
-			sb.append("\nrelations at " + i + ": ");
-			map = new HashMap<Relation, TupleSet>();
-			for (Relation r : varrelations) {
-				TupleSet ts = eval.evaluate(r, i);
-				map.put(r, ts);
-			}
-			sb.append(map.toString());
-		}
-		sb.append("\nints: ");
-		sb.append(ints());
-		sb.append("\nloop: ");
+		sb.append("loop: ");
 		sb.append(loop);
 		return sb.toString();
 	}

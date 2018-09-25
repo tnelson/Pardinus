@@ -73,7 +73,6 @@ public class DecompFormulaSlicer {
 	public static Entry<Formula, Formula> slice(Formula formula,
 			PardinusBounds bounds) {
 		Set<Relation> partials = bounds.relations();
-		partials.addAll(bounds.relationsSymb());
 		if (bounds.integrated()) {
 			Set<Relation> aux = new HashSet<Relation>();
 			for (Relation r : partials)

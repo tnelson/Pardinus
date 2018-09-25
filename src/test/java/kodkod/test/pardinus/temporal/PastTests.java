@@ -80,7 +80,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -112,7 +112,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -178,7 +178,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -241,7 +241,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -323,7 +323,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -405,7 +405,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -433,7 +433,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -461,7 +461,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -489,7 +489,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -544,7 +544,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -599,7 +599,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -654,7 +654,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -682,7 +682,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(1, trans.past_depth);
 		return;
@@ -710,7 +710,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -738,7 +738,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-//		new TemporalInstance(sol.instance(), b.relationsVar());
+//		new TemporalInstance(sol.instance());
 		assertFalse(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -766,7 +766,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -800,7 +800,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(5, trans.past_depth);
 	}
@@ -833,7 +833,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-//		new TemporalInstance(sol.instance(), b.relationsVar());
+//		new TemporalInstance(sol.instance());
 		assertFalse(sol.sat());
 		assertEquals(5, trans.past_depth);
 	}
@@ -865,7 +865,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -899,7 +899,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -934,7 +934,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -966,7 +966,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(1, trans.past_depth);
 		return;
@@ -999,7 +999,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance(), b.relationsVar());
+		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(1, trans.past_depth);
 		return;

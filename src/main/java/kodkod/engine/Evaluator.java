@@ -22,6 +22,8 @@
  */
 package kodkod.engine;
 
+import java.time.temporal.Temporal;
+
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
@@ -122,7 +124,8 @@ public final class Evaluator {
 	 */
 	// [HASLab] evaluate to instant 0
 	public TupleSet evaluate(Expression expression){
-		return evaluate(expression, 0);
+		final BooleanMatrix sol = Translator.evaluate(expression,instance,options);
+		return instance.universe().factory().setOf(expression.arity(), sol.denseIndices());
 	}
 
 	/**
@@ -136,14 +139,14 @@ public final class Evaluator {
 	 */
 	// [HASLab]
 	public TupleSet evaluate(Expression expression, int state){
-		if (expression == null) throw new NullPointerException("expression");
+		if (expression == null) throw new NullPointerException("Null expression.");
 		if (instance instanceof TemporalInstance && ((TemporalInstance) instance).states != null) {
 			Instance i = ((TemporalInstance) instance).states.get(state);
 			final BooleanMatrix sol = Translator.evaluate(expression,i,options);
 			return i.universe().factory().setOf(expression.arity(), sol.denseIndices());
 		}
 		else {
-			Expression e1 = LTL2FOLTranslator.translate(expression, state, false, false); // TODO: this is broken
+			Expression e1 = LTL2FOLTranslator.translate(expression, state, false, false); 
 			final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
 			return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 		}

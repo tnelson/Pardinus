@@ -62,6 +62,7 @@ public class TemporalBoundsExpander {
 	 *            the number of trace unrolls.
 	 * @param force_loop
 	 *            whether the trace will necessarily loop.
+	 * @param timeAtoms 
 	 * @return the expanded bounds.
 	 */
 	public static PardinusBounds expand(PardinusBounds bounds, int states, int unrolls, boolean force_loop) {
@@ -93,12 +94,8 @@ public class TemporalBoundsExpander {
 	 * @return the expanded bounds with the new universe.
 	 */
 	private static PardinusBounds expand(PardinusBounds bounds, Universe uni, int states, int unrolls, boolean force_loop) {
-		if (bounds.boundTrace().size() > 1)
-			throw new UnsupportedOperationException("Expansion of trace bounds not yet supported.");
-
-		for (Relation r : bounds.relationsSymb())
-			if (bounds.upperBound(r) == null)
-				throw new IllegalArgumentException("Symbolic bounds must be resolved at this stage.");
+		if (!bounds.resolved())
+			throw new IllegalArgumentException("Symbolic bounds must be resolved at this stage.");
 
 		
 		PardinusBounds newBounds = new PardinusBounds(uni);
@@ -198,7 +195,6 @@ public class TemporalBoundsExpander {
 	
 		}
 		
-		bounds.first();
 		for (Relation r : bounds.relations()) {
 			TupleSet tupleSetL = convert(bounds.lowerBound(r), uni);
 			TupleSet tupleSetU = convert(bounds.upperBound(r), uni);
@@ -244,6 +240,7 @@ public class TemporalBoundsExpander {
 	 *            the original bounds.
 	 * @param steps
 	 *            the number of steps in the trace.
+	 * @param timeAtoms 
 	 * @param unrools
 	 *            the number of trace unrolls.
 	 * @return a new universe with the atoms of the original one plus the state
@@ -257,14 +254,20 @@ public class TemporalBoundsExpander {
 
 		if (TemporalTranslator.alt) {
 			for (int j = 0; j < unrolls; j++)
-				for (int i = 0; i < steps; i++)
-					newAtoms.add(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + j);
+				for (int i = 0; i < steps; i++) {
+					Object x = TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + j;
+					newAtoms.add(x);
+				}
 		}
 		else {
-			for (int i = 0; i <= steps; i++)
-				newAtoms.add(TemporalTranslator.STATEATOM + i);
-			for (int j = 0; j < unrolls; j++)
-				newAtoms.add(TemporalTranslator.LEVEL + "" + j);
+			for (int i = 0; i <= steps; i++) {
+				Object x = TemporalTranslator.STATEATOM + i;
+				newAtoms.add(x);
+			}
+			for (int j = 0; j < unrolls; j++) {
+				Object x = TemporalTranslator.LEVEL + "" + j;
+				newAtoms.add(x);
+			}
 		}
 		
 		return new Universe(newAtoms);

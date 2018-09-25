@@ -25,7 +25,6 @@ package kodkod.engine.ltl2fol;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
@@ -121,7 +120,7 @@ public class TemporalTranslator {
 	/** The original temporal formula. */
 	private final Formula formula;
 	/** The original variable bounds. */
-	private final PardinusBounds bounds;
+	public final PardinusBounds bounds;
 	/** The past operator depth. */
 	public final int past_depth;
 	/** Whether the formula has an "alaways" operator. */
