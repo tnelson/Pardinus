@@ -31,9 +31,11 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -102,6 +104,10 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 */
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
+		return ElectrodSolver.go(formula,bounds,options);
+	}
+
+	private static Solution go(Formula formula, PardinusBounds bounds, ExtendedOptions options) {
 		Reporter rep = options.reporter();
 		
 		// create a directory with the specified unique name
@@ -208,7 +214,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return sol;
 		}
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -221,16 +227,48 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 * exactly one satisfiable element and one unsatisfiable.
 	 */
 	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
-		Solution s = solve(formula,bounds);
+		return new SolutionIterator(formula, bounds, options);
+	}
+	
+	private final static class SolutionIterator implements Iterator<Solution> {
 
-		Solution[] ss;
-		if (s.sat())
-			// TODO: get the stats from the header of the electrod solution
-			ss = new Solution[]{s,Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null)};
-		else
-			ss = new Solution[]{s};
+		private Formula formula;
+		private final PardinusBounds bounds;
+		private Map<Object,Relation> reifs;
+		private ExtendedOptions options;
 		
-		return Arrays.asList(ss).iterator();
+		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
+			this.formula = formula;
+			this.reifs = new HashMap<Object,Relation>();
+			this.bounds = bounds;
+			this.options = options;
+		}
+			
+		@Override
+		public boolean hasNext() {
+			return formula != null;
+		}
+
+		@Override
+		public Solution next() {
+				
+			Solution s = go(formula,bounds,options);
+
+			if (s.sat()) {
+				Formula trns = s.instance().reify(reifs).not();
+				options.reporter().debug("Reified instance: "+trns);
+				formula = formula.and(trns);
+			}
+			else 
+				formula = null;
+
+			for (Object o : reifs.keySet()) {
+				bounds.boundExactly(reifs.get(o),bounds.universe().factory().setOf(o));
+			}
+			
+			return s;
+		}
+
 	}
 
 }

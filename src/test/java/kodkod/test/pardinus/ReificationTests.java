@@ -31,6 +31,8 @@ import kodkod.ast.VarRelation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.SLF4JReporter;
+import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
@@ -142,51 +144,22 @@ public class ReificationTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula formula = (a.some().and(b.some()).and(a.eq(a.prime()).not())).always();
+		Formula formula = ((a.eq(a.prime()).not())).always();
 
 		ExtendedOptions opt = new ExtendedOptions();
 
+		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
+		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
+		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		
-		Map<Object, Relation> x = new HashMap<Object,Relation>();
-		
-		Instance inst = solution.next().instance();
-
-		System.out.println(inst.toString());
-		System.out.println(inst.reify(x));
-		System.out.println(x);
-		
-		for (Object o : x.keySet()) {
-			bounds.boundExactly(x.get(o), bounds.universe().factory().setOf(o));
-		}
-		
-		formula = formula.and(inst.reify(x).not());
-
-		solution = solver.solveAll(formula, bounds);
-		
-		inst = solution.next().instance();
-		
-		System.out.println(inst.toString());
-		System.out.println(inst.reify(x));
-		System.out.println(x);
-	
-		for (Object o : x.keySet()) {
-			bounds.boundExactly(x.get(o), bounds.universe().factory().setOf(o));
-		}
-		
-		formula = formula.and(inst.reify(x).not());
-
-		solution = solver.solveAll(formula.and(inst.reify(x).not()), bounds);
-
-		inst = solution.next().instance();
-
-		System.out.println(inst.toString());
-		System.out.println(inst.reify(x));
-		System.out.println(x);
+		solution.next().instance();
+		solution.next().instance();
+		solution.next().instance();
 
 		solver.free();
 

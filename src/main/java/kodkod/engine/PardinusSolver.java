@@ -179,7 +179,7 @@ public class PardinusSolver implements
 
 		assert (!TemporalTranslator.isTemporal(formula) && !bounds.hasVarRelations()) || options.temporal();
 		assert !options.unbounded() || options.temporal();
-		assert options.solver().incremental();
+//		assert options.solver().incremental();
 		
 //		if (!(this.solver instanceof IterableSolver))
 //			throw new UnsupportedOperationException();
