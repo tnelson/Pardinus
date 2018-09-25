@@ -230,7 +230,7 @@ public class Instance implements Cloneable {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Map<Object, Relation> reif) {
+	public Formula formulate(Map<Object, Expression> reif) {
 
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {

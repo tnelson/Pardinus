@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
@@ -234,12 +235,12 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 
 		private Formula formula;
 		private final PardinusBounds bounds;
-		private Map<Object,Relation> reifs;
+		private Map<Object,Expression> reifs;
 		private ExtendedOptions options;
 		
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			this.formula = formula;
-			this.reifs = new HashMap<Object,Relation>();
+			this.reifs = new HashMap<Object,Expression>();
 			this.bounds = bounds;
 			this.options = options;
 		}
@@ -263,7 +264,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				formula = null;
 
 			for (Object o : reifs.keySet()) {
-				bounds.boundExactly(reifs.get(o),bounds.universe().factory().setOf(o));
+				Expression e = reifs.get(o);
+				if (e instanceof Relation)
+					bounds.boundExactly((Relation) e,bounds.universe().factory().setOf(o));
 			}
 			
 			return s;

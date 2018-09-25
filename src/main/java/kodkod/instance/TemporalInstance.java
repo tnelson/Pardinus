@@ -26,8 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import kodkod.ast.Decls;
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.ast.Variable;
 import kodkod.engine.Evaluator;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 
@@ -117,6 +120,8 @@ public class TemporalInstance extends Instance {
 		}
 	}
 	
+	boolean alt = false;
+	
 	/**
 	 * Converts a temporal instance into a formula that exactly identifies it,
 	 * encoding each state of the trace and the looping behavior. Requires that
@@ -131,12 +136,18 @@ public class TemporalInstance extends Instance {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Map<Object,Relation> reif) {
+	@Override
+	public Formula formulate(Map<Object, Expression> reif) {
 
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {
 			if (!reif.keySet().contains(universe().atom(i))) {
-				Relation r = Relation.unary(universe().atom(i).toString());
+				Expression r;
+				if (alt) {
+					r = Variable.unary(universe().atom(i).toString());
+				} else {
+					r = Relation.unary(universe().atom(i).toString());
+				}
 				reif.put(universe().atom(i), r);
 			}
 		}
@@ -172,6 +183,22 @@ public class TemporalInstance extends Instance {
 			looping = looping.next();
 
 		res = res.and(looping);
+		
+		if (alt) {
+			Decls decls = null; Expression al = null;
+			for (Expression e : reif.values()) {
+				if (decls == null) {
+					al = e;
+					decls = ((Variable) e).oneOf(Expression.UNIV);
+				}
+				else {
+					al = al.union(e);
+					decls = decls.and(((Variable) e).oneOf(Expression.UNIV));
+				}
+			}
+			res = (al.eq(Expression.UNIV)).and(res);
+			res = res.forSome(decls);
+		}
 		
 		return res;
 	}
