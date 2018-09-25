@@ -31,11 +31,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.TargetOptions.TMode;
@@ -198,7 +196,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 
 	// [HASLab]
 	private static Solution sat(Translation.Whole translation, Statistics stats) {
-		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret()));
+		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(),null));
 		translation.cnf().free();
 		return sol;
 	}
@@ -221,7 +219,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		final Statistics stats = new Statistics(0, 0, 0, translTime, 0);
 		final Solution sol;
 		if (translation.cnf().solve()) {
-			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret()));
+			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret(),null));
 		} else {
 			sol = Solution.triviallyUnsatisfiable(stats, trivialProof(translation.log()));
 		}
@@ -358,7 +356,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret()));
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),tmptrans));
 				// add the negation of the current model to the solver
 				final int[] notModel = new int[primaryVars];
 				for (int i = 1; i <= primaryVars; i++) {
@@ -608,7 +606,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret()));
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),tmptrans));
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver
 											// resources, if any

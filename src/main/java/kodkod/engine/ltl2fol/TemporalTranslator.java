@@ -22,9 +22,14 @@
  */
 package kodkod.engine.ltl2fol;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
 import kodkod.ast.BinaryIntExpression;
@@ -88,6 +93,8 @@ public class TemporalTranslator {
 	
 	public static final boolean alt = true;
 
+	public static final List<Object> time_atoms = new ArrayList<Object>();
+	
 	/** The name assigned to {@link #STATE state} atoms. */
 	public static final String STATEATOM = "Time";
 
@@ -109,6 +116,8 @@ public class TemporalTranslator {
 
 	public static final String STATE_SEP = "_";
 
+	public static final Set<Relation> rels = new HashSet<Relation>(Arrays.asList(STATE,FIRST,LAST,PREFIX,LOOP,LAST_,UNROLL_MAP,LEVEL,L_FIRST,L_LAST,L_PREFIX));
+	
 	/**
 	 * The constraint forcing the time trace to be infinite. Forces the loop to
 	 * exist.
@@ -158,7 +167,7 @@ public class TemporalTranslator {
 	 * @return the temporal bounds expanded into standard bounds.
 	 */
 	public Bounds expand(int traceLength) {
-		return TemporalBoundsExpander.expand(bounds, traceLength, past_depth, has_always);
+		return TemporalBoundsExpander.expand(bounds, traceLength, past_depth, has_always, time_atoms);
 	}
 
 	/**

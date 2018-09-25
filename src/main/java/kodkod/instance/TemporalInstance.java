@@ -22,8 +22,12 @@
  */
 package kodkod.instance;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.ltl2fol.TemporalTranslator;
@@ -46,7 +50,7 @@ public class TemporalInstance extends Instance {
 	 */
 	public final int loop;
 
-	public List<Instance> states;
+	public final List<Instance> states;
 
 	/**
 	 * Creates a new temporal instance from a static instance that is a solution
@@ -62,8 +66,8 @@ public class TemporalInstance extends Instance {
 	 * @param varrelations
 	 *            the original variable relations
 	 */
-	public TemporalInstance(Instance instance) {
-		super(instance.universe(), new LinkedHashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
+	public TemporalInstance(Instance instance, TemporalTranslator tmptrans) {
+		super(tmptrans.bounds.universe(), new LinkedHashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
 		Evaluator eval = new Evaluator(instance);
 		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST).iterator().next();
 		int end = TemporalTranslator.interpretState(tuple_last);
@@ -75,12 +79,40 @@ public class TemporalInstance extends Instance {
 		else 
 			loop = -1;
 		
+		states = new ArrayList<Instance>();
+		for (int i = 0; i <= end; i++) {
+			Instance inst = new Instance(instance.universe());
+			
+			for (Relation r : tmptrans.bounds.relations()) {
+				TupleSet t = eval.evaluate(r,i);
+				inst.add(r, t);
+			}
+			
+			states.add(inst);
+		}
 	}
 
 	public TemporalInstance(List<Instance> instances, int loop) {
 		super(instances.get(0).universe());
 		this.states = instances;
 		this.loop = loop;
+	}
+	
+	// [HASLab]
+	public Formula reify(Map<Object,Relation> reif) {
+
+		if (reif.isEmpty())
+			for (int i = 0; i < universe().size(); i++) {
+				Relation r = Relation.unary(universe().atom(i).toString());
+				reif.put(universe().atom(i), r);
+			}
+		
+		Formula res = Formula.TRUE;
+
+		for (int i = states.size()-1; i >= 0; i--)
+			res = states.get(i).reify(reif).and(res.next());
+
+		return res;
 	}
 
 	

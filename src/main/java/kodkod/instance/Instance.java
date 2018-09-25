@@ -22,11 +22,18 @@
  */
 package kodkod.instance;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import kodkod.ast.ConstantExpression;
+import kodkod.ast.Expression;
+import kodkod.ast.Formula;
+import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
@@ -216,6 +223,35 @@ public class Instance implements Cloneable {
 	 */
 	public String toString() {
 		return "relations: "+tuples.toString() + "\nints: " + ints;
+	}
+	
+	// [HASLab]
+	public Formula reify(Map<Object,Relation> reif) {
+
+		if (reif.isEmpty())
+			for (int i = 0; i < universe().size(); i++) {
+				Relation r = Relation.unary(universe().atom(i).toString());
+				reif.put(universe().atom(i), r);
+			}
+		
+		List<Formula> res = new ArrayList<Formula>();
+		for (Relation rel: tuples.keySet()) {
+			TupleSet tset = tuples.get(rel);
+			Expression r = ConstantExpression.NONE;
+			for (int i = 1; i < tset.arity(); i++)
+				r = r.product(ConstantExpression.NONE);
+			
+			Iterator<Tuple> it = tset.iterator();
+			while (it.hasNext()) {
+				Tuple u = it.next();
+				Expression r1 = reif.get(u.atom(0));
+				for (int i = 1; i < u.arity(); i ++)
+					r1 = r1.product(reif.get(u.atom(i)));
+				r = r.union(r1);
+			}
+			res.add(rel.eq(r));
+		}
+		return NaryFormula.and(res);
 	}
 
 }
