@@ -218,37 +218,44 @@ public class Instance implements Cloneable {
 	}
 	
 	/**
-	 * {@inheritDoc}
-	 * @see java.lang.Object#toString()
+	 * Converts an instance into a formula that exactly identifies it. Requires that
+	 * every relevant atom be reified into a singleton relation, which may be
+	 * re-used between calls.
+	 * 
+ 	 * @assumes reif != null
+	 * @param reif
+	 *            the previously reified atoms
+	 * @throws NullPointerException
+	 *             reif = null
+	 * @return the formula representing <this>
 	 */
-	public String toString() {
-		return "relations: "+tuples.toString() + "\nints: " + ints;
-	}
-	
 	// [HASLab]
-	public Formula reify(Map<Object,Relation> reif) {
+	public Formula formulate(Map<Object, Relation> reif) {
 
-		if (reif.isEmpty())
-			for (int i = 0; i < universe().size(); i++) {
+		// reify atoms not yet reified
+		for (int i = 0; i < universe().size(); i++) {
+			if (!reif.keySet().contains(universe().atom(i))) {
 				Relation r = Relation.unary(universe().atom(i).toString());
 				reif.put(universe().atom(i), r);
 			}
-		
+		}
+
+		// create an equality for every relation
+		// a = A + ... && r = A -> B + ... 
 		List<Formula> res = new ArrayList<Formula>();
-		for (Relation rel: tuples.keySet()) {
-			// do not translate relations reified from atoms
+		for (Relation rel : tuples.keySet()) {
+			// do not translate relations from reified from atoms
 			if (reif.values().contains(rel))
 				continue;
-			
+
 			TupleSet tset = tuples.get(rel);
-			
 			Iterator<Tuple> it = tset.iterator();
 
 			Expression r;
 			if (it.hasNext()) {
 				Tuple u = it.next();
 				Expression r1 = reif.get(u.atom(0));
-				for (int i = 1; i < u.arity(); i ++)
+				for (int i = 1; i < u.arity(); i++)
 					r1 = r1.product(reif.get(u.atom(i)));
 				r = r1;
 			} else {
@@ -256,11 +263,11 @@ public class Instance implements Cloneable {
 				for (int i = 1; i < tset.arity(); i++)
 					r = r.product(ConstantExpression.NONE);
 			}
-			
+
 			while (it.hasNext()) {
 				Tuple u = it.next();
 				Expression r1 = reif.get(u.atom(0));
-				for (int i = 1; i < u.arity(); i ++)
+				for (int i = 1; i < u.arity(); i++)
 					r1 = r1.product(reif.get(u.atom(i)));
 				r = r.union(r1);
 			}
@@ -269,4 +276,13 @@ public class Instance implements Cloneable {
 		return NaryFormula.and(res);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "relations: "+tuples.toString() + "\nints: " + ints;
+	}
+	
 }
+

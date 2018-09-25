@@ -65,8 +65,8 @@ public class TemporalBoundsExpander {
 	 * @param timeAtoms 
 	 * @return the expanded bounds.
 	 */
-	public static PardinusBounds expand(PardinusBounds bounds, int states, int unrolls, boolean force_loop, List<Object> timeAtoms) {
-		Universe u = expandUniverse(bounds, states, unrolls, timeAtoms);
+	public static PardinusBounds expand(PardinusBounds bounds, int states, int unrolls, boolean force_loop) {
+		Universe u = expandUniverse(bounds, states, unrolls);
 		return expand(bounds, u, states, unrolls, force_loop);
 	}
 
@@ -246,7 +246,7 @@ public class TemporalBoundsExpander {
 	 * @return a new universe with the atoms of the original one plus the state
 	 *         ones.
 	 */
-	static private Universe expandUniverse(PardinusBounds oldBounds, int steps, int unrolls, List<Object> timeAtoms) {
+	static private Universe expandUniverse(PardinusBounds oldBounds, int steps, int unrolls) {
 		List<Object> newAtoms = new ArrayList<Object>();
 		Iterator<Object> it = oldBounds.universe().iterator();
 		while (it.hasNext())
@@ -257,19 +257,16 @@ public class TemporalBoundsExpander {
 				for (int i = 0; i < steps; i++) {
 					Object x = TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + j;
 					newAtoms.add(x);
-					timeAtoms.add(x);
 				}
 		}
 		else {
 			for (int i = 0; i <= steps; i++) {
 				Object x = TemporalTranslator.STATEATOM + i;
 				newAtoms.add(x);
-				timeAtoms.add(x);
 			}
 			for (int j = 0; j < unrolls; j++) {
 				Object x = TemporalTranslator.LEVEL + "" + j;
 				newAtoms.add(x);
-				timeAtoms.add(x);
 			}
 		}
 		

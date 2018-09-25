@@ -23,7 +23,6 @@ import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TemporalInstance;
 import kodkod.instance.Universe;
 
 public class PastTests {
@@ -80,7 +79,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -112,7 +111,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -178,7 +177,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -241,7 +240,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -323,7 +322,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -405,7 +404,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -433,7 +432,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -461,7 +460,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -489,7 +488,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -544,7 +543,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -599,7 +598,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -654,7 +653,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -682,7 +681,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(1, trans.past_depth);
 		return;
@@ -710,7 +709,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(2, trans.past_depth);
 		return;
@@ -766,7 +765,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -800,7 +799,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(5, trans.past_depth);
 	}
@@ -865,7 +864,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -899,7 +898,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -934,7 +933,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(3, trans.past_depth);
 		return;
@@ -966,7 +965,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(1, trans.past_depth);
 		return;
@@ -999,7 +998,7 @@ public class PastTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		new TemporalInstance(sol.instance());
+//		new TemporalInstance(sol.instance());
 		assertTrue(sol.sat());
 		assertEquals(1, trans.past_depth);
 		return;

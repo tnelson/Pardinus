@@ -137,7 +137,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				transTime += endTransl - startTransl;
 
 				if (translation.trivial() && traceLength == options.maxTraceLength())
-					return trivial(translation, endTransl - startTransl);
+					return trivial(translation, endTransl - startTransl, tmptrans);
 				
 				final SATSolver cnf = translation.cnf();
 
@@ -150,7 +150,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				traceLength++;
 			}
 			final Statistics stats = new Statistics(translation, transTime, solveTime);
-			return isSat ? sat(translation, stats) : unsat(translation, stats);
+			return isSat ? sat(translation, stats, tmptrans) : unsat(translation, stats);
 		} catch (SATAbortedException sae) {
 			throw new AbortedException(sae);
 		}
@@ -195,8 +195,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	}
 
 	// [HASLab]
-	private static Solution sat(Translation.Whole translation, Statistics stats) {
-		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(),null));
+	private static Solution sat(Translation.Whole translation, Statistics stats, TemporalTranslator originalBounds) {
+		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(),originalBounds));
 		translation.cnf().free();
 		return sol;
 	}
@@ -215,11 +215,11 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	}
 
 	// [HASLab]
-	private static Solution trivial(Translation.Whole translation, long translTime) {
+	private static Solution trivial(Translation.Whole translation, long translTime, TemporalTranslator originalBounds) {
 		final Statistics stats = new Statistics(0, 0, 0, translTime, 0);
 		final Solution sol;
 		if (translation.cnf().solve()) {
-			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret(),null));
+			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret(),originalBounds));
 		} else {
 			sol = Solution.triviallyUnsatisfiable(stats, trivialProof(translation.log()));
 		}
@@ -389,7 +389,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private Solution nextTrivialSolution() {
 			final Translation.Whole transl = this.translation;
 
-			final Solution sol = trivial(transl, translTime); // this also frees up solver resources, if unsat
+			final Solution sol = trivial(transl, translTime, tmptrans); // this also frees up solver resources, if unsat
 
 			if (sol.instance() == null) {
 				translation = null; // unsat, no more solutions

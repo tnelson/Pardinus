@@ -88,35 +88,35 @@ public class ReificationTests {
 		Instance inst = solution.next().instance();
 
 		System.out.println(inst.toString());
-		System.out.println(inst.reify(x));
+		System.out.println(inst.formulate(x));
 		System.out.println(x);
 		
 		for (Object o : x.keySet()) {
 			bounds.boundExactly(x.get(o), bounds.universe().factory().setOf(o));
 		}
 		
-		formula = formula.and(inst.reify(x).not());
+		formula = formula.and(inst.formulate(x).not());
 
 		solution = solver.solveAll(formula, bounds);
 		
 		inst = solution.next().instance();
 		
 		System.out.println(inst.toString());
-		System.out.println(inst.reify(x));
+		System.out.println(inst.formulate(x));
 		System.out.println(x);
 	
 		for (Object o : x.keySet()) {
 			bounds.boundExactly(x.get(o), bounds.universe().factory().setOf(o));
 		}
 		
-		formula = formula.and(inst.reify(x).not());
+		formula = formula.and(inst.formulate(x).not());
 
-		solution = solver.solveAll(formula.and(inst.reify(x).not()), bounds);
+		solution = solver.solveAll(formula.and(inst.formulate(x).not()), bounds);
 
 		inst = solution.next().instance();
 
 		System.out.println(inst.toString());
-		System.out.println(inst.reify(x));
+		System.out.println(inst.formulate(x));
 		System.out.println(x);
 
 		solver.free();
@@ -157,10 +157,11 @@ public class ReificationTests {
 		
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		
-		solution.next().instance();
-		solution.next().instance();
-		solution.next().instance();
-
+		System.out.println(solution.next().instance());
+		System.out.println(solution.next().instance());
+		System.out.println(solution.next().instance());
+		System.out.println(solution.next().instance());
+		
 		solver.free();
 
 	}
