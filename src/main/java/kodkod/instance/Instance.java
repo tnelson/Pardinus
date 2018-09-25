@@ -236,6 +236,10 @@ public class Instance implements Cloneable {
 		
 		List<Formula> res = new ArrayList<Formula>();
 		for (Relation rel: tuples.keySet()) {
+			// do not translate relations reified from atoms
+			if (reif.values().contains(rel))
+				continue;
+			
 			TupleSet tset = tuples.get(rel);
 			
 			Iterator<Tuple> it = tset.iterator();
