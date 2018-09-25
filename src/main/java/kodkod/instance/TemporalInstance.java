@@ -106,12 +106,35 @@ public class TemporalInstance extends Instance {
 				Relation r = Relation.unary(universe().atom(i).toString());
 				reif.put(universe().atom(i), r);
 			}
-		
-		Formula res = Formula.TRUE;
 
-		for (int i = states.size()-1; i >= 0; i--)
+		Formula res;
+		if (states.isEmpty())
+			res = Formula.TRUE;
+		else 
+			res = states.get(states.size()-1).reify(reif);
+		
+		for (int i = states.size()-2; i >= 0; i--)
 			res = states.get(i).reify(reif).and(res.next());
 
+		Formula rei = states.get(loop).reify(reif);
+		Formula rei2 = rei;
+		for (int j = loop; j < states.size(); j++)
+			rei2 = rei2.next();
+
+		Formula looping = rei.implies(rei2);
+		for (int i = loop+1; i < states.size(); i++) {
+			rei = states.get(i).reify(reif);
+			rei2 = rei;
+			for (int j = loop; j < states.size(); j++)
+				rei2 = rei2.next();
+			looping = looping.and(rei.implies(rei2));
+		}
+		looping = looping.always();
+		for (int i = 0; i < loop; i++)
+			looping = looping.next();
+
+		res = res.and(looping);
+		
 		return res;
 	}
 
@@ -125,10 +148,11 @@ public class TemporalInstance extends Instance {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < states.size(); i++) {
+			sb.append("* state "+i+"\n");
 			sb.append(states.get(i).toString());
 			sb.append("\n");
 		}
-		sb.append("loop: ");
+		sb.append("* loop: ");
 		sb.append(loop);
 		return sb.toString();
 	}

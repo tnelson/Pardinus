@@ -237,11 +237,22 @@ public class Instance implements Cloneable {
 		List<Formula> res = new ArrayList<Formula>();
 		for (Relation rel: tuples.keySet()) {
 			TupleSet tset = tuples.get(rel);
-			Expression r = ConstantExpression.NONE;
-			for (int i = 1; i < tset.arity(); i++)
-				r = r.product(ConstantExpression.NONE);
 			
 			Iterator<Tuple> it = tset.iterator();
+
+			Expression r;
+			if (it.hasNext()) {
+				Tuple u = it.next();
+				Expression r1 = reif.get(u.atom(0));
+				for (int i = 1; i < u.arity(); i ++)
+					r1 = r1.product(reif.get(u.atom(i)));
+				r = r1;
+			} else {
+				r = ConstantExpression.NONE;
+				for (int i = 1; i < tset.arity(); i++)
+					r = r.product(ConstantExpression.NONE);
+			}
+			
 			while (it.hasNext()) {
 				Tuple u = it.next();
 				Expression r1 = reif.get(u.atom(0));
