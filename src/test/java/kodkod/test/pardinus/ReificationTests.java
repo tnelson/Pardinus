@@ -25,6 +25,8 @@ package kodkod.test.pardinus;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
@@ -83,17 +85,13 @@ public class ReificationTests {
 		
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		
-		Map<Object, Relation> x = new HashMap<Object,Relation>();
+		Map<Object, Expression> x = new HashMap<Object,Expression>();
 		
 		Instance inst = solution.next().instance();
 
 		System.out.println(inst.toString());
 		System.out.println(inst.formulate(x));
 		System.out.println(x);
-		
-		for (Object o : x.keySet()) {
-			bounds.boundExactly(x.get(o), bounds.universe().factory().setOf(o));
-		}
 		
 		formula = formula.and(inst.formulate(x).not());
 
@@ -105,10 +103,6 @@ public class ReificationTests {
 		System.out.println(inst.formulate(x));
 		System.out.println(x);
 	
-		for (Object o : x.keySet()) {
-			bounds.boundExactly(x.get(o), bounds.universe().factory().setOf(o));
-		}
-		
 		formula = formula.and(inst.formulate(x).not());
 
 		solution = solver.solveAll(formula.and(inst.formulate(x).not()), bounds);
