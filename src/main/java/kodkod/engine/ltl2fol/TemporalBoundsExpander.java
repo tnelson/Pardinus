@@ -26,10 +26,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
 import kodkod.ast.Relation;
 import kodkod.ast.VarRelation;
+import kodkod.engine.Evaluator;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -105,7 +109,7 @@ class TemporalBoundsExpander {
 	 */
 	static PardinusBounds expand(PardinusBounds bounds, int traceLen) {
 		Universe u = createUniverse(bounds, traceLen);
-		return expand(bounds, traceLen, u);
+		return expand(bounds, traceLen, u, null);
 	}
 
 	/**
@@ -125,7 +129,7 @@ class TemporalBoundsExpander {
 	 *            the new universe
 	 * @return the expanded bounds with the new universe
 	 */
-	private static PardinusBounds expand(PardinusBounds bounds, int traceLen, Universe u) {
+	private static PardinusBounds expand(PardinusBounds bounds, int traceLen, Universe u, TemporalInstance inst) {
 		if (bounds.boundTrace().size() > 1) 
 			throw new UnsupportedOperationException("Expansion of trace bounds not yet supported.");
 
@@ -138,25 +142,58 @@ class TemporalBoundsExpander {
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + "0" }),
 				u.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + (traceLen - 1) }));
 		bounds.first();
+		StringBuilder sb = new StringBuilder();
 		for (Relation r : bounds.relations()) {
 			TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
 			TupleSet tupleSetU = convert(bounds.upperBound(r), u);
 			if (r instanceof VarRelation) {
-				newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime), tupleSetU.product(tupleSetTime));
-				if (bounds.target(r) != null) {
-					TupleSet tupleSetT = convert(bounds.target(r), u);
-					newBounds.setTarget(((VarRelation) r).expanded, tupleSetT.product(tupleSetTime));
+				if (inst != null) {
+					int i;
+					TupleSet upp = u.factory().noneOf(r.arity()+1);
+					TupleSet low = u.factory().noneOf(r.arity()+1);
+					for (i = 0; i < traceLen && i <= inst.end; i++) {
+						Evaluator eval = new Evaluator(inst);
+						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i);
+						TupleSet ts = eval.evaluate(r,i);
+						low.addAll(convert(ts,u).product(time));
+						upp.addAll(convert(ts,u).product(time));
+					}
+					for (; i < traceLen; i++) {
+						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i);
+
+						low.addAll(tupleSetL.product(time));
+						upp.addAll(tupleSetU.product(time));
+					}
+					newBounds.bound(((VarRelation) r).expanded, low, upp);
+					if (bounds.target(r) != null) {
+						TupleSet tupleSetT = convert(bounds.target(r), u);
+						newBounds.setTarget(((VarRelation) r).expanded, tupleSetT.product(tupleSetTime));
+					}
+					if (bounds.weight(r) != null) 
+						newBounds.setWeight(((VarRelation) r).expanded, bounds.weight(r));
+				} else {
+					newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime), tupleSetU.product(tupleSetTime));
+					if (bounds.target(r) != null) {
+						TupleSet tupleSetT = convert(bounds.target(r), u);
+						newBounds.setTarget(((VarRelation) r).expanded, tupleSetT.product(tupleSetTime));
+					}
+					if (bounds.weight(r) != null) 
+						newBounds.setWeight(((VarRelation) r).expanded, bounds.weight(r));
 				}
-				if (bounds.weight(r) != null) 
-					newBounds.setWeight(((VarRelation) r).expanded, bounds.weight(r));
 			} else {
-				newBounds.bound(r, tupleSetL, tupleSetU);			
-				if (bounds.target(r) != null) {
-					TupleSet tupleSetT = convert(bounds.target(r), u);
-					newBounds.setTarget(r, tupleSetT);
+				if (inst != null) {
+					Evaluator eval = new Evaluator(inst);
+					TupleSet ts = eval.evaluate(r);
+					newBounds.boundExactly(r, convert(ts,u));			
+				} else {
+					newBounds.bound(r, tupleSetL, tupleSetU);			
+					if (bounds.target(r) != null) {
+						TupleSet tupleSetT = convert(bounds.target(r), u);
+						newBounds.setTarget(r, tupleSetT);
+					}
+					if (bounds.weight(r) != null) 
+						newBounds.setWeight(r, bounds.weight(r));
 				}
-				if (bounds.weight(r) != null) 
-					newBounds.setWeight(r, bounds.weight(r));
 			}
 		}
 
@@ -173,10 +210,43 @@ class TemporalBoundsExpander {
 		newBounds.integration = bounds.integration;
 		
 		if (bounds.amalgamated() != null) {
-			PardinusBounds newAmalg = expand(bounds.amalgamated(), traceLen, u);
+			PardinusBounds newAmalg = expand(bounds.amalgamated(), traceLen, u, inst);
 			newBounds = new PardinusBounds(newBounds,newAmalg);
 		}
 		
+		return newBounds;
+	}
+	
+	static Bounds extend(PardinusBounds bounds, Bounds newBounds, int traceLen, TemporalInstance inst) {
+		Universe u = newBounds.universe();
+		for (Relation r : bounds.relations()) {
+			TupleSet tupleSetL = convert(bounds.lowerBound(r), u);
+			TupleSet tupleSetU = convert(bounds.upperBound(r), u);
+			if (r instanceof VarRelation) {
+				int i;
+				TupleSet upp = u.factory().noneOf(r.arity()+1);
+				TupleSet low = u.factory().noneOf(r.arity()+1);
+				for (i = 0; i < traceLen && i <= inst.end; i++) {
+					Evaluator eval = new Evaluator(inst);
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i);
+					TupleSet ts = eval.evaluate(r,i);
+					low.addAll(convert(ts,u).product(time));
+					upp.addAll(convert(ts,u).product(time));
+				}
+				for (; i < traceLen; i++) {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i);
+
+					low.addAll(tupleSetL.product(time));
+					upp.addAll(tupleSetU.product(time));
+				}
+				newBounds.bound(((VarRelation) r).expanded, low, upp);
+			} else {
+				Evaluator eval = new Evaluator(inst);
+				TupleSet ts = eval.evaluate(r);
+				newBounds.boundExactly(r, convert(ts,u));			
+			}
+		}
+
 		return newBounds;
 	}
 

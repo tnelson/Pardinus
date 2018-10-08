@@ -218,7 +218,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 * Electrod problems return a single solution, thus this iterator has
 	 * exactly one satisfiable element and one unsatisfiable.
 	 */
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		Solution s = solve(formula,bounds);
 
 		Solution[] ss;
@@ -228,7 +228,23 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		else
 			ss = new Solution[]{s};
 		
-		return Arrays.asList(ss).iterator();
+		Iterator<Solution> l = Arrays.asList(ss).iterator();
+		return new Explorator<Solution>() {
+			@Override
+			public Solution next() {
+				return l.next();
+			}
+			
+			@Override
+			public boolean hasNext() {
+				return l.hasNext();
+			}
+			
+			@Override
+			public void extend() {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 }

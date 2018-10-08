@@ -23,8 +23,6 @@
 package kodkod.engine;
 
 import java.io.File;
-import java.util.Iterator;
-
 import kodkod.ast.Formula;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -174,7 +172,7 @@ public class PardinusSolver implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
+	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
 		assert (!TemporalTranslator.isTemporal(formula) && bounds.boundTrace().get(0).isEmpty()) || options.temporal();
@@ -184,7 +182,7 @@ public class PardinusSolver implements
 //		if (!(this.solver instanceof IterableSolver))
 //			throw new UnsupportedOperationException();
 
-		return ((IterableSolver<PardinusBounds,ExtendedOptions>) solver).solveAll(formula, bounds);				
+		return ((TemporalSolver<ExtendedOptions>) solver).solveAll(formula, bounds);				
 	}
 
 }

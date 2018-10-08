@@ -34,6 +34,7 @@ import kodkod.ast.VarRelation;
 import kodkod.ast.visitor.AbstractDetector;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TemporalInstance;
 
 /**
  * Translates temporal problems, i.e., formulas with
@@ -85,6 +86,10 @@ public class TemporalTranslator {
 	 */
 	public static Bounds translate(PardinusBounds bounds, int traceLength) {
 		return TemporalBoundsExpander.expand(bounds, traceLength);
+	}
+
+	public static Bounds translate(PardinusBounds bounds, Bounds newBounds, int traceLength, TemporalInstance inst) {
+		return TemporalBoundsExpander.extend(bounds, newBounds, traceLength, inst);
 	}
 
 	/**

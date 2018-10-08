@@ -49,5 +49,7 @@ public interface TemporalSolver<O extends TemporalOptions> extends
 	 */
 	@Override
 	public Solution solve(Formula formula, PardinusBounds bounds);
-
+	
+	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds);
+	
 }
