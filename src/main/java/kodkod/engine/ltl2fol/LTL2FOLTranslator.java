@@ -124,7 +124,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		else
 			loopDecl_unr = INFINITE;
 	
-		if (TemporalTranslator.alt) {
+		if (TemporalTranslator.ExplicitUnrolls) {
 
 			Variable v = Variable.unary("v");
 			Formula order_unr_trace1 = v.join(PREFIX).one().forAll(v.oneOf(STATE.difference(LAST)));
@@ -172,7 +172,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		}
 
 		Formula hack = Formula.TRUE;
-		if (!TemporalTranslator.alt) {
+		if (!TemporalTranslator.ExplicitUnrolls) {
 			for (Relation r : vars_found)
 				if (!certain_loop) 
 					// some loop => r.(loop.prev) = r.last
@@ -222,7 +222,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	public Expression visit(Relation relation) {
 		maxPrimeDepth = curPrimeDepth > maxPrimeDepth ? curPrimeDepth : maxPrimeDepth;
 		if (TemporalTranslator.isTemporal(relation)) {
-			if (has_past && TemporalTranslator.alt)
+			if (has_past && TemporalTranslator.ExplicitUnrolls)
 				return ((VarRelation) relation).expanded.join(getVariable().join(UNROLL_MAP));
 			else {
 				if (has_past) vars_found.add(((VarRelation) relation).expanded);
@@ -337,7 +337,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	private Formula getQuantifier(TemporalOperator op, Formula e, int posts) {
 		Variable s1;
 		Expression s0 = getVariablePrevQuant();
-		if (TemporalTranslator.alt) {
+		if (TemporalTranslator.ExplicitUnrolls) {
 			switch (op) {
 			case ALWAYS:
 				s1 = (Variable) getVariable();
@@ -454,7 +454,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable r = getVariableUntil(true);
 		Variable l = getVariableUntil(false);
 		Expression prev_l = getVariablePrevQuantUntil(false);
-		if (TemporalTranslator.alt) {
+		if (TemporalTranslator.ExplicitUnrolls) {
 			Formula nfleft = left;
 			if (postDepthLeft > 0 && !has_always)
 				nfleft = nfleft.and(forceNextExists(l, postDepthLeft));
@@ -497,7 +497,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable l = getVariableUntil(false);
 		Expression prev_l = getVariablePrevQuantUntil(false);
 		
-		if (TemporalTranslator.alt) {
+		if (TemporalTranslator.ExplicitUnrolls) {
 
 			Formula nfleft = left;
 			if (postDepthLeft > 0 && !has_always)
@@ -678,14 +678,14 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		switch (getOperator()) {
 		case NEXT:
 		case PRIME:
-			if (TemporalTranslator.alt)
+			if (TemporalTranslator.ExplicitUnrolls)
 				variables.add(getVariable().join(TRACE));
 			else 
 				// s0.trace
 				variables.add(getVariable().join(TRACE));
 			break;
 		case PREVIOUS:
-			if (TemporalTranslator.alt)
+			if (TemporalTranslator.ExplicitUnrolls)
 				variables.add(getVariable().join(PREFIX.transpose()));
 			else 
 				// (s0 = loop && l0 != first) => last else s0.prev

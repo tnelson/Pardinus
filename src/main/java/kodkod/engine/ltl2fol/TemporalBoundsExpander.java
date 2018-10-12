@@ -38,11 +38,14 @@ import kodkod.instance.Universe;
  * An extension to the regular Kodkod {@link Bounds bounds} that stores
  * information regarding its origin from bounds over {@link VarRelation variable
  * relations}. Translates {@link VarRelation variable relation} bounds into its
- * standard representation, by appending the {@link TemporalTranslator#STATE
- * time sig} to the bound. The bounds of static relations should remain
- * unchanged. The temporal options will define the maximum size of the trace. It
- * will also store the mapping of the variable relations into their expanded
- * versions
+ * standard representation, by creating a new extended universe, appending the
+ * {@link TemporalTranslator#STATE state} atoms to the bounds. The bounds of
+ * static relations should remain unchanged.
+ * 
+ * Two alternative encodings depending on the {@link TemporalTranslator#ExplicitUnrolls
+ * strategy} to support past-time operators.
+ * 
+ * As of Pardinus 1.2, traces are assumed to always loop.
  *
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
@@ -50,42 +53,55 @@ public class TemporalBoundsExpander {
 
 	/**
 	 * Expands the old bounds by converting the bounds over variable relations into
-	 * regular bounds with {@link TemporalTranslator#STATE temporal} atoms appended.
-	 * It also creates and binds the relations representing the trace. If the loop
-	 * is known to necessarily loop, simplifications will be applied.
+	 * regular bounds with {@link TemporalTranslator#STATE state} atoms appended. It
+	 * also creates and binds the relations representing the trace.
 	 * 
+	 * Currently assumes that traces are always infinite.
+	 * 
+	 * @assumes unrolls > 0
+	 * @assumes states > 0
+	 * @assumes bounds.resolved()
 	 * @param bounds
 	 *            the bounds with variable relations to be expanded.
-	 * @param states
+	 * @param steps
 	 *            the number of distinguished states in the trace.
 	 * @param unrolls
 	 *            the number of trace unrolls.
 	 * @param force_loop
 	 *            whether the trace will necessarily loop.
-	 * @param timeAtoms 
 	 * @return the expanded bounds.
+	 * @throws IllegalArgumentException
+	 *             unrolls < 1 || states < 1 || !bounds.resolved().
+	 * @throws UnsupportedOperationException
+	 *             if loops are not forced.
 	 */
-	public static PardinusBounds expand(PardinusBounds bounds, int states, int unrolls, boolean force_loop) {
-		Universe u = expandUniverse(bounds, states, unrolls);
-		return expand(bounds, u, states, unrolls, force_loop);
+	public static PardinusBounds expand(PardinusBounds bounds, int steps, int unrolls, boolean force_loop) {
+		if (!force_loop)
+			throw new UnsupportedOperationException("Traces are assumed to always loop.");
+		if (unrolls < 1 || steps < 1)
+			throw new IllegalArgumentException("Number of unrolls or steps <1.");
+		if (!bounds.resolved())
+			throw new IllegalArgumentException("Symbolic bounds must be resolved at this stage.");
+		Universe u = expandUniverse(bounds.universe(), steps, unrolls);
+		return expand(bounds, u, steps, unrolls, force_loop);
 	}
 
 	/**
 	 * Actually expands temporal bounds into their static representation as regular
-	 * bounds with {@link TemporalTranslator#STATE temporal} atoms appended,
-	 * unrolled a certain number of times.
+	 * bounds with {@link TemporalTranslator#STATE state} atoms appended, unrolled a
+	 * certain number of times.
 	 * 
-	 * Bounds are assumed to already be resolved at this point. Trace bounds with
-	 * more than a state are not yet implemented. If the loop is known to
-	 * necessarily loop, simplifications will be applied.
+	 * Bounds are assumed to already be resolved at this point. If the loop is known
+	 * to necessarily loop, simplifications will be applied.
 	 * 
-	 * TODO support trace bounds with multiple steps.
+	 * Two alternative encodings depending on the {@link TemporalTranslator#ExplicitUnrolls
+	 * strategy} to support past-time operators.
 	 * 
 	 * @param bounds
 	 *            the bounds with variable relations to be expanded.
 	 * @param uni
-	 *            the new universe
-	 * @param states
+	 *            the new universe with state atoms.
+	 * @param steps
 	 *            the number of distinguished states in the trace.
 	 * @param unrolls
 	 *            the number of trace unrolls.
@@ -93,67 +109,71 @@ public class TemporalBoundsExpander {
 	 *            whether the trace will necessarily loop.
 	 * @return the expanded bounds with the new universe.
 	 */
-	private static PardinusBounds expand(PardinusBounds bounds, Universe uni, int states, int unrolls, boolean force_loop) {
-		if (!bounds.resolved())
-			throw new IllegalArgumentException("Symbolic bounds must be resolved at this stage.");
+	private static PardinusBounds expand(PardinusBounds bounds, Universe uni, int steps, int unrolls,
+			boolean force_loop) {
+		assert(unrolls > 0);
+		assert(steps > 0);
+		assert(bounds.resolved());
 
-		
 		PardinusBounds newBounds = new PardinusBounds(uni);
 
 		TupleSet tupleSetTime_unr_first;
-		
-		if (TemporalTranslator.alt) {
-	
+
+		if (TemporalTranslator.ExplicitUnrolls) {
+
 			String sp = TemporalTranslator.STATE_SEP;
 			newBounds.boundExactly(TemporalTranslator.FIRST,
-					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + "0"+sp+"0")));
+					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + "0" + sp + "0")));
 			TupleSet last_unr = uni.factory()
-					.setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ (unrolls - 1)));
+					.setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + (unrolls - 1)));
 			if (!force_loop) // otherwise last necessarily last unroll
-				last_unr.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ 0));
+				last_unr.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + 0));
 			newBounds.bound(TemporalTranslator.LAST, last_unr);
 
-			newBounds.boundExactly(TemporalTranslator.LAST_, uni.factory()
-					.setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ 0)));
+			newBounds.boundExactly(TemporalTranslator.LAST_,
+					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + 0)));
 
-			TupleSet tupleSetTime_unr = uni.factory().range(uni.factory().tuple(TemporalTranslator.STATEATOM + "0"+sp+"0"),
-					uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ (unrolls - 1)));
-			tupleSetTime_unr_first = uni.factory().range(uni.factory().tuple(TemporalTranslator.STATEATOM + "0"+sp+"0"),
-					uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ "0"));
+			TupleSet tupleSetTime_unr = uni.factory().range(
+					uni.factory().tuple(TemporalTranslator.STATEATOM + "0" + sp + "0"),
+					uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + (unrolls - 1)));
+			tupleSetTime_unr_first = uni.factory().range(
+					uni.factory().tuple(TemporalTranslator.STATEATOM + "0" + sp + "0"),
+					uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + "0"));
 			if (force_loop) // then the last state must exist in every unroll
 				for (int j = 0; j < unrolls; j++)
-					tupleSetTime_unr_first.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ j));
+					tupleSetTime_unr_first
+							.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + j));
 			newBounds.bound(TemporalTranslator.STATE, tupleSetTime_unr_first, tupleSetTime_unr);
-	
+
 			TupleSet tupleSetTime_unr_last = uni.factory().range(
-					uni.factory().tuple(TemporalTranslator.STATEATOM + "0" +sp+ (unrolls - 1)),
-					uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ (unrolls - 1)));
+					uni.factory().tuple(TemporalTranslator.STATEATOM + "0" + sp + (unrolls - 1)),
+					uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + (unrolls - 1)));
 			newBounds.bound(TemporalTranslator.LOOP, tupleSetTime_unr_last);
-	
+
 			TupleSet trace_unr = uni.factory().noneOf(2);
 			TupleSet trace_unr_l = uni.factory().noneOf(2);
-			for (int i = 0; i < states - 1; i++) // add the prefix to lower
-				trace_unr_l.add(uni.factory().tuple(TemporalTranslator.STATEATOM + i +sp+ 0,
-						TemporalTranslator.STATEATOM + (i + 1) +sp+ 0));
+			for (int i = 0; i < steps - 1; i++) // add the prefix to lower
+				trace_unr_l.add(uni.factory().tuple(TemporalTranslator.STATEATOM + i + sp + 0,
+						TemporalTranslator.STATEATOM + (i + 1) + sp + 0));
 			for (int j = 0; j < unrolls; j++) {
-				for (int i = 0; i < states - 1; i++) // add the successor in non-loop
-					trace_unr.add(uni.factory().tuple(TemporalTranslator.STATEATOM + i +sp+ j,
-							TemporalTranslator.STATEATOM + (i + 1) +sp+ j));
+				for (int i = 0; i < steps - 1; i++) // add the successor in non-loop
+					trace_unr.add(uni.factory().tuple(TemporalTranslator.STATEATOM + i + sp + j,
+							TemporalTranslator.STATEATOM + (i + 1) + sp + j));
 				if (j < unrolls - 1)
-					for (int k = 0; k < states; k++) // add the possible successors in loop
-						trace_unr.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (states - 1) +sp+ j,
-								TemporalTranslator.STATEATOM + k +sp+ (j + 1)));
+					for (int k = 0; k < steps; k++) // add the possible successors in loop
+						trace_unr.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + j,
+								TemporalTranslator.STATEATOM + k + sp + (j + 1)));
 			}
 			newBounds.bound(TemporalTranslator.PREFIX, trace_unr_l, trace_unr);
-	
+
 			if (unrolls > 1) { // otherwise no need for unrolls
 				TupleSet unrollMap = uni.factory().noneOf(2);
-				for (int i = 0; i < states; i++) {
-					unrollMap.add(uni.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + i +sp+ 0,
-							TemporalTranslator.STATEATOM + i +sp+ 0 }));
+				for (int i = 0; i < steps; i++) {
+					unrollMap.add(uni.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + i + sp + 0,
+							TemporalTranslator.STATEATOM + i + sp + 0 }));
 					for (int j = 1; j < unrolls; j++)
-						unrollMap.add(uni.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + i +sp+ j,
-								TemporalTranslator.STATEATOM + i +sp+ 0 }));
+						unrollMap.add(uni.factory().tuple(new Object[] { TemporalTranslator.STATEATOM + i + sp + j,
+								TemporalTranslator.STATEATOM + i + sp + 0 }));
 				}
 				newBounds.bound(TemporalTranslator.UNROLL_MAP, unrollMap, unrollMap);
 			}
@@ -161,48 +181,48 @@ public class TemporalBoundsExpander {
 		} else {
 			newBounds.boundExactly(TemporalTranslator.FIRST,
 					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + "0")));
-			newBounds.boundExactly(TemporalTranslator.LAST, uni.factory().setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + "" + states)));
-	
+			newBounds.boundExactly(TemporalTranslator.LAST,
+					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.STATEATOM + "" + steps)));
+
 			tupleSetTime_unr_first = uni.factory().range(uni.factory().tuple(TemporalTranslator.STATEATOM + "0"),
-					uni.factory().tuple(TemporalTranslator.STATEATOM + states));
+					uni.factory().tuple(TemporalTranslator.STATEATOM + steps));
 			newBounds.boundExactly(TemporalTranslator.STATE, tupleSetTime_unr_first);
-	
+
 			TupleSet trace_unr_l = uni.factory().noneOf(2);
-			for (int i = 0; i < states; i++) // add the prefix to lower
-				trace_unr_l.add(uni.factory().tuple(TemporalTranslator.STATEATOM + i,
-						TemporalTranslator.STATEATOM + (i + 1)));
+			for (int i = 0; i < steps; i++) // add the prefix to lower
+				trace_unr_l.add(
+						uni.factory().tuple(TemporalTranslator.STATEATOM + i, TemporalTranslator.STATEATOM + (i + 1)));
 			newBounds.boundExactly(TemporalTranslator.PREFIX, trace_unr_l);
 
 			newBounds.boundExactly(TemporalTranslator.L_FIRST,
 					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.LEVEL + "0")));
-			newBounds.boundExactly(TemporalTranslator.L_LAST, 
-					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.LEVEL +""+(unrolls-1))));
-	
+			newBounds.boundExactly(TemporalTranslator.L_LAST,
+					uni.factory().setOf(uni.factory().tuple(TemporalTranslator.LEVEL + "" + (unrolls - 1))));
+
 			TupleSet tupleSetTime_lvl = uni.factory().range(uni.factory().tuple(TemporalTranslator.LEVEL + "0"),
-					uni.factory().tuple(TemporalTranslator.LEVEL + "" + (unrolls-1)));
+					uni.factory().tuple(TemporalTranslator.LEVEL + "" + (unrolls - 1)));
 			newBounds.boundExactly(TemporalTranslator.LEVEL, tupleSetTime_lvl);
-	
+
 			TupleSet trace_lvl = uni.factory().noneOf(2);
-			for (int i = 0; i < unrolls-1; i++) // add the prefix to lower
+			for (int i = 0; i < unrolls - 1; i++) // add the prefix to lower
 				trace_lvl.add(uni.factory().tuple(TemporalTranslator.LEVEL + "" + i,
 						TemporalTranslator.LEVEL + "" + (i + 1)));
 			newBounds.boundExactly(TemporalTranslator.L_PREFIX, trace_lvl);
-			
+
 			TupleSet tupleSetTime_unr_last = uni.factory().range(
 					uni.factory().tuple(TemporalTranslator.STATEATOM + "1"),
-					uni.factory().tuple(TemporalTranslator.STATEATOM + states));
+					uni.factory().tuple(TemporalTranslator.STATEATOM + steps));
 			newBounds.bound(TemporalTranslator.LOOP, tupleSetTime_unr_last);
-	
 		}
-		
+
 		for (Relation r : bounds.relations()) {
-			TupleSet tupleSetL = convert(bounds.lowerBound(r), uni);
-			TupleSet tupleSetU = convert(bounds.upperBound(r), uni);
+			TupleSet tupleSetL = convertToUniv(bounds.lowerBound(r), uni);
+			TupleSet tupleSetU = convertToUniv(bounds.upperBound(r), uni);
 			if (r instanceof VarRelation) {
 				newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime_unr_first),
 						tupleSetU.product(tupleSetTime_unr_first));
 				if (bounds.target(r) != null) {
-					TupleSet tupleSetT = convert(bounds.target(r), uni);
+					TupleSet tupleSetT = convertToUniv(bounds.target(r), uni);
 					newBounds.setTarget(((VarRelation) r).expanded, tupleSetT.product(tupleSetTime_unr_first));
 				}
 				if (bounds.weight(r) != null)
@@ -210,7 +230,7 @@ public class TemporalBoundsExpander {
 			} else {
 				newBounds.bound(r, tupleSetL, tupleSetU);
 				if (bounds.target(r) != null) {
-					TupleSet tupleSetT = convert(bounds.target(r), uni);
+					TupleSet tupleSetT = convertToUniv(bounds.target(r), uni);
 					newBounds.setTarget(r, tupleSetT);
 				}
 				if (bounds.weight(r) != null)
@@ -224,7 +244,7 @@ public class TemporalBoundsExpander {
 		newBounds.integration = bounds.integration;
 
 		if (bounds.amalgamated() != null) {
-			PardinusBounds newAmalg = expand(bounds.amalgamated(), uni, states, unrolls, force_loop);
+			PardinusBounds newAmalg = expand(bounds.amalgamated(), uni, steps, unrolls, force_loop);
 			newBounds = new PardinusBounds(newBounds, newAmalg);
 		}
 
@@ -232,34 +252,37 @@ public class TemporalBoundsExpander {
 	}
 
 	/**
-	 * Create a new universe by duplicating the original one and creating a given
-	 * number of {@link TemporalTranlator#STATE time} atoms, unrolled a certain
+	 * Creates a new universe by duplicating the original one and creating a given
+	 * number of {@link TemporalTranlator#STATE state} atoms, unrolled a certain
 	 * number of times.
-	 *
-	 * @param oldBounds
-	 *            the original bounds.
-	 * @param steps
-	 *            the number of steps in the trace.
-	 * @param timeAtoms 
-	 * @param unrools
-	 *            the number of trace unrolls.
-	 * @return a new universe with the atoms of the original one plus the state
-	 *         ones.
-	 */
-	static private Universe expandUniverse(PardinusBounds oldBounds, int steps, int unrolls) {
-		List<Object> newAtoms = new ArrayList<Object>();
-		Iterator<Object> it = oldBounds.universe().iterator();
-		while (it.hasNext())
-			newAtoms.add(it.next());
+	 * 
+	 * Guarantees that the first steps*unrolls atoms are the ordered state atoms.
 
-		if (TemporalTranslator.alt) {
+	 * @assumes unrolls > 0
+	 * @assumes states > 0
+	 * @param oldUniverse
+	 *            the original universe.
+	 * @param steps
+	 *            the number of distinguished states in the trace.
+	 * @param unrolls
+	 *            the number of trace unrolls.
+	 * @return a new universe with the state atoms plus the original ones.
+	 * @throws IllegalArgumentException
+	 *             unrolls < 1 || states < 1
+	 */
+	static public Universe expandUniverse(Universe oldUniverse, int steps, int unrolls) {
+		if (unrolls < 1 || steps < 1)
+			throw new IllegalArgumentException("Number of unrolls or steps <1.");
+
+		List<Object> newAtoms = new ArrayList<Object>();
+
+		if (TemporalTranslator.ExplicitUnrolls) {
 			for (int j = 0; j < unrolls; j++)
 				for (int i = 0; i < steps; i++) {
 					Object x = TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + j;
 					newAtoms.add(x);
 				}
-		}
-		else {
+		} else {
 			for (int i = 0; i <= steps; i++) {
 				Object x = TemporalTranslator.STATEATOM + i;
 				newAtoms.add(x);
@@ -269,19 +292,25 @@ public class TemporalBoundsExpander {
 				newAtoms.add(x);
 			}
 		}
-		
+
+		Iterator<Object> it = oldUniverse.iterator();
+		while (it.hasNext())
+			newAtoms.add(it.next());
+
 		return new Universe(newAtoms);
 	}
 
 	/**
-	 * Converts an existing tuple set into an identical tuple set with the current
+	 * Converts an existing tuple set into an identical tuple set with a different
 	 * universe.
 	 * 
 	 * @param tset
-	 *            the existing tuple set.
+	 *            the existing tuple set from the old universe.
+	 * @param universe
+	 *            the new universe.
 	 * @return the converted tuple set.
 	 */
-	static private TupleSet convert(TupleSet tset, Universe universe) {
+	static public TupleSet convertToUniv(TupleSet tset, Universe universe) {
 		TupleSet tupleSet = universe.factory().noneOf(tset.arity());
 		Iterator<Tuple> itr = tset.iterator();
 		while (itr.hasNext()) {

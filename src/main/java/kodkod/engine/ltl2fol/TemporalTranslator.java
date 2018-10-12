@@ -87,7 +87,7 @@ import kodkod.instance.Tuple;
  */
 public class TemporalTranslator {
 	
-	public static final boolean alt = true;
+	public static final boolean ExplicitUnrolls = true;
 
 	/** The name assigned to {@link #STATE state} atoms. */
 	public static final String STATEATOM = "Time";
@@ -208,6 +208,27 @@ public class TemporalTranslator {
 			public Boolean visit(Relation relation) {
 				return cache(relation, relation instanceof VarRelation);
 			}
+		};
+		return (boolean) node.accept(det);
+	}
+	
+	public static boolean hasTemporalOps(Node node) {
+		AbstractDetector det = new AbstractDetector(new HashSet<Node>()) {
+			@Override
+			public Boolean visit(UnaryTempFormula tempFormula) {
+				return cache(tempFormula, true);
+			}
+
+			@Override
+			public Boolean visit(BinaryTempFormula tempFormula) {
+				return cache(tempFormula, true);
+			}
+
+			@Override
+			public Boolean visit(TempExpression tempExpr) {
+				return cache(tempExpr, true);
+			}
+			
 		};
 		return (boolean) node.accept(det);
 	}

@@ -28,7 +28,6 @@ import static kodkod.ast.RelationPredicate.Name.TOTAL_ORDERING;
 import static kodkod.ast.operator.FormulaOperator.AND;
 import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
-import static kodkod.ast.operator.TemporalOperator.ALWAYS;
 
 import java.util.Collections;
 import java.util.EnumMap;

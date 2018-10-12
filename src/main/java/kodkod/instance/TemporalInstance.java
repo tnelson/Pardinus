@@ -23,6 +23,7 @@
 package kodkod.instance;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,16 +31,24 @@ import kodkod.ast.Decls;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.Evaluator;
+import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
+import kodkod.util.ints.IndexedEntry;
 
 /**
- * Represents a temporal instance of a temporal relational problem
- * containing {@link kodkod.ast.VarRelation variable relations} in the
- * {@link kodkod.instance.TemporalBounds temporal bounds}. It is essentially
- * a set of states and a looping state, which is always assumed to exist
- * (i.e., they always represent an infinite path).
+ * Represents a temporal instance of a temporal relational problem containing
+ * {@link kodkod.ast.VarRelation variable relations} in the
+ * {@link kodkod.instance.TemporalBounds temporal bounds}.
+ * 
+ * As of Pardinus 1.2, a looping state is always assumed to exist (i.e., they
+ * always represent an infinite path).
+ * 
+ * A temporal instance has two interpretations. One is essentially a set of
+ * states and a looping state, the other a static {@link Instance} under a state
+ * idiom, so that the Kodkod {@link Evaluator} can be used.
  * 
  * @author Nuno Macedo // [HASLab] temporal model finding
  */
@@ -52,10 +61,14 @@ public class TemporalInstance extends Instance {
 
 	/**
 	 * Creates a new temporal instance from a sequence of states and a looping
-	 * state.
+	 * state. Will make <code>this</code> a matching static instance so that the
+	 * {@link Evaluator} can be used, with an extended universe.
+	 * 
+	 * As of Pardinus 1.2, loops are assumed to always exist.
 	 * 
 	 * @assumes 0 >= loop >= instances.length
-	 * @assumes all s,s': instance | s.universe = s'.universe
+	 * @assumes all s,s': instance | s.universe = s'.universe && s.intTuples =
+	 *          s'.intTuples
 	 * @param instances
 	 *            the states of the temporal instance.
 	 * @param loop
@@ -67,22 +80,68 @@ public class TemporalInstance extends Instance {
 	 *             !(0 >= loop >= instances.length)
 	 */
 	public TemporalInstance(List<Instance> instances, int loop) {
-		super(instances.get(0).universe());
+		super(TemporalBoundsExpander.expandUniverse(instances.get(0).universe(), instances.size(), 1));
 		if (loop < 0 || loop >= instances.size())
 			throw new IllegalArgumentException("Looping state must be between 0 and instances.length.");
+		
+		Map<Relation, TupleSet> expRels = stateIdomify(this.universe(), instances, loop);
+		for (Relation r : expRels.keySet())
+			this.add(r, expRels.get(r));
+		for(IndexedEntry<TupleSet> entry : instances.get(0).intTuples())
+			this.add(entry.index(), entry.value());
+
 		this.states = instances;
 		this.loop = loop;
 	}
-	
+
 	/**
-	 * Creates a new temporal instance from a static SAT instance that is a solution
-	 * to the expansion of the temporal problem. The shape of the trace are
-	 * retrieved from the evaluation of the
+	 * Converts a sequence of instances into a state idiom representation by
+	 * appending the corresponding state atom to variable relations.
+	 * 
+	 * @param instances
+	 *            the sequence of instances representing a trace
+	 * @return the trace represented in a state idiom
+	 */
+	private static Map<Relation, TupleSet> stateIdomify(Universe u, List<Instance> instances, int loop) {
+		assert(loop >= 0 && loop < instances.size());
+		// first instances.size() atoms will be the state atoms
+		Map<Relation, TupleSet> instance = new HashMap<Relation, TupleSet>();
+		for (Relation r : instances.get(0).relations())
+			if (r instanceof VarRelation) {
+				if (instance.get(((VarRelation) r).expanded) == null)
+					instance.put(((VarRelation) r).expanded, u.factory().noneOf(r.arity()+1));
+				for (int i = 0; i < instances.size(); i++) {
+					TupleSet ts = TemporalBoundsExpander.convertToUniv(instances.get(i).tuples(r), u);
+					instance.get(((VarRelation) r).expanded).addAll(ts.product(u.factory().setOf(u.atom(i))));
+				}
+			} else {
+				TupleSet ts = u.factory().noneOf(r.arity());
+				for (Tuple t : instances.get(0).tuples(r)) {
+					List<Object> lt = new ArrayList<Object>();
+					for (int j = 0; j < t.arity(); j++)
+						lt.add(t.atom(j));
+					ts.add(u.factory().tuple(lt));
+				}
+				instance.put(r, ts);
+			}
+		instance.put(TemporalTranslator.LAST, u.factory().setOf(u.atom(instances.size() - 1)));
+		instance.put(TemporalTranslator.FIRST, u.factory().setOf(u.atom(0)));
+		instance.put(TemporalTranslator.LOOP, u.factory().setOf(u.atom(loop)));
+		instance.put(TemporalTranslator.STATE,
+				u.factory().range(u.factory().tuple(u.atom(0)), u.factory().tuple(u.atom(instances.size() - 1))));
+		TupleSet nxt = u.factory().noneOf(2);
+		for (int i = 0; i < instances.size() - 1; i++)
+			nxt.add(u.factory().tuple(u.atom(i), u.atom(i + 1)));
+		instance.put(TemporalTranslator.PREFIX, nxt);
+		return instance;
+	}
+
+	/**
+	 * Creates a new temporal instance from a static instance in the state idiom.
+	 * The shape of the trace are retrieved from the evaluation of the
 	 * {@link kodkod.engine.ltl2fol.TemporalTranslator#STATE time} relations. The
 	 * original variable relations (prior to expansion) are also considered since
 	 * they contain information regarding their temporal properties.
-	 * 
-	 * NOTE: this should problably be elsewhere and call {@link #TemporalInstance(List, int)}.
 	 * 
 	 * @assumes some instance.loop
 	 * @param instance
@@ -94,14 +153,14 @@ public class TemporalInstance extends Instance {
 	 *             no instance.loop
 	 */
 	public TemporalInstance(Instance instance, TemporalTranslator tmptrans) {
-		super(tmptrans.bounds.universe());
-		Evaluator eval = new Evaluator(instance);
+		super(instance.universe(), new HashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
+		Evaluator eval = new Evaluator(this);
 		// evaluate last relation
-		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST).iterator().next();
+		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST,0).iterator().next();
 		int end = TemporalTranslator.interpretState(tuple_last);
 		// evaluate loop relation
-		TupleSet tupleset_loop = eval.evaluate(TemporalTranslator.LOOP);
-		if (!tupleset_loop.iterator().hasNext()) 
+		TupleSet tupleset_loop = eval.evaluate(TemporalTranslator.LOOP,0);
+		if (!tupleset_loop.iterator().hasNext())
 			throw new IllegalArgumentException("Looping state must exist.");
 		Tuple tuple_loop = tupleset_loop.iterator().next();
 		loop = TemporalTranslator.interpretState(tuple_loop);
@@ -110,18 +169,19 @@ public class TemporalInstance extends Instance {
 		// for each state, create a new instance by evaluating relations at that state
 		for (int i = 0; i <= end; i++) {
 			Instance inst = new Instance(instance.universe());
-			
+
 			for (Relation r : tmptrans.bounds.relations()) {
-				TupleSet t = eval.evaluate(r,i);
+				TupleSet t = eval.evaluate(r, i);
 				inst.add(r, t);
 			}
-			
+
 			states.add(inst);
 		}
 	}
-	
-	boolean alt = false;
-	
+
+	// alternative encodings, atom reification vs some disj pattern
+	private static final boolean SomeDisjPattern = false;
+
 	/**
 	 * Converts a temporal instance into a formula that exactly identifies it,
 	 * encoding each state of the trace and the looping behavior. Requires that
@@ -140,15 +200,16 @@ public class TemporalInstance extends Instance {
 	public Formula formulate(Map<Object, Expression> reif) {
 
 		// reify atoms not yet reified
-		for (int i = 0; i < universe().size(); i++) {
-			if (!reif.keySet().contains(universe().atom(i))) {
+		Universe sta_uni = states.get(0).universe();
+		for (int i = 0; i < sta_uni.size(); i++) {
+			if (!reif.keySet().contains(sta_uni.atom(i))) {
 				Expression r;
-				if (alt) {
-					r = Variable.unary(universe().atom(i).toString());
+				if (SomeDisjPattern) {
+					r = Variable.unary(sta_uni.atom(i).toString());
 				} else {
-					r = Relation.unary(universe().atom(i).toString());
+					r = Relation.unary(sta_uni.atom(i).toString());
 				}
-				reif.put(universe().atom(i), r);
+				reif.put(sta_uni.atom(i), r);
 			}
 		}
 
@@ -157,21 +218,22 @@ public class TemporalInstance extends Instance {
 		Formula res;
 		if (states.isEmpty())
 			res = Formula.TRUE;
-		else 
-			res = states.get(states.size()-1).formulate(reif);
-		
-		for (int i = states.size()-2; i >= 0; i--)
+		else
+			res = states.get(states.size() - 1).formulate(reif);
+
+		for (int i = states.size() - 2; i >= 0; i--)
 			res = states.get(i).formulate(reif).and(res.next());
 
 		// create the looping constraint
-		// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 => after^(end-loop) Sloop+1 && ...)
+		// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
+		// after^(end-loop) Sloop+1 && ...)
 		Formula rei = states.get(loop).formulate(reif);
 		Formula rei2 = rei;
 		for (int j = loop; j < states.size(); j++)
 			rei2 = rei2.next();
 
 		Formula looping = rei.implies(rei2);
-		for (int i = loop+1; i < states.size(); i++) {
+		for (int i = loop + 1; i < states.size(); i++) {
 			rei = states.get(i).formulate(reif);
 			rei2 = rei;
 			for (int j = loop; j < states.size(); j++)
@@ -183,15 +245,15 @@ public class TemporalInstance extends Instance {
 			looping = looping.next();
 
 		res = res.and(looping);
-		
-		if (alt) {
-			Decls decls = null; Expression al = null;
+
+		if (SomeDisjPattern) {
+			Decls decls = null;
+			Expression al = null;
 			for (Expression e : reif.values()) {
 				if (decls == null) {
 					al = e;
 					decls = ((Variable) e).oneOf(Expression.UNIV);
-				}
-				else {
+				} else {
 					al = al.union(e);
 					decls = decls.and(((Variable) e).oneOf(Expression.UNIV));
 				}
@@ -199,10 +261,10 @@ public class TemporalInstance extends Instance {
 			res = (al.eq(Expression.UNIV)).and(res);
 			res = res.forSome(decls);
 		}
-		
+
 		return res;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -212,12 +274,12 @@ public class TemporalInstance extends Instance {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < states.size(); i++) {
-			sb.append("* state "+i);
+			sb.append("* state " + i);
 			if (loop == i)
 				sb.append(" LOOP");
-			if (states.size()-1 == i)
+			if (states.size() - 1 == i)
 				sb.append(" LAST");
-			sb.append("\n"+states.get(i).toString());
+			sb.append("\n" + states.get(i).toString());
 			sb.append("\n");
 		}
 		return sb.toString();
