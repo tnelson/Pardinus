@@ -106,9 +106,20 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 			if (options.targetoriented() && !options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");			
 
+			// [HASLab] retrieve the additional formula imposed by the symbolic
+			// bounds, depending on execution stage
+			Formula symbForm = Formula.TRUE;
+			if (bounds instanceof PardinusBounds) {
+				// [HASLab] if decomposed mode, the amalgamated bounds are always considered
+				if (options.decomposed() && ((PardinusBounds) bounds).amalgamated() != null)
+					symbForm = ((PardinusBounds) bounds).amalgamated().resolve(options.reporter());
+				// [HASLab] otherwise use regular bounds
+				else
+					symbForm = ((PardinusBounds) bounds).resolve(options.reporter());
+			}
 			this.opt = options;
 			this.translTime = System.currentTimeMillis();
-			this.translation = Translator.translate(formula, bounds, options);
+			this.translation = Translator.translate(formula.and(symbForm), bounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.trivial = 0;
 		}

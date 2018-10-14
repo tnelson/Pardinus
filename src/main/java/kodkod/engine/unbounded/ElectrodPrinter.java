@@ -153,7 +153,17 @@ public class ElectrodPrinter {
 		};
 		opt.setReporter(reporter);
 
-		Whole t = Translator.translate(formula, bounds, opt);
+		// [HASLab] retrieve the additional formula imposed by the symbolic
+		// bounds, depending on execution stage
+		Formula symbForm = Formula.TRUE;
+		// [HASLab] if decomposed mode, the amalgamated bounds are always considered
+		if (opt.decomposed() && bounds.amalgamated() != null)
+			symbForm = bounds.amalgamated().resolve(opt.reporter());
+		// [HASLab] otherwise use regular bounds
+		else
+			symbForm = bounds.resolve(opt.reporter());
+
+		Whole t = Translator.translate(formula.and(symbForm), bounds, opt);
 		bounds = (PardinusBounds) t.bounds();
 
 		try {
@@ -161,7 +171,7 @@ public class ElectrodPrinter {
 			sb.append(printUniverse(bounds.universe()));
 			sb.append(printBounds(bounds));
 			sb.append(printSymmetries(temp.toString()));
-			sb.append(printConstraint(formula));
+			sb.append(printConstraint(formula.and(symbForm)));
 			return sb.toString();
 		} catch (Exception e) {
 			throw new InvalidUnboundedProblem(e);

@@ -426,21 +426,8 @@ public final class Translator {
 	// [HASLab] break the formula for decomposed solving, but with symmetry breaking considerations
 	private Translation translate() {
 
-		// [HASLab] retrieve the additional formula imposed by the symbolic
-		// bounds, depending on execution stage
-		Formula symbFormO = Formula.TRUE;
-		if (!incremental && bounds instanceof PardinusBounds) {
-			PardinusBounds pbounds = (PardinusBounds) bounds;
-			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
-			if (options.decomposed() && pbounds.amalgamated() != null)
-				symbFormO = pbounds.amalgamated().resolve(options.reporter());
-			// [HASLab] otherwise use regular bounds
-			else
-				symbFormO = pbounds.resolve(options.reporter());
-		}
-		
 		// [HASLab] add the extra symbolic formula
-		final AnnotatedNode<Formula> originalAnnotated = logging ? annotateRoots(originalFormula.and(symbFormO)) : annotate(originalFormula.and(symbFormO));
+		final AnnotatedNode<Formula> originalAnnotated = logging ? annotateRoots(originalFormula) : annotate(originalFormula);
 		// Remove bindings for unused relations/ints if this is not an incremental translation.  If it is
 		// an incremental translation, we have to keep all bindings since they may be used later on.
 	
