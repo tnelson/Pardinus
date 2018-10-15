@@ -37,7 +37,6 @@ import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
-import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
@@ -47,12 +46,11 @@ import kodkod.instance.Universe;
 import org.junit.Test;
 
 /**
- * Tests whether the symmetries are being correctly calculated for decomposed
- * problems by comparing with the amalgamated problem, as well as whether every
- * solution is being enumerated. Also tests problems where either the partial or
- * integrated problem become trivial. Uses the models from {@link SymmetryP}.
+ * Tests whether the representation of {@link TemporalInstance temporal
+ * instances} as sequences of states and as an extended static model is
+ * consistent.
  * 
- * @author Nuno Macedo // [HASLab] decomposed model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  *
  */
 public class InstanceExpansionTests {
@@ -64,17 +62,17 @@ public class InstanceExpansionTests {
 		Relation a = VarRelation.unary("a");
 		Relation b = Relation.unary("b");
 		VarRelation r = VarRelation.binary("r");
-		
-		Object[] atoms = new Object[n*2];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		for (int i = 0; i < n; i ++)
-			atoms[n+i] = "B"+i;
-		
+
+		Object[] atoms = new Object[n * 2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+		for (int i = 0; i < n; i++)
+			atoms[n + i] = "B" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -88,33 +86,33 @@ public class InstanceExpansionTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(b, i).toString(),e2.evaluate(b).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
-		
+
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(b, i).toString(),e2.evaluate(b).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
-		
+
 		assertTrue(e1.evaluate(((a.eq(a.prime()).not())).always()));
 		assertFalse(e1.evaluate(((a.eq(a.prime()))).always()));
-		
+
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testTmp2SMV() {
 		int n = 3;
@@ -122,17 +120,17 @@ public class InstanceExpansionTests {
 		Relation a = VarRelation.unary("a");
 		Relation b = VarRelation.unary("b");
 		Relation r = VarRelation.binary("r");
-		
-		Object[] atoms = new Object[n*2];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		for (int i = 0; i < n; i ++)
-			atoms[n+i] = "B"+i;
-		
+
+		Object[] atoms = new Object[n * 2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+		for (int i = 0; i < n; i++)
+			atoms[n + i] = "B" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -146,47 +144,47 @@ public class InstanceExpansionTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(b, i).toString(),e2.evaluate(b).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
-		
+
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(b, i).toString(),e2.evaluate(b).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
-		
+
 		assertTrue(e1.evaluate(((a.eq(a.prime()).not())).always()));
 		assertFalse(e1.evaluate(((a.eq(a.prime()))).always()));
-		
+
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testTmp3SMV() {
 		int n = 3;
 
 		Relation a = VarRelation.unary("a");
 		Relation r = VarRelation.binary("r");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -199,32 +197,31 @@ public class InstanceExpansionTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(r, i).toString(),e2.evaluate(r).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
-		
+
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(r, i).toString(),e2.evaluate(r).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
-		
+
 		assertTrue(e1.evaluate(((a.eq(a.prime()).not())).always()));
 		assertFalse(e1.evaluate(((a.eq(a.prime()))).always()));
-		
+
 		solver.free();
 	}
-	
 
 	@Test
 	public void testTmp3SAT() {
@@ -233,14 +230,14 @@ public class InstanceExpansionTests {
 		Relation a = VarRelation.unary("a");
 		Relation r = VarRelation.binary("r");
 		Relation s = VarRelation.binary("s");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -257,30 +254,30 @@ public class InstanceExpansionTests {
 		opt.setMaxTraceLength(10);
 		opt.setSolver(SATFactory.DefaultSAT4J);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(r, i).toString(),e2.evaluate(r).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
-		
+
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i<inst.states.size(); i++) {
+		for (int i = 0; i < inst.states.size(); i++) {
 			Evaluator e2 = new Evaluator(inst.states.get(i));
-			assertEquals(e1.evaluate(a, i).toString(),e2.evaluate(a).toString());
-			assertEquals(e1.evaluate(r, i).toString(),e2.evaluate(r).toString());
+			assertEquals(e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			assertEquals(e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
-		
+
 		assertTrue(e1.evaluate(((a.eq(a.prime()).not())).always()));
 		assertFalse(e1.evaluate(((a.eq(a.prime()))).always()));
-		
+
 		solver.free();
 	}
-	
+
 	@Test
 	public void testSta2SAT() {
 		int n = 3;
@@ -288,17 +285,17 @@ public class InstanceExpansionTests {
 		Relation a = Relation.unary("a");
 		Relation b = Relation.unary("b");
 		Relation r = Relation.binary("r");
-		
-		Object[] atoms = new Object[n*2];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		for (int i = 0; i < n; i ++)
-			atoms[n+i] = "B"+i;
-		
+
+		Object[] atoms = new Object[n * 2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+		for (int i = 0; i < n; i++)
+			atoms[n + i] = "B" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -314,18 +311,18 @@ public class InstanceExpansionTests {
 		opt.setRunDecomposed(false);
 		opt.setSolver(SATFactory.DefaultSAT4J);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		Instance inst = solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		
+
 		e1.evaluate(a).toString();
-		
+
 		try {
 			e1.evaluate(a, 0).toString();
-			assert(false);
+			assert (false);
 		} catch (IllegalArgumentException e) {
-			assert(true);
+			assert (true);
 		}
 
 		solver.free();

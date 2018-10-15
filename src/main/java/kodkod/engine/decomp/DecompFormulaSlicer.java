@@ -23,8 +23,10 @@
 package kodkod.engine.decomp;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -87,43 +89,41 @@ public class DecompFormulaSlicer {
 		// converts to NNF and flattens the formula
 		AnnotatedNode<Formula> flat = FormulaFlattener.flatten(
 				AnnotatedNode.annotateRoots(formula), false);
-		Formula f1 = flat.node();
-		Formula f2 = Formula.TRUE;	
+		final Formula form = flat.node();
+		List<Formula> f2 = new ArrayList<Formula>();
+		List<Formula> f1 = new ArrayList<Formula>();
 		RelationCollector col = new RelationCollector(flat.sharedNodes());
 		// select the appropriate conjuncts
-		if (f1 instanceof BinaryFormula
-				&& ((BinaryFormula) f1).op() == FormulaOperator.AND) {
-			Set<Relation> rsl = ((BinaryFormula) f1).left().accept(col);
-			Set<Relation> rsr = ((BinaryFormula) f1).right().accept(col);
+		if (form instanceof BinaryFormula
+				&& ((BinaryFormula) form).op() == FormulaOperator.AND) {
+			Set<Relation> rsl = ((BinaryFormula) form).left().accept(col);
+			Set<Relation> rsr = ((BinaryFormula) form).right().accept(col);
 			if (partials.containsAll(rsl)) {
 				if (!partials.containsAll(rsr)) {
-					f2 = ((BinaryFormula) f1).right();
-					f1 = ((BinaryFormula) f1).left();
+					f2.add(((BinaryFormula) form).right());
+					f1.add(((BinaryFormula) form).left());
 				}
 			} else {
 				if (partials.containsAll(rsr)) {
-					f2 = ((BinaryFormula) f1).left();
-					f1 = ((BinaryFormula) f1).right();
+					f2.add(((BinaryFormula) form).left());
+					f1.add(((BinaryFormula) form).right());
 				} else {
-					f2 = f1;
-					f1 = Formula.TRUE;
+					f2.add(form);
 				}
 			}
-		} else if (f1 instanceof NaryFormula
-				&& ((NaryFormula) f1).op() == FormulaOperator.AND) {
-			Iterator<Formula> it = ((NaryFormula) f1).iterator();
-			Formula aux = null;
+		} else if (form instanceof NaryFormula
+				&& ((NaryFormula) form).op() == FormulaOperator.AND) {
+			Iterator<Formula> it = ((NaryFormula) form).iterator();
 			while (it.hasNext()) {
 				Formula f = it.next();
 				Set<Relation> rs = f.accept(col);
 				if (partials.containsAll(rs))
-					aux = aux==null?f:aux.and(f);
+					f1.add(f);
 				else
-					f2 = f2.and(f);
+					f2.add(f);
 			}
-			f1 = aux;
 		}
-		return new SimpleEntry<Formula, Formula>(f1, f2);
+		return new SimpleEntry<Formula, Formula>(NaryFormula.and(f1), NaryFormula.and(f2));
 	}
 	
 	// TODO: temporal slicing will fail if temporal formulas over static relations

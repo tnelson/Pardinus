@@ -1,4 +1,4 @@
-package kodkod.test.pardinus.temporal;
+package kodkod.test.pardinus.decomp;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,12 +19,12 @@ import org.junit.Test;
 
 /**
  * Tests whether the automatic formula slicing between conjuncts containing
- * static and variable relations is correct.
+ * partial and remainder bounds is correct.
  * 
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  *
  */
-public class TemporalSlicerUnitTesting {
+public class SlicerUnitTesting {
 
 	private static Relation Process = Relation.unary("Process");
 	private static VarRelation toSend = VarRelation.binary("toSend");
@@ -34,11 +34,11 @@ public class TemporalSlicerUnitTesting {
 
 	private static Relation pfirst = Relation.unary("pfirst");
 	private static Relation plast = Relation.unary("plast");
-	private static Relation pord = Relation.binary("pord");
-	private static Relation tord = Relation.binary("tord");
+	private static VarRelation pord = VarRelation.binary("pord");
+	private static VarRelation tord = VarRelation.binary("tord");
 
-	private static VarRelation succ1 = VarRelation.binary("succ1");
-	private static VarRelation succ2 = VarRelation.binary("succ2");
+	private static Relation succ1 = Relation.binary("succ1");
+	private static Relation succ2 = Relation.binary("succ2");
 
 	private static PardinusBounds bounds;
 	
@@ -49,17 +49,18 @@ public class TemporalSlicerUnitTesting {
 			atoms.add("A" + i);
 		Universe u = new Universe(atoms);
 		PardinusBounds bounds1 = new PardinusBounds(u);
+		PardinusBounds bounds2 = new PardinusBounds(u);
 		bounds1.bound(Process, u.factory().allOf(1));
-		bounds1.bound(toSend, u.factory().allOf(2));
-		bounds1.bound(elected, u.factory().allOf(1));
+		bounds2.bound(toSend, u.factory().allOf(2));
+		bounds2.bound(elected, u.factory().allOf(1));
 		bounds1.bound(succ, u.factory().allOf(2));
 		bounds1.bound(pfirst, u.factory().allOf(1));
 		bounds1.bound(plast, u.factory().allOf(1));
 		bounds1.bound(pord, u.factory().allOf(2));
 		bounds1.bound(tord, u.factory().allOf(2));
-		bounds1.bound(succ1, u.factory().allOf(2));
-		bounds1.bound(succ2, u.factory().allOf(2));
-		bounds = new PardinusBounds(bounds1, true);
+		bounds2.bound(succ1, u.factory().allOf(2));
+		bounds2.bound(succ2, u.factory().allOf(2));
+		bounds = new PardinusBounds(bounds1, bounds2);
 	}
 	
 	@Test
