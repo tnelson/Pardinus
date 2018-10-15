@@ -8,7 +8,8 @@ import org.junit.runners.Suite;
 	SymmetryTests.class,
     TemporalTranslatorTests.class,
     NNFUnitTesting.class,
-    TemporalSlicerUnitTesting.class
+    TemporalSlicerUnitTesting.class,
+    InstanceExpansionTests.class
 })
 
 public class AllTemporalTests {}

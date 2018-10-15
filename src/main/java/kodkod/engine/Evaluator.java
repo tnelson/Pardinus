@@ -110,7 +110,7 @@ public final class Evaluator {
 		if (formula == null) throw new NullPointerException("formula");
 		if (instance instanceof TemporalInstance) { // [HASLab]
 			// temporal instances are always evaluated using the static expansion
-			Formula expanded = LTL2FOLTranslator.translate(formula, false, false);
+			Formula expanded = LTL2FOLTranslator.translate(formula, false);
 			return (Translator.evaluate(expanded, instance, options)).booleanValue();
 		} else
 			return (Translator.evaluate(formula, instance, options)).booleanValue();
@@ -162,7 +162,7 @@ public final class Evaluator {
 		if (!(instance instanceof TemporalInstance))
 			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
 		// temporal instances are always evaluated using the static expansion
-		Expression e1 = LTL2FOLTranslator.translate(expression, state, false, false); 
+		Expression e1 = LTL2FOLTranslator.translate(expression, state, false); 
 		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
 		return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 	}

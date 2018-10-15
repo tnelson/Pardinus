@@ -136,8 +136,8 @@ public class PastTests {
 		
 		// force wrong unrolls
 		tt = NNFReplacer.nnf(tt);
-		Bounds bb = TemporalBoundsExpander.expand(b, n, 2, false);
-		Formula ff = LTL2FOLTranslator.translate(tt, false, false);
+		Bounds bb = TemporalBoundsExpander.expand(b, n, 2);
+		Formula ff = LTL2FOLTranslator.translate(tt, false);
 		
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
@@ -206,8 +206,8 @@ public class PastTests {
 		
 		// force wrong unrolls
 		tt = NNFReplacer.nnf(tt);
-		Bounds bb = TemporalBoundsExpander.expand(b, n, 2, true);
-		Formula ff = LTL2FOLTranslator.translate(tt, true, false);
+		Bounds bb = TemporalBoundsExpander.expand(b, n, 2);
+		Formula ff = LTL2FOLTranslator.translate(tt, true);
 
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);

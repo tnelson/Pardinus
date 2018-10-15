@@ -22,7 +22,6 @@
  */
 package kodkod.engine.ltl2fol;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -83,6 +82,8 @@ import kodkod.instance.Tuple;
  * To provide sound loop bounded model checking semantics for past operators,
  * loops are unrolled according to the past operator depth.
  *
+ * As of Pardinus 1.1, traces are assumed to always loop.
+ *
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public class TemporalTranslator {
@@ -100,13 +101,13 @@ public class TemporalTranslator {
 	public static final Relation LOOP = Relation.unary("loop");
 	public static final Expression TRACE = PREFIX.union(LAST.product(LOOP));
 
-	public static final Relation LAST_ = Relation.unary("S/last_"); 			// alt = true
-	public static final Relation UNROLL_MAP = Relation.binary("unroll_map"); 	// alt = true
+	public static final Relation LAST_ = Relation.unary("S/last_"); 			// ExplicitUnrolls = true
+	public static final Relation UNROLL_MAP = Relation.binary("unroll_map"); 	// ExplicitUnrolls = true
 
-	public static final Relation LEVEL = Relation.unary("Level"); 				// alt = false
-	public static final Relation L_FIRST = Relation.unary("L/first"); 			// alt = false
-	public static final Relation L_LAST = Relation.unary("L/last"); 			// alt = false
-	public static final Relation L_PREFIX = Relation.binary("L/next"); 			// alt = false
+	public static final Relation LEVEL = Relation.unary("Level"); 				// ExplicitUnrolls = false
+	public static final Relation L_FIRST = Relation.unary("L/first"); 			// ExplicitUnrolls = false
+	public static final Relation L_LAST = Relation.unary("L/last"); 			// ExplicitUnrolls = false
+	public static final Relation L_PREFIX = Relation.binary("L/next"); 			// ExplicitUnrolls = false
 
 	public static final String STATE_SEP = "_";
 
@@ -114,7 +115,7 @@ public class TemporalTranslator {
 	 * The constraint forcing the time trace to be infinite. Forces the loop to
 	 * exist.
 	 */
-	public static final Formula INFINITE = LOOP.one();
+//	public static final Formula INFINITE = LOOP.one();
 
 	public static final Expression START = L_FIRST.product(FIRST).union(L_FIRST.join(L_PREFIX.closure()).product(LOOP));
 
@@ -124,8 +125,8 @@ public class TemporalTranslator {
 	public final PardinusBounds bounds;
 	/** The past operator depth. */
 	public final int past_depth;
-	/** Whether the formula has an "alaways" operator. */
-	private boolean has_always;
+//	/** Whether the formula has an "alaways" operator. */
+//	private boolean has_always;
 
 	/**
 	 * Constructs a new temporal translator to expand temporal formulas and variable
@@ -137,10 +138,10 @@ public class TemporalTranslator {
 	 *            the original variable bounds.
 	 */
 	public TemporalTranslator(Formula form, PardinusBounds bnds) {
-		this.formula = NNFReplacer.nnf(form);
+		this.formula = form; // NNFReplacer.nnf(form);
 		this.bounds = bnds;
 		this.past_depth = countHeight(formula);
-		this.has_always = hasAlways(formula);
+//		this.has_always = hasAlways(formula);
 	}
 
 	/**
@@ -159,7 +160,7 @@ public class TemporalTranslator {
 	 * @return the temporal bounds expanded into standard bounds.
 	 */
 	public Bounds expand(int traceLength) {
-		return TemporalBoundsExpander.expand(bounds, traceLength, past_depth, has_always);
+		return TemporalBoundsExpander.expand(bounds, traceLength, past_depth);
 	}
 
 	/**
@@ -175,7 +176,7 @@ public class TemporalTranslator {
 	 * @return the static version of the temporal formula.
 	 */
 	public Formula translate() {
-		return LTL2FOLTranslator.translate(formula, past_depth > 1, has_always);
+		return LTL2FOLTranslator.translate(formula, past_depth > 1);
 	}
 
 	/**
@@ -413,17 +414,17 @@ public class TemporalTranslator {
 			return 1;
 	}
 
-	/** Tests whether an always operator occurs in the given AST tree. */
-	private static boolean hasAlways(Node node) {
-		final AbstractDetector detector = new AbstractDetector(Collections.emptySet()) {
-			public Boolean visit(UnaryTempFormula form) {
-				if (form.op() == TemporalOperator.ALWAYS)
-					return cache(form, Boolean.TRUE);
-				return super.visit(form);
-			}
-		};
-		return (Boolean) node.accept(detector);
-	}
+//	/** Tests whether an always operator occurs in the given AST tree. */
+//	private static boolean hasAlways(Node node) {
+//		final AbstractDetector detector = new AbstractDetector(Collections.emptySet()) {
+//			public Boolean visit(UnaryTempFormula form) {
+//				if (form.op() == TemporalOperator.ALWAYS)
+//					return cache(form, Boolean.TRUE);
+//				return super.visit(form);
+//			}
+//		};
+//		return (Boolean) node.accept(detector);
+//	}
 	
 	/** Interprets the step of a state tuple from its name. */
 	public static int interpretState(Tuple tuple) {
