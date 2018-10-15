@@ -432,16 +432,19 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfleft;
 		Formula nfright;
 	
-		alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
-	
-		nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true, true)));
-	
-		nfright = left.and(nfleft);
-	
-		nfright = nfright
-				.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
-	
-		return alw.or(nfright);
+		if (TemporalTranslator.ExplicitUnrolls) {
+			alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
+		
+			nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true, true)));
+		
+			nfright = left.and(nfleft);
+		
+			nfright = nfright
+					.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
+		
+			return alw.or(nfright); }
+		else 
+			throw new UnsupportedOperationException("Releases for alterative past encoding.");
 	}
 	
 	private Formula getQuantifierTrigger(Formula always, Formula left, Formula right) {
@@ -452,18 +455,22 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfleft;
 		Formula nfright;
 	
-		alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().closure())));
-	
-		nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true, true)));
-	
-		nfright = left.and(nfleft);
-	
-		nfright = nfright
-				.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().closure())));
-	
-		return alw.or(nfright);
+		if (TemporalTranslator.ExplicitUnrolls) {
+			alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().closure())));
+		
+			nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true, true)));
+		
+			nfright = left.and(nfleft);
+		
+			nfright = nfright
+					.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().closure())));
+		
+			return alw.or(nfright);
+		}
+		else 
+			throw new UnsupportedOperationException("Triggered for alterative past encoding.");
 	}
-
+	
 	/**
 	 * An expression representing all states between two states, considering loops.
 	 * 
