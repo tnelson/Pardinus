@@ -241,7 +241,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			}
 			
 			@Override
-			public void extend() {
+			public void extend(Formula f) {
 				throw new UnsupportedOperationException();
 			}
 		};
