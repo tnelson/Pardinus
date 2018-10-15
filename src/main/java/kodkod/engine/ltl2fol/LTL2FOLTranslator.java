@@ -113,7 +113,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		if (TemporalTranslator.ExplicitUnrolls) {
 
 			Variable v = Variable.unary("v");
-			Formula order_unr_trace1 = v.join(PREFIX).one().forAll(v.oneOf(STATE));
+			Formula order_unr_trace1 = v.join(PREFIX).one().forAll(v.oneOf(STATE.difference(LAST)));
 			Formula order_unr_trace2 = PREFIX.join(v).one().forAll(v.oneOf(STATE.difference(FIRST)));
 			Formula order_unr_trace3 = FIRST.join(PREFIX.reflexiveClosure()).eq(STATE);
 

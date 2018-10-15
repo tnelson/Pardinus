@@ -254,6 +254,7 @@ public class InstanceExpansionTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(10);
 		opt.setSolver(SATFactory.DefaultSAT4J);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
