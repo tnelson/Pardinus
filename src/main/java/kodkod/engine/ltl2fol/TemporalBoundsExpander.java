@@ -33,6 +33,7 @@ import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
+import kodkod.util.ints.IndexedEntry;
 
 /**
  * An extension to the regular Kodkod {@link Bounds bounds} that stores
@@ -237,6 +238,9 @@ public class TemporalBoundsExpander {
 					newBounds.setWeight(r, bounds.weight(r));
 			}
 		}
+		
+		for(IndexedEntry<TupleSet> entry : bounds.intBounds()) 
+			newBounds.boundExactly(entry.index(), uni.factory().setOf(entry.value().iterator().next().atom(0)));
 
 		newBounds.amalgamated = bounds.amalgamated;
 		newBounds.trivial_config = bounds.trivial_config;

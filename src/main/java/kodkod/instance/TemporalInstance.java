@@ -88,7 +88,7 @@ public class TemporalInstance extends Instance {
 		for (Relation r : expRels.keySet())
 			this.add(r, expRels.get(r));
 		for(IndexedEntry<TupleSet> entry : instances.get(0).intTuples())
-			this.add(entry.index(), entry.value());
+			this.add(entry.index(), universe().factory().setOf(entry.value().iterator().next().atom(0)));
 
 		this.states = instances;
 		this.loop = loop;

@@ -441,8 +441,7 @@ public final class Translator {
 			if (bounds instanceof PardinusBounds) {
 				PardinusBounds pbounds = (PardinusBounds) bounds;
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
-					Formula symbFormA = pbounds.resolve(options.reporter());
-					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula.and(symbFormA), pbounds);
+					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula, pbounds);
 					pbounds.amalgamated().relations().retainAll(originalAnnotated.relations());
 					if (!originalAnnotated.usesInts()) pbounds.amalgamated().ints().clear();
 					Formula actual = pbounds.integrated()?slices.getValue():slices.getKey();
