@@ -199,8 +199,15 @@ public class PardinusBounds extends Bounds {
 				if (d instanceof VarRelation)
 					problematic.add(r);
 		
-		for (Relation r : problematic)
-			rs.remove(r);
+		rs.removeAll(problematic);
+		
+		problematic.clear();
+		
+		for (Relation r : relations)
+			if (r instanceof VarRelation)
+				problematic.add(r);
+		
+		relations.removeAll(problematic);
 		
 		this.amalgamated = amalg.clone();
 		
