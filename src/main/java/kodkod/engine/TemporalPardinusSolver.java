@@ -246,7 +246,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	 * 
 	 * @author Nuno Macedo // [HASLab] temporal model finding
 	 */
-	private final static class SolutionIterator implements Explorator<Solution> {
+	private final static class SolutionIterator extends Explorator<Solution> {
 		private Translation.Whole translation;
 		private Formula extformula; 
 		private long translTime;
@@ -276,7 +276,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		}
 		
 		@Override
-		public void extend(Formula f) {
+		public void branch(Formula f, int s) {
 			this.extension_formula  = f;
 			
 			if (prev == null)
@@ -295,7 +295,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
   			TemporalTranslator.translate(tempBounds, extbounds, current_trace, (TemporalInstance) prev.instance());
 			translation = Translator.translate(extformula, extbounds, opt);
 
-
 //			if (prev.instance()!=null)
 //				throw new RuntimeException(current_trace+": "+extbounds.lowerBounds()+", "+extbounds.upperBounds());
 
@@ -303,6 +302,11 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			this.trivial = 0;
 			incremented = false;
 			
+		}
+
+		@Override
+		public TemporalInstance getLastInstance() {
+			return (TemporalInstance) prev.instance();
 		}
 
 		/**
@@ -478,7 +482,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	 * A target-oriented iterator over all solutions of a model, adapted from {@link SolutionIterator}.
 	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented, temporal model finding
 	 */
-	public static class TSolutionIterator implements Explorator<Solution> {
+	public static class TSolutionIterator extends Explorator<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private final ExtendedOptions opt; // [HASLab] TO mode
@@ -697,7 +701,12 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		}
 
 		@Override
-		public void extend(Formula f) {
+		public void branch(Formula form, int prefix) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TemporalInstance getLastInstance() {
 			throw new UnsupportedOperationException();
 		}
 
