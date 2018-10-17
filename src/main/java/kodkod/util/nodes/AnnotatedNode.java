@@ -26,6 +26,7 @@ import static kodkod.ast.RelationPredicate.Name.ACYCLIC;
 import static kodkod.ast.RelationPredicate.Name.FUNCTION;
 import static kodkod.ast.RelationPredicate.Name.TOTAL_ORDERING;
 import static kodkod.ast.operator.FormulaOperator.AND;
+import static kodkod.ast.operator.TemporalOperator.ALWAYS;
 import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
 
@@ -464,12 +465,17 @@ public final class AnnotatedNode<N extends Node> {
 			visited(quantFormula);
 		}
 		/**
-		 * Calls visited(tempFormula); tempFormula's children are not top-level formulas
-		 * so they are not visited.
+		 * Visits the children of the given formula if it has not been visited already with
+		 * the given value of the negated flag and if tempFormula.op==ALWAYS && !negated or
+		 * tempFormula.op==EVENTUALLY && negated. Otherwise does nothing.
+		 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.UnaryTempFormula)
 		 */
 		// [HASLab]
 		public void visit(UnaryTempFormula tempFormula) {
-			visited(tempFormula);
+			if (visited(tempFormula)) return;
+			final TemporalOperator op = tempFormula.op();
+			if ((!negated && op==ALWAYS) || (negated && op==TemporalOperator.EVENTUALLY))
+				tempFormula.formula().accept(this);
 		}
 		/**
 		 * Calls visited(tempFormula); tempFormula's children are not top-level formulas
