@@ -203,7 +203,7 @@ public abstract class SATFactory {
 		
 		final String executable = findStaticLibrary("plingeling");
 		return externalFactory(executable==null ? "plingeling" : executable, 
-				null, opts.toArray(new String[opts.size()]));
+				null, false, opts.toArray(new String[opts.size()]));
 	
 	}
 	
@@ -216,14 +216,14 @@ public abstract class SATFactory {
 	public static final SATFactory syrup() {
 		final String executable = findStaticLibrary("glucose-syrup");
 		return externalFactory(executable==null ? "glucose-syrup" : executable, 
-				null, "-verb=0");
+				null, false, "-verb=0");
 	}
 
 	// [HASLab]
 	public static final SATFactory electrod(String ...opts) {
 		final String executable = findStaticLibrary("electrod");
 		return externalFactory(executable==null ? "electrod" : executable, 
-				null, opts);
+				null, true, opts);
 	}
 
 	/**
@@ -311,7 +311,8 @@ public abstract class SATFactory {
 	 * @return  SATFactory that produces SATSolver wrappers for the specified external
 	 * SAT solver
 	 */
-	public static final SATFactory externalFactory(final String executable, final String cnf, final String... options) {
+	// [HASLab] unbounded info
+	public static final SATFactory externalFactory(final String executable, final String cnf, final boolean unbounded, final String... options) {
 		return new SATFactory() {
 
 			@Override
@@ -332,6 +333,12 @@ public abstract class SATFactory {
 			@Override
 			public boolean incremental() {
 				return false;
+			}
+			
+			@Override
+			// [HASLab]
+			public boolean unbounded() {
+				return unbounded;
 			}
 			
 			public String toString() {
@@ -394,6 +401,11 @@ public abstract class SATFactory {
 	 */
 	public boolean incremental() {
 		return true;
+	}
+	
+	// [HASLab]
+	public boolean unbounded() {
+		return false;
 	}
 	
 	/**
