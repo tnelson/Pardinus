@@ -25,6 +25,7 @@ package kodkod.engine.unbounded;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -58,6 +59,7 @@ import kodkod.ast.ProjectExpression;
 import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
+import kodkod.ast.RelationPredicate.Name;
 import kodkod.ast.SumExpression;
 import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
@@ -71,7 +73,6 @@ import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.engine.bool.BooleanFormula;
 import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -86,6 +87,7 @@ import kodkod.instance.Universe;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.SparseSequence;
+import kodkod.util.nodes.AnnotatedNode;
 import kodkod.util.nodes.PrettyPrinter;
 
 /**
@@ -152,6 +154,17 @@ public class ElectrodPrinter {
 
 		};
 		opt.setReporter(reporter);
+		
+//		// testing whether this is feasible
+//		Map<Name, Set<RelationPredicate>> preds = AnnotatedNode.annotate(formula).predicates();
+//		for (RelationPredicate pred : preds.get(Name.FUNCTION)) {
+//			RelationPredicate.Function func = (RelationPredicate.Function) pred;
+//			Expression upp = bounds.upperSymbBounds(func.relation());
+//			if (upp != null && upp instanceof BinaryExpression && ((BinaryExpression) upp).op().equals(ExprOperator.PRODUCT) && 
+//					((BinaryExpression) upp).left().equals(func.domain()) && ((BinaryExpression) upp).right().equals(func.range()))
+//				System.out.println(func.relation() + " : " + func.domain() +" -> "+func.targetMult()+" "+func.range());
+//		}
+		
 
 		// [HASLab] retrieve the additional formula imposed by the symbolic
 		// bounds, depending on execution stage
@@ -162,6 +175,7 @@ public class ElectrodPrinter {
 		// [HASLab] otherwise use regular bounds
 		else
 			symbForm = bounds.resolve(opt.reporter());
+
 
 		Whole t = Translator.translate(formula.and(symbForm), bounds, opt);
 		bounds = (PardinusBounds) t.bounds();
@@ -843,7 +857,7 @@ public class ElectrodPrinter {
 					append("]");
 					break;
 				case FUNCTION : 
-					visit((QuantifiedFormula) node.toConstraints());
+					visit((BinaryFormula) node.toConstraints());
 					break;
 				case TOTAL_ORDERING : 
 					visit((NaryFormula) node.toConstraints());

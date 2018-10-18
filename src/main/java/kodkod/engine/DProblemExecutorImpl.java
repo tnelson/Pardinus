@@ -272,7 +272,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
 			launchBatch(false);
 			
-		if (executor.isShutdown() && running.get() == 0)
+		if (monitor.isConfigsDone() && running.get() == 0)
 			return !solution_queue.isEmpty();
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output
