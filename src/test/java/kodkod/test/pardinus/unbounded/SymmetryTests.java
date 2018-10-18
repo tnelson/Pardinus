@@ -74,7 +74,7 @@ public class SymmetryTests {
 
 		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
-		opt.setSolver(SATFactory.Glucose);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
 		Reporter rep = new SLF4JReporter() {
@@ -233,6 +233,7 @@ public class SymmetryTests {
 		opt.setRunTemporal(true);
 		opt.setNoOverflow(true);
 		opt.setRunDecomposed(true);
+		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
 		opt.setDecomposedMode(DMode.PARALLEL);
 		dsolver = new PardinusSolver(opt);
 		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),model.bounds2());
