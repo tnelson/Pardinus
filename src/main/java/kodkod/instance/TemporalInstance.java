@@ -265,6 +265,15 @@ public class TemporalInstance extends Instance {
 		return res;
 	}
 
+	
+	/** 
+	 * {@inheritDoc}
+	 */
+	public boolean contains(Relation relation) {
+		return super.contains(relation) || states.get(0).contains(relation);
+	}
+	
+	
 	/**
 	 * {@inheritDoc}
 	 * 
