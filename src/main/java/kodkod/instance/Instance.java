@@ -171,6 +171,21 @@ public class Instance implements Cloneable {
 		return tuples.get(relation);
 	}
 	
+	// [AlloyTools]
+    public TupleSet tuples(String relationName) {
+        Relation rel = findRelationByName(relationName);
+        if (rel == null)
+            return null;
+        return tuples(rel);
+    }
+
+	// [AlloyTools]
+    public Relation findRelationByName(String relationName) {
+        for (Relation rel : relations())
+            if (rel.name().equals(relationName))
+                return rel;
+        return null;
+    }
 	/**
 	 * Returns a map view of Relation<:this.tuples.  The returned map is unmodifiable.
 	 * @return a map view of Relation<:this.tuples.  
