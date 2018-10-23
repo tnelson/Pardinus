@@ -52,7 +52,7 @@ public class BaseTests {
 
 		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunDecomposed(false);
 		opt.setRunUnbounded(false);
 		opt.setRunTemporal(true);
