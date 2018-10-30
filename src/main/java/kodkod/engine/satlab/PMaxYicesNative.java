@@ -36,7 +36,7 @@ public class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
 
 	
 	static {
-		loadLibrary(PMaxYicesNative.class);
+		loadLibrary(Yices.class);
 	}
 
 	
@@ -104,16 +104,13 @@ public class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
 	
 	public PMaxYicesNative(){
 		super(make());
+		if (1==1) throw new RuntimeException();
 		makearray = true;
 		array = allocArray();
 		//System.out.println("new");
 		targetCount = 0;
 	}
 	
-	static {
-		loadLibrary(PMaxYicesNative.class);
-	}
-
 	@Override
 	native boolean solve(long peer);
 
