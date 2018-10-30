@@ -27,7 +27,7 @@ package kodkod.engine.satlab;
  * 
  * @author Tiago Guimarães // [HASLab] target-oriented model finding
  */
-class Yices extends NativeSolver {
+final public class Yices extends NativeSolver {
 
 	
 	private boolean makearray;
@@ -38,6 +38,7 @@ class Yices extends NativeSolver {
 	 */
 	public Yices() {
 		super(make());
+		if (1==1) throw new RuntimeException();
 		makearray = true;
 		array = allocArray();
 	}

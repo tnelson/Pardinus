@@ -27,7 +27,7 @@ package kodkod.engine.satlab;
  * 
  * @author Tiago Guimarães // [HASLab] target-oriented model finding
  */
-public class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
+final class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
 
 
 	private boolean makearray;
