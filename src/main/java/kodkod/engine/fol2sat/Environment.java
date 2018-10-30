@@ -22,6 +22,7 @@
 package kodkod.engine.fol2sat;
 
 import kodkod.ast.Variable;
+import kodkod.ast.operator.Quantifier;
 
 /** 
  * Represents a  variable binding environment as a 
@@ -103,10 +104,13 @@ public final class Environment<T, E> { // [AM]
 	 */
 	// [AM]
     public Environment<T, E> extend(Variable variable, E type, T value) { return extend(variable, type, value, null); }
-	public Environment<T, E> extend(Variable variable, E type, T value, Object envType) {
-		return new Environment<T, E>(this, variable, type, value, envType, false);
-	}
-	
+    public Environment<T,E> extend(Variable variable, E type, T value, Quantifier envType) {
+        if (envType == null)
+            return new Environment<T,E>(this, variable, type, value, envType, false);
+        Quantifier q = negated ? (envType == Quantifier.ALL ? Quantifier.SOME : Quantifier.ALL) : envType;
+        return new Environment<T,E>(this, variable, type, value, q, negated);
+    }
+    
 	// [AM]
 	public void negate() {
 	    negated = !negated;
