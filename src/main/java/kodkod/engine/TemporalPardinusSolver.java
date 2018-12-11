@@ -113,9 +113,13 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	// [HASLab]
 	public Solution solve(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
-
+		assert !options.unbounded();
 		try {
 			long startTransl = System.currentTimeMillis();
+			
+			// [HASLab] if not decomposed, use the amalgamated if any
+			if (!options.decomposed() && bounds.amalgamated!=null)
+				bounds = bounds.amalgamated();
 			
 			// [HASLab] retrieve the additional formula imposed by the symbolic
 			// bounds, depending on execution stage
@@ -268,11 +272,16 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private TemporalTranslator tmptrans;
 		
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
+			assert !options.unbounded();
 			this.translTime = System.currentTimeMillis();
 			current_trace = options.minTraceLength()-1;
 			do {
 				current_trace++;
-				
+
+				// [HASLab] if not decomposed, use the amalgamated if any
+				if (!options.decomposed() && bounds.amalgamated!=null)
+					bounds = bounds.amalgamated();
+
 				// [HASLab] retrieve the additional formula imposed by the symbolic
 				// bounds, depending on execution stage
 				Formula symbForm = Formula.TRUE;

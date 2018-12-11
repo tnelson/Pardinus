@@ -111,6 +111,10 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	private static Solution go(Formula formula, PardinusBounds bounds, ExtendedOptions options) {
 		Reporter rep = options.reporter();
 		
+		// [HASLab] if not decomposed, use the amalgamated if any
+		if (!options.decomposed() && bounds.amalgamated!=null)
+			bounds = bounds.amalgamated();
+
 		// create a directory with the specified unique name
 		String temp=System.getProperty("java.io.tmpdir");
 		File dir = new File(temp+File.separatorChar+options.uniqueName());
