@@ -248,9 +248,9 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 
 			final Translation.Whole transl = this.translation;
 			
-//			// TODO: this was not commented
-//			if (transl.bounds() instanceof MainPardinusBounds && ((MainPardinusBounds) transl.bounds()).integrated && !((MainPardinusBounds) transl.bounds()).trivial_config) 
-//				return nextNonTrivialSolution();
+			// TODO: this was not commented
+			if (transl.bounds() instanceof PardinusBounds && ((PardinusBounds) transl.bounds()).integrated && !((PardinusBounds) transl.bounds()).trivial_config) 
+				return nextNonTrivialSolution();
 				
 			final Solution sol = trivial(transl, translTime); // this also frees up solver resources, if unsat
 			if (sol.instance()==null) {
