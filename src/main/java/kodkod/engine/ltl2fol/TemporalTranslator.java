@@ -59,7 +59,6 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.RelationPredicate.Function;
@@ -207,7 +206,7 @@ public class TemporalTranslator {
 
 			@Override
 			public Boolean visit(Relation relation) {
-				return cache(relation, relation instanceof VarRelation);
+				return cache(relation, relation.isVariable());
 			}
 		};
 		return (boolean) node.accept(det);

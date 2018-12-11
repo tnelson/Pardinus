@@ -25,7 +25,6 @@ package kodkod.examples.pardinus.temporal;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
@@ -44,7 +43,7 @@ import java.util.List;
 /**
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class SpanT implements DModel {
+public class SpanT extends DModel {
 
 	final private Relation Root, Process_rem, Level, adjacent;
 	final private Relation level_first, level_next, level_last;
@@ -52,7 +51,7 @@ public class SpanT implements DModel {
 	private int n_ps;
 	private Variant var;
 
-	final private VarRelation level, parent, runs;
+	final private Relation level, parent, runs;
 
 	public enum Variant {
 		V1, V2, V3;
@@ -68,9 +67,9 @@ public class SpanT implements DModel {
 		level_next = Relation.nary("lo/Ord.Next", 2);
 		level_last = Relation.unary("");
 
-		runs = VarRelation.nary("this/State.runs", 1);
-		level = VarRelation.nary("this/State.lvl", 2);
-		parent = VarRelation.nary("this/State.parent", 2);
+		runs = Relation.unary_variable("this/State.runs");
+		level = Relation.binary_variable("this/State.lvl");
+		parent = Relation.binary_variable("this/State.parent");
 
 		n_ps = Integer.valueOf(args[0]);
 		var = Variant.valueOf(args[1]);

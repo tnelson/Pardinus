@@ -29,7 +29,6 @@ import java.util.Map;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
@@ -121,8 +120,8 @@ public class ReificationTests {
 	public void testTmp() {
 		int n = 3;
 
-		Relation a = VarRelation.unary("a");
-		Relation b = VarRelation.unary("b");
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
 		
 		Object[] atoms = new Object[n*2];
 		for (int i = 0; i < n; i ++)

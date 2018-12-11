@@ -24,7 +24,6 @@ package kodkod.test.pardinus.temporal;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
@@ -66,9 +65,9 @@ public class BaseTests {
 	public void testSAT() {
 		int n = 2;
 
-		Relation a = VarRelation.unary("a");
+		Relation a = Relation.unary_variable("a");
 		Relation b = Relation.unary("b");
-		VarRelation r = VarRelation.binary("r");
+		Relation r = Relation.binary_variable("r");
 
 		Object[] atoms = new Object[n * 2];
 		for (int i = 0; i < n; i++)
@@ -98,9 +97,9 @@ public class BaseTests {
 	public void testUNSAT() {
 		int n = 2;
 
-		Relation a = VarRelation.unary("a");
+		Relation a = Relation.unary_variable("a");
 		Relation b = Relation.unary("b");
-		VarRelation r = VarRelation.binary("r");
+		Relation r = Relation.binary_variable("r");
 
 		Object[] atoms = new Object[n * 2];
 		for (int i = 0; i < n; i++)

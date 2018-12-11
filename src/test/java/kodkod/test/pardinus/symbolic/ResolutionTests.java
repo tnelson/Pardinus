@@ -32,7 +32,6 @@ import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
@@ -55,14 +54,14 @@ public class ResolutionTests {
 	@Before 
 	public void setup() {
 		r = Relation.binary("r");
-		s = VarRelation.binary("s");
+		s = Relation.binary_variable("s");
 		t = Relation.nary("t", 3);
-		u = VarRelation.nary("u", 3);
+		u = Relation.variable("u", 3);
 		
 		a = Relation.unary("a");
-		b = VarRelation.unary("b");
+		b = Relation.unary_variable("b");
 		c = Relation.unary("c");
-		d = VarRelation.unary("d");
+		d = Relation.unary_variable("d");
 		
 		int n = 3;
 		Object[] atoms = new Object[n*2];

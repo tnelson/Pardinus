@@ -29,14 +29,14 @@ import kodkod.instance.PardinusBounds;
 /**
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
  */
-public interface DModel {
+public abstract class DModel {
 
 	/**
 	 * Bounds of the first partition.
 	 * 
 	 * @return
 	 */
-	public PardinusBounds bounds1();
+	abstract public PardinusBounds bounds1();
 
 	/**
 	 * Bounds of the second partition.
@@ -44,8 +44,10 @@ public interface DModel {
 	 * @requires bounds1().relations() & bounds2.requires() = empty
 	 * @return
 	 */
-	public Bounds bounds2();
+	abstract public Bounds bounds2();
 
+	public PardinusBounds bounds() { return new PardinusBounds(bounds1(), bounds2()); }
+	
 	/**
 	 * Formula for the first partition. Formula must refer to every relation in
 	 * bounds1().
@@ -53,14 +55,16 @@ public interface DModel {
 	 * @requires partition1().relations() = bounds1().relations()
 	 * @return
 	 */
-	public Formula partition1();
+	abstract public Formula partition1();
 
 	/**
 	 * Formula for the second partition.
 	 * 
 	 * @return
 	 */
-	public Formula partition2();
+	abstract public Formula partition2();
+
+	public Formula formula() { return partition1().and(partition2()); }
 
 	/**
 	 * The bits required to encode the model.
@@ -69,8 +73,8 @@ public interface DModel {
 	 *           bounds2().relations()
 	 * @return
 	 */
-	public int getBitwidth();
+	abstract public int getBitwidth();
 
-	public String shortName();
+	abstract public String shortName();
 
 }

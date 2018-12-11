@@ -31,7 +31,6 @@ import kodkod.ast.Decls;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.Evaluator;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
@@ -107,12 +106,12 @@ public class TemporalInstance extends Instance {
 		// first instances.size() atoms will be the state atoms
 		Map<Relation, TupleSet> instance = new HashMap<Relation, TupleSet>();
 		for (Relation r : instances.get(0).relations())
-			if (r instanceof VarRelation) {
-				if (instance.get(((VarRelation) r).expanded) == null)
-					instance.put(((VarRelation) r).expanded, u.factory().noneOf(r.arity()+1));
+			if (r.isVariable()) {
+				if (instance.get(r.getExpansion()) == null)
+					instance.put(r.getExpansion(), u.factory().noneOf(r.arity()+1));
 				for (int i = 0; i < instances.size(); i++) {
 					TupleSet ts = TemporalBoundsExpander.convertToUniv(instances.get(i).tuples(r), u);
-					instance.get(((VarRelation) r).expanded).addAll(ts.product(u.factory().setOf(u.atom(i))));
+					instance.get(r.getExpansion()).addAll(ts.product(u.factory().setOf(u.atom(i))));
 				}
 			} else {
 				TupleSet ts = u.factory().noneOf(r.arity());

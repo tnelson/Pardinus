@@ -240,8 +240,7 @@ public class SymmetryTests {
 		opt.setRunDecomposed(true);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		dsolver = new PardinusSolver(opt);
-		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),
-				model.bounds2());
+		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),model.bounds2());
 		final Formula formula = model.partition1().and(model.partition2());
 		Iterator<Solution> solution ;
 		System.out.println("----- Solving decomposed -----");

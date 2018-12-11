@@ -17,7 +17,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class AVLTreeP implements DModel {
+public class AVLTreeP extends DModel {
 
 	final private Relation Node, Root, left, right, parent, key, Num;
 	final int n;

@@ -12,7 +12,6 @@ import org.junit.Test;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
@@ -37,7 +36,7 @@ public class PastUnrollingTests {
 	private static Relation Af = Relation.unary("Af");
 	private static Relation Al = Relation.unary("Al");
 	private static Relation An = Relation.binary("An");
-	private static VarRelation S = VarRelation.unary("S");
+	private static Relation S = Relation.unary_variable("S");
 
 	PardinusBounds b;
 	int n;

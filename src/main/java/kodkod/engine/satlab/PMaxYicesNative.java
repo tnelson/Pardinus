@@ -29,32 +29,27 @@ package kodkod.engine.satlab;
  */
 final class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
 
-
 	private boolean makearray;
 	protected long array = 0;
-	
 
+	public PMaxYicesNative(){
+		super(make());
+		makearray = true;
+		array = allocArray();
+		//System.out.println("new");
+		targetCount = 0;
+	}
 	
 	static {
 		loadLibrary(Yices.class);
 	}
 
-	
-	/**
-	 * {@inheritDoc}
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "PMaxYicesNative";
-	}
-	
 	/**
 	 * Returns a pointer to an instance of Yices.
 	 * @return a pointer to an instance of Yices.
 	 */
 	private static native long make();
 	private static native long allocArray();
-	
 	
 	/**
 	 * {@inheritDoc}
@@ -92,27 +87,6 @@ final class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
 	}
 	
 	native boolean natAddClause(long peer,int[] lits,boolean makearray, long array);
-	
-
-
-	/**
-	 * {@inheritDoc}
-	 * @see kodkod.engine.satlab.NativeSolver#valueOf(int, int)
-	 */
-	native boolean valueOf(long peer, int literal);
-	private int targetCount;
-	
-	public PMaxYicesNative(){
-		super(make());
-		if (1==1) throw new RuntimeException();
-		makearray = true;
-		array = allocArray();
-		//System.out.println("new");
-		targetCount = 0;
-	}
-	
-	@Override
-	native boolean solve(long peer);
 
 	@Override
 	public int numberOfTargets() {
@@ -141,5 +115,24 @@ final class PMaxYicesNative extends NativeSolver implements WTargetSATSolver {
 	}
 	
 	native boolean addWeight(long peer,int lit, int weight,long array);
+	
+	/**
+	 * {@inheritDoc}
+	 * @see kodkod.engine.satlab.NativeSolver#valueOf(int, int)
+	 */
+	native boolean valueOf(long peer, int literal);
+	private int targetCount;
+	
+	@Override
+	native boolean solve(long peer);
+
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "PMaxYicesNative";
+	}
+
 }
 	

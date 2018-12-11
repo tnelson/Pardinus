@@ -30,7 +30,6 @@ import java.util.Iterator;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
@@ -59,9 +58,9 @@ public class InstanceExpansionTests {
 	public void testTmp1SMV() {
 		int n = 3;
 
-		Relation a = VarRelation.unary("a");
+		Relation a = Relation.unary_variable("a");
 		Relation b = Relation.unary("b");
-		VarRelation r = VarRelation.binary("r");
+		Relation r = Relation.binary_variable("r");
 
 		Object[] atoms = new Object[n * 2];
 		for (int i = 0; i < n; i++)
@@ -117,9 +116,9 @@ public class InstanceExpansionTests {
 	public void testTmp2SMV() {
 		int n = 3;
 
-		Relation a = VarRelation.unary("a");
-		Relation b = VarRelation.unary("b");
-		Relation r = VarRelation.binary("r");
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+		Relation r = Relation.binary_variable("r");
 
 		Object[] atoms = new Object[n * 2];
 		for (int i = 0; i < n; i++)
@@ -175,8 +174,8 @@ public class InstanceExpansionTests {
 	public void testTmp3SMV() {
 		int n = 3;
 
-		Relation a = VarRelation.unary("a");
-		Relation r = VarRelation.binary("r");
+		Relation a = Relation.unary_variable("a");
+		Relation r = Relation.binary_variable("r");
 
 		Object[] atoms = new Object[n];
 		for (int i = 0; i < n; i++)
@@ -227,9 +226,9 @@ public class InstanceExpansionTests {
 	public void testTmp3SAT() {
 		int n = 3;
 
-		Relation a = VarRelation.unary("a");
-		Relation r = VarRelation.binary("r");
-		Relation s = VarRelation.binary("s");
+		Relation a = Relation.unary_variable("a");
+		Relation r = Relation.binary_variable("r");
+		Relation s = Relation.binary_variable("s");
 
 		Object[] atoms = new Object[n];
 		for (int i = 0; i < n; i++)

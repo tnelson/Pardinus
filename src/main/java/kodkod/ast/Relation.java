@@ -91,7 +91,58 @@ public class Relation extends LeafExpression {
 		return new Relation(name,3);
 	}
 	
+    /**
+     * TODO
+     *
+     * @param name
+     * @return
+     */
+    public static VarRelation variable(String name,int arity) {
+        return new VarRelation(name, arity);
+    }
+    
+    /**
+     * TODO
+     *
+     * @param name
+     * @return
+     */
+    public static VarRelation unary_variable(String name) {
+        return new VarRelation(name, 1);
+    }
+
+    /**
+     * TODO
+     *
+     * @param name
+     * @return
+     */
+    public static VarRelation binary_variable(String name) {
+        return new VarRelation(name, 2);
+    }
+
+    /**
+     * TODO
+     *
+     * @param name
+     * @return
+     */
+    public static AtomRelation atom(String name) {
+        return new AtomRelation(name, 1);
+    }
 	
+    public boolean isAtom() {
+        return false;
+    }
+    
+    public boolean isVariable() {
+        return false;
+    }
+    
+    public Relation getExpansion() {
+        return null;
+    }
+    
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
@@ -159,4 +210,64 @@ public class Relation extends LeafExpression {
     		return new RelationPredicate.TotalOrdering(this, ordered, first, last);
     }
 
+}
+
+class AtomRelation extends Relation {
+
+    public AtomRelation(String name, int arity) {
+        super(name, arity);
+    }
+
+    @Override
+    public boolean isAtom() {
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "$$" + name() + "$$";
+    }
+}
+
+/**
+ * An extension to regular {@link Relation relations} that can evolve in time.
+ * At creation time, these variable relations also create a regular relation
+ * that represent will represent its expansion with explicit time.
+ * 
+ * @see Relation
+ * 
+ * @specfield expanded: Relation
+ * @invariant expanded.arity = this.arity + 1
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ */
+class VarRelation extends Relation {
+
+	public final Relation expanded;
+
+	/**
+	 * Constructs a variable relation with the specified name and arity, as well
+	 * as its expanded version.
+	 * @ensures this.name' = name && this.arity' = arity && expanded.arity = arity + 1
+	 * @throws IllegalArgumentException
+	 *             arity < 1
+	 */
+    public VarRelation(String name, int arity) {
+        super(name, arity);
+		expanded = Relation.nary(name, arity + 1);
+    }
+
+    @Override
+    public boolean isVariable() {
+        return true;
+    }
+
+    @Override
+    public Relation getExpansion() {
+        return expanded;
+    }
+
+    @Override
+    public String toString() {
+        return name();
+    }
 }

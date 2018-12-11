@@ -15,7 +15,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public final class HotelR implements DModel {
+public final class HotelR extends DModel {
 
 	final private int n, t;
 	final private Variant variant;

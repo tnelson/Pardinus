@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
@@ -205,15 +204,15 @@ public class TemporalBoundsExpander {
 		for (Relation r : bounds.relations()) {
 			TupleSet tupleSetL = convertToUniv(bounds.lowerBound(r), uni);
 			TupleSet tupleSetU = convertToUniv(bounds.upperBound(r), uni);
-			if (r instanceof VarRelation) {
-				newBounds.bound(((VarRelation) r).expanded, tupleSetL.product(tupleSetTime_unr_first),
+			if (r.isVariable()) {
+				newBounds.bound(r.getExpansion(), tupleSetL.product(tupleSetTime_unr_first),
 						tupleSetU.product(tupleSetTime_unr_first));
 				if (bounds.target(r) != null) {
 					TupleSet tupleSetT = convertToUniv(bounds.target(r), uni);
-					newBounds.setTarget(((VarRelation) r).expanded, tupleSetT.product(tupleSetTime_unr_first));
+					newBounds.setTarget(r.getExpansion(), tupleSetT.product(tupleSetTime_unr_first));
 				}
 				if (bounds.weight(r) != null)
-					newBounds.setWeight(((VarRelation) r).expanded, bounds.weight(r));
+					newBounds.setWeight(r.getExpansion(), bounds.weight(r));
 			} else {
 				newBounds.bound(r, tupleSetL, tupleSetU);
 				if (bounds.target(r) != null) {

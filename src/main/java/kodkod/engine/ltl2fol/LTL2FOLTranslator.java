@@ -36,7 +36,6 @@ import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
 import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryTempFormula;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractReplacer;
@@ -185,12 +184,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	@Override
 	public Expression visit(Relation relation) {
-		if (TemporalTranslator.isTemporal(relation)) {
+		if (relation.isVariable()) {
 			if (has_past && TemporalTranslator.ExplicitUnrolls)
-				return ((VarRelation) relation).expanded.join(getVariable().join(UNROLL_MAP));
+				return relation.getExpansion().join(getVariable().join(UNROLL_MAP));
 			else {
-				if (has_past) vars_found.add(((VarRelation) relation).expanded);
-				return ((VarRelation) relation).expanded.join(getVariable());
+				if (has_past) vars_found.add(relation.getExpansion());
+				return relation.getExpansion().join(getVariable());
 			}
 		} else
 			return relation;

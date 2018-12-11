@@ -44,7 +44,6 @@ import kodkod.ast.Formula;
 import kodkod.ast.NaryFormula;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.Solution;
 import kodkod.engine.config.Reporter;
@@ -164,11 +163,9 @@ public class PardinusBounds extends Bounds {
 	 * @param remainder
 	 */
 	public PardinusBounds(PardinusBounds partial, Bounds remainder) {
-		this(partial.universe().factory(), partial.lowerBounds(), partial
-				.upperBounds(), 
-				partial.targets, partial.weights,
-				partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(),
-				null, partial.integrated, partial.trivial_config,partial.integration);
+		this(partial.universe().factory(), partial.lowerBounds(), partial.upperBounds(), partial.targets,
+				partial.weights, partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(), null,
+				partial.integrated, partial.trivial_config,partial.integration);
 
 		this.amalgamated = partial.clone();
 		this.amalgamated.merge(remainder);
@@ -196,7 +193,7 @@ public class PardinusBounds extends Bounds {
 		Set<Relation> rs = relations_symb; 
 		for (Relation r : rs)
 			for (Relation d : symbolic.deps.get(r))
-				if (d instanceof VarRelation)
+				if (d.isVariable())
 					problematic.add(r);
 		
 		rs.removeAll(problematic);
@@ -204,7 +201,7 @@ public class PardinusBounds extends Bounds {
 		problematic.clear();
 		
 		for (Relation r : relations)
-			if (r instanceof VarRelation)
+			if (r.isVariable())
 				problematic.add(r);
 		
 		relations.removeAll(problematic);
@@ -293,10 +290,10 @@ public class PardinusBounds extends Bounds {
 	
 	public boolean hasVarRelations() {
 		for (Relation r : relations)
-			if (r instanceof VarRelation)
+			if (r.isVariable())
 				return true;
 		for (Relation r : relations_symb)
-			if (r instanceof VarRelation)
+			if (r.isVariable())
 				return true;
 		return false;
 	}
@@ -515,7 +512,7 @@ public class PardinusBounds extends Bounds {
 	 * 
 	 * @return r in this.relations => lowerBound[r], null
 	 */
-	public Expression lowerSymbBounds(Relation r) {
+	public Expression lowerSymbBound(Relation r) {
 		return lowers_symb.get(r);
 	}
 
@@ -525,7 +522,7 @@ public class PardinusBounds extends Bounds {
 	 * 
 	 * @return r in this.relations => upperBound[r], null
 	 */
-	public Expression upperSymbBounds(Relation r) {
+	public Expression upperSymbBound(Relation r) {
 		return uppers_symb.get(r);
 	}
 
@@ -613,12 +610,15 @@ public class PardinusBounds extends Bounds {
 	 *            the bounds to be merged.
 	 */
 	public void merge(Bounds bounds) {
-		for (Relation r : bounds.relations())
-			this.bound(r, bounds.lowerBound(r),bounds.upperBound(r));
-		if (bounds instanceof PardinusBounds) {
+		if (!(bounds instanceof PardinusBounds))
+			for (Relation r : bounds.relations())
+				this.bound(r, bounds.lowerBound(r),bounds.upperBound(r));
+		else {
 			PardinusBounds bnds = (PardinusBounds) bounds;
+			for (Relation r : bnds.relations)
+				this.bound(r, bnds.lowerBound(r), bnds.upperBound(r));
 			for (Relation r : bnds.relations_symb)
-				this.bound(r, bnds.lowerSymbBounds(r), bnds.upperSymbBounds(r));
+				this.bound(r, bnds.lowerSymbBound(r), bnds.upperSymbBound(r));
 			for (Relation r : bounds.relations()) {
 				if (bnds.target(r) != null)
 					this.setTarget(r, bnds.target(r));
@@ -827,8 +827,8 @@ public class PardinusBounds extends Bounds {
 			if (PardinusBounds.super.relations().contains(rel) && pre1.size() == pre2.size())
 				return constrs;
 			
-			TupleSet low_low = resolveLower(lowerSymbBounds(rel));
-			TupleSet upp_upp = resolveUpper(upperSymbBounds(rel));
+			TupleSet low_low = resolveLower(lowerSymbBound(rel));
+			TupleSet upp_upp = resolveUpper(upperSymbBound(rel));
 			
 			if (!upp_upp.containsAll(low_low))
 				throw new IllegalArgumentException("Resolved lower larger than resolver upper.");
@@ -844,19 +844,19 @@ public class PardinusBounds extends Bounds {
 			bound(rel, low_low, upp_upp);
 			reporter.debug("resolved "+rel+" from ["+pre1+","+pre2+"] into ["+low_low+","+upp_upp+"]");
 			
-			TupleSet low_upp = resolveUpper(lowerSymbBounds(rel));
-			TupleSet upp_low = resolveLower(upperSymbBounds(rel));
+			TupleSet low_upp = resolveUpper(lowerSymbBound(rel));
+			TupleSet upp_low = resolveLower(upperSymbBound(rel));
 
 			// resolved bounds not exact, create additional constraints
 			Formula constr = null;
 			if (low_low.size() != low_upp.size()) {
-				if (!lowerSymbBounds(rel).equals(Expression.NONE)) {
-					Formula x = lowerSymbBounds(rel).in(rel);
+				if (!lowerSymbBound(rel).equals(Expression.NONE)) {
+					Formula x = lowerSymbBound(rel).in(rel);
 					constr = constr==null?x:constr.and(x);
 				}
 			}
 			if (upp_low.size() != upp_upp.size()) {
-				Formula x = rel.in(upperSymbBounds(rel));
+				Formula x = rel.in(upperSymbBound(rel));
 				constr = constr==null?x:constr.and(x);
 			}
 

@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.instance.PardinusBounds;
@@ -27,8 +26,8 @@ import org.junit.Test;
 public class TemporalSlicerUnitTesting {
 
 	private static Relation Process = Relation.unary("Process");
-	private static VarRelation toSend = VarRelation.binary("toSend");
-	private static VarRelation elected = VarRelation.unary("elected");
+	private static Relation toSend = Relation.binary_variable("toSend");
+	private static Relation elected = Relation.unary_variable("elected");
 
 	private static Relation succ = Relation.binary("succ");
 
@@ -37,8 +36,8 @@ public class TemporalSlicerUnitTesting {
 	private static Relation pord = Relation.binary("pord");
 	private static Relation tord = Relation.binary("tord");
 
-	private static VarRelation succ1 = VarRelation.binary("succ1");
-	private static VarRelation succ2 = VarRelation.binary("succ2");
+	private static Relation succ1 = Relation.binary_variable("succ1");
+	private static Relation succ2 = Relation.binary_variable("succ2");
 
 	private static PardinusBounds bounds;
 	

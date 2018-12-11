@@ -29,7 +29,6 @@ package kodkod.engine.satlab;
  */
 final public class Yices extends NativeSolver {
 
-	
 	private boolean makearray;
 	protected long array = 0;
 	
@@ -38,22 +37,12 @@ final public class Yices extends NativeSolver {
 	 */
 	public Yices() {
 		super(make());
-		if (1==1) throw new RuntimeException();
 		makearray = true;
 		array = allocArray();
 	}
 	
 	static {
 		loadLibrary(Yices.class);
-	}
-
-	
-	/**
-	 * {@inheritDoc}
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "Yices";
 	}
 	
 	/**
@@ -62,7 +51,6 @@ final public class Yices extends NativeSolver {
 	 */
 	private static native long make();
 	private static native long allocArray();
-	
 	
 	/**
 	 * {@inheritDoc}
@@ -101,18 +89,24 @@ final public class Yices extends NativeSolver {
 	
 	native boolean natAddClause(long peer,int[] lits,boolean makearray, long array);
 	
-	
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.NativeSolver#solve(int)
 	 */
 	native boolean solve(long peer);
-	
 
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.NativeSolver#valueOf(int, int)
 	 */
 	native boolean valueOf(long peer, int literal);
-
+	
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "Yices";
+	}
+	
 }

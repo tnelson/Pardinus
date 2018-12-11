@@ -17,10 +17,10 @@ import static org.junit.Assert.assertEquals;
  */
 public class NNFUnitTesting {
 
-	private static VarRelation A = VarRelation.unary("A");
-	private static VarRelation B = VarRelation.unary("B");
-	private static VarRelation C = VarRelation.binary("C");
-	private static VarRelation toSend = VarRelation.binary("toSend");
+	private static Relation A = Relation.unary_variable("A");
+	private static Relation B = Relation.unary_variable("B");
+	private static Relation C = Relation.binary_variable("C");
+	private static Relation toSend = Relation.binary_variable("toSend");
 	private static Relation Process = Relation.unary("Process");
 
 	@Test

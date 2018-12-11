@@ -65,7 +65,6 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
@@ -260,7 +259,7 @@ public class ElectrodPrinter {
 		StringBuilder sb = new StringBuilder();
 		Bounds bnd = bounds;
 		for (Relation r : bnd.relations()) {
-			if (r instanceof VarRelation)
+			if (r.isVariable())
 				sb.append("var ");
 			else
 				sb.append("const ");

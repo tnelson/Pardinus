@@ -15,7 +15,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class DijkstraR implements DModel {
+public class DijkstraR extends DModel {
 
 	private final Relation Process, Mutex, State, holds, waits;
 	private final Relation sfirst, slast, sord, mfirst, mlast, mord;

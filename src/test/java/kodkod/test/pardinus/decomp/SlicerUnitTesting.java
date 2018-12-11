@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.instance.PardinusBounds;
@@ -27,15 +26,15 @@ import org.junit.Test;
 public class SlicerUnitTesting {
 
 	private static Relation Process = Relation.unary("Process");
-	private static VarRelation toSend = VarRelation.binary("toSend");
-	private static VarRelation elected = VarRelation.unary("elected");
+	private static Relation toSend = Relation.binary_variable("toSend");
+	private static Relation elected = Relation.unary_variable("elected");
 
 	private static Relation succ = Relation.binary("succ");
 
 	private static Relation pfirst = Relation.unary("pfirst");
 	private static Relation plast = Relation.unary("plast");
-	private static VarRelation pord = VarRelation.binary("pord");
-	private static VarRelation tord = VarRelation.binary("tord");
+	private static Relation pord = Relation.binary_variable("pord");
+	private static Relation tord = Relation.binary_variable("tord");
 
 	private static Relation succ1 = Relation.binary("succ1");
 	private static Relation succ2 = Relation.binary("succ2");
