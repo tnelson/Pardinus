@@ -81,8 +81,8 @@ public class TemporalSlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultStatic, staticRel.toString());
-		assertEquals(resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
 	}
 
 	@Test
@@ -105,8 +105,8 @@ public class TemporalSlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
 	}
 	
 	@Test
@@ -131,8 +131,8 @@ public class TemporalSlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -157,8 +157,8 @@ public class TemporalSlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -192,8 +192,8 @@ public class TemporalSlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -230,8 +230,8 @@ public class TemporalSlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -272,8 +272,8 @@ public class TemporalSlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
 	}
 
 	public static void p(String s) {

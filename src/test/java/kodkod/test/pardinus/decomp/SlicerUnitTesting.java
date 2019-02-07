@@ -1,18 +1,25 @@
 package kodkod.test.pardinus.decomp;
 
 import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
+import kodkod.engine.PardinusSolver;
+import kodkod.engine.Solution;
+import kodkod.engine.config.AbstractReporter;
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DecompFormulaSlicer;
+import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TupleFactory;
+import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -82,8 +89,8 @@ public class SlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultStatic, staticRel.toString());
-		assertEquals(resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
 	}
 
 	@Test
@@ -106,8 +113,8 @@ public class SlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
 	}
 	
 	@Test
@@ -132,8 +139,8 @@ public class SlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -158,8 +165,8 @@ public class SlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -193,8 +200,8 @@ public class SlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -231,8 +238,8 @@ public class SlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
 	}
 
 	@Test
@@ -273,8 +280,88 @@ public class SlicerUnitTesting {
 		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
 		Formula dynamicRel = entry.getValue();
 		Formula staticRel = entry.getKey();
-		assertEquals(resultDynamic, dynamicRel.toString());
-		assertEquals(staticRel.toString(), resultStatic);
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
+	}
+	
+	@Test
+	public final void testOneConjunct() {
+		Formula var1 = succ1.in(Process.product(Process));
+
+		Formula total = var1;
+
+		String resultDynamic = Formula.and(new Formula[] { var1 }).toString();
+		String resultStatic = Formula.and(new Formula[] { }).toString();
+
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
+		assertEquals("incorrect remainder partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect partial partition", resultStatic, staticRel.toString());
+	}
+	
+	Bounds subj1 = null;
+	Formula subj2 = null;
+	
+	@Test
+	public final void testTrivialIntegrated() {
+		int n = 3;
+		Relation a = Relation.unary("a");
+		Relation b = Relation.unary("b");
+		Relation c = Relation.unary("c");
+
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet las = f.range(f.tuple("A0"), f.tuple("A0"));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+
+		PardinusBounds bounds1 = new PardinusBounds(uni);
+		PardinusBounds bounds2 = new PardinusBounds(uni);
+		bounds1.bound(a, las, as);
+		bounds1.bound(b, las, as);
+		bounds2.bound(c, las, as);
+		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
+		Formula formula = a.eq(Expression.UNIV).and(a.in(b)); // all remainder trivial
+
+		
+		ExtendedOptions opt = new ExtendedOptions();
+		
+		opt.setRunDecomposed(true);
+		opt.setReporter(new AbstractReporter() {
+			
+			@Override
+			public void translatingToBoolean(Formula formula, Bounds bounds) {
+				subj1 = bounds; subj2 = formula;
+			}
+		});
+		
+		PardinusSolver dsolver = new PardinusSolver(opt);
+		
+		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
+		sols.next();
+		
+		// (!(a = a_1) or !(b = b_1) or !(c = c_1))
+		Relation a_t = null, b_t = null, c_t = null;
+		for (Relation r : subj1.relations())
+			if (r.toString().length()<3) {}
+			else if (r.toString().substring(0, 2).equals("a_"))
+				a_t = r;
+			else if (r.toString().substring(0, 2).equals("b_"))
+				b_t = r;
+			else if (r.toString().substring(0, 2).equals("c_"))
+				c_t = r;
+		Formula form = Formula.or(a.eq(a_t).not(),b.eq(b_t).not(),c.eq(c_t).not());
+		
+		
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(form, (PardinusBounds) subj1);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
+		assertEquals("incorrect remainder partition", form.toString(), dynamicRel.toString());
+		assertEquals("incorrect partial partition", Formula.TRUE.toString(), staticRel.toString());
 	}
 
 	public static void p(String s) {

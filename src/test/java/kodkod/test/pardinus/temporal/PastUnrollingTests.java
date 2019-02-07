@@ -41,9 +41,7 @@ public class PastUnrollingTests {
 	PardinusBounds b;
 	int n;
 
-	public PastUnrollingTests() {
-
-	}
+	public PastUnrollingTests() {}
 
 	void doBounds() {
 		List<Object> atoms = new ArrayList<Object>();
@@ -84,8 +82,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -115,8 +113,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -148,7 +146,7 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
+		assertFalse("problem should not be sat",sol.sat());
 		return;
 	}
 
@@ -180,8 +178,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(3, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,3, trans.past_depth);
 		return;
 	}
 
@@ -213,8 +211,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		// assertEquals(3, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		// assertEquals("incorrect past operator depth" ,3, trans.past_depth);
 		return;
 	}
 
@@ -240,8 +238,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -266,8 +264,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -292,8 +290,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -319,8 +317,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -345,8 +343,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -371,8 +369,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -398,8 +396,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -425,8 +423,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -452,8 +450,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -479,8 +477,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -505,8 +503,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -532,8 +530,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -558,8 +556,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -585,8 +583,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -611,8 +609,8 @@ public class PastUnrollingTests {
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
-		assertFalse(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -638,8 +636,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -665,8 +663,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(1, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,1, trans.past_depth);
 		return;
 	}
 
@@ -692,8 +690,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(2, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,2, trans.past_depth);
 		return;
 	}
 
@@ -719,8 +717,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertFalse(sol.sat());
-		assertEquals(3, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,3, trans.past_depth);
 		return;
 	}
 
@@ -746,8 +744,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(3, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,3, trans.past_depth);
 		return;
 	}
 
@@ -781,8 +779,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(5, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,5, trans.past_depth);
 	}
 
 	/*
@@ -815,8 +813,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertFalse(sol.sat());
-		assertEquals(5, trans.past_depth);
+		assertFalse("problem should not be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,5, trans.past_depth);
 	}
 
 	/*
@@ -846,8 +844,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(3, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,3, trans.past_depth);
 		return;
 	}
 
@@ -880,8 +878,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(3, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,3, trans.past_depth);
 		return;
 	}
 
@@ -914,8 +912,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(3, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,3, trans.past_depth);
 		return;
 	}
 
@@ -946,8 +944,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(1, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,1, trans.past_depth);
 		return;
 	}
 
@@ -979,8 +977,8 @@ public class PastUnrollingTests {
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
 		// new TemporalInstance(sol.instance());
-		assertTrue(sol.sat());
-		assertEquals(1, trans.past_depth);
+		assertTrue("problem should be sat",sol.sat());
+		assertEquals("incorrect past operator depth" ,1, trans.past_depth);
 		return;
 	}
 

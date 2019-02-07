@@ -11,6 +11,7 @@ import org.junit.runners.Suite;
 	PastUnrollingTests.class,
     TemporalSlicerUnitTesting.class,
     TemporalTranslatorTests.class,
+    ExampleTests.class,
 })
 
 public class AllTemporalTests {}
