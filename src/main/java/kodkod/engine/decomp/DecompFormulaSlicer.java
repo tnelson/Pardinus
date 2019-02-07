@@ -74,17 +74,19 @@ public class DecompFormulaSlicer {
 	 */
 	public static Entry<Formula, Formula> slice(Formula formula,
 			PardinusBounds bounds) {
-		Set<Relation> partials = bounds.relations();
+		Set<Relation> partials = new HashSet<Relation>();
 		if (bounds.integrated()) {
-			Set<Relation> aux = new HashSet<Relation>();
-			for (Relation r : partials)
-				if (bounds.lowerBound(r).size() == bounds.upperBound(r).size())
-					aux.add(r);
-			// iterating trivial integrated solutions
-			// TODO: there is probably a better way to handle this
-			if (partials.equals(aux))
-				return new SimpleEntry<Formula, Formula>(Formula.TRUE, formula);
-			partials = aux;
+			for (Relation r : bounds.relations())
+				// new relation, probably from trivial iteration
+				if (!bounds.amalgamated.relations().contains(r)) {} 
+				// was partial, now solved, or was already constant
+				else if (bounds.amalgamated.lowerBound(r).size() != bounds.lowerBound(r).size()
+						|| bounds.amalgamated.upperBound(r).size() != bounds.upperBound(r).size()
+						|| bounds.amalgamated.upperBound(r).size() == bounds.amalgamated.lowerBound(r).size())
+					partials.add(r);
+		} else {
+			// if not integrated, bounds are the partial
+			partials = bounds.relations();
 		}
 		// converts to NNF and flattens the formula
 		AnnotatedNode<Formula> flat = FormulaFlattener.flatten(
@@ -122,6 +124,12 @@ public class DecompFormulaSlicer {
 				else
 					f2.add(f);
 			}
+		} else {
+			Set<Relation> rs = form.accept(col);
+			if (partials.containsAll(rs))
+				f1.add(form);
+			else 
+				f2.add(form);
 		}
 		return new SimpleEntry<Formula, Formula>(NaryFormula.and(f1), NaryFormula.and(f2));
 	}
