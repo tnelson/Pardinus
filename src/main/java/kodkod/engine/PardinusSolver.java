@@ -180,6 +180,7 @@ public class PardinusSolver implements
 
 		assert (!TemporalTranslator.isTemporal(formula) && !bounds.hasVarRelations()) || options.temporal();
 		assert !options.unbounded() || options.temporal();
+		assert options.maxTraceLength() - options.minTraceLength() >= 0;
 //		assert options.solver().incremental();
 		
 //		if (!(this.solver instanceof IterableSolver))
