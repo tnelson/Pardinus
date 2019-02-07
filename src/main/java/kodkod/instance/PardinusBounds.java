@@ -560,10 +560,13 @@ public class PardinusBounds extends Bounds {
 		List<Formula> xtra = new ArrayList<Formula>();
 		
 		Set<Relation> rs = new HashSet<Relation>(relations_symb);
+		boolean isvar = false;
 		for (Relation r : rs) {
+			if (r.isVariable()) isvar = true;
 			xtra.addAll(symbolic.resolve(r,reporter));
 		}
-		Formula res = NaryFormula.and(xtra).always();
+		Formula res = NaryFormula.and(xtra);
+		if (isvar) res = res.always();
 		reporter.debug("Additional resolution formula: "+res);
 		return res;
 	}
