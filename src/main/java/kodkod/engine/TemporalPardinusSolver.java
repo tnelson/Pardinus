@@ -419,7 +419,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 							System.out.print(notModel[k]+" ");
 						System.out.println("");
 
-//						translation.cnf().addClause(notModel);
+						translation.cnf().addClause(notModel);
 					}
 				}
 				
