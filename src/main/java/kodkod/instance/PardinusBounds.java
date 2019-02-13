@@ -179,12 +179,16 @@ public class PardinusBounds extends Bounds {
 	 */
 	public PardinusBounds(PardinusBounds amalg, boolean x) {
 		// Create a new bound with static information
-		this(amalg.universe().factory(), amalg.lowers, amalg.uppers,
-				amalg.targets, amalg.weights, amalg.lowers_symb,
-				amalg.uppers_symb, amalg.symbolic, amalg.intBounds(), null, amalg.integrated,
+		this(amalg.universe().factory(), 
+				new HashMap<Relation, TupleSet>(amalg.lowers), new HashMap<Relation, TupleSet>(amalg.uppers),
+				new HashMap<Relation, TupleSet>(amalg.targets), new HashMap<Relation, Integer>(amalg.weights), 
+				new HashMap<Relation, Expression>(amalg.lowers_symb), new HashMap<Relation, Expression>(amalg.uppers_symb),
+				amalg.symbolic, amalg.intBounds(), null, amalg.integrated,
 				amalg.trivial_config, amalg.integration);
 		// TODO: is it problematic to use the same #SymbolicStructures?
 		
+		this.amalgamated = amalg.clone();
+
 		// the automatic partition splits static / variable relations
 		// however, symbolic bounds of static relations may refer to variable relations
 		// (even indirectly, for instance, if a var sig extends a static sig)
@@ -206,7 +210,6 @@ public class PardinusBounds extends Bounds {
 		
 		relations.removeAll(problematic);
 		
-		this.amalgamated = amalg.clone();
 		
 	}
 	
