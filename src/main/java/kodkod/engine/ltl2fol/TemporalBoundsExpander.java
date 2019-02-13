@@ -127,9 +127,10 @@ public class TemporalBoundsExpander {
 			tupleSetTime_unr_first = uni.factory().range(
 					uni.factory().tuple(TemporalTranslator.STATEATOM + "0" + sp + "0"),
 					uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + "0"));
+			TupleSet tupleSetTime_unr_first_lasts = uni.factory().setOf(tupleSetTime_unr_first);
 			for (int j = 0; j < unrolls; j++)
-				tupleSetTime_unr_first.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + j));
-			newBounds.bound(TemporalTranslator.STATE, tupleSetTime_unr_first, tupleSetTime_unr);
+				tupleSetTime_unr_first_lasts.add(uni.factory().tuple(TemporalTranslator.STATEATOM + (steps - 1) + sp + j));
+			newBounds.bound(TemporalTranslator.STATE, tupleSetTime_unr_first_lasts, tupleSetTime_unr);
 
 			TupleSet tupleSetTime_unr_last = uni.factory().range(
 					uni.factory().tuple(TemporalTranslator.STATEATOM + "0" + sp + (unrolls - 1)),

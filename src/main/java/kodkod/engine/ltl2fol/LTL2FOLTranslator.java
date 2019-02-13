@@ -115,7 +115,8 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			Formula order_unr_trace1 = v.join(PREFIX).one().forAll(v.oneOf(STATE.difference(LAST)));
 			Formula order_unr_trace2 = PREFIX.join(v).one().forAll(v.oneOf(STATE.difference(FIRST)));
 			Formula order_unr_trace3 = FIRST.join(PREFIX.reflexiveClosure()).eq(STATE);
-
+			Formula order_unr_trace4 = PREFIX.in(STATE.product(STATE));
+			
 			if (has_past) {
 				Variable v1 = Variable.unary("v1");
 				// all s0, s1
@@ -124,7 +125,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 			Formula loopDecl_unr = LOOP.one();
 			
-			f = Formula.and(order_unr_trace1, order_unr_trace2, order_unr_trace3, loopDecl_unr);
+			f = Formula.and(order_unr_trace1, order_unr_trace2, order_unr_trace3, order_unr_trace4, loopDecl_unr);
 		} else {
 			// TotalOrder(S/Next,State,S/First,S/Last)
 			Formula st = PREFIX.totalOrder(STATE, FIRST, LAST);
