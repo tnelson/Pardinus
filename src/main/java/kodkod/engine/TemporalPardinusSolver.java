@@ -376,6 +376,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 						System.out.println("Expanding and negating previous instance, "+insts.size()+" possible unrolls:\n"+inst);
 						TemporalInstance inste = insts.iterator().next();
 						final int[] notModel = new int[translation.numPrimaryVariables()-insts.size()];
+						int j = 0;
 						for (Relation r : extbounds.relations()) {
 							TupleSet lower = extbounds.lowerBound(r);
 							IntSet vars = translation.primaryVariables(r);
@@ -384,9 +385,11 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 								int lit = vars.min();
 								for(IntIterator iter = extbounds.upperBound(r).indexView().iterator(); iter.hasNext();) {
 									final int index = iter.next();
-									notModel[lit-1-insts.size()] = inste.tuples(r).indexView().contains(index)?-lit:lit;
-									System.out.print(notModel[lit-1-insts.size()]+" ");
-									lit++;
+									if (!lower.indexView().contains(index)) {
+										notModel[j++] = inste.tuples(r).indexView().contains(index)?-lit:lit;
+										System.out.print(notModel[j-1]+" ");
+										lit++;
+									}
 								}
 								System.out.println("\n");
 							}
@@ -398,7 +401,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 						Set<Integer> loops = new HashSet<Integer>();
 						IntSet vars = translation.primaryVariables(TemporalTranslator.LOOP);
 						for (TemporalInstance i : insts) {
-							TupleSet lower = extbounds.lowerBound(TemporalTranslator.LOOP);
 							int lit = vars.min();
 							for(IntIterator iter = extbounds.upperBound(TemporalTranslator.LOOP).indexView().iterator(); iter.hasNext();) {
 								final int index = iter.next();
@@ -408,18 +410,16 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 							System.out.println("");
 						}
 						System.out.println("Bad loops were "+loops);
-						int lit = vars.min(); int i = 0;
-						for(IntIterator iter = extbounds.upperBound(TemporalTranslator.LOOP).indexView().iterator(); iter.hasNext();) {
-							final int index = iter.next();
-							if (!loops.contains(lit)) notModel[i++] = lit;
-							lit++;
+						for(IntIterator iter = vars.iterator(); iter.hasNext();) {
+							final int lit = iter.next();
+							if (!loops.contains(lit)) notModel[j++] = lit;
 						}
 						System.out.println("New final clause");
 						for (int k = 0; k < notModel.length; k++)
 							System.out.print(notModel[k]+" ");
 						System.out.println("");
 
-						translation.cnf().addClause(notModel);
+//						translation.cnf().addClause(notModel);
 					}
 				}
 				
