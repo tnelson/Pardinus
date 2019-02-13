@@ -259,10 +259,10 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				final Bounds newBounds = bounds instanceof PardinusBounds?((PardinusBounds) bounds).clone():bounds.clone();
 				final List<Formula> changes = new ArrayList<Formula>();
 
-				// [HASLab] always consider the amalgamated problem to generate the formula,
+				// [HASLab] when integrated consider the amalgamated problem to generate the formula,
 				// otherwise already fixed relations will be ignored in symmetry breaking
 				Bounds full_bounds = bounds;
-				if (bounds instanceof PardinusBounds)
+				if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).integrated)
 					full_bounds = ((PardinusBounds) bounds).amalgamated;
 				
 				for(Relation r : full_bounds.relations()) {
@@ -275,7 +275,6 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 							final Relation rmodel = Relation.nary(r.name()+"_"+trivial, r.arity());
 							newBounds.boundExactly(rmodel, bounds.lowerBound(r));	
 							changes.add(r.eq(rmodel).not());
-
 						}
 					}
 				}
