@@ -27,10 +27,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -49,10 +51,13 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
+import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
+import kodkod.util.ints.IntSet;
+import kodkod.util.ints.Ints;
 import kodkod.util.nodes.PrettyPrinter;
 
 /**
@@ -270,6 +275,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private int current_trace;
 		private boolean incremented = false;
 		private TemporalTranslator tmptrans;
+		private Set<TemporalInstance> previous_instances = new HashSet<TemporalInstance>(); // [HASLab]
 		
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			assert !options.unbounded();
@@ -322,7 +328,9 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (!hasNext())
 				throw new NoSuchElementException();
 			try {
-				return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution();
+				Solution sol = translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution(); 
+				if (sol.sat()) previous_instances.add((TemporalInstance) sol.instance());
+				return sol;
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
@@ -355,12 +363,64 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (incremented) {
+					
 					long translStart = System.currentTimeMillis();
 					Bounds extbounds = tmptrans.expand(current_trace);
 					translation = Translator.translate(extformula, extbounds, opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
 					incremented = false;
+					System.out.println("\n** Trace length incremented to "+current_trace);
+					for(TemporalInstance inst : previous_instances) {
+						Set<TemporalInstance> insts = inst.unrollStep(current_trace);
+						System.out.println("Expanding and negating previous instance, "+insts.size()+" possible unrolls:\n"+inst);
+						TemporalInstance inste = insts.iterator().next();
+						final int[] notModel = new int[translation.numPrimaryVariables()-insts.size()];
+						for (Relation r : extbounds.relations()) {
+							TupleSet lower = extbounds.lowerBound(r);
+							IntSet vars = translation.primaryVariables(r);
+							if (!vars.isEmpty() && !r.equals(TemporalTranslator.LOOP)) {
+								System.out.print(r+" has vars "+vars+", result is ");
+								int lit = vars.min();
+								for(IntIterator iter = extbounds.upperBound(r).indexView().iterator(); iter.hasNext();) {
+									final int index = iter.next();
+									notModel[lit-1-insts.size()] = inste.tuples(r).indexView().contains(index)?-lit:lit;
+									System.out.print(notModel[lit-1-insts.size()]+" ");
+									lit++;
+								}
+								System.out.println("\n");
+							}
+						}
+						System.out.println("New clause without loops");
+						for (int i = 0; i < notModel.length; i++)
+							System.out.print(notModel[i]+" ");
+						System.out.println("");
+						Set<Integer> loops = new HashSet<Integer>();
+						IntSet vars = translation.primaryVariables(TemporalTranslator.LOOP);
+						for (TemporalInstance i : insts) {
+							TupleSet lower = extbounds.lowerBound(TemporalTranslator.LOOP);
+							int lit = vars.min();
+							for(IntIterator iter = extbounds.upperBound(TemporalTranslator.LOOP).indexView().iterator(); iter.hasNext();) {
+								final int index = iter.next();
+								if (i.tuples(TemporalTranslator.LOOP).indexView().contains(index)) loops.add(lit);
+								lit++;
+							}
+							System.out.println("");
+						}
+						System.out.println("Bad loops were "+loops);
+						int lit = vars.min(); int i = 0;
+						for(IntIterator iter = extbounds.upperBound(TemporalTranslator.LOOP).indexView().iterator(); iter.hasNext();) {
+							final int index = iter.next();
+							if (!loops.contains(lit)) notModel[i++] = lit;
+							lit++;
+						}
+						System.out.println("New final clause");
+						for (int k = 0; k < notModel.length; k++)
+							System.out.print(notModel[k]+" ");
+						System.out.println("");
+
+						translation.cnf().addClause(notModel);
+					}
 				}
 				
 				transl = translation;
@@ -388,11 +448,14 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
 				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),tmptrans));
+				System.out.print("New solution\n"+sol.instance()+ "which negated is ");
 				// add the negation of the current model to the solver
 				final int[] notModel = new int[primaryVars];
 				for (int i = 1; i <= primaryVars; i++) {
 					notModel[i - 1] = cnf.valueOf(i) ? -i : i;
+					System.out.print(notModel[i - 1]+" ");
 				}
+				System.out.println("");
 				cnf.addClause(notModel);
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
