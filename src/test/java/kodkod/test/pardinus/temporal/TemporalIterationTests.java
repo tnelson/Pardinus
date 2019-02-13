@@ -1,0 +1,241 @@
+package kodkod.test.pardinus.temporal;
+
+import java.util.Iterator;
+import org.junit.Test;
+
+import kodkod.ast.Expression;
+import kodkod.ast.Formula;
+import kodkod.ast.NaryFormula;
+import kodkod.ast.Relation;
+import kodkod.ast.Variable;
+import kodkod.engine.PardinusSolver;
+import kodkod.engine.Solution;
+import kodkod.engine.config.ExtendedOptions;
+import kodkod.instance.PardinusBounds;
+import kodkod.instance.TupleFactory;
+import kodkod.instance.TupleSet;
+import kodkod.instance.Universe;
+
+public class TemporalIterationTests {
+	
+
+	@Test
+	public void test() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		Formula formula = a.one().always();
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(3);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		while (sols.hasNext()) {
+			Solution sol = sols.next();
+	
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			
+//				Set<TemporalInstance> instns = ((TemporalInstance) sol.instance()).unrollStep(5);
+				
+//				for (TemporalInstance k : instns)
+//					System.out.println(k.toString());
+			}
+
+		}
+		solver.free();
+
+	}
+	
+	@Test
+	public void testLower() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet ls = f.setOf(f.tuple("A0"));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, ls, as);
+		Formula formula = a.some().always();
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(3);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		while (sols.hasNext()) {
+			Solution sol = sols.next();
+	
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			
+//				Set<TemporalInstance> instns = ((TemporalInstance) sol.instance()).unrollStep(5);
+				
+//				for (TemporalInstance k : instns)
+//					System.out.println(k.toString());
+			}
+
+		}
+		solver.free();
+
+	}
+	
+
+	@Test
+	public void testSkolem() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet ls = f.setOf(f.tuple("A0"));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, ls, as);
+		Formula formula = a.some().eventually();
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(3);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		while (sols.hasNext()) {
+			Solution sol = sols.next();
+	
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			
+//				Set<TemporalInstance> instns = ((TemporalInstance) sol.instance()).unrollStep(5);
+				
+//				for (TemporalInstance k : instns)
+//					System.out.println(k.toString());
+			}
+
+		}
+		solver.free();
+
+	}
+	@Test
+	public void election() {
+		int n = 2;
+
+		Relation id 		= Relation.unary("Id");
+		Relation next 		= Relation.binary("next");
+		Relation process 	= Relation.unary("Process");
+		Relation idf	 	= Relation.binary("id");
+		Relation succ 		= Relation.binary("succ");
+		Relation outbox 	= Relation.binary_variable("outbox");
+		Relation elected 	= Relation.unary_variable("Elected");
+		
+		Object[] atoms = new Object[n*2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "I"+i;
+		for (int i = 0; i < n; i++)
+			atoms[n+i] = "P"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet is = f.range(f.tuple("I0"), f.tuple("I"+(n-1)));
+		TupleSet ps = f.range(f.tuple("P0"), f.tuple("P"+(n-1)));
+		TupleSet ns = f.noneOf(2);
+		for (int i = 0; i < n-1; i++) {
+			ns.add(f.tuple("I"+i,"I"+(i+1)));
+		}
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.boundExactly(id,is);
+		bounds.boundExactly(next, ns);
+		bounds.bound(process,ps);
+		bounds.bound(idf, process.product(id));
+		bounds.bound(succ, process.product(process));
+		bounds.bound(outbox, process.product(id));
+		bounds.bound(elected, process);
+
+		Variable p1 = Variable.unary("p");
+		Formula f1 = p1.join(idf).one().forAll(p1.oneOf(process));
+		Variable i = Variable.unary("i");
+		Formula f2 = idf.join(i).lone().forAll(i.oneOf(id));
+		Variable p3 = Variable.unary("p");
+		Formula f3 = p3.join(succ).one().forAll(p3.oneOf(process));
+		Variable p4 = Variable.unary("p");
+		Formula f4 = process.in(p4.join(succ.closure())).forAll(p4.oneOf(process));
+		
+		Formula f5 = outbox.eq(idf);
+		Variable p6 = Variable.unary("p"), i6 = Variable.unary("i");
+		Expression e6a = outbox.difference(p6.product(i6));
+		Expression e6b = p6.join(succ).product(i6.difference(next.closure().join(p6.join(succ.join(idf)))));
+		Formula f6a = outbox.prime().eq((e6a).union(e6b));
+		Formula f6 = f6a.forSome(p6.oneOf(process).and(i6.oneOf(p6.join(outbox)))).always();
+		Variable p7 = Variable.unary("p");
+		Formula f7a = (p7.join(idf).in(p7.join(outbox)).and(p7.join(idf).in(p7.join(outbox)).not().previous())).once();
+		Formula f7 = elected.eq(f7a.comprehension(p7.oneOf(process))).always();
+		
+//		Formula f8 = idf.in(process.product(id));
+//		Formula f9 = succ.in(process.product(process));
+//		Formula f10 = outbox.in(process.product(id)).always();
+//		Formula f11 = elected.in(process).always();
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(8);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Iterator<Solution> sols = solver.solveAll(NaryFormula.and(f1,f2,f3,f4,f5,f6,f7,elected.some().eventually()), bounds);
+		
+		System.out.println(bounds);
+		System.out.println(NaryFormula.and(f1,f2,f3,f4,f5,f6,f7,elected.some().eventually()));
+		
+		for (int j = 0;j<20 && sols.hasNext();j++) {
+			Solution sol = sols.next();
+	
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			
+//				Set<TemporalInstance> instns = ((TemporalInstance) sol.instance()).unrollStep(5);
+				
+//				for (TemporalInstance k : instns)
+//					System.out.println(k.toString());
+			}
+
+		}
+		solver.free();
+
+	}
+	
+}

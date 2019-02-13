@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+	BaseTests.class,
 	SlicerUnitTesting.class,
 	SymmetryTests.class,
 	RedBlackTests.class,
