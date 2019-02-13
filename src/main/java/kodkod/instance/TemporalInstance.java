@@ -24,8 +24,11 @@ package kodkod.instance;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import kodkod.ast.Decls;
 import kodkod.ast.Expression;
@@ -165,13 +168,34 @@ public class TemporalInstance extends Instance {
 		loop = TemporalTranslator.interpretState(tuple_loop);
 
 		states = new ArrayList<Instance>();
+		
+		Iterator<Tuple> tupleset_times = eval.evaluate(TemporalTranslator.STATE,0).iterator();
+		Set<Object> atom_times = new HashSet<Object>();
+		while (tupleset_times.hasNext())
+			atom_times.add(tupleset_times.next().atom(0));
+
+		List<Object> atoms = new ArrayList<Object>();
+		Iterator<Object> old_atoms = instance.universe().iterator();
+
+		while (old_atoms.hasNext()) {
+			Object a = old_atoms.next();
+			if (!atom_times.contains(a)) atoms.add(a);
+		}
+
+		Universe static_universe = new Universe(atoms);
 		// for each state, create a new instance by evaluating relations at that state
 		for (int i = 0; i <= end; i++) {
-			Instance inst = new Instance(instance.universe());
+			Instance inst = new Instance(static_universe);
 
 			for (Relation r : tmptrans.bounds.relations()) {
-				TupleSet t = eval.evaluate(r, i);
-				inst.add(r, t);
+				TupleSet ts = static_universe.factory().noneOf(r.arity());
+				for (Tuple t : eval.evaluate(r, i)) {
+					List<Object> lt = new ArrayList<Object>();
+					for (int j = 0; j < t.arity(); j++)
+						lt.add(t.atom(j));
+					ts.add(static_universe.factory().tuple(lt));
+				}
+				inst.add(r, ts);
 			}
 
 			states.add(inst);
@@ -271,7 +295,25 @@ public class TemporalInstance extends Instance {
 	public boolean contains(Relation relation) {
 		return super.contains(relation) || states.get(0).contains(relation);
 	}
-	
+
+	/** 
+	 * Creates the set of isomorphic instances with n extra states. 
+	 */
+	public Set<TemporalInstance> unrollStep(int n) {
+		n -= states.size();
+		Set<TemporalInstance> instances = new HashSet<TemporalInstance>();
+		ArrayList<Instance> newstates = new ArrayList<Instance>(this.states);
+		int loopsize = this.states.size()-loop;
+		for (int i = 0; i < n; i++) {
+			newstates.add(this.states.get(((loop+i)%loopsize) + loop ));
+		}
+		int newloop = loop+n;
+		while (newloop >= loop) {
+			instances.add(new TemporalInstance(newstates, newloop));
+			newloop -= loopsize;
+		}
+		return instances;
+	}
 	
 	/**
 	 * {@inheritDoc}
