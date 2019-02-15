@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
@@ -361,65 +363,83 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			int primaryVars = -1;
 			SATSolver cnf = null;
 
+			boolean mode = false;
+			
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (incremented) {
+					opt.reporter().debug("Trace length incremented to "+current_trace);
+					
+					if (!mode) {
+						for(TemporalInstance inst : previous_instances) {
+							Map<Object,Expression> reifs = new HashMap<Object,Expression>();
+							Formula aux = inst.formulate(reifs);
+							aux = new TemporalTranslator(aux, tmptrans.bounds).translate();
+							extformula = extformula.and(aux);
+							for (Object o : reifs.keySet()) {
+								Expression e = reifs.get(o);
+								if (e instanceof Relation)
+								tmptrans.bounds.boundExactly((Relation) e,tmptrans.bounds.universe().factory().setOf(o));
+
+							}
+						}
+					}
 					
 					long translStart = System.currentTimeMillis();
-					Bounds extbounds = tmptrans.expand(current_trace);
-					translation = Translator.translate(extformula, extbounds, opt);
+					translation = Translator.translate(extformula, tmptrans.expand(current_trace), opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
 					incremented = false;
-					System.out.println("\n** Trace length incremented to "+current_trace);
-					for(TemporalInstance inst : previous_instances) {
-						Set<TemporalInstance> insts = inst.unrollStep(current_trace);
-						System.out.println("Expanding and negating previous instance, "+insts.size()+" possible unrolls:\n"+inst);
-						TemporalInstance inste = insts.iterator().next();
-						final int[] notModel = new int[translation.numPrimaryVariables()-insts.size()];
-						int j = 0;
-						for (Relation r : extbounds.relations()) {
-							TupleSet lower = extbounds.lowerBound(r);
-							IntSet vars = translation.primaryVariables(r);
-							if (!vars.isEmpty() && !r.equals(TemporalTranslator.LOOP)) {
-								System.out.print(r+" has vars "+vars+", result is ");
-								int lit = vars.min();
-								for(IntIterator iter = extbounds.upperBound(r).indexView().iterator(); iter.hasNext();) {
-									final int index = iter.next();
-									if (!lower.indexView().contains(index)) {
-										notModel[j++] = inste.tuples(r).indexView().contains(index)?-lit:lit;
-										System.out.print(notModel[j-1]+" ");
-										lit++;
+					if (mode) {
+						for(TemporalInstance inst : previous_instances) {
+							Set<TemporalInstance> insts = inst.unrollStep(current_trace);
+							System.out.println("Expanding and negating previous instance, "+insts.size()+" possible unrolls:\n"+inst);
+							TemporalInstance inste = insts.iterator().next();
+							List<Integer> notModel = new ArrayList<Integer>();
+							int j = 0;
+							for (Relation r : translation.bounds().relations()) {
+								TupleSet lower = translation.bounds().lowerBound(r);
+								IntSet vars = translation.primaryVariables(r);
+								if (!vars.isEmpty() && !r.equals(TemporalTranslator.LOOP)&& inste.tuples(r) != null) {
+									System.out.print(r+" has vars "+vars+", result is ");
+									int lit = vars.min();
+									for(IntIterator iter = translation.bounds().upperBound(r).indexView().iterator(); iter.hasNext();) {
+										final int index = iter.next();
+										if (!lower.indexView().contains(index)) {
+											notModel.add(inste.tuples(r).indexView().contains(index)?-lit:lit);
+											System.out.print(notModel);
+											lit++;
+										}
 									}
+									System.out.println("\n");
 								}
-								System.out.println("\n");
 							}
-						}
-						System.out.println("New clause without loops");
-						for (int i = 0; i < notModel.length; i++)
-							System.out.print(notModel[i]+" ");
-						System.out.println("");
-						Set<Integer> loops = new HashSet<Integer>();
-						IntSet vars = translation.primaryVariables(TemporalTranslator.LOOP);
-						for (TemporalInstance i : insts) {
-							int lit = vars.min();
-							for(IntIterator iter = extbounds.upperBound(TemporalTranslator.LOOP).indexView().iterator(); iter.hasNext();) {
-								final int index = iter.next();
-								if (i.tuples(TemporalTranslator.LOOP).indexView().contains(index)) loops.add(lit);
-								lit++;
-							}
+							System.out.println("New clause without loops");
+							for (int i = 0; i < notModel.size(); i++)
+								System.out.print(notModel.get(i)+" ");
 							System.out.println("");
-						}
-						System.out.println("Bad loops were "+loops);
-						for(IntIterator iter = vars.iterator(); iter.hasNext();) {
-							final int lit = iter.next();
-							if (!loops.contains(lit)) notModel[j++] = lit;
-						}
-						System.out.println("New final clause");
-						for (int k = 0; k < notModel.length; k++)
-							System.out.print(notModel[k]+" ");
-						System.out.println("");
-
-						translation.cnf().addClause(notModel);
+							Set<Integer> loops = new HashSet<Integer>();
+							IntSet vars = translation.primaryVariables(TemporalTranslator.LOOP);
+							for (TemporalInstance i : insts) {
+								int lit = vars.min();
+								for(IntIterator iter = translation.bounds().upperBound(TemporalTranslator.LOOP).indexView().iterator(); iter.hasNext();) {
+									final int index = iter.next();
+									if (i.tuples(TemporalTranslator.LOOP).indexView().contains(index)) loops.add(lit);
+									lit++;
+								}
+								System.out.println("");
+							}
+							System.out.println("Bad loops were "+loops);
+							for(IntIterator iter = vars.iterator(); iter.hasNext();) {
+								final int lit = iter.next();
+								if (!loops.contains(lit)) notModel.add(lit);
+							}
+							System.out.println("New final clause");
+							for (int k = 0; k < notModel.size(); k++)
+								System.out.print(notModel.get(k)+" ");
+							System.out.println("");
+	
+							translation.cnf().addClause(notModel.stream().mapToInt(ii->ii).toArray());
+						} 
 					}
 				}
 				
