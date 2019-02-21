@@ -871,9 +871,7 @@ public class ElectrodPrinter {
 	
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by
-	 * removing '/' and '.' symbols.
-	 * 
-	 * TODO: dollar signs $ on skolemized variables
+	 * removing '/', '.' and '$' symbols.
 	 * 
 	 * @param id
 	 *            the identifier.
@@ -881,14 +879,12 @@ public class ElectrodPrinter {
 	 */
 	static String normRel(String id) {
 		if (id.isEmpty()) return "unnamed#unnamed";
-		return id.replace("/", "##").replace(".", "#");
+		return id.replace("/", "##").replace(".", "#").replace("$","skolem#");
 	}
 	
 	/**
 	 * Converts identifiers that are compatible with Electrod back to their
 	 * Kodkod internal representation.
-	 * 
-	 * TODO: dollar signs $ on skolemized variables
 	 * 
 	 * @param id
 	 *            the identifier.
@@ -896,7 +892,7 @@ public class ElectrodPrinter {
 	 */
 	static String denormRel(String id) {
 		if (id.equals("unnamed#unnamed")) return "";
-		return id.replace("##", "/").replace("#", ".");
+		return id.replace("skolem#","$").replace("##", "/").replace("#", ".");
 	}
 	
 }
