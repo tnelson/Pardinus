@@ -260,19 +260,13 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			Solution s = go(formula,bounds,options);
 
 			if (s.sat()) {
-				Formula trns = s.instance().formulate(reifs).not();
+				Formula trns = s.instance().formulate(bounds,reifs).not();
 				options.reporter().debug("Reified instance: "+trns);
 				formula = formula.and(trns);
 			}
 			else 
 				formula = null;
 
-			for (Object o : reifs.keySet()) {
-				Expression e = reifs.get(o);
-				if (e instanceof Relation)
-					bounds.boundExactly((Relation) e,bounds.universe().factory().setOf(o));
-			}
-			
 			return s;
 		}
 

@@ -154,8 +154,9 @@ public class TemporalInstance extends Instance {
 	 * @throws IllegalArgumentException
 	 *             no instance.loop
 	 */
-	public TemporalInstance(Instance instance, TemporalTranslator tmptrans) {
+	public TemporalInstance(Instance instance, PardinusBounds extbounds) {
 		super(instance.universe(), new HashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
+		System.out.println(instance);
 		Evaluator eval = new Evaluator(this);
 		// evaluate last relation
 		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST,0).iterator().next();
@@ -187,7 +188,7 @@ public class TemporalInstance extends Instance {
 		for (int i = 0; i <= end; i++) {
 			Instance inst = new Instance(static_universe);
 
-			for (Relation r : tmptrans.bounds.relations()) {
+			for (Relation r : extbounds.relations()) {
 				TupleSet ts = static_universe.factory().noneOf(r.arity());
 				for (Tuple t : eval.evaluate(r, i)) {
 					List<Object> lt = new ArrayList<Object>();
@@ -220,7 +221,7 @@ public class TemporalInstance extends Instance {
 	 */
 	// [HASLab]
 	@Override
-	public Formula formulate(Map<Object, Expression> reif) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif) {
 
 		// reify atoms not yet reified
 		Universe sta_uni = states.get(0).universe();
@@ -230,7 +231,8 @@ public class TemporalInstance extends Instance {
 				if (SomeDisjPattern) {
 					r = Variable.unary(sta_uni.atom(i).toString());
 				} else {
-					r = Relation.unary(sta_uni.atom(i).toString());
+					r = Relation.atom(sta_uni.atom(i).toString());
+					bounds.boundExactly((Relation ) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 				}
 				reif.put(sta_uni.atom(i), r);
 			}
@@ -242,22 +244,22 @@ public class TemporalInstance extends Instance {
 		if (states.isEmpty())
 			res = Formula.TRUE;
 		else
-			res = states.get(states.size() - 1).formulate(reif);
+			res = states.get(states.size() - 1).formulate(bounds,reif);
 
 		for (int i = states.size() - 2; i >= 0; i--)
-			res = states.get(i).formulate(reif).and(res.next());
+			res = states.get(i).formulate(bounds,reif).and(res.next());
 
 		// create the looping constraint
 		// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
 		// after^(end-loop) Sloop+1 && ...)
-		Formula rei = states.get(loop).formulate(reif);
+		Formula rei = states.get(loop).formulate(bounds,reif);
 		Formula rei2 = rei;
 		for (int j = loop; j < states.size(); j++)
 			rei2 = rei2.next();
 
 		Formula looping = rei.implies(rei2);
 		for (int i = loop + 1; i < states.size(); i++) {
-			rei = states.get(i).formulate(reif);
+			rei = states.get(i).formulate(bounds,reif);
 			rei2 = rei;
 			for (int j = loop; j < states.size(); j++)
 				rei2 = rei2.next();

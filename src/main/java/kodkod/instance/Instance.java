@@ -245,13 +245,14 @@ public class Instance implements Cloneable {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Map<Object, Expression> reif) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif) {
 
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {
 			if (!reif.keySet().contains(universe().atom(i))) {
 				Relation r = Relation.unary(universe().atom(i).toString());
 				reif.put(universe().atom(i), r);
+				bounds.boundExactly(r, bounds.universe().factory().setOf(universe().atom(i)));
 			}
 		}
 

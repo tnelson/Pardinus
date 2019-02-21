@@ -158,7 +158,7 @@ public class TemporalTranslator {
 	 *            the current trace length.
 	 * @return the temporal bounds expanded into standard bounds.
 	 */
-	public Bounds expand(int traceLength) {
+	public PardinusBounds expand(int traceLength) {
 		return TemporalBoundsExpander.expand(bounds, traceLength, past_depth);
 	}
 

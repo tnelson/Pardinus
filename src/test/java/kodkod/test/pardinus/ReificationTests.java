@@ -89,27 +89,27 @@ public class ReificationTests {
 		Instance inst = solution.next().instance();
 
 		System.out.println(inst.toString());
-		System.out.println(inst.formulate(x));
+		System.out.println(inst.formulate(bounds,x));
 		System.out.println(x);
 		
-		formula = formula.and(inst.formulate(x).not());
+		formula = formula.and(inst.formulate(bounds,x).not());
 
 		solution = solver.solveAll(formula, bounds);
 		
 		inst = solution.next().instance();
 		
 		System.out.println(inst.toString());
-		System.out.println(inst.formulate(x));
+		System.out.println(inst.formulate(bounds,x));
 		System.out.println(x);
 	
-		formula = formula.and(inst.formulate(x).not());
+		formula = formula.and(inst.formulate(bounds,x).not());
 
-		solution = solver.solveAll(formula.and(inst.formulate(x).not()), bounds);
+		solution = solver.solveAll(formula.and(inst.formulate(bounds,x).not()), bounds);
 
 		inst = solution.next().instance();
 
 		System.out.println(inst.toString());
-		System.out.println(inst.formulate(x));
+		System.out.println(inst.formulate(bounds,x));
 		System.out.println(x);
 
 		solver.free();
