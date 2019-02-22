@@ -22,8 +22,6 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-// TODO: test past
-// TODO: test not temporal skolem
 // TODO: test trivials
 // TODO: test symbolic
 // TODO: test decomposed
@@ -113,6 +111,47 @@ public class TemporalIterationTests {
 
 	}
 	
+	@Test
+	public void testPast() {
+		final int n = 1;
+
+		Relation a = Relation.unary_variable("a");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		Formula formula = a.some().previous().once().eventually().and(a.no());
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(3);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+					
+			Solution sol = sols.next();
+			c++;
+			if (sol.sat())
+				System.out.println(sol.instance().toString());
+		}
+		
+		assertEquals(9, c);
+		solver.free();
+
+	}
 	
 	@Test
 	public void testLowerUbd() {
@@ -164,7 +203,7 @@ public class TemporalIterationTests {
 	
 
 	@Test
-	public void testSkolem() {
+	public void testTempSkolem() {
 		int n = 2;
 
 		Relation a = Relation.unary_variable("a");
@@ -193,7 +232,7 @@ public class TemporalIterationTests {
 		
 		assertTrue(solver.solve(formula, bounds).sat());
 
-		Iterator<Solution> sols = solver.solveAll(formula.and(formula), bounds);
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
@@ -203,6 +242,147 @@ public class TemporalIterationTests {
 			if (sol.sat())
 				System.out.println(sol.instance().toString());
 		}
+		assertEquals(5, c);
+		solver.free();
+	}
+	
+	@Test
+	public void testSkolem() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.boundExactly(a, as);
+		bounds.bound(b, as);
+		Variable v = Variable.unary("x");
+		Formula formula = v.in(a).forSome(v.oneOf(b)).always().and(b.one().next());
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setSkolemDepth(1);
+		opt.setReporter(new ConsoleReporter());
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(2);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+					
+			Solution sol = sols.next();
+			c++;
+			if (sol.sat())
+				System.out.println(sol.instance().toString());
+		}
+		assertEquals(6, c);
+		solver.free();
+	}
+	
+	@Test
+	public void testSkolem2() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary("b");
+
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, as);
+		Variable v = Variable.unary("x");
+		Formula formula = a.some().always().and(v.in(b).forSome(v.oneOf(b)));
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setSkolemDepth(1);
+		opt.setReporter(new ConsoleReporter());
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(2);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+					
+			Solution sol = sols.next();
+			c++;
+			if (sol.sat())
+				System.out.println(sol.instance().toString());
+		}
+		assertEquals(24, c);
+		solver.free();
+	}
+	
+	
+	@Test
+	public void testSkolemUnd() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, as);
+		Variable v = Variable.unary("x");
+		Formula formula = v.in(a).forSome(v.oneOf(b)).always();
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+		opt.setRunUnbounded(true);
+		opt.setSkolemDepth(1);
+		opt.setReporter(new ConsoleReporter());
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(2);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		
+		while (sols.hasNext() && c < 5) {
+					
+			Solution sol = sols.next();
+			c++;
+
+			if (sol.sat())
+				System.out.println(sol.instance().toString());
+		}
+		
 		assertEquals(5, c);
 		solver.free();
 	}
@@ -237,7 +417,7 @@ public class TemporalIterationTests {
 		
 		assertTrue(solver.solve(formula, bounds).sat());
 
-		Iterator<Solution> sols = solver.solveAll(formula.and(formula), bounds);
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
@@ -253,7 +433,7 @@ public class TemporalIterationTests {
 	
 	
 	@Test
-	public void testSkolemUbd() {
+	public void testTempSkolemUbd() {
 		int n = 2;
 
 		Relation a = Relation.unary_variable("a");
@@ -284,7 +464,7 @@ public class TemporalIterationTests {
 		
 		assertTrue(solver.solve(formula, bounds).sat());
 
-		Iterator<Solution> sols = solver.solveAll(formula.and(formula), bounds);
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		
@@ -302,7 +482,7 @@ public class TemporalIterationTests {
 	}
 	
 	@Test
-	public void testSkolemTotalOrder() {
+	public void testTempSkolemTotalOrder() {
 		int n = 2;
 
 		Relation a = Relation.unary("a");
@@ -336,7 +516,7 @@ public class TemporalIterationTests {
 		
 		assertTrue(solver.solve(formula, bounds).sat());
 
-		Iterator<Solution> sols = solver.solveAll(formula.and(formula), bounds);
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
@@ -352,7 +532,7 @@ public class TemporalIterationTests {
 	}
 	
 	@Test
-	public void testSkolemTotalOrderUbd() {
+	public void testTempSkolemTotalOrderUbd() {
 		int n = 2;
 
 		Relation a = Relation.unary("a");
@@ -388,7 +568,7 @@ public class TemporalIterationTests {
 		
 		assertTrue(solver.solve(formula, bounds).sat());
 
-		Iterator<Solution> sols = solver.solveAll(formula.and(formula), bounds);
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		
