@@ -260,7 +260,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			Solution s = go(formula,bounds,options);
 
 			if (s.sat()) {
-				Formula trns = s.instance().formulate(bounds,reifs).not();
+				Formula trns = s.instance().formulate(bounds,reifs,null).not();
 				options.reporter().debug("Reified instance: "+trns);
 				formula = formula.and(trns);
 			}

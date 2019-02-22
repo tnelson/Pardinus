@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
@@ -41,6 +42,7 @@ import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.TargetOptions.TMode;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
+import kodkod.engine.fol2sat.RelationCollector;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationLog;
 import kodkod.engine.fol2sat.Translator;
@@ -57,6 +59,7 @@ import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
+import kodkod.util.nodes.AnnotatedNode;
 import kodkod.util.nodes.PrettyPrinter;
 
 /**
@@ -367,10 +370,11 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (incremented) {
+					Set<Relation> relevants = originalFormula.accept(new RelationCollector(new HashSet<>()));
 					// this must not be done before incrementing because the new bounds
 					// would be inconsistent with the then extended formula
 					for (Instance i : previousSols)
-						reforms = reforms.and(i.formulate(originalBounds,reifs).not());
+						reforms = reforms.and(i.formulate(originalBounds,reifs,relevants).not());
 					previousSols.clear();
 					// the translation of the original formula could in principle be re-used but
 					// the original past depth level is needed
