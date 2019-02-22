@@ -64,7 +64,6 @@ import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.RelationPredicate.Function;
 import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.ReturnVisitor;
-import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
 

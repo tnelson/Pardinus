@@ -59,7 +59,8 @@ import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
-import kodkod.util.nodes.AnnotatedNode;
+import kodkod.util.ints.IntSet;
+import kodkod.util.ints.IntTreeSet;
 import kodkod.util.nodes.PrettyPrinter;
 
 /**
@@ -413,10 +414,17 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
 				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
+				
+				IntSet tempskolemvars = new IntTreeSet();
+				for (Relation r : transl.bounds().relations())
+					if (r.isSkolem() && opt.temporal())
+						tempskolemvars.addAll(transl.primaryVariables(r));
+
 				// add the negation of the current model to the solver
-				final int[] notModel = new int[primaryVars];
+				final int[] notModel = new int[primaryVars - tempskolemvars.size()];
 				for (int i = 1; i <= primaryVars; i++) {
-					notModel[i - 1] = cnf.valueOf(i) ? -i : i;
+					if (!tempskolemvars.contains(i))
+						notModel[i - 1] = cnf.valueOf(i) ? -i : i;
 				}
 				cnf.addClause(notModel);
 				// [HASLab] store the negated reformulated instance
