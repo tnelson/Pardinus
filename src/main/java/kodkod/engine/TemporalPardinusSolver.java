@@ -135,6 +135,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			else
 				symbForm = bounds.resolve(options.reporter());
 
+			formula = formula.and(symbForm);
+			
 			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds);
 			Formula extformula = tmptrans.translate();
 			long endTransl = System.currentTimeMillis();
@@ -170,7 +172,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				traceLength++;
 			}
 			final Statistics stats = new Statistics(translation, transTime, solveTime);
-			return isSat ? sat(translation, stats, extbounds) : unsat(translation, stats);
+			return isSat ? sat(translation, stats, bounds) : unsat(translation, stats);
 		} catch (SATAbortedException sae) {
 			throw new AbortedException(sae);
 		}

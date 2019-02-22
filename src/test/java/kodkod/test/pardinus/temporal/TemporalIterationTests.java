@@ -1,6 +1,7 @@
 package kodkod.test.pardinus.temporal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import org.junit.Test;
@@ -56,6 +57,8 @@ public class TemporalIterationTests {
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
+		assertTrue(solver.solve(formula, bounds).sat());
+
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
@@ -95,6 +98,8 @@ public class TemporalIterationTests {
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
+		assertTrue(solver.solve(formula, bounds).sat());
+
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
@@ -139,6 +144,8 @@ public class TemporalIterationTests {
 		opt.setMaxTraceLength(5);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
+		assertTrue(solver.solve(formula, bounds).sat());
+
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
@@ -186,6 +193,8 @@ public class TemporalIterationTests {
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
+		assertTrue(solver.solve(formula, bounds).sat());
+
 		Iterator<Solution> sols = solver.solveAll(formula.and(formula), bounds);
 
 		int c = 0;
@@ -233,6 +242,8 @@ public class TemporalIterationTests {
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
+		assertTrue(solver.solve(formula, bounds).sat());
+
 		Iterator<Solution> sols = solver.solveAll(formula.and(formula), bounds);
 
 		int c = 0;
@@ -314,10 +325,14 @@ public class TemporalIterationTests {
 		opt.setMaxTraceLength(8);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		Iterator<Solution> sols = solver.solveAll(NaryFormula.and(f1,f2,f3,f4,f5,f6,f7,elected.some().eventually()), bounds);
+		Formula formula = NaryFormula.and(f1,f2,f3,f4,f5,f6,f7,elected.some().eventually());
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 		
 		System.out.println(bounds);
-		System.out.println(NaryFormula.and(f1,f2,f3,f4,f5,f6,f7,elected.some().eventually()));
+		System.out.println(formula);
 		
 		for (int j = 0;j<10 && sols.hasNext();j++) {
 			Solution sol = sols.next();
