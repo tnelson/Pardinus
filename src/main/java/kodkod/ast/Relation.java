@@ -23,6 +23,7 @@
 package kodkod.ast;
 
 import kodkod.ast.operator.Multiplicity;
+import kodkod.ast.operator.Quantifier;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
@@ -131,8 +132,32 @@ public class Relation extends LeafExpression {
         return new AtomRelation(name, 1);
     }
 	
+    public static Relation skolem(String name, int arity, Variable forVariable, Decl decl, Quantifier quant) {
+        return new SkolemRelation(name, arity, forVariable, decl, quant);
+    }
+    
     public boolean isAtom() {
         return false;
+    }
+    
+    public boolean isSkolem() {
+        return false;
+    }
+    
+    public Variable getSkolemVar() {
+        return null;
+    }
+
+    public Decl getSkolemVarDecl() {
+        return null;
+    }
+
+    public Expression getSkolemVarDomain() {
+        return null;
+    }
+
+    public Quantifier getSkolemVarQuant() {
+        return null;
     }
     
     public boolean isVariable() {
@@ -226,6 +251,45 @@ class AtomRelation extends Relation {
     @Override
     public String toString() {
         return "$$" + name() + "$$";
+    }
+}
+
+class SkolemRelation extends Relation {
+
+    private final Variable   forVariable;
+    private final Decl       skolemVarDecl;
+    private final Quantifier quant;
+
+    public SkolemRelation(String name, int arity, Variable forVariable, Decl decl, Quantifier quant) {
+        super(name, arity);
+        this.forVariable = forVariable;
+        this.skolemVarDecl = decl;
+        this.quant = quant;
+    }
+
+    @Override
+    public boolean isSkolem() {
+        return true;
+    }
+
+    @Override
+    public final Variable getSkolemVar() {
+        return forVariable;
+    }
+
+    @Override
+    public final Decl getSkolemVarDecl() {
+        return skolemVarDecl;
+    }
+
+    @Override
+    public final Expression getSkolemVarDomain() {
+        return skolemVarDecl.expression();
+    }
+
+    @Override
+    public final Quantifier getSkolemVarQuant() {
+        return quant;
     }
 }
 
