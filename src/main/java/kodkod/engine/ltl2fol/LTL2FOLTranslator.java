@@ -180,7 +180,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	@Override
 	public Expression visit(ConstantExpression constant) {
-		return constant;
+		if (constant.equals(Expression.UNIV))
+			return constant.difference(STATE);
+		else if (constant.equals(Expression.IDEN)) 
+			return constant.difference(STATE.product(STATE));
+		else
+			return constant;
 	}
 
 	@Override
