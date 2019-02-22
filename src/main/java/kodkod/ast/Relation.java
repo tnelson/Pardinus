@@ -163,7 +163,7 @@ public class Relation extends LeafExpression {
     public boolean isVariable() {
         return false;
     }
-    
+
     public Relation getExpansion() {
         return null;
     }
