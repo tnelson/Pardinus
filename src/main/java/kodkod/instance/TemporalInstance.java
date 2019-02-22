@@ -176,12 +176,9 @@ public class TemporalInstance extends Instance {
 			atom_times.add(tupleset_times.next().atom(0));
 
 		List<Object> atoms = new ArrayList<Object>();
-		Iterator<Object> old_atoms = instance.universe().iterator();
-
-		while (old_atoms.hasNext()) {
-			Object a = old_atoms.next();
-			if (!atom_times.contains(a)) atoms.add(a);
-		}
+		Iterator<Object> old_atoms = extbounds.universe().iterator();
+		while (old_atoms.hasNext())
+			atoms.add(old_atoms.next());
 
 		Universe static_universe = new Universe(atoms);
 		// for each state, create a new instance by evaluating relations at that state
@@ -198,7 +195,7 @@ public class TemporalInstance extends Instance {
 				}
 				inst.add(r, ts);
 			}
-
+			
 			states.add(inst);
 		}
 	}
