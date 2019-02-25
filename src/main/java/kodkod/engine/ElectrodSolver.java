@@ -67,9 +67,9 @@ import kodkod.instance.TemporalInstance;
  * </p>
  * 
  * <p>
- * Although Electrod does not support solution iteration, it is implemented as
- * an {@link IterableSolver} in order to be used by the Alloy Analyzer. This
- * iterator contains one single satisfiable solution.
+ * Iteration over Electrod is implemented through the "formulation" of the
+ * previous temporal instance, introducing its negation into the formula, and
+ * restarting the solver.
  * </p>
  * 
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
@@ -108,10 +108,63 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		return ElectrodSolver.go(formula,bounds,options);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+		return new SolutionIterator(formula, bounds, options);
+	}
+
+	private final static class SolutionIterator implements Iterator<Solution> {
+	
+		private Formula formula;
+		private final PardinusBounds bounds;
+		private Map<Object,Expression> reifs;
+		private ExtendedOptions options;
+		
+		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
+			this.formula = formula;
+			this.reifs = new HashMap<Object,Expression>();
+			this.bounds = bounds;
+			this.options = options;
+		}
+			
+		@Override
+		public boolean hasNext() {
+			return formula != null;
+		}
+	
+		@Override
+		public Solution next() {
+				
+			Solution s = go(formula,bounds,options);
+	
+			if (s.sat()) {
+				Formula trns = s.instance().formulate(bounds,reifs,formula).not();
+				options.reporter().debug("Reified instance: "+trns);
+				formula = formula.and(trns);
+			}
+			else 
+				formula = null;
+	
+			return s;
+		}
+	
+	}
+
+	/**
+	 * Effectively launches an Electrod process. Used at single solve and at
+	 * iteration, since the process is restarted.
+	 * 
+	 * @param formula
+	 * @param bounds
+	 * @param options
+	 * @return a solution to the problem
+	 */
 	private static Solution go(Formula formula, PardinusBounds bounds, ExtendedOptions options) {
 		Reporter rep = options.reporter();
 		
-		// [HASLab] if not decomposed, use the amalgamated if any
+		// if not decomposed, use the amalgamated if any
 		if (!options.decomposed() && bounds.amalgamated!=null)
 			bounds = bounds.amalgamated();
 
@@ -150,7 +203,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			options.reporter().solvingCNF(-1, -1, -1);
 
 			p = builder.start();
-			
+			// stores the pid so that it can be correctly terminated
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				@Override
 				public void run() {
@@ -183,8 +236,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				throw new AbortedException("Electrod problem interrupted.", e);
 			}
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			throw new AbortedException("Electrod problem failed.", e1);
 		}
 		
 		if (ret != 0) {
@@ -224,52 +276,5 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 * {@inheritDoc}
 	 */
 	public void free() {}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Electrod problems return a single solution, thus this iterator has
-	 * exactly one satisfiable element and one unsatisfiable.
-	 */
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
-		return new SolutionIterator(formula, bounds, options);
-	}
-	
-	private final static class SolutionIterator implements Iterator<Solution> {
-
-		private Formula formula;
-		private final PardinusBounds bounds;
-		private Map<Object,Expression> reifs;
-		private ExtendedOptions options;
-		
-		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
-			this.formula = formula;
-			this.reifs = new HashMap<Object,Expression>();
-			this.bounds = bounds;
-			this.options = options;
-		}
-			
-		@Override
-		public boolean hasNext() {
-			return formula != null;
-		}
-
-		@Override
-		public Solution next() {
-				
-			Solution s = go(formula,bounds,options);
-
-			if (s.sat()) {
-				Formula trns = s.instance().formulate(bounds,reifs,null).not();
-				options.reporter().debug("Reified instance: "+trns);
-				formula = formula.and(trns);
-			}
-			else 
-				formula = null;
-
-			return s;
-		}
-
-	}
 
 }
