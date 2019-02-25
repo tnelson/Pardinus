@@ -25,7 +25,6 @@ package kodkod.engine.unbounded;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -59,7 +58,6 @@ import kodkod.ast.ProjectExpression;
 import kodkod.ast.QuantifiedFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
-import kodkod.ast.RelationPredicate.Name;
 import kodkod.ast.SumExpression;
 import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
@@ -86,7 +84,6 @@ import kodkod.instance.Universe;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.SparseSequence;
-import kodkod.util.nodes.AnnotatedNode;
 import kodkod.util.nodes.PrettyPrinter;
 
 /**
@@ -154,7 +151,6 @@ public class ElectrodPrinter {
 		};
 		opt.setReporter(reporter);
 		
-//		// testing whether this is feasible
 //		Map<Name, Set<RelationPredicate>> preds = AnnotatedNode.annotate(formula).predicates();
 //		for (RelationPredicate pred : preds.get(Name.FUNCTION)) {
 //			RelationPredicate.Function func = (RelationPredicate.Function) pred;
@@ -165,13 +161,13 @@ public class ElectrodPrinter {
 //		}
 		
 
-		// [HASLab] retrieve the additional formula imposed by the symbolic
+		// retrieve the additional formula imposed by the symbolic
 		// bounds, depending on execution stage
 		Formula symbForm = Formula.TRUE;
-		// [HASLab] if decomposed mode, the amalgamated bounds are always considered
+		// if decomposed mode, the amalgamated bounds are always considered
 		if (opt.decomposed() && bounds.amalgamated() != null)
 			symbForm = bounds.amalgamated().resolve(opt.reporter());
-		// [HASLab] otherwise use regular bounds
+		// otherwise use regular bounds
 		else
 			symbForm = bounds.resolve(opt.reporter());
 
