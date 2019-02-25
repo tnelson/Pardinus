@@ -174,7 +174,7 @@ public class TemporalTranslator {
 	 * @return the static version of the temporal formula.
 	 */
 	public Formula translate() {
-		return LTL2FOLTranslator.translate(formula, past_depth > 1);
+		return LTL2FOLTranslator.translate(formula, 0, past_depth > 1);
 	}
 
 	/**

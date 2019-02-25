@@ -31,6 +31,7 @@ import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
+import kodkod.ast.IntExpression;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
@@ -104,7 +105,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 *            whether the formula has past operators.
 	 * @return the resulting FOL formula.
 	 */
-	public static Formula translate(Formula form, boolean has_past) {
+	public static Formula translate(Formula form, int state, boolean has_past) {
 		LTL2FOLTranslator translator = new LTL2FOLTranslator(has_past);
 
 		Formula f;
@@ -138,7 +139,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		}
 		
 		translator.pushLevel();
-		translator.pushVariable();
+		translator.pushVariable(state);
 
 		Formula result = form.accept(translator);
 		
@@ -177,6 +178,32 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 		return result;
 	}
+	
+	/**
+	 * Converts an LTL temporal int expression into a regular Kodkod FOL int expression 
+	 * in a concrete time step, counting from the {@link TemporalTranslator#FIRST
+	 * initial} time. Uses the visitor to convert. This is the main method that
+	 * should be called to convert temporal int expressions.
+	 * 
+	 * @param expr
+	 *            the LTL expression to be converted.
+	 * @param state
+	 *            the concrete state on which to evaluate the expression.
+	 * @param has_past
+	 *            whether the formula has past operators.
+	 * @param has_loop
+	 *            whether the formula is known to force a loop.
+	 * @return the resulting static expression.
+	 */
+	public static IntExpression translate(IntExpression expr, int state, boolean has_past) {
+		LTL2FOLTranslator translator = new LTL2FOLTranslator(has_past);
+
+		translator.pushVariable(state);
+
+		IntExpression result = expr.accept(translator);
+
+		return result;
+	}
 
 	@Override
 	public Expression visit(ConstantExpression constant) {
@@ -204,7 +231,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	@Override
 	public Formula visit(RelationPredicate relationPredicate) {
 		if (TemporalTranslator.isTemporal(relationPredicate))
-			// // cannot simply expand since it would loose symmetry breaking
+			// cannot simply expand since it would loose symmetry breaking
 			// return relationPredicate.toConstraints().always().accept(this);
 			throw new UnsupportedOperationException("Total orders over variable relations still no supported.");
 		else
