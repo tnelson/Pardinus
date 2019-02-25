@@ -52,8 +52,8 @@ public class Relation extends LeafExpression {
 	 * @ensures this.name' = name && this.arity' = arity 
 	 * @throws IllegalArgumentException  arity < 1 
 	 */
-	// [HASLab] protected constructor
-	protected Relation(String name, int arity) {  
+	// [HASLab] package-private
+	Relation(String name, int arity) {  
 		super(name,arity);
 	}
 	
@@ -93,82 +93,124 @@ public class Relation extends LeafExpression {
 	}
 	
     /**
-     * TODO
-     *
-     * @param name
-     * @return
-     */
-    public static VarRelation variable(String name,int arity) {
-        return new VarRelation(name, arity);
+	 * Returns a new variable relation with the given name and arity.
+	 * @return {r: VarRelation | r.arity = arity && r.name = name }
+	 */
+	public static VarRelation variable(String name, int arity) {
+		return new VarRelation(name, arity);
     }
     
-    /**
-     * TODO
-     *
-     * @param name
-     * @return
-     */
+	/**
+	 * Returns a new unary variable relation with the given name.  
+	 * The effect of this method is the same as calling VarRelation.nary(name,1).
+	 * @return {r: VarRelation | r.arity = 1 && r.name = name }
+	 */
+	// [HASLab]
     public static VarRelation unary_variable(String name) {
         return new VarRelation(name, 1);
     }
 
-    /**
-     * TODO
-     *
-     * @param name
-     * @return
-     */
+	/**
+	 * Returns a new binary relation with the given name.  
+	 * The effect of this method is the same as calling VarRelation.nary(name,2).
+	 * @return {r: VarRelation | r.arity = 2 && r.name = name }
+	 */
+	// [HASLab]
     public static VarRelation binary_variable(String name) {
         return new VarRelation(name, 2);
     }
 
     /**
-     * TODO
-     *
-     * @param name
-     * @return
-     */
+	 * Returns a new atom relation with the given name.
+	 * @return {r: AtomRelation | r.arity = 1 && r.name = name }
+	 */
+	// [AlloyTools]
     public static AtomRelation atom(String name) {
-        return new AtomRelation(name, 1);
+        return new AtomRelation(name);
     }
 	
-    public static Relation skolem(String name, int arity, Variable forVariable, Decl decl, Quantifier quant) {
+    /**
+	 * Returns a new skolem relation with the given name and arity.
+	 * @return {r: AtomRelation | r.arity = 1 && r.name = name }
+	 */
+	// [AlloyTools]
+    public static SkolemRelation skolem(String name, int arity, Variable forVariable, Decl decl, Quantifier quant) {
         return new SkolemRelation(name, arity, forVariable, decl, quant);
     }
     
+	/**
+     * Whether the relation is a variable relation.
+     * @return whether a variable relation.
+     */
+	// [HASLab]
+    public boolean isVariable() {
+	    return false;
+	}
+
+	/**
+     * Whether the relation is an atom relation.
+     * @return whether an atom relation.
+     */
+	// [AlloyTools]
     public boolean isAtom() {
         return false;
     }
     
+    /**
+     * Whether the relation is a skolem relation.
+     * @return whether a skolem relation.
+     */
+	// [AlloyTools]
     public boolean isSkolem() {
         return false;
     }
-    
-    public Variable getSkolemVar() {
+
+    /**
+     * Get the expanded relation for a variable relation.
+     * @return the expanded relation, or null if not variable.
+     */
+	// [HASLab]
+    public Relation getExpansion() {
+	    return null;
+	}
+
+    /**
+     * Get the skolem variable for a skolem relation.
+     * @return the skolem variable, or null if not skolem.
+     */
+	// [AlloyTools]
+	public Variable getSkolemVar() {
         return null;
     }
 
+    /**
+     * Get the skolem variable decl for a skolem relation.
+     * @return the skolem variable decl , or null if not skolem.
+     */
+	// [AlloyTools]
     public Decl getSkolemVarDecl() {
         return null;
     }
 
+    /**
+     * Get the skolem variable domain for a skolem relation.
+     * @return the skolem variable domain, or null if not skolem.
+     */
+	// [AlloyTools]
     public Expression getSkolemVarDomain() {
         return null;
     }
 
+    /**
+     * Get the skolem variable quantifier for a skolem relation.
+     * @return the skolem variable quantifier, or null if not skolem.
+     */
+	// [AlloyTools]
     public Quantifier getSkolemVarQuant() {
         return null;
     }
     
-    public boolean isVariable() {
-        return false;
-    }
-
-    public Relation getExpansion() {
-        return null;
-    }
-    
-	/**
+    /**
 	 * {@inheritDoc}
 	 * @see kodkod.ast.Expression#accept(kodkod.ast.visitor.ReturnVisitor)
 	 */
@@ -237,10 +279,15 @@ public class Relation extends LeafExpression {
 
 }
 
+/**
+ * A unary relation representing a reified atom.
+ * 
+ * @author [AlloyTools]
+ */
 class AtomRelation extends Relation {
 
-    public AtomRelation(String name, int arity) {
-        super(name, arity);
+    public AtomRelation(String name) {
+        super(name, 1);
     }
 
     @Override
@@ -254,6 +301,12 @@ class AtomRelation extends Relation {
     }
 }
 
+/**
+ * A relation representing a skolem variable creating when skolemizing
+ * existential quantifiers. Also stores contextual information.
+ * 
+ * @author [AlloyTools]
+ */
 class SkolemRelation extends Relation {
 
     private final Variable   forVariable;
@@ -294,11 +347,9 @@ class SkolemRelation extends Relation {
 }
 
 /**
- * An extension to regular {@link Relation relations} that can evolve in time.
- * At creation time, these variable relations also create a regular relation
- * that represent will represent its expansion with explicit time.
- * 
- * @see Relation
+ * A relation representing a variable relation that can change in time. At
+ * creation time, a regular relation is created that represents its expansion
+ * with explicit time.
  * 
  * @specfield expanded: Relation
  * @invariant expanded.arity = this.arity + 1
@@ -309,11 +360,12 @@ class VarRelation extends Relation {
 	public final Relation expanded;
 
 	/**
-	 * Constructs a variable relation with the specified name and arity, as well
-	 * as its expanded version.
-	 * @ensures this.name' = name && this.arity' = arity && expanded.arity = arity + 1
-	 * @throws IllegalArgumentException
-	 *             arity < 1
+	 * Constructs a variable relation with the specified name and arity, as well as
+	 * its expanded version.
+	 * 
+	 * @ensures this.name' = name && this.arity' = arity && expanded.arity = arity +
+	 *          1
+	 * @throws IllegalArgumentException arity < 1
 	 */
     public VarRelation(String name, int arity) {
         super(name, arity);
