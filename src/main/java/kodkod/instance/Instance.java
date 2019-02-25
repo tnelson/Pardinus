@@ -24,6 +24,7 @@ package kodkod.instance;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +36,7 @@ import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
+import kodkod.engine.fol2sat.RelationCollector;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
 import kodkod.util.ints.SparseSequence;
@@ -245,7 +247,9 @@ public class Instance implements Cloneable {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Set<Relation> relevants) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
+
+		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
 
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {

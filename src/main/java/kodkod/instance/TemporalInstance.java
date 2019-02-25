@@ -218,7 +218,7 @@ public class TemporalInstance extends Instance {
 	 */
 	// [HASLab]
 	@Override
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Set<Relation> relevants) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
 
 		// reify atoms not yet reified
 		Universe sta_uni = states.get(0).universe();
@@ -241,22 +241,22 @@ public class TemporalInstance extends Instance {
 		if (states.isEmpty())
 			res = Formula.TRUE;
 		else
-			res = states.get(states.size() - 1).formulate(bounds,reif,relevants);
+			res = states.get(states.size() - 1).formulate(bounds,reif,formula);
 
 		for (int i = states.size() - 2; i >= 0; i--)
-			res = states.get(i).formulate(bounds,reif,relevants).and(res.next());
+			res = states.get(i).formulate(bounds,reif,formula).and(res.next());
 
 		// create the looping constraint
 		// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
 		// after^(end-loop) Sloop+1 && ...)
-		Formula rei = states.get(loop).formulate(bounds,reif,relevants);
+		Formula rei = states.get(loop).formulate(bounds,reif,formula);
 		Formula rei2 = rei;
 		for (int j = loop; j < states.size(); j++)
 			rei2 = rei2.next();
 
 		Formula looping = rei.implies(rei2);
 		for (int i = loop + 1; i < states.size(); i++) {
-			rei = states.get(i).formulate(bounds,reif,relevants);
+			rei = states.get(i).formulate(bounds,reif,formula);
 			rei2 = rei;
 			for (int j = loop; j < states.size(); j++)
 				rei2 = rei2.next();
