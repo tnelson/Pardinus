@@ -64,6 +64,7 @@ import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.RelationPredicate.Function;
 import kodkod.ast.visitor.AbstractDetector;
 import kodkod.ast.visitor.ReturnVisitor;
+import kodkod.engine.config.Options;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
 
@@ -135,9 +136,27 @@ public class TemporalTranslator {
 	 * @param bnds
 	 *            the original variable bounds.
 	 */
-	public TemporalTranslator(Formula form, PardinusBounds bnds) {
-		this.formula = form; // NNFReplacer.nnf(form);
-		this.bounds = bnds;
+	public TemporalTranslator(Formula formula, PardinusBounds bounds, Options options) {
+		bounds = bounds.clone();
+		
+		// [HASLab] if not decomposed, use the amalgamated if any
+		if (!options.decomposed() && bounds.amalgamated!=null)
+			bounds = bounds.amalgamated();
+		
+		// [HASLab] retrieve the additional formula imposed by the symbolic
+		// bounds, depending on execution stage
+		Formula symbForm = Formula.TRUE;
+		// [HASLab] if decomposed mode, the amalgamated bounds are always considered
+		if (options.decomposed() && bounds.amalgamated() != null)
+			symbForm = bounds.amalgamated().resolve(options.reporter());
+		// [HASLab] otherwise use regular bounds
+		else
+			symbForm = bounds.resolve(options.reporter());
+
+		formula = formula.and(symbForm);
+		
+		this.formula = formula; // NNFReplacer.nnf(form);
+		this.bounds = bounds;
 		this.past_depth = countHeight(formula);
 //		this.has_always = hasAlways(formula);
 	}

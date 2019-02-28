@@ -122,23 +122,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		try {
 			long startTransl = System.currentTimeMillis();
 			
-			// [HASLab] if not decomposed, use the amalgamated if any
-			if (!options.decomposed() && bounds.amalgamated!=null)
-				bounds = bounds.amalgamated();
-			
-			// [HASLab] retrieve the additional formula imposed by the symbolic
-			// bounds, depending on execution stage
-			Formula symbForm = Formula.TRUE;
-			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
-			if (options.decomposed() && bounds.amalgamated() != null)
-				symbForm = bounds.amalgamated().resolve(options.reporter());
-			// [HASLab] otherwise use regular bounds
-			else
-				symbForm = bounds.resolve(options.reporter());
-
-			formula = formula.and(symbForm);
-			
-			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds);
+			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
 			Formula extformula = tmptrans.translate();
 			long endTransl = System.currentTimeMillis();
 			long transTime = endTransl - startTransl;
@@ -288,23 +272,9 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			this.translTime = System.currentTimeMillis();
 			this.current_trace = options.minTraceLength()-1;
 			this.originalBounds = bounds;
-			// [HASLab] if not decomposed, use the amalgamated if any
-			if (!options.decomposed() && bounds.amalgamated!=null)
-				bounds = bounds.amalgamated();
-			
-			// [HASLab] retrieve the additional formula imposed by the symbolic
-			// bounds, depending on execution stage
-			Formula symbForm = Formula.TRUE;
-			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
-			if (options.decomposed() && bounds.amalgamated() != null)
-				symbForm = bounds.amalgamated().resolve(options.reporter());
-			// [HASLab] otherwise use regular bounds
-			else
-				symbForm = bounds.resolve(options.reporter());
-			
-			this.originalFormula = formula.and(symbForm);
+			this.originalFormula = formula;
 
-			TemporalTranslator tmptrans = new TemporalTranslator(originalFormula, bounds);
+			TemporalTranslator tmptrans = new TemporalTranslator(originalFormula, bounds, options);
 			Formula extformula = tmptrans.translate();
 			do {
 				current_trace++;
@@ -375,7 +345,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 					previousSols.clear();
 					// the translation of the original formula could in principle be re-used but
 					// the original past depth level is needed
-					TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(reforms), originalBounds);
+					TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(reforms), originalBounds, opt);
 					extbounds = tmptrans.expand(current_trace);
 					Formula exp_reforms = tmptrans.translate();
 					long translStart = System.currentTimeMillis();
@@ -515,7 +485,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");
 			this.translTime = System.currentTimeMillis();
 			this.originalBounds = bounds;
-			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds);
+			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
 			extbounds = tmptrans.expand(1);
 			this.extformula = tmptrans.translate();
 			this.translation = Translator.translate(extformula, extbounds, options);

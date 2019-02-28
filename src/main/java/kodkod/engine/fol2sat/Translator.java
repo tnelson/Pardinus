@@ -394,7 +394,19 @@ public final class Translator {
 	 *  this.incremental' = incremental 
 	 */
 	private Translator(Formula formula, Bounds bounds, Options options, boolean incremental) {
-		this.originalFormula = formula;
+		// [HASLab] retrieve the additional formula imposed by the symbolic
+		// bounds, depending on execution stage
+		Formula symbForm = Formula.TRUE;
+		if (bounds instanceof PardinusBounds) {
+			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
+			if (options.decomposed() && ((PardinusBounds) bounds).amalgamated() != null)
+				symbForm = ((PardinusBounds) bounds).amalgamated().resolve(options.reporter());
+			// [HASLab] otherwise use regular bounds
+			else
+				symbForm = ((PardinusBounds) bounds).resolve(options.reporter());
+		}
+					
+		this.originalFormula = formula.and(symbForm);
 		this.originalBounds = bounds;
 		this.bounds = bounds.clone();
 		this.options = options;
