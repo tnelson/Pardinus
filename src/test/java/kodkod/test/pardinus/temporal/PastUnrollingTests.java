@@ -73,11 +73,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -104,11 +105,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -140,7 +142,7 @@ public class PastUnrollingTests {
 		// force wrong unrolls
 		tt = NNFReplacer.nnf(tt);
 		Bounds bb = TemporalBoundsExpander.expand(b, n, 1);
-		Formula ff = LTL2FOLTranslator.translate(tt, false);
+		Formula ff = LTL2FOLTranslator.translate(tt, 0, false);
 
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
@@ -169,11 +171,12 @@ public class PastUnrollingTests {
 				.and(S.eq(Af.join(An).join(An).join(An).join(An).join(An)).once())).once())).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -205,7 +208,7 @@ public class PastUnrollingTests {
 		// force wrong unrolls
 		tt = NNFReplacer.nnf(tt);
 		Bounds bb = TemporalBoundsExpander.expand(b, n, 2);
-		Formula ff = LTL2FOLTranslator.translate(tt, true);
+		Formula ff = LTL2FOLTranslator.translate(tt, 0, true);
 
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
@@ -229,11 +232,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -256,11 +260,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -282,11 +287,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -308,11 +314,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -335,11 +342,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -361,11 +369,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -387,11 +396,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -414,11 +424,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -441,11 +452,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -468,11 +480,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -495,11 +508,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -521,11 +535,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -548,11 +563,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -574,11 +590,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -601,11 +618,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -627,11 +645,12 @@ public class PastUnrollingTests {
 		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next().next();
 		Formula tt = f.and(f0).and(f1).and(go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -654,11 +673,12 @@ public class PastUnrollingTests {
 		Formula go = ((S.eq(Af.join(An))).and((S.eq(Af.join(An))).eventually().next())).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -681,11 +701,12 @@ public class PastUnrollingTests {
 		Formula go = ((S.eq(Af).not().since(S.eq(Af)))).always();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -708,11 +729,12 @@ public class PastUnrollingTests {
 		Formula go = (((S.eq(Af.join(An)).implies(S.eq(Af.join(An)).previous())).since(S.eq(Af)))).always();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -735,11 +757,12 @@ public class PastUnrollingTests {
 		Formula go = (((S.eq(Af.join(An)).implies(S.eq(Af.join(An)).previous())).since(S.eq(Af)))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -770,11 +793,12 @@ public class PastUnrollingTests {
 								.since(S.eq(Af.join(An).join(An))))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -804,11 +828,12 @@ public class PastUnrollingTests {
 								.since(S.eq(Af.join(An).join(An))))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -835,11 +860,12 @@ public class PastUnrollingTests {
 		Formula go = (((S.eq(Af.join(An))).not().previous()).since(S.eq(Af.join(An)).previous())).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -869,11 +895,12 @@ public class PastUnrollingTests {
 								.eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -903,11 +930,12 @@ public class PastUnrollingTests {
 						.and(Formula.TRUE.since(S.eq(Af.join(An).join(An).join(An).join(An).join(An))))))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -935,11 +963,12 @@ public class PastUnrollingTests {
 		Formula go = ((S.eq(Af.join(An).join(An).join(An))).until(S.eq(Af.join(An).join(An).join(An).join(An)))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());
@@ -968,11 +997,12 @@ public class PastUnrollingTests {
 				.and(S.eq(Af.join(An).join(An).join(An).join(An)))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
-		TemporalTranslator trans = new TemporalTranslator(tt, b);
+		ExtendedOptions options = new ExtendedOptions();
+
+		TemporalTranslator trans = new TemporalTranslator(tt, b, options);
 		Bounds bb = trans.expand(n);
 		Formula ff = trans.translate();
 
-		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
 		Solution sol = solver.solve(ff, bb);
 		System.out.println(sol.toString());

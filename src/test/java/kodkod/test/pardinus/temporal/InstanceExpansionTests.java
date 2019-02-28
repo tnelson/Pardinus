@@ -109,8 +109,8 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
 
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always()));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always()));
+		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
+		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
 
 		solver.free();
 	}
@@ -166,8 +166,8 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
 
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always()));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always()));
+		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
+		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
 
 		solver.free();
 	}
@@ -218,8 +218,8 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always()));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always()));
+		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
+		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
 
 		solver.free();
 	}
@@ -273,8 +273,8 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always()));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always()));
+		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
+		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
 
 		solver.free();
 	}
@@ -378,8 +378,8 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()))).always()));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()).not())).always()));
+		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
+		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
 
 		solver.free();
 	}

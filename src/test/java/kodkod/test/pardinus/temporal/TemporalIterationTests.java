@@ -1,6 +1,7 @@
 package kodkod.test.pardinus.temporal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
@@ -11,6 +12,7 @@ import kodkod.ast.Formula;
 import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
+import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ConsoleReporter;
@@ -22,12 +24,82 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-// TODO: test trivials
 // TODO: test symbolic
 // TODO: test decomposed
 
 public class TemporalIterationTests {
 
+	@Test
+	public void test0() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		Formula formula = a.eq(a.prime()).not().always().and(a.no()).and(a.some().implies(a.prime().no()).always());
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(4);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+			Solution sol = sols.next();
+			c++;
+			if (sol.sat()) {
+				Evaluator eval = new Evaluator(sol.instance());
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),0));
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),1));
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),2));
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),3));
+				assertTrue(eval.evaluate(a.no(),0));
+				assertFalse(eval.evaluate(a.no(),1));
+				assertTrue(eval.evaluate(a.no(),2));
+				assertFalse(eval.evaluate(a.no(),3));
+				assertFalse(eval.evaluate(a.no().next(),0));
+				assertTrue(eval.evaluate(a.no().next(),1));
+				assertFalse(eval.evaluate(a.no().next(),2));
+				assertTrue(eval.evaluate(a.no().next(),3));
+				assertTrue(eval.evaluate(a.no().next(),1));
+				assertTrue(eval.evaluate(a,0).isEmpty());
+				assertFalse(eval.evaluate(a,1).isEmpty());
+				assertTrue(eval.evaluate(a,2).isEmpty());
+				assertFalse(eval.evaluate(a,3).isEmpty());
+				assertFalse(eval.evaluate(a.prime(),0).isEmpty());
+				assertTrue(eval.evaluate(a.prime(),1).isEmpty());
+				assertFalse(eval.evaluate(a.prime(),2).isEmpty());
+				assertTrue(eval.evaluate(a.prime(),3).isEmpty());
+				assertEquals(eval.evaluate(a.count(),0),0);
+				assertTrue(eval.evaluate(a.count(),1)>0);
+				assertEquals(eval.evaluate(a.count(),2),0);
+				assertTrue(eval.evaluate(a.count(),3)>0);
+				assertTrue(eval.evaluate(a.prime().count(),0)>0);
+				assertEquals(eval.evaluate(a.prime().count(),1),0);
+				assertTrue(eval.evaluate(a.prime().count(),2)>0);
+				assertEquals(eval.evaluate(a.prime().count(),3),0);
+				System.out.println(sol.instance().toString());
+			}
+		}
+		assertEquals(9, c);
+		solver.free();
+
+	}
+	
 	@Test
 	public void test() {
 		int n = 2;
@@ -144,8 +216,13 @@ public class TemporalIterationTests {
 					
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
+			if (sol.sat()) {
+				Evaluator eval = new Evaluator(sol.instance());
+				assertTrue(eval.evaluate(a.no(),0));
+				assertFalse(eval.evaluate(Expression.NONE.no().previous(),0));
+				assertTrue(eval.evaluate(a.no().previous(),1));
 				System.out.println(sol.instance().toString());
+			}
 		}
 		
 		assertEquals(9, c);
@@ -582,6 +659,52 @@ public class TemporalIterationTests {
 		}
 		
 		assertEquals(2, c);
+		solver.free();
+
+	}
+	
+	@Test
+	public void testSymb() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+		Relation c = Relation.unary_variable("c");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet ls = f.setOf(f.tuple("A0"));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(c, ls,ls);
+		bounds.bound(a, as);
+		bounds.bound(b, c, a);
+		Formula formula = a.eq(a).and(b.eq(b));
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(2);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int cc = 0;
+		while (sols.hasNext()) {
+			Solution sol = sols.next();
+			cc++;
+			if (sol.sat()) {
+				System.out.println(sol.instance().toString());
+			}
+		}
+		assertEquals(16, cc);
 		solver.free();
 
 	}
