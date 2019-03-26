@@ -81,8 +81,8 @@ public class TemporalInstance extends Instance {
 	 * @throws IllegalArgumentException
 	 *             !(0 >= loop >= instances.length)
 	 */
-	public TemporalInstance(List<Instance> instances, int loop) {
-		super(TemporalBoundsExpander.expandUniverse(instances.get(0).universe(), instances.size(), 1));
+	public TemporalInstance(List<Instance> instances, int loop, int unrolls) {
+		super(TemporalBoundsExpander.expandUniverse(instances.get(0).universe(), instances.size(), unrolls));
 		if (loop < 0 || loop >= instances.size())
 			throw new IllegalArgumentException("Looping state must be between 0 and instances.length.");
 		
@@ -156,7 +156,6 @@ public class TemporalInstance extends Instance {
 	 */
 	public TemporalInstance(Instance instance, PardinusBounds extbounds) {
 		super(instance.universe(), new HashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
-		System.out.println(instance);
 		Evaluator eval = new Evaluator(this);
 		// evaluate last relation
 		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST,0).iterator().next();
@@ -295,20 +294,30 @@ public class TemporalInstance extends Instance {
 		return super.contains(relation) || states.get(0).contains(relation);
 	}
 
-	/** 
-	 * Creates the set of isomorphic instances with n extra states. 
+	/**
+	 * Creates the set of isomorphic instances with n extra states. Calculates all
+	 * possible loop unfoldings.
+	 * 
+	 * @param size       the size of the unrolled instances
+	 * @param past_depth the past depth, needed to preserve the size of the universe
 	 */
-	public Set<TemporalInstance> unrollStep(int n) {
-		n -= states.size();
+	public Set<TemporalInstance> unrollStep(int size, int past_depth) {
+		if (size < states.size())
+			throw new IllegalArgumentException("Expected size smaller than this.size().");
+		// the number of needed extra steps
+		size -= states.size();
 		Set<TemporalInstance> instances = new HashSet<TemporalInstance>();
+		// always initialize with the prefix
 		ArrayList<Instance> newstates = new ArrayList<Instance>(this.states);
-		int loopsize = this.states.size()-loop;
-		for (int i = 0; i < n; i++) {
-			newstates.add(this.states.get(((loop+i)%loopsize) + loop ));
-		}
-		int newloop = loop+n;
+		int loopsize = this.states.size() - loop;
+		// add the corresponding unrolled states
+		for (int i = 0; i < size; i++)
+			newstates.add(this.states.get((i % loopsize) + loop));
+
+		// creates a new instance for every isomorphic loop (multiples of loop size after the prefix)
+		int newloop = loop + size;
 		while (newloop >= loop) {
-			instances.add(new TemporalInstance(newstates, newloop));
+			instances.add(new TemporalInstance(newstates, newloop, past_depth));
 			newloop -= loopsize;
 		}
 		return instances;
