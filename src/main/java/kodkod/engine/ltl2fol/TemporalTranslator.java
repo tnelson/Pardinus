@@ -450,4 +450,11 @@ public class TemporalTranslator {
 		return Integer.valueOf(labelS[0].substring(4)); 
 	}
 
+	/** Interprets the unrolled step of a state tuple from its name. */
+	public static int interpretUnroll(Tuple tuple) {
+		String label = tuple.atom(0).toString();
+		String[] labelS = label.split(STATE_SEP);
+		return Integer.valueOf(labelS[1])+1; 
+	}
+
 }
