@@ -37,6 +37,7 @@ import kodkod.engine.Solver;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.RCEStrategy;
 import kodkod.instance.Bounds;
+import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.Universe;
 import kodkod.util.nodes.Nodes;
@@ -504,7 +505,7 @@ public final class Hotel {
 	 * Returns bounds for the given number of times, events, rooms, cards, keys and guests.
 	 * @return bounds for the given scopes.
 	 */
-	public Bounds bounds(int t, int e, int r, int c, int k, int g) { 
+	public PardinusBounds bounds(int t, int e, int r, int c, int k, int g) { 
 		final Relation[] tops = { Time, Event, Room, Card, Key, Guest };
 		final int[] scopes = { t, e, r, c, k, g};
 		
@@ -517,7 +518,7 @@ public final class Hotel {
 		
 		final Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 		
 		for(int i = 0 ; i < tops.length; i++) { 
 			Relation top = tops[i];
@@ -559,7 +560,7 @@ public final class Hotel {
 	 * Returns bounds for the given scope.
 	 * @return bounds for the given scope.
 	 */
-	public Bounds bounds(int n) { 
+	public PardinusBounds bounds(int n) { 
 		return bounds(n,n,n,n,n,n);
 	}
 	
