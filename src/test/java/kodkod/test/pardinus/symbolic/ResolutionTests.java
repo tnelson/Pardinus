@@ -260,6 +260,30 @@ public class ResolutionTests {
 		assertTrue(compare(bnds,orcl));
 	}
 	
+	// known bug in static with variable bounds
+	@Test
+	public void test5() {
+		PardinusBounds bnds = new PardinusBounds(uni);
+		
+		// s :1 {} {(A0,A0),...,(An,An)}
+		bnds.bound(s, as.product(as));
+		// r :1 {} s
+		bnds.bound(r, s);
+
+		Formula f = bnds.resolve(new SLF4JReporter());
+		
+		PardinusBounds orcl = new PardinusBounds(uni);
+		// s :1 {} {(A0,A0),...,(An,An)}
+		orcl.bound(s, as.product(as));
+		// r :1 {} {(A0,A0),...,(An,An)}
+		orcl.bound(r, as.product(as));
+
+		assertTrue(compare(bnds,orcl));
+		
+		assertEquals(f.toString().length(), r.in(s).always().toString().length());
+
+	}
+	
 	@Test(expected = IllegalArgumentException.class)
 	public void test4() {
 		PardinusBounds bnds = new PardinusBounds(uni);
