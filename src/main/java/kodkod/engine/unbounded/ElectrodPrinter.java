@@ -170,7 +170,7 @@ public class ElectrodPrinter {
 		// otherwise use regular bounds
 		else
 			symbForm = bounds.resolve(opt.reporter());
-
+		// NOTE: this is already being performed inside the translator, but is not accessible
 
 		Whole t = Translator.translate(formula.and(symbForm), bounds, opt);
 		bounds = (PardinusBounds) t.bounds();
