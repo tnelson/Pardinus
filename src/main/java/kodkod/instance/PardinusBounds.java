@@ -48,6 +48,7 @@ import kodkod.engine.Evaluator;
 import kodkod.engine.Solution;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.fol2sat.RelationCollector;
+import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.fol2sat.ComplRelationReplacer;
 import kodkod.util.ints.SparseSequence;
 
@@ -163,7 +164,7 @@ public class PardinusBounds extends Bounds {
 	 * @param remainder
 	 */
 	public PardinusBounds(PardinusBounds partial, Bounds remainder) {
-		this(partial.universe().factory(), partial.lowerBounds(), partial.upperBounds(), partial.targets,
+		this(partial.universe().factory(), partial.lowers, partial.uppers, partial.targets,
 				partial.weights, partial.lowers_symb, partial.uppers_symb, partial.symbolic, partial.intBounds(), null,
 				partial.integrated, partial.trivial_config,partial.integration);
 
