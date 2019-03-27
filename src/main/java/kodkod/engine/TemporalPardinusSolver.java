@@ -258,7 +258,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	 * 
 	 * @author Nuno Macedo // [HASLab] temporal model finding
 	 */
-	private final static class SolutionIterator extends Explorator<Solution> {
+	private final static class SolutionIterator implements Explorator<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
@@ -296,25 +296,24 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		Formula exploreF = null;
 		int exploreS;
 
-		@Override
 		// [HASLab] explorator
-		public Solution branch(Formula f, int s) {
+		public Solution extend(Formula f, int s) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
 			this.translTime = System.currentTimeMillis();
 
-			for (int i = 0; i < s; i++)
+			for (int i = 0; i < s-1; i++)
 				f = f.next();
 			
 			exploreF = f;
-			exploreS = s+1;
+			exploreS = s;
+			current_trace = s;
 			
 			incremented = true;
 			
 			return next();
 		}
 
-		@Override
 		public TemporalInstance getLastInstance() {
 			return previousSols.get(previousSols.size()-1);
 		}
@@ -573,7 +572,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	 * A target-oriented iterator over all solutions of a model, adapted from {@link SolutionIterator}.
 	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented, temporal model finding
 	 */
-	public static class TSolutionIterator extends Explorator<Solution> {
+	public static class TSolutionIterator implements Explorator<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private final ExtendedOptions opt; // [HASLab] TO mode
@@ -792,12 +791,10 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return next();
 		}
 
-		@Override
-		public Solution branch(Formula form, int prefix) {
+		public Solution extend(Formula form, int prefix) {
 			throw new UnsupportedOperationException();
 		}
 
-		@Override
 		public TemporalInstance getLastInstance() {
 			throw new UnsupportedOperationException();
 		}

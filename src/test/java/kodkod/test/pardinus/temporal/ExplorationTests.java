@@ -87,13 +87,15 @@ public class ExplorationTests {
 
 		Formula ext = a.eq(a.prime()).not();
 		System.out.println("Extending with "+ext);
-		solution.extend(ext);
-		System.out.println(solution.next().instance());
+		System.out.println(solution.extend(ext,4).instance());
 
 		ext = b.eq(b.prime()).not();
 		System.out.println("Extending with "+ext);
-		solution.extend(ext);
-		System.out.println(solution.next().instance());
+		System.out.println(solution.extend(ext,5).instance());
+
+		ext = b.eq(b.prime());
+		System.out.println("Extending with "+ext);
+		System.out.println(solution.extend(ext,1).instance());
 
 		solver.free();
 

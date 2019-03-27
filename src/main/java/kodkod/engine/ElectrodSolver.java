@@ -114,7 +114,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		return new SolutionIterator(formula, bounds, options);
 	}
 
-	private final static class SolutionIterator extends Explorator<Solution> {
+	private final static class SolutionIterator implements Explorator<Solution> {
 	
 		private Formula formula;
 		private final PardinusBounds bounds;
@@ -149,12 +149,10 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return s;
 		}
 
-		@Override
-		public Solution branch(Formula form, int prefix) {
+		public Solution extend(Formula form, int prefix) {
 			throw new UnsupportedOperationException();	
 		}
 
-		@Override
 		public TemporalInstance getLastInstance() {
 			throw new UnsupportedOperationException();
 		}

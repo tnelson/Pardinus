@@ -14,7 +14,7 @@ import kodkod.instance.TemporalInstance;
  * @param <T>
  *            The type to be iterated.
  */
-public abstract class Explorator<T> implements Iterator<T> {
+public interface Explorator<T> extends Iterator<T> {
 
 	/**
 	 * Produces an alternative solution trace by fixing a set number of states
@@ -26,21 +26,8 @@ public abstract class Explorator<T> implements Iterator<T> {
 	 * @param prefix
 	 *            the number of steps to be fixed.
 	 */
-	public abstract Solution branch(Formula form, int prefix);
+	public Solution extend(Formula form, int prefix);
 
-	/**
-	 * Produces an alternative solution trace by fixing the currently known states
-	 * enforcing a formula over the next one.
-	 * 
-	 * @param form
-	 *            the formula to be enforced at state <code>prefix</code> + 1
-	 * @param prefix
-	 *            the number of steps to be fixed.
-	 */
-	public Solution extend(Formula form) {
-		return branch(form,getLastInstance().states.size()-1);
-	}
-	
-	public abstract TemporalInstance getLastInstance();
+	public TemporalInstance getLastInstance();
 
 }
