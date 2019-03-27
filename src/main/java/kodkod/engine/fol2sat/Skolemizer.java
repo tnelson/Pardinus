@@ -68,7 +68,6 @@ import kodkod.engine.bool.BooleanMatrix;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Bounds;
-import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleSet;
 import kodkod.util.nodes.AnnotatedNode;
 
@@ -399,8 +398,8 @@ abstract class Skolemizer extends AbstractReplacer {
 
 			for(Decl decl : decls) {
 				final Decl skolemDecl = visit(decl);
-
-				final Relation skolem = Relation.nary("$"+ skolemDecl.variable().name(), nonSkolems.size() + skolemDecl.variable().arity());
+                Variable skVar = skolemDecl.variable();
+                final Relation skolem = Relation.skolem("$" + skVar.name(), nonSkolems.size() + skVar.arity(), skVar, skolemDecl, quant); // [AlloyTools]
 				reporter.skolemizing(decl, skolem, nonSkolemsView);
 
 				final Expression skolemExpr = skolemExpr(skolemDecl, skolem);

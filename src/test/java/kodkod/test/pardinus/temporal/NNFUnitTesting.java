@@ -8,14 +8,19 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by Eduardo Pessoa on 11/04/16.
+ * Tests whether the conversion into negated normal form is correct.
+ * 
+ * As of Pardinus 1.1 traces are assumed to be infinite and NNF no longer
+ * required.
+ * 
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 public class NNFUnitTesting {
 
-	private static VarRelation A = VarRelation.unary("A");
-	private static VarRelation B = VarRelation.unary("B");
-	private static VarRelation C = VarRelation.binary("C");
-	private static VarRelation toSend = VarRelation.binary("toSend");
+	private static Relation A = Relation.unary_variable("A");
+	private static Relation B = Relation.unary_variable("B");
+	private static Relation C = Relation.binary_variable("C");
+	private static Relation toSend = Relation.binary_variable("toSend");
 	private static Relation Process = Relation.unary("Process");
 
 	@Test
@@ -219,54 +224,53 @@ public class NNFUnitTesting {
 	@Test
 	public final void test27() {
 		Variable v = Variable.unary("v");
-		Formula initial = Formula.and(
-				new Formula[] { C.join(v).some().or(B.lone()).next(), A.lone().implies(B.some()), B.lone().not() })
+		Formula initial = Formula
+				.and(new Formula[] { C.join(v).some().or(B.lone()).next(), A.lone().implies(B.some()), B.lone().not() })
 				.not();
-		Formula result = Formula.or(
-				new Formula[] { C.join(v).some().not().and(B.lone().not()).next(), A.lone().and(B.some().not()), B.lone() });
+		Formula result = Formula.or(new Formula[] { C.join(v).some().not().and(B.lone().not()).next(),
+				A.lone().and(B.some().not()), B.lone() });
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
 	@Test
 	public final void test28() {
 		Variable v = Variable.unary("v");
-		Formula initial = Formula.and(
-				new Formula[] { C.join(v).some().or(B.lone()).next(), A.lone().implies(B.some()), B.lone() }).not();
-		Formula result = Formula.or(
-				new Formula[] { C.join(v).some().not().and(B.lone().not()).next(), A.lone().and(B.some().not()), B.lone().not() });
+		Formula initial = Formula
+				.and(new Formula[] { C.join(v).some().or(B.lone()).next(), A.lone().implies(B.some()), B.lone() })
+				.not();
+		Formula result = Formula.or(new Formula[] { C.join(v).some().not().and(B.lone().not()).next(),
+				A.lone().and(B.some().not()), B.lone().not() });
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
 	@Test
 	public final void test29() {
 		Variable v = Variable.unary("v");
-		Formula initial = Formula
-				.and(new Formula[] { C.join(v).some().and(B.prime().lone()).next().not(), A.lone().implies(B.some()),
-						B.lone().not() }).not();
-		Formula result =  Formula
-				.or(new Formula[] { C.join(v).some().and(B.prime().lone()).next(), A.lone().and(B.some().not()),
-						B.lone() });
+		Formula initial = Formula.and(new Formula[] { C.join(v).some().and(B.prime().lone()).next().not(),
+				A.lone().implies(B.some()), B.lone().not() }).not();
+		Formula result = Formula.or(new Formula[] { C.join(v).some().and(B.prime().lone()).next(),
+				A.lone().and(B.some().not()), B.lone() });
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
 	@Test
 	public final void test30() {
 		Variable v = Variable.unary("v");
-		Formula initial = Formula.and(
-				new Formula[] { C.join(v).some().and(B.lone()).next(), A.lone().implies(B.some()), B.lone() }).not();
-		Formula result =  Formula.or(
-				new Formula[] { C.join(v).some().not().or(B.lone().not()).next(), A.lone().and(B.some().not()), B.lone().not() });
+		Formula initial = Formula
+				.and(new Formula[] { C.join(v).some().and(B.lone()).next(), A.lone().implies(B.some()), B.lone() })
+				.not();
+		Formula result = Formula.or(new Formula[] { C.join(v).some().not().or(B.lone().not()).next(),
+				A.lone().and(B.some().not()), B.lone().not() });
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
 	@Test
 	public final void test31() {
 		Variable v = Variable.unary("v");
-		Formula initial = Formula.or(
-				new Formula[] { C.join(v).some().and(B.lone()).always().eventually(), A.lone().not().implies(B.some()), B.lone() })
-				.not();
-		Formula result = Formula.and(
-				new Formula[] { C.join(v).some().not().or(B.lone().not()).eventually().always(), A.lone().not().and(B.some().not()), B.lone().not() });
+		Formula initial = Formula.or(new Formula[] { C.join(v).some().and(B.lone()).always().eventually(),
+				A.lone().not().implies(B.some()), B.lone() }).not();
+		Formula result = Formula.and(new Formula[] { C.join(v).some().not().or(B.lone().not()).eventually().always(),
+				A.lone().not().and(B.some().not()), B.lone().not() });
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
@@ -284,8 +288,8 @@ public class NNFUnitTesting {
 		Formula initial = Formula.and(
 				new Formula[] { C.join(v).some().or(B.lone()).previous(), A.lone().implies(B.some()), B.lone().not() })
 				.not();
-		Formula result = Formula.or(
-				new Formula[] { C.join(v).some().not().and(B.lone().not()).previous(), A.lone().and(B.some().not()), B.lone() });
+		Formula result = Formula.or(new Formula[] { C.join(v).some().not().and(B.lone().not()).previous(),
+				A.lone().and(B.some().not()), B.lone() });
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
@@ -294,17 +298,17 @@ public class NNFUnitTesting {
 		Variable var3 = Variable.unary("p");
 		Formula initial = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).not();
-		String result = "(some p: one Process | (!((toSend . p) = (toSend . p)) until !lone (Process . toSend')))";
+		String result = "(some p: one Process | (!((toSend . p) = (toSend . p)) release !lone (Process . toSend')))";
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
 	@Test
 	public final void test35() {
 		Variable var3 = Variable.unary("p");
-		Formula initial = toSend.join(var3).eq(toSend.join(var3)).until(Process.join(toSend.prime()).lone())
+		Formula initial = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).not();
-		Formula result = toSend.join(var3).eq(toSend.join(var3)).not().release(Process.join(toSend.prime()).lone().not())
-				.forSome(var3.oneOf(Process));
+		Formula result = toSend.join(var3).eq(toSend.join(var3)).not()
+				.release(Process.join(toSend.prime()).lone().not()).forSome(var3.oneOf(Process));
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
@@ -314,7 +318,7 @@ public class NNFUnitTesting {
 		Formula initial = toSend.join(var3).eq(toSend.join(var3)).and(Process.join(toSend.prime()).one())
 				.release(Process.join(toSend.prime()).lone()).forAll(var3.oneOf(Process)).not();
 		Formula result = toSend.join(var3).eq(toSend.join(var3)).not().or(Process.join(toSend.prime()).one().not())
-				.until(Process.join(toSend.prime()).lone().not()).forSome(var3.oneOf(Process));
+				.release(Process.join(toSend.prime()).lone().not()).forSome(var3.oneOf(Process));
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
@@ -324,7 +328,7 @@ public class NNFUnitTesting {
 		Formula initial = toSend.join(var3).eq(toSend.join(var3)).and(Process.join(toSend.prime()).one())
 				.until(Process.join(toSend.prime()).lone()).not();
 		Formula result = toSend.join(var3).eq(toSend.join(var3)).not().or(Process.join(toSend.prime()).one().not())
-				.release(Process.join(toSend.prime()).lone().not());
+				.until(Process.join(toSend.prime()).lone().not());
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 

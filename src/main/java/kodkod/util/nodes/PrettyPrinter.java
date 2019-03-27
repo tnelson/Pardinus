@@ -375,8 +375,6 @@ public final class PrettyPrinter {
 			visitChild(node.right(), parenthesize(op, node.right()));
 		}
 		
-		
-
 		/** @return true if the given operator is assocative */
 		private boolean associative(IntOperator op) { 
 			switch(op) { 

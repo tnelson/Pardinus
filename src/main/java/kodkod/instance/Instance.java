@@ -22,12 +22,21 @@
  */
 package kodkod.instance;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import kodkod.ast.ConstantExpression;
+import kodkod.ast.Expression;
+import kodkod.ast.Formula;
+import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
+import kodkod.engine.fol2sat.RelationCollector;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
 import kodkod.util.ints.SparseSequence;
@@ -226,11 +235,74 @@ public class Instance implements Cloneable {
 	}
 	
 	/**
+	 * Converts an instance into a formula that exactly identifies it. Requires that
+	 * every relevant atom be reified into a singleton relation, which may be
+	 * re-used between calls.
+	 * 
+ 	 * @assumes reif != null
+	 * @param reif
+	 *            the previously reified atoms
+	 * @throws NullPointerException
+	 *             reif = null
+	 * @return the formula representing <this>
+	 */
+	// [HASLab]
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
+
+		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
+
+		// reify atoms not yet reified
+		for (int i = 0; i < universe().size(); i++) {
+			if (!reif.keySet().contains(universe().atom(i))) {
+				Relation r = Relation.unary(universe().atom(i).toString());
+				reif.put(universe().atom(i), r);
+				bounds.boundExactly(r, bounds.universe().factory().setOf(universe().atom(i)));
+			}
+		}
+
+		// create an equality for every relation
+		// a = A + ... && r = A -> B + ... 
+		List<Formula> res = new ArrayList<Formula>();
+		for (Relation rel : tuples.keySet()) {
+			// do not translate relations from reified from atoms
+			if (reif.values().contains(rel) || (relevants != null && !relevants.contains(rel)))
+				continue;
+
+			TupleSet tset = tuples.get(rel);
+			Iterator<Tuple> it = tset.iterator();
+
+			Expression r;
+			if (it.hasNext()) {
+				Tuple u = it.next();
+				Expression r1 = reif.get(u.atom(0));
+				for (int i = 1; i < u.arity(); i++)
+					r1 = r1.product(reif.get(u.atom(i)));
+				r = r1;
+			} else {
+				r = ConstantExpression.NONE;
+				for (int i = 1; i < tset.arity(); i++)
+					r = r.product(ConstantExpression.NONE);
+			}
+
+			while (it.hasNext()) {
+				Tuple u = it.next();
+				Expression r1 = reif.get(u.atom(0));
+				for (int i = 1; i < u.arity(); i++)
+					r1 = r1.product(reif.get(u.atom(i)));
+				r = r.union(r1);
+			}
+			res.add(rel.eq(r));
+		}
+		return NaryFormula.and(res);
+	}
+
+	/**
 	 * {@inheritDoc}
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		return "relations: "+tuples.toString() + "\nints: " + ints;
 	}
-
+	
 }
+

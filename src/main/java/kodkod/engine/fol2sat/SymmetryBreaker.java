@@ -222,6 +222,9 @@ final class SymmetryBreaker {
 					if (!rparts.representatives.contains(sym.min())) 
 						continue;  // r does not range over sym
 					
+					if (r.isSkolem() && options.temporal())
+						continue;
+					
 					// [HASLab] configuration matrices have a set of variables assigned T.
 					// when the process iterates over these, we may obtain variables that are
 					// not in the original SBP order; eg, if originally we had [1,2] < [3,4],

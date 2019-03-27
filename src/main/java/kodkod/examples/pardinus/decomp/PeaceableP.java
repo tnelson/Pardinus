@@ -14,7 +14,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class PeaceableP implements DModel {
+public class PeaceableP extends DModel {
 
 	final private Relation BQueens, WQueens, wrow, brow, wcol, bcol, Num;
 	final private Universe u;

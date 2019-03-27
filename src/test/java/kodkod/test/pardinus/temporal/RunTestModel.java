@@ -21,6 +21,7 @@ import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.decomp.DProblem;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.temporal.DijkstraT;
+import kodkod.examples.pardinus.temporal.HotelT;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
@@ -66,25 +67,25 @@ public final class RunTestModel {
 		// dynamically create a partition model from the specified class
 		//Test test = new Test();
 
-//		String hotelArgs[] = {"3","10","INTERVENES"};
-//		HotelP hotel = new HotelP(hotelArgs);
+		String hotelArgs[] = {"5","INTERVENES"};
+		HotelT hotel = new HotelT(hotelArgs);
 
 		//String ringArgs[] = {"3","10","BADLIVENESS","VARIABLE"};
 	    //RingP ring = new RingP(ringArgs);
 
 
-		String dijkstraArgs[] = {"4","5","10","SAT"};
-		DijkstraT dijkstraP = new DijkstraT(dijkstraArgs);
+//		String dijkstraArgs[] = {"4","5","10","SAT"};
+//		DijkstraT dijkstraP = new DijkstraT(dijkstraArgs);
 
 		//String spanArgs[] = {"4","10","V3"};
 		//SpanP spanP = new SpanP(spanArgs);
 
 
-		model = dijkstraP;//(PartitionModel) Class.forName(args[0]).getConstructor(String[].class)
+		model = hotel;//(PartitionModel) Class.forName(args[0]).getConstructor(String[].class)
 				//.newInstance();
 
 		// the chosen partition mode
-		selected_mode = DecomposedOptions.DMode.PARALLEL;//ParallelOptions.Modes.valueOf(args[1]);
+		selected_mode = DecomposedOptions.DMode.HYBRID;//ParallelOptions.Modes.valueOf(args[1]);
 		// the chosen solver
 		selected_solver = Solvers.GLUCOSE; //ParallelOptions.Solvers.valueOf(args[2]);
 
@@ -106,8 +107,7 @@ public final class RunTestModel {
 	 * @throws InterruptedException 
 	 */
 	private static void run_tests() throws InterruptedException {
-		final PardinusBounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
+		final PardinusBounds b1 = new PardinusBounds(model.bounds1(),model.bounds2());
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 
@@ -139,26 +139,28 @@ public final class RunTestModel {
 
 		long t1 = System.currentTimeMillis();
 
+		opt.setRunDecomposed(true);
+		opt.setMaxTraceLength(10);
 		opt.setDecomposedMode(selected_mode);
 		psolver = new PardinusSolver(opt);
-		if (batch)
-			solution = go_batch(b1, b2, f1, f2);
-		else
+//		if (batch)
+//			solution = go_batch(b1, b2, f1, f2);
+//		else
 		switch (selected_mode) {
 		case PARALLEL:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+			solution = psolver.solve(f1.and(f2), b1);
 			break;
 		case HYBRID:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+			solution = psolver.solveAll(f1.and(f2), b1).next();
 			break;
-		case INCREMENTAL:
-			solution = go_incremental(b1, b2, f1, f2);
-			break;
+//		case INCREMENTAL:
+//			solution = go_incremental(b1, b2, f1, f2);
+//			break;
 		case EXHAUSTIVE:
 			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+			solution = psolver.solve(f1.and(f2), b1);
 			break;
 		default:
 			break;

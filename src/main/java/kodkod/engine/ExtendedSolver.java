@@ -237,10 +237,6 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 
 			final Translation.Whole transl = this.translation;
 			
-//			// TODO: this was not commented
-//			if (transl.bounds() instanceof MainPardinusBounds && ((MainPardinusBounds) transl.bounds()).integrated && !((MainPardinusBounds) transl.bounds()).trivial_config) 
-//				return nextNonTrivialSolution();
-				
 			final Solution sol = trivial(transl, translTime); // this also frees up solver resources, if unsat
 			if (sol.instance()==null) {
 				translation = null; // unsat, no more solutions
@@ -248,58 +244,36 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				trivial++;
 				
 				final Bounds bounds = transl.bounds();
-				final Bounds newBounds;  
 				// [HASLab] proper decomposed clone
-				if (bounds instanceof PardinusBounds) 
-					newBounds= ((PardinusBounds) bounds).clone();
-				else 
-					newBounds= bounds.clone();
+				final Bounds newBounds = bounds instanceof PardinusBounds?((PardinusBounds) bounds).clone():bounds.clone();
 				final List<Formula> changes = new ArrayList<Formula>();
 
-				for(Relation r : bounds.relations()) {
-					final TupleSet lower = bounds.lowerBound(r); 
-					// [HASLab] if integrated problem, then fixed bounds (from the configuration) must also be part 
-					// of the disjunction (i.e., some a || some r || some b || some s).
-					// [HASLab] TODO: ambiguous if the integrated problem had fixed bounds itself; does it affect soundness??
-					if (lower != bounds.upperBound(r) || (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).integrated())) { 
+				// [HASLab] when integrated consider the amalgamated problem to generate the formula,
+				// otherwise already fixed relations will be ignored in symmetry breaking
+				Bounds full_bounds = bounds;
+				if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).integrated)
+					full_bounds = ((PardinusBounds) bounds).amalgamated;
+				
+				for(Relation r : full_bounds.relations()) {
+					final TupleSet lower = full_bounds.lowerBound(r); 
+					if (lower != full_bounds.upperBound(r)) { 
 						// r may change
-						if (lower.isEmpty()) { 
+						if (bounds.lowerBound(r).isEmpty()) { 
 							changes.add(r.some());
 						} else {
 							final Relation rmodel = Relation.nary(r.name()+"_"+trivial, r.arity());
-							newBounds.boundExactly(rmodel, lower);	
+							newBounds.boundExactly(rmodel, bounds.lowerBound(r));	
 							changes.add(r.eq(rmodel).not());
+						}
+					}
+				}
 
-						}
-					}
-				}
-				
-				// [HASLab] if dealing with decomposed problems at the configuration stage, every
-				// variable must occur in the formula, otherwise it will be disregarded by the 
-				// symmetry breaker.
-				List<Formula> changes2 = new ArrayList<Formula>();
-				if (bounds instanceof PardinusBounds && !((PardinusBounds) bounds).integrated() && ((PardinusBounds)bounds).amalgamated() != null)  {
-					for(Relation r : ((PardinusBounds) bounds).amalgamated().relations()) {
-						final TupleSet lower = ((PardinusBounds) bounds).amalgamated().lowerBound(r); 
-						if (lower.isEmpty()) { 
-							changes2.add(r.some());
-						} else {
-							final Relation rmodel = Relation.nary(r.name()+"_"+trivial, r.arity());
-							((PardinusBounds) newBounds).amalgamated().boundExactly(rmodel, lower);	
-							changes2.add(r.eq(rmodel).not());
-						}
-					}
-				}
-				else changes2 = changes;
-//				
 				// nothing can change => there can be no more solutions (besides the current trivial one).
 				// note that transl.formula simplifies to the constant true with respect to 
 				// transl.bounds, and that newBounds is a superset of transl.bounds.
 				// as a result, finding the next instance, if any, for transl.formula.and(Formula.or(changes)) 
 				// with respect to newBounds is equivalent to finding the next instance of Formula.or(changes) alone.
-				// [HASLab] a disjunction between configuration and integrated problems is returned; should
-				// only differ for configuration problems.
-				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes).and(Formula.or(changes2));
+				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes);
 				
 				final long startTransl = System.currentTimeMillis();
 				translation = Translator.translate(formula, newBounds, transl.options());

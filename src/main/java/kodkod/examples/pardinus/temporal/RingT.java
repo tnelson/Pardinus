@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class RingT implements DModel {
+public class RingT extends DModel {
 
 	public enum Variant1 {
 		BADLIVENESS, GOODLIVENESS, GOODSAFETY;
@@ -61,7 +61,7 @@ public class RingT implements DModel {
 	// partition 1 relations
 	private Relation pfirst, plast, pord, Process, succ, id, Id;
 	// partition 2 relations
-	private VarRelation toSend, elected;
+	private Relation toSend, elected;
 
 	public RingT(String args[]) {
 		this.n_ps = Integer.valueOf(args[0]);
@@ -77,8 +77,8 @@ public class RingT implements DModel {
 		id = Relation.binary("id");
 		Id = Relation.unary("Id");
 
-		toSend = VarRelation.binary("toSend");
-		elected = VarRelation.unary("elected");
+		toSend = Relation.binary_variable("toSend");
+		elected = Relation.unary_variable("elected");
 	}
 
 	/**

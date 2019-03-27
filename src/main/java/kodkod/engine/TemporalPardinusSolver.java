@@ -27,15 +27,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.TargetOptions.TMode;
@@ -44,6 +46,7 @@ import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationLog;
 import kodkod.engine.fol2sat.Translator;
 import kodkod.engine.fol2sat.UnboundLeafException;
+import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.satlab.SATAbortedException;
 import kodkod.engine.satlab.SATProver;
@@ -51,10 +54,13 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
+import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
+import kodkod.util.ints.IntSet;
+import kodkod.util.ints.IntTreeSet;
 import kodkod.util.nodes.PrettyPrinter;
 
 /**
@@ -67,6 +73,9 @@ import kodkod.util.nodes.PrettyPrinter;
  */
 public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds, ExtendedOptions>,
 		TemporalSolver<ExtendedOptions> {
+	
+	public static boolean SATOPTITERATION = false;
+
 	private final ExtendedOptions options;
 
 	/**
@@ -115,22 +124,25 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	// [HASLab]
 	public Solution solve(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
-
+		assert !options.unbounded();
 		try {
 			long startTransl = System.currentTimeMillis();
-			Formula extformula = TemporalTranslator.translate(formula);
+			
+			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
+			Formula extformula = tmptrans.translate();
 			long endTransl = System.currentTimeMillis();
 			long transTime = endTransl - startTransl;
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole translation = null;
 			int traceLength = options.minTraceLength()-1;
+			PardinusBounds extbounds = null;
 			while (!isSat && traceLength <= options.maxTraceLength()) {
 				startTransl = System.currentTimeMillis();
 				// increase while UNSAT and below max
 				do {
 					traceLength++;
-					Bounds extbounds = TemporalTranslator.translate(bounds, traceLength);
+					extbounds = tmptrans.expand(traceLength);
 					translation = Translator.translate(extformula, extbounds, options);
 				} while (translation.trivial() && traceLength <= options.maxTraceLength());
 
@@ -138,7 +150,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				transTime += endTransl - startTransl;
 
 				if (translation.trivial() && traceLength == options.maxTraceLength())
-					return trivial(translation, endTransl - startTransl, bounds.relationsVar());
+					return trivial(translation, endTransl - startTransl, extbounds);
 				
 				final SATSolver cnf = translation.cnf();
 
@@ -151,7 +163,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				traceLength++;
 			}
 			final Statistics stats = new Statistics(translation, transTime, solveTime);
-			return isSat ? sat(translation, stats, bounds.relationsVar()) : unsat(translation, stats);
+			return isSat ? sat(translation, stats, bounds) : unsat(translation, stats);
 		} catch (SATAbortedException sae) {
 			throw new AbortedException(sae);
 		}
@@ -197,8 +209,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	}
 
 	// [HASLab]
-	private static Solution sat(Translation.Whole translation, Statistics stats, Set<VarRelation> varrelations) {
-		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(), varrelations));
+	private static Solution sat(Translation.Whole translation, Statistics stats, PardinusBounds originalBounds) {
+		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(),originalBounds));
 		translation.cnf().free();
 		return sol;
 	}
@@ -217,11 +229,11 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	}
 
 	// [HASLab]
-	private static Solution trivial(Translation.Whole translation, long translTime, Set<VarRelation> varrelations) {
+	private static Solution trivial(Translation.Whole translation, long translTime, PardinusBounds originalBounds) {
 		final Statistics stats = new Statistics(0, 0, 0, translTime, 0);
 		final Solution sol;
 		if (translation.cnf().solve()) {
-			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret(), varrelations));
+			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret(),originalBounds));
 		} else {
 			sol = Solution.triviallyUnsatisfiable(stats, trivialProof(translation.log()));
 		}
@@ -248,65 +260,63 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	 */
 	private final static class SolutionIterator extends Explorator<Solution> {
 		private Translation.Whole translation;
-		private Formula extformula; 
 		private long translTime;
 		private int trivial;
-		private final PardinusBounds tempBounds;
 		private final ExtendedOptions opt; // [HASLab] temporal
 		private int current_trace;
 		private boolean incremented = false;
-		private Solution prev = null;
-		private Formula extension_formula = null;
-
+		private PardinusBounds extbounds;
+		private final PardinusBounds originalBounds;
+		private final Formula originalFormula;
+		
+		// [HASLab] structures for reformulated iteration
+		private final List<TemporalInstance> previousSols = new ArrayList<TemporalInstance>();
+		private final Map<Object,Expression> reifs = new HashMap<Object,Expression>();
+		
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
+			assert !options.unbounded();
 			this.translTime = System.currentTimeMillis();
-			current_trace = options.minTraceLength()-1;
+			this.current_trace = options.minTraceLength()-1;
+			this.originalBounds = bounds;
+			this.originalFormula = formula;
+
+			TemporalTranslator tmptrans = new TemporalTranslator(originalFormula, bounds, options);
+			Formula extformula = tmptrans.translate();
 			do {
 				current_trace++;
-				// this bounds are irrelevant, the ones inside the translation have symmetry broken by total orders
-				Bounds extbounds = TemporalTranslator.translate(bounds, current_trace);
-				this.extformula = TemporalTranslator.translate(formula);
+				this.extbounds = tmptrans.expand(current_trace);
 				this.translation = Translator.translate(extformula, extbounds, options);
 			} while (this.translation.trivial() && current_trace <= options.maxTraceLength());
 
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.trivial = 0;
-			this.tempBounds = bounds;
 			this.opt = options;
 		}
 		
+		Formula exploreF = null;
+		int exploreS;
+
 		@Override
-		public void branch(Formula f, int s) {
-			this.extension_formula  = f;
-			
-			if (prev == null)
+		// [HASLab] explorator
+		public Solution branch(Formula f, int s) {
+			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
 			this.translTime = System.currentTimeMillis();
 
-			for (int i = 0; i < current_trace-1; i++)
+			for (int i = 0; i < s; i++)
 				f = f.next();
 			
-			f = TemporalTranslator.translate(f);
-
-			extformula = extformula.and(f);
+			exploreF = f;
+			exploreS = s+1;
 			
-			current_trace++;
-  			Bounds extbounds = TemporalTranslator.translate(tempBounds, current_trace);
-  			TemporalTranslator.translate(tempBounds, extbounds, current_trace, (TemporalInstance) prev.instance());
-			translation = Translator.translate(extformula, extbounds, opt);
-
-//			if (prev.instance()!=null)
-//				throw new RuntimeException(current_trace+": "+extbounds.lowerBounds()+", "+extbounds.upperBounds());
-
-			this.translTime = System.currentTimeMillis() - translTime;
-			this.trivial = 0;
-			incremented = false;
+			incremented = true;
 			
+			return next();
 		}
 
 		@Override
 		public TemporalInstance getLastInstance() {
-			return (TemporalInstance) prev.instance();
+			return previousSols.get(previousSols.size()-1);
 		}
 
 		/**
@@ -327,8 +337,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (!hasNext())
 				throw new NoSuchElementException();
 			try {
-				prev = translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution();
-				return prev;
+				return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution();
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
@@ -361,16 +370,86 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (incremented) {
-					long translStart = System.currentTimeMillis();
-					// the relevant bounds with symmetry broken are in the translation
-					Bounds extbounds = TemporalTranslator.translate(tempBounds, current_trace);
-					if (extension_formula != null) {
-			  			TemporalTranslator.translate(tempBounds, extbounds, current_trace, (TemporalInstance) prev.instance());
+					Formula reforms = Formula.TRUE;
+					if (!SATOPTITERATION) {
+						// this must not be done before incrementing because the new bounds
+						// would be inconsistent with the then extended formula
+						for (Instance i : previousSols)
+							reforms = reforms.and(i.formulate(originalBounds,reifs,originalFormula).not());
+						opt.reporter().debug(reforms+"");
 					}
-					translation = Translator.translate(extformula, extbounds, opt);
+					if (exploreF != null) {
+						reforms = reforms.and(exploreF);
+					}
+					// the translation of the original formula could in principle be re-used but
+					// the original past depth level is needed
+					TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(reforms), originalBounds, opt);
+					extbounds = tmptrans.expand(current_trace);
+					if (exploreF != null) {
+						TemporalBoundsExpander.extend(originalBounds, extbounds, exploreS, current_trace, getLastInstance());
+					}
+					Formula exp_reforms = tmptrans.translate();
+					long translStart = System.currentTimeMillis();
+					translation = Translator.translate(exp_reforms, extbounds, opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
 					incremented = false;
+					if (SATOPTITERATION) {
+						for(TemporalInstance inst : previousSols) {
+							Set<TemporalInstance> insts = inst.unrollStep(current_trace,tmptrans.past_depth);
+							opt.reporter().debug("Expanding and negating previous instance, "+insts.size()+" possible unrolls:\n"+inst+"\n");
+							TemporalInstance inste = insts.iterator().next();
+							List<Integer> notModel = new ArrayList<Integer>();
+							int j = 0;
+							for (Relation r : translation.bounds().relations()) {
+								TupleSet lower = translation.bounds().lowerBound(r);
+								IntSet vars = translation.primaryVariables(r);
+								opt.reporter().debug(r+" has vars "+vars+" and upper "+translation.bounds().upperBound(r).indexView());
+								if (!vars.isEmpty() && !r.equals(TemporalTranslator.LOOP) && !r.equals(TemporalTranslator.STATE) && !r.equals(TemporalTranslator.PREFIX)  && inste.tuples(r) != null) {
+									int lit = vars.min();
+									StringBuilder sb = new StringBuilder();
+									for(IntIterator iter = translation.bounds().upperBound(r).indexView().iterator(); iter.hasNext();) {
+										final int index = iter.next();
+										opt.reporter().debug(translation.bounds().upperBound(r).indexView() +" vs "+ inste.tuples(r).indexView()+"");
+										if (!lower.indexView().contains(index)) {
+											notModel.add(inste.tuples(r).indexView().contains(index)?-lit:lit);
+											lit++;
+										}
+									}
+									opt.reporter().debug(notModel+"\n\n");
+								}
+							}
+							opt.reporter().debug("New clause without loops\n");
+							StringBuilder sb = new StringBuilder();
+							for (int i = 0; i < notModel.size(); i++)
+								sb.append(notModel.get(i)+" ");
+							opt.reporter().debug(sb+"\n");
+							Set<Integer> loops = new HashSet<Integer>();
+							IntSet vars = translation.primaryVariables(TemporalTranslator.LOOP);
+							for (TemporalInstance i : insts) {
+								int lit = vars.min();
+								opt.reporter().debug(translation.bounds().upperBound(TemporalTranslator.LOOP).indexView()+"");
+								for(IntIterator iter = translation.bounds().upperBound(TemporalTranslator.LOOP).indexView().iterator(); iter.hasNext();) {
+									final int index = iter.next();
+									if (i.tuples(TemporalTranslator.LOOP).indexView().contains(index-((tmptrans.past_depth-1)*current_trace))) loops.add(lit);
+									lit++;
+								}
+								opt.reporter().debug("\n");
+							}
+							opt.reporter().debug("Bad loops were "+loops+"\n");
+							for(IntIterator iter = vars.iterator(); iter.hasNext();) {
+								final int lit = iter.next();
+								if (!loops.contains(lit)) notModel.add(lit);
+							}
+							opt.reporter().debug("New final clause"+"\n");
+							sb = new StringBuilder();
+							for (int k = 0; k < notModel.size(); k++)
+								sb.append(notModel.get(k));
+							opt.reporter().debug(sb+"\n");
+	
+							translation.cnf().addClause(notModel.stream().mapToInt(ii->ii).toArray());
+						} 
+					}
 				}
 				
 				transl = translation;
@@ -394,16 +473,28 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			final Statistics stats = new Statistics(transl, translTime, solveTime);
 			final Solution sol;
 
+			exploreF = null;
+			
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), tempBounds.relationsVar()));
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
+				
+				IntSet tempskolemvars = new IntTreeSet();
+				for (Relation r : transl.bounds().relations())
+					if (r.isSkolem() && opt.temporal())
+						tempskolemvars.addAll(transl.primaryVariables(r));
+
 				// add the negation of the current model to the solver
-				final int[] notModel = new int[primaryVars];
+				final int[] notModel = new int[primaryVars - tempskolemvars.size()];
 				for (int i = 1; i <= primaryVars; i++) {
-					notModel[i - 1] = cnf.valueOf(i) ? -i : i;
+					if (!tempskolemvars.contains(i))
+						notModel[i - 1] = cnf.valueOf(i) ? -i : i;
 				}
 				cnf.addClause(notModel);
+				// [HASLab] store the negated reformulated instance
+				// NOTE: should be on next to also get trivials?
+				previousSols.add((TemporalInstance) sol.instance());
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
 				translation = null; // unsat, no more solutions
@@ -430,7 +521,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private Solution nextTrivialSolution() {
 			final Translation.Whole transl = this.translation;
 
-			final Solution sol = trivial(transl, translTime, tempBounds.relationsVar()); // this also frees up solver resources, if unsat
+			final Solution sol = trivial(transl, translTime, extbounds); // this also frees up solver resources, if unsat
 
 			if (sol.instance() == null) {
 				translation = null; // unsat, no more solutions
@@ -487,19 +578,21 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private long translTime;
 		private final ExtendedOptions opt; // [HASLab] TO mode
 		private Map<String, Integer> weights; // [HASLab] signature weights
-		private final PardinusBounds tempBounds;
 		private final Formula extformula;
+		private PardinusBounds extbounds;
+		private PardinusBounds originalBounds;
 
 		TSolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			if (!options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");
 			this.translTime = System.currentTimeMillis();
-			Bounds extbounds = TemporalTranslator.translate(bounds, 1);
-			this.extformula = TemporalTranslator.translate(formula);
+			this.originalBounds = bounds;
+			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
+			extbounds = tmptrans.expand(1);
+			this.extformula = tmptrans.translate();
 			this.translation = Translator.translate(extformula, extbounds, options);
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.opt = options;
-			this.tempBounds = bounds;
 		}
 
 		/**
@@ -559,7 +652,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			while (!isSat && traceLength <= opt.maxTraceLength()) {
 				if (traceLength > 1) {
 					long translStart = System.currentTimeMillis();
-					Bounds extbounds = TemporalTranslator.translate(tempBounds, traceLength);
 					translation = Translator.translate(extformula, extbounds, opt);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
@@ -647,7 +739,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), tempBounds.relationsVar()));
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver
 											// resources, if any
@@ -701,7 +793,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		}
 
 		@Override
-		public void branch(Formula form, int prefix) {
+		public Solution branch(Formula form, int prefix) {
 			throw new UnsupportedOperationException();
 		}
 

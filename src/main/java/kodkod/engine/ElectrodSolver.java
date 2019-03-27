@@ -31,9 +31,12 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
@@ -63,9 +66,9 @@ import kodkod.instance.TemporalInstance;
  * </p>
  * 
  * <p>
- * Although Electrod does not support solution iteration, it is implemented as
- * an {@link IterableSolver} in order to be used by the Alloy Analyzer. This
- * iterator contains one single satisfiable solution.
+ * Iteration over Electrod is implemented through the "formulation" of the
+ * previous temporal instance, introducing its negation into the formula, and
+ * restarting the solver.
  * </p>
  * 
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
@@ -101,8 +104,79 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 */
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
+		return ElectrodSolver.go(formula,bounds,options);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+		return new SolutionIterator(formula, bounds, options);
+	}
+
+	private final static class SolutionIterator extends Explorator<Solution> {
+	
+		private Formula formula;
+		private final PardinusBounds bounds;
+		private Map<Object,Expression> reifs;
+		private ExtendedOptions options;
+		
+		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
+			this.formula = formula;
+			this.reifs = new HashMap<Object,Expression>();
+			this.bounds = bounds;
+			this.options = options;
+		}
+			
+		@Override
+		public boolean hasNext() {
+			return formula != null;
+		}
+	
+		@Override
+		public Solution next() {
+				
+			Solution s = go(formula,bounds,options);
+	
+			if (s.sat()) {
+				Formula trns = s.instance().formulate(bounds,reifs,formula).not();
+				options.reporter().debug("Reified instance: "+trns);
+				formula = formula.and(trns);
+			}
+			else 
+				formula = null;
+	
+			return s;
+		}
+
+		@Override
+		public Solution branch(Formula form, int prefix) {
+			throw new UnsupportedOperationException();	
+		}
+
+		@Override
+		public TemporalInstance getLastInstance() {
+			throw new UnsupportedOperationException();
+		}
+	
+	}
+
+	/**
+	 * Effectively launches an Electrod process. Used at single solve and at
+	 * iteration, since the process is restarted.
+	 * 
+	 * @param formula
+	 * @param bounds
+	 * @param options
+	 * @return a solution to the problem
+	 */
+	private static Solution go(Formula formula, PardinusBounds bounds, ExtendedOptions options) {
 		Reporter rep = options.reporter();
 		
+		// if not decomposed, use the amalgamated if any
+		if (!options.decomposed() && bounds.amalgamated!=null)
+			bounds = bounds.amalgamated();
+
 		// create a directory with the specified unique name
 		String temp=System.getProperty("java.io.tmpdir");
 		File dir = new File(temp+File.separatorChar+options.uniqueName());
@@ -138,27 +212,28 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			options.reporter().solvingCNF(-1, -1, -1);
 
 			p = builder.start();
+			// stores the pid so that it can be correctly terminated
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
+						try {
+							Field f = p.getClass().getDeclaredField("pid");
+							f.setAccessible(true);
+							Runtime.getRuntime().exec("kill -SIGTERM " + f.get(p));
+						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
+								| IllegalAccessException | IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					else
+						p.destroy();
+				}
+			});
+			
 			try {
-				
 				BufferedReader output = new BufferedReader(new InputStreamReader(
 						p.getInputStream()));
-				
-	    		Runtime.getRuntime().addShutdownHook(new Thread() {
-	    			@Override
-	    			public void run() {
-//	    				p.destroy();
-	    				try {
-	    					Field f = p.getClass().getDeclaredField("pid");
-	    					f.setAccessible(true);
-	    					System.out.println("Process ID : " + f.get(p));
-	    					Runtime.getRuntime().exec("kill -SIGTERM "+f.get(p));
-
-	    				} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException e) {
-	    					// TODO Auto-generated catch block
-	    					e.printStackTrace();
-	    				}
-	    			}   
-	    		}); 
 
 				String oline = "";
 				while ((oline = output.readLine()) != null)
@@ -170,8 +245,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				throw new AbortedException("Electrod problem interrupted.", e);
 			}
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			throw new AbortedException("Electrod problem failed.", e1);
 		}
 		
 		if (ret != 0) {
@@ -206,50 +280,10 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return sol;
 		}
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	public void free() {}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * Electrod problems return a single solution, thus this iterator has
-	 * exactly one satisfiable element and one unsatisfiable.
-	 */
-	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
-		Solution s = solve(formula,bounds);
-
-		Solution[] ss;
-		if (s.sat())
-			// TODO: get the stats from the header of the electrod solution
-			ss = new Solution[]{s,Solution.unsatisfiable(new Statistics(0, 0, 0, 0, 0), null)};
-		else
-			ss = new Solution[]{s};
-		
-		Iterator<Solution> l = Arrays.asList(ss).iterator();
-		return new Explorator<Solution>() {
-			@Override
-			public Solution next() {
-				return l.next();
-			}
-			
-			@Override
-			public boolean hasNext() {
-				return l.hasNext();
-			}
-			
-			@Override
-			public void branch(Formula form, int prefix) {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public TemporalInstance getLastInstance() {
-				throw new UnsupportedOperationException();
-			}
-		};
-	}
 
 }

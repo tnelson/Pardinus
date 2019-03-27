@@ -95,91 +95,143 @@ public final class Evaluator {
 	public Instance instance() { return instance; }
 	
 	/**
-	 * Evaluates the specified formula with respect to the relation-tuple mappings 
-	 * given by this.instance and using this.options. 
-	 * @return true if formula is true with respect to this.instance and this.options; 
-	 * otherwise returns false
-	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  the formula contains a higher order declaration
-	 * @throws kodkod.engine.fol2sat.UnboundLeafException  the formula contains an undeclared variable or
-	 * a relation not mapped by this.instance
+	 * Evaluates the specified formula with respect to the relation-tuple mappings
+	 * given by this.instance and using this.options. If temporal expression, 
+	 * evaluated at instant 0.
+	 * 
+	 * @return true if formula is true with respect to this.instance and
+	 *         this.options; otherwise returns false
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException
+	 *             the formula contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException
+	 *             the formula contains an undeclared variable or a relation not
+	 *             mapped by this.instance
 	 */
-	public boolean evaluate(Formula formula){
+	public boolean evaluate(Formula formula) {
 		if (formula == null) throw new NullPointerException("formula");
-		if (TemporalTranslator.isTemporal(formula)) { // [HASLab]
-			return (Translator.evaluate(LTL2FOLTranslator.translate(formula), instance, options)).booleanValue();
-		} else
-			return (Translator.evaluate(formula, instance, options)).booleanValue();
+		if (TemporalTranslator.hasTemporalOps(formula)) // [HASLab] if temporal instance, assume instant 0
+			return evaluate(formula,0);
+		return (Translator.evaluate(formula, instance, options)).booleanValue();
+	}
+	
+	/**
+	 * Evaluates the specified formula at a given instant with respect to the 
+	 * relation-tuple mappings given by this.instance and using this.options.
+	 * 
+	 * @assumes this.instance instanceof TemporalInstance
+	 * @return true if formula is true at this instant with respect to this.instance 
+	 *         and this.options; otherwise returns false
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException
+	 *             the formula contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException
+	 *             the formula contains an undeclared variable or a relation not
+	 *             mapped by this.instance
+	 * @throws IllegalArgumentException
+	 *             this.instance is not temporal
+	 */
+	// [HASLab] evaluate at particular instant
+	public boolean evaluate(Formula formula, int instant) {
+		if (formula == null) throw new NullPointerException("formula");
+		if (!(instance instanceof TemporalInstance))
+			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
+		// temporal instances are evaluated using the static expansion
+		formula = LTL2FOLTranslator.translate(formula, instant, false);
+		return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
 	
 	/**
 	 * Evaluates the specified expression with respect to the relation-tuple mappings 
-	 * given by this.instance and using this.options.
-	 * @return  {@link kodkod.instance.TupleSet set} of tuples to which the expression evaluates given the
-	 * mappings in this.instance and the options in this.options.
-	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  the expression contains a higher order declaration
-	 * @throws kodkod.engine.fol2sat.UnboundLeafException  the expression contains an undeclared variable or
-	 * a relation not mapped by this.instance
+	 * given by this.instance and using this.options. If temporal expression, 
+	 * evaluated at instant 0.
+	 * 
+	 * @return {@link kodkod.instance.TupleSet set} of tuples to which the
+	 *         expression evaluates given the mappings in this.instance and the
+	 *         options in this.options.
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException
+	 *             the expression contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException
+	 *             the expression contains an undeclared variable or a relation not
+	 *             mapped by this.instance
 	 */
-	// [HASLab] evaluate to instant 0
-	public TupleSet evaluate(Expression expression){
-		return evaluate(expression, 0);
+	public TupleSet evaluate(Expression expression) {
+		if (expression == null) throw new NullPointerException("Null expression.");
+		if (TemporalTranslator.hasTemporalOps(expression)) // [HASLab] if temporal instance, assume instant 0
+			return evaluate(expression,0);
+		final BooleanMatrix sol = Translator.evaluate(expression,instance,options);
+		return instance.universe().factory().setOf(expression.arity(), sol.denseIndices());
 	}
 
 	/**
-	 * Evaluates the specified expression at an instant with respect to the relation-tuple mappings 
-	 * given by this.instance and using this.options.
-	 * @return  {@link kodkod.instance.TupleSet set} of tuples to which the expression evaluates given the
-	 * mappings in this.instance and the options in this.options.
-	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  the expression contains a higher order declaration
-	 * @throws kodkod.engine.fol2sat.UnboundLeafException  the expression contains an undeclared variable or
-	 * a relation not mapped by this.instance
+	 * Evaluates the specified expression at a given instant with respect to 
+	 * the relation-tuple mappings given by this.instance and using this.options.
+	 * 
+	 * @assumes this.instance instanceof TemporalInstance
+	 * @return {@link kodkod.instance.TupleSet set} of tuples to which the
+	 *         expression evaluates at the instant given the mappings in 
+	 *         this.instance and the options in this.options.
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException
+	 *             the expression contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException
+	 *             the expression contains an undeclared variable or a relation not
+	 *             mapped by this.instance
+	 * @throws IllegalArgumentException
+	 *             this.instance is not temporal
 	 */
-	// [HASLab]
-	public TupleSet evaluate(Expression expression, int state){
-		if (expression == null) throw new NullPointerException("expression");
-		if (instance instanceof TemporalInstance && ((TemporalInstance) instance).states != null) {
-			Instance i = ((TemporalInstance) instance).states.get(state);
-			final BooleanMatrix sol = Translator.evaluate(expression,i,options);
-			return i.universe().factory().setOf(expression.arity(), sol.denseIndices());
-		}
-		else {
-			Expression e1 = LTL2FOLTranslator.convert(expression, state);
-			final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
-			return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
-		}
+	// [HASLab] evaluate at particular instant
+	public TupleSet evaluate(Expression expression, int instant) {
+		if (expression == null) throw new NullPointerException("Null expression.");
+		if (!(instance instanceof TemporalInstance))
+			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
+		// temporal instances are always evaluated using the static expansion
+		Expression e1 = LTL2FOLTranslator.translate(expression, instant, false); 
+		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
+		return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 	}
 	
 	/**
-	 * Evaluates the specified int expession with respect to the relation-tuple mappings 
-	 * given by this.instance and using this.options.
+	 * Evaluates the specified int expression with respect to the relation-tuple 
+	 * mappings given by this.instance and using this.options. If temporal 
+	 * expression, evaluated at instant 0.
+	 * 
 	 * @return  the integer to which the expression evaluates given the
-	 * mappings in this.instance and the options in this.options.
-	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  intExpr contains a higher order declaration
-	 * @throws kodkod.engine.fol2sat.UnboundLeafException  intExpr contains an undeclared variable or
-	 * a relation not mapped by this.instance
+	 *          mappings in this.instance and the options in this.options.
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  
+	 *             intExpr contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException  
+	 *             intExpr contains an undeclared variable or
+	 *             a relation not mapped by this.instance
 	 */
 	public int evaluate(IntExpression intExpr) {
-		// TODO: [HASLab] convert the potentially temporal expression into a FOL expression at state 0
 		if (intExpr == null) throw new NullPointerException("intexpression");
+		if (TemporalTranslator.hasTemporalOps(intExpr)) // [HASLab] if temporal instance, assume instant 0
+			return evaluate(intExpr,0);
 		final Int sol = Translator.evaluate(intExpr, instance, options);
 		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]
 		return sol.value();
 	}
 	
 	/**
-	 * Evaluates the specified int expression at a given instant with respect to the relation-tuple mappings 
-	 * given by this.instance and using this.options.
+	 * Evaluates the specified int expression at a given instant with respect to 
+	 * the relation-tuple mappings given by this.instance and using this.options.
+	 * 
 	 * @return  the integer to which the expression evaluates given the
 	 * mappings in this.instance and the options in this.options.
-	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  intExpr contains a higher order declaration
-	 * @throws kodkod.engine.fol2sat.UnboundLeafException  intExpr contains an undeclared variable or
-	 * a relation not mapped by this.instance
+	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException  
+	 *             intExpr contains a higher order declaration
+	 * @throws kodkod.engine.fol2sat.UnboundLeafException  
+	 *             intExpr contains an undeclared variable or
+	 *             a relation not mapped by this.instance
+	 * @throws IllegalArgumentException
+	 *             this.instance is not temporal
 	 */
-	// [HASLab]
-	public int evaluate(IntExpression intExpr, int state) {
-		// TODO: [HASLab] convert the potentially temporal expression into a FOL expression at state
+	// [HASLab] evaluate at particular instant
+	public int evaluate(IntExpression intExpr, int instant) {
 		if (intExpr == null) throw new NullPointerException("intexpression");
-		final Int sol = Translator.evaluate(intExpr, instance, options);
+		if (!(instance instanceof TemporalInstance))
+			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
+		// temporal instances are always evaluated using the static expansion
+		IntExpression e1 = LTL2FOLTranslator.translate(intExpr, instant, false); 
+		final Int sol = Translator.evaluate(e1, instance, options);
 		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]
 		return sol.value();
 	}

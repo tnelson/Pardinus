@@ -121,6 +121,7 @@ public class PardinusSolver implements
 	 */
 	private AbstractSolver<PardinusBounds,ExtendedOptions> solver() {
 		assert options.temporal() || !options.unbounded();
+		assert options.unbounded() == options.solver().unbounded();
 		
 		if (options.decomposed()) {
 
@@ -162,7 +163,7 @@ public class PardinusSolver implements
 	public Solution solve(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
-		assert (!TemporalTranslator.isTemporal(formula) && bounds.boundTrace().get(0).isEmpty()) || options.temporal();
+		assert (!TemporalTranslator.isTemporal(formula) && !bounds.hasVarRelations()) || options.temporal();
 		assert !options.unbounded() || options.temporal();
 
 		return solver.solve(formula, bounds);
@@ -175,9 +176,10 @@ public class PardinusSolver implements
 	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
-		assert (!TemporalTranslator.isTemporal(formula) && bounds.boundTrace().get(0).isEmpty()) || options.temporal();
+		assert (!TemporalTranslator.isTemporal(formula) && !bounds.hasVarRelations()) || options.temporal();
 		assert !options.unbounded() || options.temporal();
-		assert options.solver().incremental();
+		assert options.maxTraceLength() - options.minTraceLength() >= 0;
+//		assert options.solver().incremental();
 		
 //		if (!(this.solver instanceof IterableSolver))
 //			throw new UnsupportedOperationException();

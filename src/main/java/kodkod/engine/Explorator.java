@@ -26,7 +26,7 @@ public abstract class Explorator<T> implements Iterator<T> {
 	 * @param prefix
 	 *            the number of steps to be fixed.
 	 */
-	public abstract void branch(Formula form, int prefix);
+	public abstract Solution branch(Formula form, int prefix);
 
 	/**
 	 * Produces an alternative solution trace by fixing the currently known states
@@ -37,8 +37,8 @@ public abstract class Explorator<T> implements Iterator<T> {
 	 * @param prefix
 	 *            the number of steps to be fixed.
 	 */
-	public void extend(Formula form) {
-		branch(form,getLastInstance().end);
+	public Solution extend(Formula form) {
+		return branch(form,getLastInstance().states.size()-1);
 	}
 	
 	public abstract TemporalInstance getLastInstance();

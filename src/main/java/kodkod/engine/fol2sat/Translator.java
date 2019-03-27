@@ -394,7 +394,19 @@ public final class Translator {
 	 *  this.incremental' = incremental 
 	 */
 	private Translator(Formula formula, Bounds bounds, Options options, boolean incremental) {
-		this.originalFormula = formula;
+		// [HASLab] retrieve the additional formula imposed by the symbolic
+		// bounds, depending on execution stage
+		Formula symbForm = Formula.TRUE;
+		if (bounds instanceof PardinusBounds) {
+			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
+			if (options.decomposed() && ((PardinusBounds) bounds).amalgamated() != null)
+				symbForm = ((PardinusBounds) bounds).amalgamated().resolve(options.reporter());
+			// [HASLab] otherwise use regular bounds
+			else
+				symbForm = ((PardinusBounds) bounds).resolve(options.reporter());
+		}
+					
+		this.originalFormula = formula.and(symbForm);
 		this.originalBounds = bounds;
 		this.bounds = bounds.clone();
 		this.options = options;
@@ -426,21 +438,8 @@ public final class Translator {
 	// [HASLab] break the formula for decomposed solving, but with symmetry breaking considerations
 	private Translation translate() {
 
-		// [HASLab] retrieve the additional formula imposed by the symbolic
-		// bounds, depending on execution stage
-		Formula symbFormO = Formula.TRUE;
-		if (!incremental && bounds instanceof PardinusBounds) {
-			PardinusBounds pbounds = (PardinusBounds) bounds;
-			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
-			if (options.decomposed() && pbounds.amalgamated() != null)
-				symbFormO = pbounds.amalgamated().resolve(options.reporter());
-			// [HASLab] otherwise use regular bounds
-			else
-				symbFormO = pbounds.resolve(options.reporter());
-		}
-		
 		// [HASLab] add the extra symbolic formula
-		final AnnotatedNode<Formula> originalAnnotated = logging ? annotateRoots(originalFormula.and(symbFormO)) : annotate(originalFormula.and(symbFormO));
+		final AnnotatedNode<Formula> originalAnnotated = logging ? annotateRoots(originalFormula) : annotate(originalFormula);
 		// Remove bindings for unused relations/ints if this is not an incremental translation.  If it is
 		// an incremental translation, we have to keep all bindings since they may be used later on.
 	
@@ -454,8 +453,7 @@ public final class Translator {
 			if (bounds instanceof PardinusBounds) {
 				PardinusBounds pbounds = (PardinusBounds) bounds;
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
-					Formula symbFormA = pbounds.resolve(options.reporter());
-					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula.and(symbFormA), pbounds);
+					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula, pbounds);
 					pbounds.amalgamated().relations().retainAll(originalAnnotated.relations());
 					if (!originalAnnotated.usesInts()) pbounds.amalgamated().ints().clear();
 					Formula actual = pbounds.integrated()?slices.getValue():slices.getKey();

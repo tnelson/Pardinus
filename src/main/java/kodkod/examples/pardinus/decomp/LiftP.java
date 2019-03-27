@@ -37,7 +37,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public final class LiftP implements DModel {
+public final class LiftP extends DModel {
 
 	final private int n_floors, n_states;
 //	final private Variant variant;

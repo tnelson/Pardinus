@@ -14,7 +14,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class NetconfigP implements DModel {
+public class NetconfigP extends DModel {
 
 	// sigs
 	private final Relation Time, Router, Site, HQ, Sub;

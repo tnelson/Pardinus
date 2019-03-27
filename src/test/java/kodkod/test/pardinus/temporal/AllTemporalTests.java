@@ -5,10 +5,14 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	SymmetryTests.class,
+	BaseTests.class,
+	InstanceExpansionTests.class,
+	NNFUnitTesting.class,
+	PastUnrollingTests.class,
+    TemporalSlicerUnitTesting.class,
     TemporalTranslatorTests.class,
-    NNFUnitTesting.class,
-    TemporalSlicerUnitTesting.class
+    ExampleTests.class,
+    TemporalIterationTests.class
 })
 
 public class AllTemporalTests {}

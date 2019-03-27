@@ -169,7 +169,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	public void failed(Throwable e) {
 		solver_partial.options().reporter().warning("Integrated solver failed.");
 		if (Options.isDebug())
-			solver_partial.options().reporter().debug(e.getStackTrace().toString());
+			solver_partial.options().reporter().debug(e.getLocalizedMessage());
 		running.decrementAndGet();
 		// if last running integrated...
 		if (monitor.isConfigsDone()
@@ -272,7 +272,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
 			launchBatch(false);
 			
-		if (executor.isShutdown() && running.get() == 0)
+		if (monitor.isConfigsDone() && running.get() == 0)
 			return !solution_queue.isEmpty();
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output

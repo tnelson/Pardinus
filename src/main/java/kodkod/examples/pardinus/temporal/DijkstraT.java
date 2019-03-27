@@ -26,7 +26,6 @@ import kodkod.ast.Decls;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
@@ -45,11 +44,11 @@ import java.util.List;
 /**
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class DijkstraT implements DModel {
+public class DijkstraT extends DModel {
 	private final Relation Process, Mutex;
 	private final Relation mfirst, mlast, mord;
 
-	private final VarRelation holds, waits;
+	private final Relation holds, waits;
 
 	private int processes, mutexes;
 	private Variant var;
@@ -68,8 +67,8 @@ public class DijkstraT implements DModel {
 		mlast = Relation.unary("mlast");
 		mord = Relation.binary("mord");
 
-		holds = VarRelation.binary("holds");
-		waits = VarRelation.binary("waits");
+		holds = Relation.binary_variable("holds");
+		waits = Relation.binary_variable("waits");
 
 		this.processes = Integer.valueOf(args[0]);
 		this.mutexes = Integer.valueOf(args[1]);

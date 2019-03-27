@@ -25,7 +25,6 @@ package kodkod.test.pardinus.temporal;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.Explorator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
@@ -54,8 +53,8 @@ public class ExplorationTests {
 	public void testTmp() {
 		int n = 3;
 
-		Relation a = VarRelation.unary("a");
-		Relation b = VarRelation.unary("b");
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
 		
 		Object[] atoms = new Object[n*2];
 		for (int i = 0; i < n; i ++)
@@ -71,11 +70,11 @@ public class ExplorationTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula formula = ((a.eq(a.prime()).not())).always().and(b.some().next());
+		Formula formula = ((a.eq(a.prime()).not())).always().and(b.some().next()).and(b.no().always().eventually());
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
@@ -86,10 +85,14 @@ public class ExplorationTests {
 		Explorator<Solution> solution = (Explorator<Solution>) solver.solveAll(formula, bounds);
 		System.out.println(solution.next().instance());
 
-		solution.extend(b.eq(b.prime()).not().and(b.prime().in(b)));
+		Formula ext = a.eq(a.prime()).not();
+		System.out.println("Extending with "+ext);
+		solution.extend(ext);
 		System.out.println(solution.next().instance());
 
-		solution.extend(b.eq(b.prime()).not().and(b.prime().in(b)));
+		ext = b.eq(b.prime()).not();
+		System.out.println("Extending with "+ext);
+		solution.extend(ext);
 		System.out.println(solution.next().instance());
 
 		solver.free();
