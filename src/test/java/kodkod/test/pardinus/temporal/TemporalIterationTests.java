@@ -737,9 +737,6 @@ public class TemporalIterationTests {
 		bounds.bound(b, c.product(c), a.product(a));
 		Formula formula = a.eq(a).and(b.eq(b));
 		
-		Variable x = Variable.nary("x", 2);
-		Formula k = x.eq(x).forAll(x.oneOf(b));
-
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
@@ -764,7 +761,7 @@ public class TemporalIterationTests {
 	
 	@Test
 	public void hotel() {
-		final int n = 5, t = 6, ty = 1;
+		final int n = 5, t = 2, ty = 1;
 		List<List<Long>> alls;
 		TemporalPardinusSolver.SATOPTITERATION = false;
 		alls = new ArrayList<List<Long>>();
@@ -854,7 +851,7 @@ public class TemporalIterationTests {
 		
 		Formula formula = NaryFormula.and(f1, f2, f3, f4, f5, f6, f7, f8, elected.some().eventually());
 
-		int nn = 6, tt = 20, ty = 4;
+		int nn = 6, tt = 2, ty = 4;
 		List<List<List<Long>>> alls;
 		TemporalPardinusSolver.SATOPTITERATION = false;
 		alls = new ArrayList<List<List<Long>>>();
