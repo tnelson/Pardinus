@@ -297,7 +297,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		int exploreS;
 
 		// [HASLab] explorator
-		public Solution extend(Formula f, int s) {
+		public Solution branch(Formula f, int s) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
 			this.translTime = System.currentTimeMillis();
@@ -791,7 +791,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return next();
 		}
 
-		public Solution extend(Formula form, int prefix) {
+		public Solution branch(Formula form, int prefix) {
 			throw new UnsupportedOperationException();
 		}
 

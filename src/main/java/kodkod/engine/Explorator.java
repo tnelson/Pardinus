@@ -26,7 +26,7 @@ public interface Explorator<T> extends Iterator<T> {
 	 * @param prefix
 	 *            the number of steps to be fixed.
 	 */
-	public Solution extend(Formula form, int prefix);
+	public Solution branch(Formula form, int prefix);
 
 	public TemporalInstance getLastInstance();
 

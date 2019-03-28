@@ -149,7 +149,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return s;
 		}
 
-		public Solution extend(Formula form, int prefix) {
+		public Solution branch(Formula form, int prefix) {
 			throw new UnsupportedOperationException();	
 		}
 
