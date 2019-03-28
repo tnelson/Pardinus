@@ -29,7 +29,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -314,10 +313,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return next();
 		}
 
-		public TemporalInstance getLastInstance() {
-			return previousSols.get(previousSols.size()-1);
-		}
-
 		/**
 		 * Returns true if there is another solution.
 		 * 
@@ -385,7 +380,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 					TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(reforms), originalBounds, opt);
 					extbounds = tmptrans.expand(current_trace);
 					if (exploreF != null) {
-						TemporalBoundsExpander.extend(originalBounds, extbounds, exploreS, current_trace, getLastInstance());
+						TemporalBoundsExpander.extend(originalBounds, extbounds, exploreS, current_trace, previousSols.get(previousSols.size()-1));
 					}
 					Formula exp_reforms = tmptrans.translate();
 					long translStart = System.currentTimeMillis();

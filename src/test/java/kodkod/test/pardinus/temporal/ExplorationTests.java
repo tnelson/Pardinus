@@ -125,6 +125,57 @@ public class ExplorationTests {
 	}
 	
 	@Test
+	public void testBasic2() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, as);
+		Formula formula = ((a.eq(a.prime()).not()).and(a.intersection(b).no())).always().and(b.some()).and(b.no().always().eventually());
+
+		ExtendedOptions opt = new ExtendedOptions();
+
+//		opt.setReporter(new SLF4JReporter());
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(10);
+		opt.setSolver(SATFactory.MiniSat);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Explorator<Solution> sols = (Explorator<Solution>) solver.solveAll(formula, bounds);
+		Solution sol = sols.next();
+		sol = sols.next();
+		sol = sols.next();
+		sol = sols.next();
+		sol = sols.next();
+		sol = sols.next();
+		sol = sols.next();
+		sol = sols.next();
+		sol = sols.next();
+		System.out.println(sol);
+		
+		// needs to expand by 1
+		Formula ext = a.some();
+		System.out.println("Extending with "+ext);
+		sol = sols.branch(ext,2);
+		System.out.println(sol);
+
+		solver.free();
+	}
+	
+	@Test
 	public void testRegularIteration() {
 		int n = 2;
 

@@ -3,7 +3,6 @@ package kodkod.engine;
 import java.util.Iterator;
 
 import kodkod.ast.Formula;
-import kodkod.instance.TemporalInstance;
 
 /**
  * An iterator implementing more advanced iteration strategies for temporal
@@ -26,8 +25,5 @@ public interface Explorator<T> extends Iterator<T> {
 	 * @param prefix
 	 *            the number of steps to be fixed.
 	 */
-	public Solution branch(Formula form, int prefix);
-
-	public TemporalInstance getLastInstance();
-
+	public T branch(Formula form, int prefix);
 }
