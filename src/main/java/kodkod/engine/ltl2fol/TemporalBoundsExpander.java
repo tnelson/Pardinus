@@ -244,13 +244,17 @@ public class TemporalBoundsExpander {
 	}
 	
 	/**
-	 * Exactly binds relations up to a certain trace length to the values of a provided instance.
+	 * Exactly binds relations up to a certain trace length to the values of a
+	 * provided instance.
+	 * 
+	 * NOTE: this is re-doing part of the job already doen previously by
+	 * {@link #expand(PardinusBounds, int, int)} to extBounds, refactor.
 	 * 
 	 * @param tmpBounds the original, non expanded bounds
 	 * @param extBounds the extended state idiom bounds
-	 * @param prefxLen the length of the prefix to bind exactly
-	 * @param traceLen the total trace length
-	 * @param inst the instance from which to bind
+	 * @param prefxLen  the length of the prefix to bind exactly
+	 * @param traceLen  the total trace length
+	 * @param inst      the instance from which to bind
 	 * @return
 	 */
 	// [HASLab] explorator
