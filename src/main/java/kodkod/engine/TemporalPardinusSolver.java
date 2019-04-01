@@ -306,7 +306,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			
 			exploreF = f;
 			exploreS = s;
-			current_trace = s;
+			current_trace = s==0?1:s;
 			
 			incremented = true;
 			
@@ -362,6 +362,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			int primaryVars = -1;
 			SATSolver cnf = null;
 			
+			Translation.Whole backup = null;
+			
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (incremented) {
 					Formula reforms = Formula.TRUE;
@@ -381,6 +383,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 					extbounds = tmptrans.expand(current_trace);
 					if (exploreF != null) {
 						TemporalBoundsExpander.extend(originalBounds, extbounds, exploreS, current_trace, previousSols.get(previousSols.size()-1));
+						backup = backup==null?translation:backup;
 					}
 					Formula exp_reforms = tmptrans.translate();
 					long translStart = System.currentTimeMillis();
@@ -466,8 +469,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 
 			final Statistics stats = new Statistics(transl, translTime, solveTime);
 			final Solution sol;
-
-			exploreF = null;
 			
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
@@ -491,8 +492,14 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				previousSols.add((TemporalInstance) sol.instance());
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
-				translation = null; // unsat, no more solutions
+				if (exploreF==null) // [HASLab] simulator, may be unsat only due to f
+					translation = null; // unsat, no more solutions
+				else // [HASLab] we don't want to mess the regular iteration process
+					translation = backup;
 			}
+			
+			exploreF = null; // [HASLab] simulator, reset
+
 			return sol;
 		}
 
