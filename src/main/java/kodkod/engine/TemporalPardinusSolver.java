@@ -56,7 +56,6 @@ import kodkod.instance.Bounds;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
-import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
@@ -293,17 +292,95 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			this.opt = options;
 		}
 		
-		// [HASLab] explorator
-		public Solution branch(Formula f, int s) {
+		Map<Integer,Formula> explorations = new HashMap<Integer,Formula>();
+
+		public Solution branch(int s, Map<Relation,TupleSet> force) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
 			this.translTime = System.currentTimeMillis();
 
+			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
+			
 			TemporalInstance prev = previousSols.get(previousSols.size()-1);
 
-			for (int i = 0; i < s-1; i++)
+			// if >0, maybe will not increase, but 0 always increases
+			current_trace = s==0?1:s;
+			
+			incremented = true;
+			
+			boolean isSat = false;
+			long solveTime = 0;
+			Translation.Whole transl = null;
+			int primaryVars = -1;
+			SATSolver cnf = null;
+			
+			while (!isSat && current_trace <= opt.maxTraceLength()) {
+				// in general, this operation must restart the process since the branching formula is ephemeral
+				// to exploit incremental SAT, it needed to be convertible into SAT vars (possible in the action scenario)
+				TemporalTranslator tmptrans = new TemporalTranslator(originalFormula, originalBounds, opt);
+				extbounds = tmptrans.expand(current_trace);
+				TemporalBoundsExpander.extend(originalBounds, extbounds, s-1, current_trace, prev, force);
+				Formula exp_reforms = tmptrans.translate();
+				long translStart = System.currentTimeMillis();
+				translation = Translator.translate(exp_reforms, extbounds, opt);
+				long translEnd = System.currentTimeMillis();
+				translTime += translEnd - translStart;
+				
+				transl = translation;
+
+				cnf = transl.cnf();
+				primaryVars = transl.numPrimaryVariables();
+
+				transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+
+				final long startSolve = System.currentTimeMillis();
+				isSat = cnf.solve();
+				final long endSolve = System.currentTimeMillis();
+				solveTime += endSolve - startSolve;
+				
+				if (!isSat) {
+					current_trace++;
+				}
+			}
+
+			final Statistics stats = new Statistics(transl, translTime, solveTime);
+			final Solution sol;
+			
+			if (isSat) {
+				// extract the current solution; can't use the sat(..) method
+				// because it frees the sat solver
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
+				
+				// add the negation of the current model to the solver
+				final int[] notModel = new int[primaryVars];
+				for (int i = 1; i <= primaryVars; i++) {
+					notModel[i - 1] = cnf.valueOf(i) ? -i : i;
+				}
+				cnf.addClause(notModel);
+				// [HASLab] store the reformulated instance
+				previousSols.add((TemporalInstance) sol.instance());
+			} else {
+				sol = unsat(transl, stats); // this also frees up solver resources, if any
+				translation = null; // unsat, no more solutions
+			}
+			
+			return sol;
+		}
+
+		// [HASLab] explorator
+		public Solution branch(int s, Formula f) {
+			if (previousSols.isEmpty())
+				throw new IllegalArgumentException();
+			this.translTime = System.currentTimeMillis();
+
+			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
+			
+			TemporalInstance prev = previousSols.get(previousSols.size()-1);
+
+			for (int i = 0; i < s; i++)
 				f = f.next();
 			
+			// if >0, maybe will not increase, but 0 always increases
 			current_trace = s==0?1:s;
 			
 			incremented = true;
@@ -368,18 +445,23 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		}
 		
 		// [HASLab] explorator
-		public Solution explore(int s) {
+		public Solution branch(int s) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
 			this.translTime = System.currentTimeMillis();
 
+			explorations.replaceAll((k,v) -> k<=s?v:Formula.TRUE);
+			
 			TemporalInstance prev = previousSols.get(previousSols.size()-1);
 			
-			Formula f = prev.states.get(s).formulate(originalBounds,reifs,originalFormula).not();
+			Formula f = prev.state(s).formulate(originalBounds,reifs,originalFormula).not();
 			
 			for (int i = 0; i < s; i++)
 				f = f.next();
 
+			explorations.put(s, explorations.get(s)==null?f:explorations.get(s).and(f));
+
+			// if >0, maybe will not increase, but 0 always increases
 			current_trace = s==0?1:s;
 			
 			incremented = true;
@@ -393,7 +475,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				// in general, this operation must restart the process since the branching formula is ephemeral
 				// to exploit incremental SAT, it needed to be convertible into SAT vars (possible in the action scenario)
-				TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(f), originalBounds, opt);
+				TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(explorations.get(s)), originalBounds, opt);
 				extbounds = tmptrans.expand(current_trace);
 				TemporalBoundsExpander.extend(originalBounds, extbounds, s, current_trace, prev);
 				Formula exp_reforms = tmptrans.translate();
@@ -683,12 +765,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return sol;
 		}
 
-		@Override
-		public Solution branch(Tuple tuple, int prefix) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
 	
 
 	}
@@ -916,7 +992,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return next();
 		}
 
-		public Solution branch(Formula form, int prefix) {
+		public Solution branch(int prefix, Formula form) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -925,13 +1001,13 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		}
 
 		@Override
-		public Solution branch(Tuple tuple, int prefix) {
+		public Solution branch(int prefix, Map<Relation,TupleSet> excepts) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public Solution explore(int prefix) {
+		public Solution branch(int prefix) {
 			// TODO Auto-generated method stub
 			return null;
 		}

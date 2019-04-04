@@ -1,9 +1,11 @@
 package kodkod.engine;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import kodkod.ast.Formula;
-import kodkod.instance.Tuple;
+import kodkod.ast.Relation;
+import kodkod.instance.TupleSet;
 
 /**
  * An iterator implementing more advanced iteration strategies for temporal
@@ -11,27 +13,43 @@ import kodkod.instance.Tuple;
  * 
  * @author Nuno Macedo // [HASLab] temporal model finding
  *
- * @param <T>
- *            The type to be iterated.
+ * @param <T> The type to be iterated.
  */
 public interface Explorator<T> extends Iterator<T> {
 
 	/**
-	 * Produces an alternative solution trace by fixing a set number of states
-	 * <code>prefix</code> and enforcing a formula over state <code>prefix</code> +
-	 * 1.
+	 * Produces an alternative solution by iterating over state i of the trace,
+	 * fixing all previous states. Visited i states are accumulated and only reseted
+	 * if branching at a lower state.
 	 * 
-	 * @param form
-	 *            the formula to be enforced at state <code>prefix</code> + 1
-	 * @param prefix
-	 *            the number of steps to be fixed.
+	 * @param i the state which will be iterated.
+	 * @return the next branching solution
 	 */
-	public T branch(Formula form, int prefix);
+	public T branch(int i);
 
-	// this would allow efficient incremental iteration
-	public T branch(Tuple tuple, int prefix);
+	/**
+	 * Produces an alternative solution by forcing a particular valuations for
+	 * certain relations for state i of the trace, fixing all previous states and
+	 * the values of the other relations at state i. These restrictions are not
+	 * accumulated.
+	 * 
+	 * @param i     the state which will be iterated.
+	 * @param force valuations for a set of relations that will be changed at state
+	 *              i.
+	 * @return the next branching solution
+	 */
+	public T branch(int i, Map<Relation, TupleSet> force);
 
-	// this would allow efficient incremental iteration
-	public T explore(int prefix);
+	/**
+	 * Produces an alternative solution by forcing a particular valuations for
+	 * certain relations for state i of the trace, fixing all previous states and
+	 * the values of the other relations at state i. These restrictions are not
+	 * accumulated.
+	 * 
+	 * @param i    the state which will be iterated.
+	 * @param form the formula that will be enforced at state i.
+	 * @return the next branching solution
+	 */
+	public T branch(int i, Formula form);
 
 }

@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
@@ -49,7 +50,7 @@ import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.engine.unbounded.InvalidUnboundedSolution;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
-import kodkod.instance.Tuple;
+import kodkod.instance.TupleSet;
 
 /**
  * A computational engine for solving unbounded temporal relational
@@ -150,15 +151,21 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return s;
 		}
 
-		public Solution branch(Formula form, int prefix) {
+		public Solution branch(int prefix, Formula form) {
 			throw new UnsupportedOperationException();	
 		}
 
 		@Override
-		public Solution branch(Tuple tuple, int prefix) {
+		public Solution branch(int prefix, Map<Relation,TupleSet> excepts) {
 			throw new UnsupportedOperationException();
 		}
-	
+
+		@Override
+		public Solution branch(int prefix) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
 	}
 
 	/**

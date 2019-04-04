@@ -25,6 +25,8 @@ package kodkod.engine.ltl2fol;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import kodkod.ast.Relation;
 import kodkod.engine.Evaluator;
@@ -294,6 +296,57 @@ public class TemporalBoundsExpander {
 
 		return extBounds;
 	}
+	
+	public static Bounds extend(PardinusBounds tmpBounds, Bounds extBounds, int prefxLen, int traceLen, TemporalInstance inst, Map<Relation,TupleSet> excepts) {
+		if (!TemporalTranslator.ExplicitUnrolls)
+			throw new UnsupportedOperationException();
+		Universe u = extBounds.universe();
+		Evaluator eval = new Evaluator(inst);
+		for (Relation r : tmpBounds.relations()) {
+			TupleSet tupleSetL = convertToUniv(tmpBounds.lowerBound(r), u);
+			TupleSet tupleSetU = convertToUniv(tmpBounds.upperBound(r), u);
+			if (r.isVariable()) {
+				int i;
+				TupleSet upp = u.factory().noneOf(r.arity()+1);
+				TupleSet low = u.factory().noneOf(r.arity()+1);
+				for (i = 0; i < traceLen && i < prefxLen; i++) {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+					TupleSet ts = eval.evaluate(r,i);
+					low.addAll(convertToUniv(ts,u).product(time));
+					upp.addAll(convertToUniv(ts,u).product(time));
+				}
+				
+				if (excepts.containsKey(r)) {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+					low.addAll(convertToUniv(excepts.get(r),u).product(time));
+					upp.addAll(convertToUniv(excepts.get(r),u).product(time));
+				} else {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+					TupleSet ts = eval.evaluate(r,i);
+					low.addAll(convertToUniv(ts,u).product(time));
+					upp.addAll(convertToUniv(ts,u).product(time));
+				}
+				
+				i++;
+				
+				for (; i < traceLen; i++) {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+
+					low.addAll(tupleSetL.product(time));
+					upp.addAll(tupleSetU.product(time));
+				}
+				extBounds.bound(r.getExpansion(), low, upp);
+			} else {
+				if (inst.contains(r)) { // due to reified atoms
+					TupleSet ts = eval.evaluate(r);
+					extBounds.boundExactly(r, convertToUniv(ts,u));			
+				}
+			}
+		}
+
+		return extBounds;
+	}
+
 
 	/**
 	 * Creates a new universe by duplicating the original one and creating a given
