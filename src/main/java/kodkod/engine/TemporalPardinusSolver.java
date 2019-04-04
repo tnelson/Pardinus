@@ -294,18 +294,20 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		
 		Map<Integer,Formula> explorations = new HashMap<Integer,Formula>();
 
+		/**
+		 * {@inheritDoc}
+		 */
+		// [HASLab] explorator
 		public Solution branch(int s, Map<Relation,TupleSet> force) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
 			this.translTime = System.currentTimeMillis();
+			TemporalInstance prev = previousSols.get(previousSols.size()-1);
 
 			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
 			
-			TemporalInstance prev = previousSols.get(previousSols.size()-1);
-
 			// if >0, maybe will not increase, but 0 always increases
 			current_trace = s==0?1:s;
-			
 			incremented = true;
 			
 			boolean isSat = false;
@@ -367,23 +369,24 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return sol;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		// [HASLab] explorator
 		public Solution branch(int s, Formula f) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
+			TemporalInstance prev = previousSols.get(previousSols.size()-1);
 			this.translTime = System.currentTimeMillis();
 
 			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
 			
-			TemporalInstance prev = previousSols.get(previousSols.size()-1);
-
-			for (int i = 0; i < s; i++)
-				f = f.next();
-			
 			// if >0, maybe will not increase, but 0 always increases
 			current_trace = s==0?1:s;
-			
 			incremented = true;
+			
+			for (int i = 0; i < s; i++)
+				f = f.next();
 			
 			boolean isSat = false;
 			long solveTime = 0;
@@ -444,27 +447,26 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return sol;
 		}
 		
+		/**
+		 * {@inheritDoc}
+		 */
 		// [HASLab] explorator
 		public Solution branch(int s) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
+			TemporalInstance prev = previousSols.get(previousSols.size()-1);
 			this.translTime = System.currentTimeMillis();
 
 			explorations.replaceAll((k,v) -> k<=s?v:Formula.TRUE);
 			
-			TemporalInstance prev = previousSols.get(previousSols.size()-1);
-			
-			Formula f = prev.state(s).formulate(originalBounds,reifs,originalFormula).not();
-			
-			for (int i = 0; i < s; i++)
-				f = f.next();
-
-			explorations.put(s, explorations.get(s)==null?f:explorations.get(s).and(f));
-
 			// if >0, maybe will not increase, but 0 always increases
 			current_trace = s==0?1:s;
-			
 			incremented = true;
+
+			Formula f = prev.state(s).formulate(originalBounds,reifs,originalFormula).not();
+			for (int i = 0; i < s; i++)
+				f = f.next();
+			explorations.put(s, explorations.get(s)==null?f:explorations.get(s).and(f));
 			
 			boolean isSat = false;
 			long solveTime = 0;
