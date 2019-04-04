@@ -309,7 +309,7 @@ public class TemporalBoundsExpander {
 				int i;
 				TupleSet upp = u.factory().noneOf(r.arity()+1);
 				TupleSet low = u.factory().noneOf(r.arity()+1);
-				for (i = 0; i < traceLen && i < prefxLen; i++) {
+				for (i = 0; i < traceLen && i < prefxLen-1; i++) {
 					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
 					TupleSet ts = eval.evaluate(r,i);
 					low.addAll(convertToUniv(ts,u).product(time));
