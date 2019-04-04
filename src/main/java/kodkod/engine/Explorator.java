@@ -3,6 +3,7 @@ package kodkod.engine;
 import java.util.Iterator;
 
 import kodkod.ast.Formula;
+import kodkod.instance.Tuple;
 
 /**
  * An iterator implementing more advanced iteration strategies for temporal
@@ -26,4 +27,11 @@ public interface Explorator<T> extends Iterator<T> {
 	 *            the number of steps to be fixed.
 	 */
 	public T branch(Formula form, int prefix);
+
+	// this would allow efficient incremental iteration
+	public T branch(Tuple tuple, int prefix);
+
+	// this would allow efficient incremental iteration
+	public T explore(int prefix);
+
 }

@@ -49,6 +49,7 @@ import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.engine.unbounded.InvalidUnboundedSolution;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
+import kodkod.instance.Tuple;
 
 /**
  * A computational engine for solving unbounded temporal relational
@@ -153,7 +154,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			throw new UnsupportedOperationException();	
 		}
 
-		public TemporalInstance getLastInstance() {
+		@Override
+		public Solution branch(Tuple tuple, int prefix) {
 			throw new UnsupportedOperationException();
 		}
 	

@@ -98,7 +98,7 @@ public class ExplorationTests {
 		System.out.println("Extending with "+ext);
 		sol = sols.branch(ext,4);
 		System.out.println(sol);
-		assertEquals(5, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(4, ((TemporalInstance) sol.instance()).states.size());
 
 		// needs to expand by 3
 		ext = b.eq(b.prime()).not();
@@ -213,7 +213,7 @@ public class ExplorationTests {
 		Solution sol = sols.next();
 		System.out.println(sol);
 		assertEquals(4, ((TemporalInstance) sol.instance()).states.size());
-		String aux = sol.toString();
+		String aux = sol.instance().toString();
 		
 		// held in previous but should still change last
 		Formula ext = b.eq(b);
@@ -221,28 +221,31 @@ public class ExplorationTests {
 		sol = sols.branch(ext,3);
 		System.out.println(sol);
 		assertEquals(4, ((TemporalInstance) sol.instance()).states.size());
-		assertNotEquals(aux, sol.toString());
+		assertEquals(aux, sol.instance().toString());
 		
 		// held in previous but should still change last, but no more with same length
 		ext = b.eq(b);
 		System.out.println("Extending with "+ext);
 		sol = sols.branch(ext,3);
 		System.out.println(sol);
-		assertEquals(5, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(4, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(aux, sol.instance().toString());
 
 		// held in previous but should still change last, but no more with same length
 		ext = b.eq(b);
 		System.out.println("Extending with "+ext);
 		sol = sols.branch(ext,3);
 		System.out.println(sol);
-		assertEquals(5, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(4, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(aux, sol.instance().toString());
 
 		// held in previous but should still change last, but no more with same length
 		ext = b.eq(b);
 		System.out.println("Extending with "+ext);
 		sol = sols.branch(ext,3);
 		System.out.println(sol);
-		assertEquals(5, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(4, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(aux, sol.instance().toString());
 
 		solver.free();
 	}
@@ -291,11 +294,57 @@ public class ExplorationTests {
 		System.out.println("Extending with "+ext);
 		sol = sols.branch(ext,8);
 		System.out.println(sol);
-		assertEquals(9, ((TemporalInstance) sol.instance()).states.size());
+		assertEquals(8, ((TemporalInstance) sol.instance()).states.size());
 		assertEquals(((TemporalInstance) sol.instance()).states.get(2).toString(), ((TemporalInstance) sol.instance()).states.get(3).toString());
 		assertEquals(((TemporalInstance) sol.instance()).states.get(2).toString(), ((TemporalInstance) sol.instance()).states.get(5).toString());
 		assertEquals(((TemporalInstance) sol.instance()).states.get(2).toString(), ((TemporalInstance) sol.instance()).states.get(7).toString());
-		assertNotEquals(((TemporalInstance) sol.instance()).states.get(2).toString(), ((TemporalInstance) sol.instance()).states.get(8).toString());
+		
+		solver.free();
+	}
+	
+	@Test
+	public void testExploreState() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+		
+		Object[] atoms = new Object[n*2];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		for (int i = 0; i < n; i ++)
+			atoms[n+i] = "B"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, bs);
+		Formula formula = ((a.eq(a))).always().and(b.some().next()).and(b.no().always().eventually());
+
+		ExtendedOptions opt = new ExtendedOptions();
+
+//		opt.setReporter(new SLF4JReporter());
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(10);
+		opt.setSolver(SATFactory.MiniSat);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		
+		Explorator<Solution> sols = (Explorator<Solution>) solver.solveAll(formula, bounds);
+		Solution sol = sols.next();
+		System.out.println(sol);
+		assertEquals(3, ((TemporalInstance) sol.instance()).states.size());
+		
+		// expand beyond prefix size, unrolls but must still expand
+		sol = sols.explore(3);
+		System.out.println(sol);
+		assertEquals(8, ((TemporalInstance) sol.instance()).states.size());
 		
 		solver.free();
 	}
