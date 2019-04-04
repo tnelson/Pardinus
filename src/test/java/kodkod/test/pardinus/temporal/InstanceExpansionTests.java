@@ -54,10 +54,6 @@ import org.junit.Test;
  */
 public class InstanceExpansionTests {
 
-	private int normalizeIndex(int size, int loop, int index) {
-		return index < size ? index : ((index % size) + loop); 
-	}
-	
 	@Test
 	public void testTmp1SMV() {
 		int n = 3;
@@ -95,16 +91,16 @@ public class InstanceExpansionTests {
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
 
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
@@ -152,16 +148,16 @@ public class InstanceExpansionTests {
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
 
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
@@ -204,16 +200,16 @@ public class InstanceExpansionTests {
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
@@ -259,16 +255,16 @@ public class InstanceExpansionTests {
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size(); i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength(); i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size(); i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength(); i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
@@ -364,16 +360,16 @@ public class InstanceExpansionTests {
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
 		inst = (TemporalInstance) solution.next().instance();
 		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.states.size() + 2; i++) {
-			Evaluator e2 = new Evaluator(inst.states.get(normalizeIndex(inst.states.size(),inst.loop,i)));
+		for (int i = 0; i < inst.prefixLength() + 2; i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}

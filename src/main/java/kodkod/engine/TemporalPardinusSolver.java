@@ -499,6 +499,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 					if (!SATOPTITERATION) {
 						// this must not be done before incrementing because the new bounds
 						// would be inconsistent with the then extended formula
+						// NOTE: this comment seems deprecated, push to outside loop and test
 						for (Instance i : previousSols)
 							reforms = reforms.and(i.formulate(originalBounds,reifs,originalFormula).not());
 						opt.reporter().debug(reforms+"");
@@ -595,6 +596,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				// because it frees the sat solver
 				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
 				
+				// [HASLab] skolems are not used in temporal iteration
 				IntSet tempskolemvars = new IntTreeSet();
 				for (Relation r : transl.bounds().relations())
 					if (r.isSkolem() && opt.temporal())
@@ -607,7 +609,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 						notModel[i - 1] = cnf.valueOf(i) ? -i : i;
 				}
 				cnf.addClause(notModel);
-				// [HASLab] store the negated reformulated instance
+				// [HASLab] store the reformulated instance
 				// NOTE: should be on next to also get trivials?
 				previousSols.add((TemporalInstance) sol.instance());
 			} else {

@@ -222,6 +222,7 @@ final class SymmetryBreaker {
 					if (!rparts.representatives.contains(sym.min())) 
 						continue;  // r does not range over sym
 					
+					// [HASLab]
 					if (r.isSkolem() && options.temporal())
 						continue;
 					

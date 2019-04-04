@@ -57,7 +57,7 @@ import kodkod.util.ints.IndexedEntry;
 public class TemporalInstance extends Instance {
 
 	/** The states comprising the trace. */
-	public final List<Instance> states;
+	private final List<Instance> states;
 	/** The looping state. */
 	public final int loop;
 
@@ -240,9 +240,9 @@ public class TemporalInstance extends Instance {
 		if (states.isEmpty())
 			res = Formula.TRUE;
 		else
-			res = states.get(states.size() - 1).formulate(bounds,reif,formula);
+			res = states.get(prefixLength() - 1).formulate(bounds,reif,formula);
 
-		for (int i = states.size() - 2; i >= 0; i--)
+		for (int i = prefixLength() - 2; i >= 0; i--)
 			res = states.get(i).formulate(bounds,reif,formula).and(res.next());
 
 		// create the looping constraint
@@ -250,14 +250,14 @@ public class TemporalInstance extends Instance {
 		// after^(end-loop) Sloop+1 && ...)
 		Formula rei = states.get(loop).formulate(bounds,reif,formula);
 		Formula rei2 = rei;
-		for (int j = loop; j < states.size(); j++)
+		for (int j = loop; j < prefixLength(); j++)
 			rei2 = rei2.next();
 
 		Formula looping = rei.implies(rei2);
-		for (int i = loop + 1; i < states.size(); i++) {
+		for (int i = loop + 1; i < prefixLength(); i++) {
 			rei = states.get(i).formulate(bounds,reif,formula);
 			rei2 = rei;
-			for (int j = loop; j < states.size(); j++)
+			for (int j = loop; j < prefixLength(); j++)
 				rei2 = rei2.next();
 			looping = looping.and(rei.implies(rei2));
 		}
@@ -302,14 +302,14 @@ public class TemporalInstance extends Instance {
 	 * @param past_depth the past depth, needed to preserve the size of the universe
 	 */
 	public Set<TemporalInstance> unrollStep(int size, int past_depth) {
-		if (size < states.size())
+		if (size < prefixLength())
 			throw new IllegalArgumentException("Expected size smaller than this.size().");
 		// the number of needed extra steps
-		size -= states.size();
+		size -= prefixLength();
 		Set<TemporalInstance> instances = new HashSet<TemporalInstance>();
 		// always initialize with the prefix
 		ArrayList<Instance> newstates = new ArrayList<Instance>(this.states);
-		int loopsize = this.states.size() - loop;
+		int loopsize = prefixLength() - loop;
 		// add the corresponding unrolled states
 		for (int i = 0; i < size; i++)
 			newstates.add(this.states.get((i % loopsize) + loop));
@@ -324,6 +324,39 @@ public class TemporalInstance extends Instance {
 	}
 	
 	/**
+	 * The length of the prefix of this temporal instance, i.e., the number of
+	 * unique states prior to looping.
+	 * 
+	 * @return
+	 */
+	public int prefixLength() {
+		return states.size();
+	}
+
+	/**
+	 * Retrieves the i-th state of this trace, considering the normalization of
+	 * indices after looping.
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public Instance state(int i) {
+		return states.get(normalizedIndex(i));
+	}
+	
+	/**
+	 * Calculates the normalized index for this instance considering the looping
+	 * states.
+	 * 
+	 * @param i
+	 * @return
+	 */
+	public int normalizedIndex(int i) {
+		int loopsize = prefixLength() - loop;
+		return i < prefixLength() ? i : (((i-prefixLength()) % loopsize) + loop);
+	}
+	
+	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see java.lang.Object#toString()
@@ -331,11 +364,11 @@ public class TemporalInstance extends Instance {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < states.size(); i++) {
+		for (int i = 0; i < prefixLength(); i++) {
 			sb.append("* state " + i);
 			if (loop == i)
 				sb.append(" LOOP");
-			if (states.size() - 1 == i)
+			if (prefixLength() - 1 == i)
 				sb.append(" LAST");
 			sb.append("\n" + states.get(i).toString());
 			sb.append("\n");
