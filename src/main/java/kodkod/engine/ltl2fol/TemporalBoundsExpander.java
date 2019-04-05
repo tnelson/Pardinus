@@ -327,8 +327,8 @@ public class TemporalBoundsExpander {
 						low.addAll(convertToUniv(ts,u).product(time));
 						upp.addAll(convertToUniv(ts,u).product(time));
 					}
+					i++;
 				}
-				i++;
 				
 				for (; i < traceLen; i++) {
 					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);

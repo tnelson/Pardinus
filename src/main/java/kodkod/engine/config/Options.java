@@ -64,8 +64,8 @@ public class Options implements Cloneable, BoundedOptions {
 	//[AM]
 	public static boolean isDebug() {
 	    // [HASLab]
-		return System.getProperty("debug","no").equals("yes");
-//		return true; //TODO: read from the environment or something
+//		return System.getProperty("debug","no").equals("yes");
+		return true; //TODO: read from the environment or something
 	}
 	
 	/**
