@@ -407,6 +407,10 @@ public class ExplorationTests {
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
+		sol = sols.branch(0);
+		System.out.println(sol.instance());
+		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
+
 		solver.free();
 	}
 }
