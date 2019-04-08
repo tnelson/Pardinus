@@ -316,19 +316,17 @@ public class TemporalBoundsExpander {
 					upp.addAll(convertToUniv(ts,u).product(time));
 				}
 				
-				if (i<prefxLen) { // if !0
-					if (excepts.containsKey(r)) {
-						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
-						low.addAll(convertToUniv(excepts.get(r),u).product(time));
-						upp.addAll(convertToUniv(excepts.get(r),u).product(time));
-					} else {
-						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
-						TupleSet ts = eval.evaluate(r,i);
-						low.addAll(convertToUniv(ts,u).product(time));
-						upp.addAll(convertToUniv(ts,u).product(time));
-					}
-					i++;
+				if (excepts.containsKey(r)) {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+					low.addAll(tupleSetL.product(time));
+					upp.addAll(convertToUniv(excepts.get(r),u).product(time));
+				} else {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+					TupleSet ts = eval.evaluate(r,i);
+					low.addAll(convertToUniv(ts,u).product(time));
+					upp.addAll(convertToUniv(ts,u).product(time));
 				}
+				i++;
 				
 				for (; i < traceLen; i++) {
 					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
