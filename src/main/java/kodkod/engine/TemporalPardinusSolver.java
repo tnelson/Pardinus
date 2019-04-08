@@ -312,7 +312,10 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			cached_branches.clear();
 			
 			// [HASLab] store the reformulated instance
-			previousSols.add((TemporalInstance) sol.instance());
+			if (sol.sat())
+				previousSols.add((TemporalInstance) sol.instance());
+			else 
+				translation = null; // unsat, no more solutions
 			return sol;
 		}
 		
@@ -350,7 +353,10 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			
 			Solution sol = branchCore(s, f, new HashMap<Relation,TupleSet>());
 			// [HASLab] store the reformulated instance
-			previousSols.add((TemporalInstance) sol.instance());
+			if (sol.sat())
+				previousSols.add((TemporalInstance) sol.instance());
+			else 
+				translation = null; // unsat, no more solutions
 			return sol;
 
 		}
@@ -372,9 +378,12 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 	
 			Solution sol = branchCore(s, f, new HashMap<Relation,TupleSet>());
 			// [HASLab] store the reformulated instance
-			previousSols.add((TemporalInstance) sol.instance());
-			return sol;
+			if (sol.sat())
+				previousSols.add((TemporalInstance) sol.instance());
+			else 
+				translation = null; // unsat, no more solutions
 
+			return sol;
 		}
 		
 		private Solution branchCore(int s, Formula f, Map<Relation,TupleSet> force) {
@@ -431,7 +440,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
-				translation = null; // unsat, no more solutions
 			}
 			
 			return sol;
