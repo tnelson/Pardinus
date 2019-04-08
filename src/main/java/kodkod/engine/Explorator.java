@@ -40,6 +40,8 @@ public interface Explorator<T> extends Iterator<T> {
 	 */
 	public T branch(int i, Map<Relation, TupleSet> force);
 	
+	public boolean hasNext(int i, Map<Relation, TupleSet> force);
+
 	/**
 	 * Produces an alternative solution by forcing a particular valuations for
 	 * certain relations for state i of the trace, fixing all previous states and

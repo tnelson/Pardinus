@@ -166,6 +166,12 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return null;
 		}
 
+		@Override
+		public boolean hasNext(int i, Map<Relation, TupleSet> force) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
 	}
 
 	/**

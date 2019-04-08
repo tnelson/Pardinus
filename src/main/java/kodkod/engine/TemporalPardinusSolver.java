@@ -301,9 +301,39 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		public Solution branch(int s, Map<Relation,TupleSet> force) {
 			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
 
-			Formula f = Formula.TRUE;
+			Solution sol;
+			if (cached_branches.containsKey(force))
+				sol = cached_branches.get(force);
+			else {
+				Formula f = Formula.TRUE;
+				sol = branchCore(s, f, force);
+			}
 			
-			return branchCore(s, f, force);
+			cached_branches.clear();
+			
+			// [HASLab] store the reformulated instance
+			previousSols.add((TemporalInstance) sol.instance());
+			return sol;
+		}
+		
+		private Map<Map<Relation, TupleSet>,Solution> cached_branches = new HashMap<Map<Relation, TupleSet>,Solution>();
+		private int cached_length = -1;
+
+		@Override
+		public boolean hasNext(int s, Map<Relation, TupleSet> force) {
+			if (s != cached_length) {
+				cached_branches.clear();
+				cached_length = s;
+			}
+			else if (cached_branches.containsKey(force))
+				return true;
+			
+			Formula f = Formula.TRUE;
+			Solution sol = branchCore(s+1, f, force);
+			if (sol.sat())
+				cached_branches.put(force, sol);
+
+			return sol.sat();
 		}
 
 		/**
@@ -311,12 +341,18 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		 */
 		// [HASLab] explorator
 		public Solution branch(int s, Formula f) {
+			cached_branches.clear();
+
 			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
 			
 			for (int i = 0; i < s; i++)
 				f = f.next();
 			
-			return branchCore(s, f, new HashMap<Relation,TupleSet>());
+			Solution sol = branchCore(s, f, new HashMap<Relation,TupleSet>());
+			// [HASLab] store the reformulated instance
+			previousSols.add((TemporalInstance) sol.instance());
+			return sol;
+
 		}
 		
 		/**
@@ -324,6 +360,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		 */
 		// [HASLab] explorator
 		public Solution branch(int s) {
+			cached_branches.clear();
+
 			explorations.replaceAll((k,v) -> k<=s?v:Formula.TRUE);
 			TemporalInstance prev = previousSols.get(previousSols.size()-1);
 			Formula f = prev.state(s).formulate(originalBounds,reifs,originalFormula).not();
@@ -332,7 +370,11 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			explorations.put(s, explorations.get(s)==null?f:explorations.get(s).and(f));
 			f = explorations.get(s);
 	
-			return branchCore(s, f, new HashMap<Relation,TupleSet>());
+			Solution sol = branchCore(s, f, new HashMap<Relation,TupleSet>());
+			// [HASLab] store the reformulated instance
+			previousSols.add((TemporalInstance) sol.instance());
+			return sol;
+
 		}
 		
 		private Solution branchCore(int s, Formula f, Map<Relation,TupleSet> force) {
@@ -387,15 +429,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
 				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
-				
-				// add the negation of the current model to the solver
-				final int[] notModel = new int[primaryVars];
-				for (int i = 1; i <= primaryVars; i++) {
-					notModel[i - 1] = cnf.valueOf(i) ? -i : i;
-				}
-				cnf.addClause(notModel);
-				// [HASLab] store the reformulated instance
-				previousSols.add((TemporalInstance) sol.instance());
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
 				translation = null; // unsat, no more solutions
@@ -644,7 +677,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return sol;
 		}
 
-	
 
 	}
 
@@ -881,14 +913,17 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 
 		@Override
 		public Solution branch(int prefix, Map<Relation,TupleSet> excepts) {
-			// TODO Auto-generated method stub
-			return null;
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public Solution branch(int prefix) {
-			// TODO Auto-generated method stub
-			return null;
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean hasNext(int i, Map<Relation, TupleSet> force) {
+			throw new UnsupportedOperationException();
 		}
 
 	}
