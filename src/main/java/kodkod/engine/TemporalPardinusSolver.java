@@ -301,6 +301,11 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		public Solution branch(int s, Map<Relation,TupleSet> force) {
 			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
 
+			if (s != cached_length) {
+				cached_branches.clear();
+				cached_length = -1;
+			}
+			
 			Solution sol;
 			if (cached_branches.containsKey(force))
 				sol = cached_branches.get(force);
@@ -308,8 +313,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				Formula f = Formula.TRUE;
 				sol = branchCore(s, f, force);
 			}
-			
-			cached_branches.clear();
 			
 			// [HASLab] store the reformulated instance
 			if (sol.sat())
