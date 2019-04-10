@@ -540,7 +540,9 @@ final class SymmetryBreaker {
 		final Relation first = total.first(), last = total.last(), ordered = total.ordered(), relation = total.relation();
 		final IntSet domain = bounds.upperBound(ordered).indexView();		
 	
-		if (symmetricColumnPartitions(ordered)!=null &&
+		// [HASLab] explorer, this avoids breaking the symmetry on total order relations whose bounds are not symmetric
+		// however, when exploring, these are already fixed from the fixed prefix and would not be identified as so
+		if (symmetricColumnPartitions(ordered)!=null && 
 			bounds.upperBound(first).indexView().contains(domain.min()) && 
 			bounds.upperBound(last).indexView().contains(domain.max())) {
 			
