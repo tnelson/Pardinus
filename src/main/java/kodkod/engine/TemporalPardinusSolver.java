@@ -326,7 +326,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		private int cached_length = -1;
 
 		@Override
-		public boolean hasNext(int s, Map<Relation, TupleSet> force) {
+		public boolean hasBranch(int s, Map<Relation, TupleSet> force) {
 			if (s != cached_length) {
 				cached_branches.clear();
 				cached_length = s;
@@ -368,12 +368,18 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		 * {@inheritDoc}
 		 */
 		// [HASLab] explorator
-		public Solution branch(int s) {
+		public Solution branch(int s, Set<Relation> except) {
 			cached_branches.clear();
 
 			explorations.replaceAll((k,v) -> k<=s?v:Formula.TRUE);
 			TemporalInstance prev = previousSols.get(previousSols.size()-1);
-			Formula f = prev.state(s).formulate(originalBounds,reifs,originalFormula).not();
+			
+			Formula relevants = Formula.TRUE;
+			for (Relation r : prev.state(s).relations())
+				if (!except.contains(r))
+					relevants = relevants.and(r.eq(r));
+			
+			Formula f = prev.state(s).formulate(originalBounds,reifs,relevants).not();
 			for (int i = 0; i < s; i++)
 				f = f.next();
 			explorations.put(s, explorations.get(s)==null?f:explorations.get(s).and(f));
@@ -928,12 +934,12 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		}
 
 		@Override
-		public Solution branch(int prefix) {
+		public Solution branch(int prefix, Set<Relation> except) {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public boolean hasNext(int i, Map<Relation, TupleSet> force) {
+		public boolean hasBranch(int i, Map<Relation, TupleSet> force) {
 			throw new UnsupportedOperationException();
 		}
 

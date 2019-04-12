@@ -2,6 +2,7 @@ package kodkod.engine;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -23,9 +24,10 @@ public interface Explorator<T> extends Iterator<T> {
 	 * if branching at a lower state.
 	 * 
 	 * @param i the state which will be iterated.
+	 * @param except TODO
 	 * @return the next branching solution
 	 */
-	public T branch(int i);
+	public T branch(int i, Set<Relation> except);
 
 	/**
 	 * Produces an alternative solution by forcing a particular valuations for
@@ -40,7 +42,7 @@ public interface Explorator<T> extends Iterator<T> {
 	 */
 	public T branch(int i, Map<Relation, TupleSet> force);
 	
-	public boolean hasNext(int i, Map<Relation, TupleSet> force);
+	public boolean hasBranch(int i, Map<Relation, TupleSet> force);
 
 	/**
 	 * Produces an alternative solution by forcing a particular valuations for

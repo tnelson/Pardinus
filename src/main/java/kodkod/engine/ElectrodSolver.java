@@ -161,13 +161,13 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		}
 
 		@Override
-		public Solution branch(int prefix) {
+		public Solution branch(int prefix, Set<Relation> except) {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public boolean hasNext(int i, Map<Relation, TupleSet> force) {
+		public boolean hasBranch(int i, Map<Relation, TupleSet> force) {
 			// TODO Auto-generated method stub
 			return false;
 		}
