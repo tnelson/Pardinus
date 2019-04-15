@@ -151,12 +151,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return s;
 		}
 
-		public Solution branch(int prefix, Formula form) {
-			throw new UnsupportedOperationException();	
-		}
-
 		@Override
-		public Solution branch(int prefix, Map<Relation,TupleSet> excepts) {
+		public Solution branch(int prefix, Map<Relation,TupleSet> excepts, boolean excludes) {
 			throw new UnsupportedOperationException();
 		}
 

@@ -178,6 +178,7 @@ public final class Evaluator {
 	 *             this.instance is not temporal
 	 */
 	// [HASLab] evaluate at particular instant
+	// TODO: this returns the result with the expanded universe, should actually return with the original universe
 	public TupleSet evaluate(Expression expression, int instant) {
 		if (expression == null) throw new NullPointerException("Null expression.");
 		if (!(instance instanceof TemporalInstance))

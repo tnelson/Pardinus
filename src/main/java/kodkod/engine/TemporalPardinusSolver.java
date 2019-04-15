@@ -298,8 +298,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		 * {@inheritDoc}
 		 */
 		// [HASLab] explorator
-		public Solution branch(int s, Map<Relation,TupleSet> force) {
-			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
+		public Solution branch(int s, Map<Relation,TupleSet> force, boolean exclude) {
+			explorations.replaceAll((k,v) -> k>s?Formula.TRUE:v);
 
 			if (s != cached_length) {
 				cached_branches.clear();
@@ -311,7 +311,24 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				sol = cached_branches.get(force);
 			else {
 				Formula f = Formula.TRUE;
-				sol = branchCore(s, f, force);
+				
+				if (exclude) {
+					TemporalInstance prev = previousSols.get(previousSols.size()-1);
+					
+					Formula relevants = Formula.TRUE;
+					for (Relation r : prev.state(s).relations())
+						relevants = relevants.and(r.eq(r));
+					Formula curr = prev.state(s).formulate(originalBounds,reifs,relevants).not();
+
+					for (int i = 0; i < s; i++)
+						curr = curr.next();
+
+					f = explorations.get(s)==null?Formula.TRUE:explorations.get(s);
+
+					explorations.put(s, explorations.get(s)==null?curr:f.and(curr));
+				}
+				
+				sol = branchCore(s+1, f, force);
 			}
 			
 			// [HASLab] store the reformulated instance
@@ -341,28 +358,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 
 			return sol.sat();
 		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		// [HASLab] explorator
-		public Solution branch(int s, Formula f) {
-			cached_branches.clear();
-
-			explorations.replaceAll((k,v) -> k<s?v:Formula.TRUE);
-			
-			for (int i = 0; i < s; i++)
-				f = f.next();
-			
-			Solution sol = branchCore(s, f, new HashMap<Relation,TupleSet>());
-			// [HASLab] store the reformulated instance
-			if (sol.sat())
-				previousSols.add((TemporalInstance) sol.instance());
-			else 
-				translation = null; // unsat, no more solutions
-			return sol;
-
-		}
 		
 		/**
 		 * {@inheritDoc}
@@ -371,7 +366,7 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		public Solution branch(int s, Set<Relation> except) {
 			cached_branches.clear();
 
-			explorations.replaceAll((k,v) -> k<=s?v:Formula.TRUE);
+			explorations.replaceAll((k,v) -> k>s?Formula.TRUE:v);
 			TemporalInstance prev = previousSols.get(previousSols.size()-1);
 			
 			Formula relevants = Formula.TRUE;
@@ -920,16 +915,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			return next();
 		}
 
-		public Solution branch(int prefix, Formula form) {
-			throw new UnsupportedOperationException();
-		}
-
-		public TemporalInstance getLastInstance() {
-			throw new UnsupportedOperationException();
-		}
-
 		@Override
-		public Solution branch(int prefix, Map<Relation,TupleSet> excepts) {
+		public Solution branch(int prefix, Map<Relation,TupleSet> excepts, boolean exclude) {
 			throw new UnsupportedOperationException();
 		}
 

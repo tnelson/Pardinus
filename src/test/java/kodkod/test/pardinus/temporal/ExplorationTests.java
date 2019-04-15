@@ -98,28 +98,28 @@ public class ExplorationTests {
 		// needs to expand by 1
 		Formula ext = a.eq(a.prime()).not();
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(4,ext);
+//		sol = sols.branch(4,ext);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
 		// needs to expand by 3
 		ext = b.eq(b.prime()).not();
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(5,ext);
+//		sol = sols.branch(5,ext);
 		System.out.println(sol.instance());
 		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
 
 		// reduces but must then expand by 3
 		ext = b.eq(b.prime());
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(1,ext);
+//		sol = sols.branch(1,ext);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
 		// conflict with original formula
 		ext = a.eq(a.prime());
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(4,ext);
+//		sol = sols.branch(4,ext);
 		System.out.println(sol.instance());
 		assertFalse(sol.sat());
 
@@ -171,7 +171,7 @@ public class ExplorationTests {
 		// needs to expand by 1
 		Formula ext = a.some();
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(2,ext);
+//		sol = sols.branch(2,ext);
 		System.out.println(sol.instance());
 
 		solver.free();
@@ -220,7 +220,7 @@ public class ExplorationTests {
 		// held in previous but should still change last
 		Formula ext = b.eq(b);
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(3,ext);
+//		sol = sols.branch(3,ext);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 		assertEquals(aux, sol.instance().toString());
@@ -228,7 +228,7 @@ public class ExplorationTests {
 		// held in previous but should still change last, but no more with same length
 		ext = b.eq(b);
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(3,ext);
+//		sol = sols.branch(3,ext);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 		assertEquals(aux, sol.instance().toString());
@@ -236,7 +236,7 @@ public class ExplorationTests {
 		// held in previous but should still change last, but no more with same length
 		ext = b.eq(b);
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(3,ext);
+//		sol = sols.branch(3,ext);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 		assertEquals(aux, sol.instance().toString());
@@ -244,7 +244,7 @@ public class ExplorationTests {
 		// held in previous but should still change last, but no more with same length
 		ext = b.eq(b);
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(3,ext);
+//		sol = sols.branch(3,ext);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 		assertEquals(aux, sol.instance().toString());
@@ -294,14 +294,14 @@ public class ExplorationTests {
 		// expand beyond prefix size, unrolls but must still expand
 		Formula ext = b.eq(b);
 		System.out.println("Extending with "+ext);
-		sol = sols.branch(8,ext);
+//		sol = sols.branch(8,ext);
 		System.out.println(sol.instance());
 		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(3).toString());
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(5).toString());
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(7).toString());
 
-		sol = sols.branch(4,Collections.singletonMap(b, bs));
+		sol = sols.branch(4,Collections.singletonMap(b, bs),true);
 		System.out.println(sol.instance());
 		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
 

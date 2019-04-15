@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.instance.TupleSet;
 
@@ -40,20 +39,8 @@ public interface Explorator<T> extends Iterator<T> {
 	 *              i.
 	 * @return the next branching solution
 	 */
-	public T branch(int i, Map<Relation, TupleSet> force);
-	
-	public boolean hasBranch(int i, Map<Relation, TupleSet> force);
+	public T branch(int i, Map<Relation, TupleSet> force, boolean exclude);
 
-	/**
-	 * Produces an alternative solution by forcing a particular valuations for
-	 * certain relations for state i of the trace, fixing all previous states and
-	 * the values of the other relations at state i. These restrictions are not
-	 * accumulated.
-	 * 
-	 * @param i    the state which will be iterated.
-	 * @param form the formula that will be enforced at state i.
-	 * @return the next branching solution
-	 */
-	public T branch(int i, Formula form);
+	public boolean hasBranch(int i, Map<Relation, TupleSet> force);
 
 }
