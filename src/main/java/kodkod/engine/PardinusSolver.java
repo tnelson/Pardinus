@@ -173,7 +173,7 @@ public class PardinusSolver implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
 		assert (!TemporalTranslator.isTemporal(formula) && !bounds.hasVarRelations()) || options.temporal();

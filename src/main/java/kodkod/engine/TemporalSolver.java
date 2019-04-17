@@ -32,24 +32,34 @@ import kodkod.instance.PardinusBounds;
  * {@link kodkod.ast.operator.TemporalOperator temporal operators} and bounds
  * over {@link kodkod.ast.VarRelation variable relations}.
  * 
- * @author Nuno Macedo // [HASLab] model finding hierarchy
+ * @author Nuno Macedo // [HASLab] model finding hierarchy, temporal scenario exploration
  *
- * @param <O>
- *            the options containing
- *            {@link kodkod.engine.config.TemporalOptions temporal options}.
+ * @param <O> the options containing {@link kodkod.engine.config.TemporalOptions
+ *        temporal options}.
  */
-public interface TemporalSolver<O extends TemporalOptions> extends
-		AbstractSolver<PardinusBounds, O> {
+public interface TemporalSolver<O extends TemporalOptions> extends AbstractSolver<PardinusBounds, O> {
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Temporal problems require {@link PardinusBounds Pardinus bounds} to
-	 * bound relations over traces.
+	 * Temporal problems require {@link PardinusBounds Pardinus bounds} to bound
+	 * relations over traces.
 	 */
 	@Override
 	public Solution solve(Formula formula, PardinusBounds bounds);
-	
-	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds);
-	
+
+	/**
+	 * Attempts to find a set of solutions to the given {@code formula} and
+	 * {@code bounds} with respect to {@code this.options} or, optionally, to prove
+	 * the formula's unsatisfiability. If the operation is successful, the method
+	 * returns an explorer over temporal {@link Solution} objects. If there is
+	 * more than one solution, the outcome of all of them is SAT or trivially SAT.
+	 * If the problem is unsatisfiable, the iterator will produce a single
+	 * {@link Solution} whose outcome is UNSAT or trivially UNSAT. The set of
+	 * returned solutions must be non-empty, but it is not required to be complete;
+	 * a solver could simply return a singleton set containing just the first
+	 * available solution.
+	 */
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds);
+
 }

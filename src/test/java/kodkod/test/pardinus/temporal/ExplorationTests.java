@@ -25,7 +25,7 @@ package kodkod.test.pardinus.temporal;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.Explorator;
+import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
@@ -90,7 +90,7 @@ public class ExplorationTests {
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		
-		Explorator<Solution> sols = (Explorator<Solution>) solver.solveAll(formula, bounds);
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
@@ -156,7 +156,7 @@ public class ExplorationTests {
 		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		Explorator<Solution> sols = (Explorator<Solution>) solver.solveAll(formula, bounds);
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
 		sol = sols.next();
 		sol = sols.next();
@@ -211,7 +211,7 @@ public class ExplorationTests {
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		
-		Explorator<Solution> sols = (Explorator<Solution>) solver.solveAll(formula, bounds);
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
@@ -286,7 +286,7 @@ public class ExplorationTests {
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		
-		Explorator<Solution> sols = (Explorator<Solution>) solver.solveAll(formula, bounds);
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
@@ -342,73 +342,73 @@ public class ExplorationTests {
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		
-		Explorator<Solution> sols = (Explorator<Solution>) solver.solveAll(formula, bounds);
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		// expand beyond prefix size, unrolls but must still expand
-		sol = sols.branch(3, new HashSet<Relation>());
+		sol = sols.branch(3, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>());
+		sol = sols.branch(3, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>());
+		sol = sols.branch(3, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>());
+		sol = sols.branch(3, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(5, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>());
+		sol = sols.branch(3, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertFalse(sol.sat());
 
-		sol = sols.branch(1, new HashSet<Relation>());
+		sol = sols.branch(1, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>());
+		sol = sols.branch(2, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(0, new HashSet<Relation>());
+		sol = sols.branch(0, new HashSet<Relation>(),true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 

@@ -258,7 +258,7 @@ public class TemporalBoundsExpander {
 	 * @param inst      the instance from which to bind
 	 * @return
 	 */
-	// [HASLab] explorator
+	// [HASLab] explorer
 	public static Bounds extend(PardinusBounds tmpBounds, Bounds extBounds, int prefxLen, int traceLen, TemporalInstance inst) {
 		if (!TemporalTranslator.ExplicitUnrolls)
 			throw new UnsupportedOperationException();
@@ -296,6 +296,17 @@ public class TemporalBoundsExpander {
 		return extBounds;
 	}
 	
+	/**
+	 * TODO
+	 * 
+	 * @param tmpBounds
+	 * @param extBounds
+	 * @param prefxLen
+	 * @param traceLen
+	 * @param inst
+	 * @param excepts
+	 * @return
+	 */
 	public static Bounds extend(PardinusBounds tmpBounds, Bounds extBounds, int prefxLen, int traceLen, TemporalInstance inst, Map<Relation,TupleSet> excepts) {
 		if (!TemporalTranslator.ExplicitUnrolls)
 			throw new UnsupportedOperationException();

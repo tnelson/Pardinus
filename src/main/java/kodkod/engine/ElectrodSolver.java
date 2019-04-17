@@ -112,11 +112,11 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	/**
 	 * {@inheritDoc}
 	 */
-	public Explorator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		return new SolutionIterator(formula, bounds, options);
 	}
 
-	private final static class SolutionIterator implements Explorator<Solution> {
+	private final static class SolutionIterator implements Explorer<Solution> {
 	
 		private Formula formula;
 		private final PardinusBounds bounds;
@@ -130,11 +130,17 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			this.options = options;
 		}
 			
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public boolean hasNext() {
 			return formula != null;
 		}
 	
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Solution next() {
 				
@@ -151,21 +157,28 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			return s;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
-		public Solution branch(int prefix, Map<Relation,TupleSet> excepts, boolean excludes) {
-			throw new UnsupportedOperationException();
+		public Solution branch(int state, Set<Relation> ignore, boolean exclude) {
+			throw new UnsupportedOperationException("Branching solutions not currently supported.");
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
-		public Solution branch(int prefix, Set<Relation> except) {
-			// TODO Auto-generated method stub
-			return null;
+		public Solution branch(int state, Map<Relation,TupleSet> upper, boolean exclude) {
+			throw new UnsupportedOperationException("Branching solutions not currently supported.");
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
-		public boolean hasBranch(int i, Map<Relation, TupleSet> force) {
-			// TODO Auto-generated method stub
-			return false;
+		public boolean hasBranch(int state, Map<Relation, TupleSet> upper) {
+			throw new UnsupportedOperationException("Branching solutions not currently supported.");
 		}
 
 	}
