@@ -129,7 +129,7 @@ public class ResolutionTests {
 		Formula f5 = ((r.product((bnds.reify(a0)))).in(u)).and(u.in(r.product(b)));
 		Formula f6 = s.in(a.product((((bnds.reify(bs))))));
 		Formula f7 = d.in(c);
-		Formula xtra = NaryFormula.and(f1,f2,f3,f4,f5,f6,f7).always();
+		Formula xtra = NaryFormula.and(f1.always(),f2.always(),f3.always(),f4,f5.always(),f6.always(),f7.always());
 		assertEquals(f.toString().length(), xtra.toString().length());
 	}
 	
@@ -177,7 +177,7 @@ public class ResolutionTests {
 
 		assertTrue(compare(bnds,oracle));
 
-		Formula xtra = NaryFormula.and().always();
+		Formula xtra = NaryFormula.and();
 		assertEquals(f.toString().length(), xtra.toString().length());
 	}
 	
@@ -187,16 +187,16 @@ public class ResolutionTests {
 		
 		// a :1 {} {A0,...,An}
 		bnds.bound(a, as);
-		// b :1 {} (a + {B0})
+		// var b :1 {} (a + {B0})
 		bnds.bound(b, a.union(bnds.reify(b0)));
 		// c :1 {B0,...,Bn} {B0,...,Bn}
 		bnds.bound(c, bs, bs);
-		// d :1 {} c + b
+		// var d :1 {} c + b
 		bnds.bound(d, c.union(b));
 		
 		// r :2 (c -> c + a -> a) (c -> {B0,...,Bn} + a -> a)
 		bnds.bound(r, (c.product(c)).union(a.product(a)), (c.product(bnds.reify(bs))).union(a.product(a)));
-		// s :2 {(B0,A0)} {(B0,A0),...,(Bn,An)}
+		// var s :2 {(B0,A0)} {(B0,A0),...,(Bn,An)}
 		bnds.bound(s, b0.product(a0), bs.product(as));
 		// t :3 (s -> {(B0,...,Bn)}) (s -> {(B0,...,Bn)})
 		bnds.bound(t, s.product(bnds.reify(bs)), s.product(bnds.reify(bs)));
@@ -208,18 +208,18 @@ public class ResolutionTests {
 		orcl.bound(a, as);
 		TupleSet x = as.clone();
 		x.addAll(b0);
-		// b :1 {} {A0,...,An,B0}													* b in a + {B0}
+		// var b :1 {} {A0,...,An,B0}												* b in a + {B0}
 		orcl.bound(b, x);
 		// c :1 {B0,...,Bn} {B0,...,Bn}
 		orcl.bound(c, bs, bs);
 		x.addAll(bs);
-		// d :1 {} {A0,...,An,B0,...,Bn} 											* d in c + b
+		// var d :1 {} {A0,...,An,B0,...,Bn} 										* d in c + b
 		orcl.bound(d, x);
 		x = (as.product(as)).clone();
 		x.addAll(bs.product(bs));
 		// r :2 {(B0,B0),...,(Bn,Bn)} {(A0,A0),...,(An,An),(B0,B0),...,(Bn,Bn)} 	* (c -> c + a -> a) in r && r in (c -> {B0,...,Bn} + a -> a)
 		orcl.bound(r, bs.product(bs), x);
-		// s :2 {(B0,A0)} {(B0,A0),...,(Bn,An)}
+		// var s :2 {(B0,A0)} {(B0,A0),...,(Bn,An)}
 		orcl.bound(s, b0.product(a0), bs.product(as));
 		// t :3 {(B0,A0,B0),...,(B0,A0,Bn))} {(B0,A0,B0),...,(Bn,An,Bn))}			* (s -> {(B0,...,Bn)}) in t && t in (s -> {(B0,...,Bn)})
 		orcl.bound(t, b0.product(a0).product(bs), bs.product(as).product(bs));
@@ -230,7 +230,7 @@ public class ResolutionTests {
 		Formula f2 = d.in(c.union(b));
 		Formula f3 = (c.product(c)).union(a.product(a)).in(r).and(r.in((c.product(bnds.reify(bs))).union(a.product(a))));
 		Formula f4 = (s.product(bnds.reify(bs))).in(t).and(t.in(s.product(bnds.reify(bs))));
-		Formula xtra = NaryFormula.and(f1,f2,f3,f4).always();
+		Formula xtra = NaryFormula.and(f1.always(),f2.always(),f3,f4.always());
 		assertEquals(f.toString().length(), xtra.toString().length());
 
 	}
@@ -265,7 +265,7 @@ public class ResolutionTests {
 	public void test5() {
 		PardinusBounds bnds = new PardinusBounds(uni);
 		
-		// s :1 {} {(A0,A0),...,(An,An)}
+		// var s :1 {} {(A0,A0),...,(An,An)}
 		bnds.bound(s, as.product(as));
 		// r :1 {} s
 		bnds.bound(r, s);
@@ -273,7 +273,7 @@ public class ResolutionTests {
 		Formula f = bnds.resolve(new SLF4JReporter());
 		
 		PardinusBounds orcl = new PardinusBounds(uni);
-		// s :1 {} {(A0,A0),...,(An,An)}
+		// var s :1 {} {(A0,A0),...,(An,An)}
 		orcl.bound(s, as.product(as));
 		// r :1 {} {(A0,A0),...,(An,An)}
 		orcl.bound(r, as.product(as));
@@ -281,7 +281,6 @@ public class ResolutionTests {
 		assertTrue(compare(bnds,orcl));
 		
 		assertEquals(f.toString().length(), r.in(s).always().toString().length());
-
 	}
 	
 	@Test(expected = IllegalArgumentException.class)

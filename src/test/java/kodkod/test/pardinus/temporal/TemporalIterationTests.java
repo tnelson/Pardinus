@@ -755,7 +755,7 @@ public class TemporalIterationTests {
 				System.out.println(sol.instance().toString());
 			}
 		}
-		assertEquals(16, cc);
+		assertEquals(2, cc);
 		solver.free();
 	}
 	

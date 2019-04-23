@@ -565,13 +565,9 @@ public class PardinusBounds extends Bounds {
 		List<Formula> xtra = new ArrayList<Formula>();
 		
 		Set<Relation> rs = new HashSet<Relation>(relations_symb);
-		boolean isvar = false;
-		for (Relation r : rs) {
-			if (r.isVariable()) isvar = true;
+		for (Relation r : rs)
 			xtra.addAll(symbolic.resolve(r,reporter));
-		}
 		Formula res = NaryFormula.and(xtra);
-		if (isvar) res = res.always();
 		reporter.debug("Additional resolution formula: "+res);
 		return res;
 	}
@@ -810,12 +806,11 @@ public class PardinusBounds extends Bounds {
 		/**
 		 * Resolves a relation's symbolic bounds and all its dependencies. If no
 		 * symbolic bounds or already exact constant bounds, does nothing. If bounds are
-		 * not exact after resolution, additional constraints are created.
+		 * not exact after resolution, additional constraints are returned, including
+		 * all those of dependencies.
 		 * 
-		 * @param rel
-		 *            the relation whose bounds are to be resolved.
-		 * @param reporter
-		 *            a reporter
+		 * @param rel      the relation whose bounds are to be resolved.
+		 * @param reporter a reporter
 		 * @return the extra formulas if the bounds are not exact
 		 */
 		private List<Formula> resolve(Relation rel, Reporter reporter) {
@@ -868,11 +863,16 @@ public class PardinusBounds extends Bounds {
 				Formula x = rel.in(upperSymbBound(rel));
 				constr = constr==null?x:constr.and(x);
 			}
+			
 
 			relations_symb.remove(rel);
 			
-			if (constr != null)
+			if (constr != null) {
+				// if temporal constraint, quantify universally
+				if (TemporalTranslator.isTemporal(constr))
+					constr = constr.always();
 				constrs.add(constr);
+			}
 			
 			return constrs;
 		}
