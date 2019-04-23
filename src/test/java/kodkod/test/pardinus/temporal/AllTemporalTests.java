@@ -9,10 +9,11 @@ import org.junit.runners.Suite;
 	InstanceExpansionTests.class,
 	NNFUnitTesting.class,
 	PastUnrollingTests.class,
+	TemporalIterationTests.class,
     TemporalSlicerUnitTesting.class,
     TemporalTranslatorTests.class,
+    VarIntegerTests.class,
     ExampleTests.class,
-    TemporalIterationTests.class
 })
 
 public class AllTemporalTests {}
