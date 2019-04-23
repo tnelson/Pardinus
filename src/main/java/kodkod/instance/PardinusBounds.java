@@ -27,6 +27,7 @@ import static kodkod.util.ints.Ints.unmodifiableSequence;
 
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -893,8 +894,9 @@ public class PardinusBounds extends Bounds {
 				us.put(compls.get(r), uppers.get(r));
 			us.putAll(dereif);
 			Instance i = new Instance(universe(), us, intBounds());
-			Evaluator eval = new Evaluator(i);
-			return eval.evaluate(bound);
+			TemporalInstance ti = new TemporalInstance(Arrays.asList(i), 0, 1);
+			Evaluator eval = new Evaluator(ti);
+			return eval.evaluate(bound,0);
 		}
 
 		/**
@@ -914,8 +916,9 @@ public class PardinusBounds extends Bounds {
 				us.put(compls.get(r), lowers.get(r));
 			us.putAll(dereif);
 			Instance i = new Instance(universe(), us, intBounds());
-			Evaluator eval = new Evaluator(i);
-			return eval.evaluate(e);
+			TemporalInstance ti = new TemporalInstance(Arrays.asList(i), 0, 1);
+			Evaluator eval = new Evaluator(ti);
+			return eval.evaluate(e,0);
 		}
 
 		/**

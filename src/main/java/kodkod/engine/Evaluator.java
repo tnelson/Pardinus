@@ -30,6 +30,7 @@ import kodkod.engine.bool.Int;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.Translator;
 import kodkod.engine.ltl2fol.LTL2FOLTranslator;
+import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Instance;
 import kodkod.instance.TemporalInstance;
@@ -109,7 +110,9 @@ public final class Evaluator {
 	 */
 	public boolean evaluate(Formula formula) {
 		if (formula == null) throw new NullPointerException("formula");
-		if (TemporalTranslator.hasTemporalOps(formula)) // [HASLab] if temporal instance, assume instant 0
+		// [HASLab] a temporal expression must be interpreted temporally; variable
+		// relations may however be evaluated statically for non temporal instances
+		if (TemporalTranslator.hasTemporalOps(formula) || instance instanceof TemporalInstance)
 			return evaluate(formula,0);
 		return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
@@ -155,27 +158,31 @@ public final class Evaluator {
 	 */
 	public TupleSet evaluate(Expression expression) {
 		if (expression == null) throw new NullPointerException("Null expression.");
-		if (TemporalTranslator.hasTemporalOps(expression)) // [HASLab] if temporal instance, assume instant 0
+		// [HASLab] a temporal expression must be interpreted temporally; variable
+		// relations may however be evaluated statically for non temporal instances
+		if (TemporalTranslator.hasTemporalOps(expression) || instance instanceof TemporalInstance)
 			return evaluate(expression,0);
 		final BooleanMatrix sol = Translator.evaluate(expression,instance,options);
 		return instance.universe().factory().setOf(expression.arity(), sol.denseIndices());
 	}
 
 	/**
-	 * Evaluates the specified expression at a given instant with respect to 
-	 * the relation-tuple mappings given by this.instance and using this.options.
+	 * Evaluates the specified expression at a given instant with respect to the
+	 * relation-tuple mappings given by this.instance and using this.options. The
+	 * result is built over the static universe.
 	 * 
 	 * @assumes this.instance instanceof TemporalInstance
 	 * @return {@link kodkod.instance.TupleSet set} of tuples to which the
-	 *         expression evaluates at the instant given the mappings in 
+	 *         expression evaluates at the instant given the mappings in
 	 *         this.instance and the options in this.options.
-	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException
-	 *             the expression contains a higher order declaration
-	 * @throws kodkod.engine.fol2sat.UnboundLeafException
-	 *             the expression contains an undeclared variable or a relation not
-	 *             mapped by this.instance
-	 * @throws IllegalArgumentException
-	 *             this.instance is not temporal
+	 * @throws                          kodkod.engine.fol2sat.HigherOrderDeclException
+	 *                                  the expression contains a higher order
+	 *                                  declaration
+	 * @throws                          kodkod.engine.fol2sat.UnboundLeafException
+	 *                                  the expression contains an undeclared
+	 *                                  variable or a relation not mapped by
+	 *                                  this.instance
+	 * @throws IllegalArgumentException this.instance is not temporal
 	 */
 	// [HASLab] evaluate at particular instant
 	public TupleSet evaluate(Expression expression, int instant) {
@@ -185,7 +192,11 @@ public final class Evaluator {
 		// temporal instances are always evaluated using the static expansion
 		Expression e1 = LTL2FOLTranslator.translate(expression, instant, false); 
 		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
-		return instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
+		TupleSet exttuple = instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
+		// convert back into static universe, if available; will fail for initializing temporal instances
+		if (((TemporalInstance) instance).staticUniverse() != null)
+			exttuple = TemporalBoundsExpander.convertToUniv(exttuple, ((TemporalInstance) instance).staticUniverse());
+		return exttuple;
 	}
 	
 	/**
@@ -203,7 +214,9 @@ public final class Evaluator {
 	 */
 	public int evaluate(IntExpression intExpr) {
 		if (intExpr == null) throw new NullPointerException("intexpression");
-		if (TemporalTranslator.hasTemporalOps(intExpr)) // [HASLab] if temporal instance, assume instant 0
+		// [HASLab] a temporal expression must be interpreted temporally; variable
+		// relations may however be evaluated statically for non temporal instances
+		if (TemporalTranslator.hasTemporalOps(intExpr) || instance instanceof TemporalInstance)
 			return evaluate(intExpr,0);
 		final Int sol = Translator.evaluate(intExpr, instance, options);
 		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]
