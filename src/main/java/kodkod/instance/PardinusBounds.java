@@ -403,7 +403,7 @@ public class PardinusBounds extends Bounds {
 		if (integrated)
 			throw new IllegalArgumentException("Already integrated.");
 		if (amalgamated == null)
-			throw new IllegalArgumentException("Not decomposed bounds.");
+			throw new IllegalArgumentException("Decomposed solving requires decomposed bounds.");
 		if (!sol.sat())
 			throw new IllegalArgumentException("Can't integrate unsat.");
 		

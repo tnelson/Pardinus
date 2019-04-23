@@ -97,8 +97,6 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 		if (options == null)
 			throw new NullPointerException();
 		
-		assert !options.decomposed();
-		
 		this.options = options;
 	}
 

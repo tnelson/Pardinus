@@ -29,7 +29,6 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-// TODO: test symbolic
 // TODO: test decomposed
 
 public class TemporalIterationTests {
@@ -760,8 +759,142 @@ public class TemporalIterationTests {
 	}
 	
 	@Test
+	public void testDecomposed() {
+		int n = 2;
+
+		Relation a = Relation.unary("a");
+		Relation b = Relation.unary_variable("b");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds1 = new PardinusBounds(uni);
+		bounds1.bound(a, as);
+		PardinusBounds bounds2 = new PardinusBounds(uni);
+		bounds2.bound(b, as);
+		PardinusBounds bounds = new PardinusBounds(bounds1,bounds2);
+		Formula formula = a.lone().and(a.in(b).always());
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setMaxTraceLength(2);
+		opt.setRunDecomposed(true);
+		opt.setRunTemporal(true);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+			Solution sol = sols.next();
+			c++;
+			if (sol.sat())
+				System.out.println(sol.instance().toString());
+		}
+		assertEquals(24, c);
+		solver.free();
+
+	}
+
+	@Test
+	public void testDecomposed2() {
+		int n = 1;
+
+		Relation a = Relation.unary("a");
+		Relation b = Relation.unary_variable("b");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds1 = new PardinusBounds(uni);
+		bounds1.bound(a, as);
+		PardinusBounds bounds2 = new PardinusBounds(uni);
+		bounds2.bound(b, as);
+		PardinusBounds bounds = new PardinusBounds(bounds1,bounds2);
+		Formula formula = a.lone().and(a.in(b).always());
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setMaxTraceLength(2);
+		opt.setRunDecomposed(true);
+		opt.setRunTemporal(true);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+			Solution sol = sols.next();
+			c++;
+			if (sol.sat())
+				System.out.println(sol.instance().toString());
+		}
+		assertEquals(24, c);
+		solver.free();
+
+	}
+	
+	@Test
+	public void testDecomposedSymb() {
+		int n = 2;
+
+		Relation a = Relation.unary("a");
+		Relation b = Relation.unary_variable("b");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds1 = new PardinusBounds(uni);
+		bounds1.bound(a, as);
+		PardinusBounds bounds2 = new PardinusBounds(uni);
+		bounds2.bound(b, a, Expression.UNIV);
+		PardinusBounds bounds = new PardinusBounds(bounds1,bounds2);
+		Formula formula = a.lone().and(b.in(b).always());
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setMaxTraceLength(2);
+		opt.setRunDecomposed(true);
+		opt.setRunTemporal(true);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Solution sol = solver.solve(formula, bounds);
+		
+		assertTrue(sol.sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+			sol = sols.next();
+			c++;
+			if (sol.sat())
+				System.out.println(sol.instance().toString());
+		}
+		assertEquals(24, c);
+		solver.free();
+
+	}
+	
+	@Test
 	public void hotel() {
-		final int n = 5, t = 2, ty = 1;
+		final int t = 2, ty = 1;
 		List<List<Long>> alls;
 		TemporalPardinusSolver.SATOPTITERATION = false;
 		alls = new ArrayList<List<Long>>();
