@@ -100,19 +100,8 @@ public class DecompFormulaSlicer {
 				&& ((BinaryFormula) form).op() == FormulaOperator.AND) {
 			Set<Relation> rsl = ((BinaryFormula) form).left().accept(col);
 			Set<Relation> rsr = ((BinaryFormula) form).right().accept(col);
-			if (partials.containsAll(rsl)) {
-				if (!partials.containsAll(rsr)) {
-					f2.add(((BinaryFormula) form).right());
-					f1.add(((BinaryFormula) form).left());
-				}
-			} else {
-				if (partials.containsAll(rsr)) {
-					f2.add(((BinaryFormula) form).left());
-					f1.add(((BinaryFormula) form).right());
-				} else {
-					f2.add(form);
-				}
-			}
+			(partials.containsAll(rsl)?f1:f2).add(((BinaryFormula) form).left());
+			(partials.containsAll(rsr)?f1:f2).add(((BinaryFormula) form).right());
 		} else if (form instanceof NaryFormula
 				&& ((NaryFormula) form).op() == FormulaOperator.AND) {
 			Iterator<Formula> it = ((NaryFormula) form).iterator();

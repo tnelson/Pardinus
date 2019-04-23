@@ -841,7 +841,7 @@ public class TemporalIterationTests {
 			if (sol.sat())
 				System.out.println(sol.instance().toString());
 		}
-		assertEquals(24, c);
+		assertEquals(8, c);
 		solver.free();
 
 	}
