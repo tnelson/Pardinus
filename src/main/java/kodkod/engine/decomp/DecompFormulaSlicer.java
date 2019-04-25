@@ -72,17 +72,16 @@ public class DecompFormulaSlicer {
 	 *            variables.
 	 * @return two conjuncts of the formula according to the selected variables.
 	 */
-	public static Entry<Formula, Formula> slice(Formula formula,
-			PardinusBounds bounds) {
+	public static Entry<Formula, Formula> slice(Formula formula, PardinusBounds bounds) {
 		Set<Relation> partials = new HashSet<Relation>();
 		if (bounds.integrated()) {
 			for (Relation r : bounds.relations())
 				// new relation, probably from trivial iteration
 				if (!bounds.amalgamated.relations().contains(r)) {} 
-				// was partial, now solved, or was already constant
-				else if (bounds.amalgamated.lowerBound(r).size() != bounds.lowerBound(r).size()
-						|| bounds.amalgamated.upperBound(r).size() != bounds.upperBound(r).size()
-						|| bounds.amalgamated.upperBound(r).size() == bounds.amalgamated.lowerBound(r).size())
+				// still symbolic, not partial
+				else if (bounds.lowerSymbBound(r) != null) {} 
+				// if exactly bound, was part of the partial problem
+				else if (bounds.amalgamated.upperBound(r).size() == bounds.amalgamated.lowerBound(r).size())
 					partials.add(r);
 		} else {
 			// if not integrated, bounds are the partial

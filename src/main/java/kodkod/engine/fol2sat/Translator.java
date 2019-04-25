@@ -41,7 +41,6 @@ import kodkod.ast.IntExpression;
 import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.ast.RelationPredicate;
-import kodkod.ast.RelationPredicate.Name;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.bool.BooleanAccumulator;
@@ -71,7 +70,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * respect to given {@link Bounds bounds} (or {@link Instance instances}) and {@link Options}.
  * 
  * @author Emina Torlak 
- * @modified Nuno Macedo // [HASLab] decomposed model finding
+ * @modified Nuno Macedo // [HASLab] decomposed model finding, symbolic model finding
  * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 public final class Translator {
@@ -403,13 +402,12 @@ public final class Translator {
 			// [HASLab] if decomposed mode, the amalgamated bounds are always considered
 			if (options.decomposed() && ((PardinusBounds) this.bounds).amalgamated() != null)
 				symbForm = ((PardinusBounds) this.bounds).amalgamated().resolve(options.reporter());
-			// [HASLab] otherwise use regular bounds
-			else
-				symbForm = ((PardinusBounds) this.bounds).resolve(options.reporter());
+			// [HASLab] then regular bounds
+			symbForm = symbForm.and(((PardinusBounds) this.bounds).resolve(options.reporter()));
 		}
 					
 		this.originalFormula = formula.and(symbForm);
-		this.originalBounds = bounds;
+		this.originalBounds = this.bounds.clone();
 		this.options = options;
 		this.logging = options.logTranslation()>0;
 		this.incremental = incremental;
@@ -436,32 +434,29 @@ public final class Translator {
 	 * @throws HigherOrderDeclException  this.originalFormula contains a higher order declaration that cannot
 	 * be skolemized, or it can be skolemized but this.options.skolemDepth < 0
 	 */
-	// [HASLab] break the formula for decomposed solving, but with symmetry breaking considerations
 	private Translation translate() {
 
-		// [HASLab] add the extra symbolic formula
 		final AnnotatedNode<Formula> originalAnnotated = logging ? annotateRoots(originalFormula) : annotate(originalFormula);
 		// Remove bindings for unused relations/ints if this is not an incremental translation.  If it is
 		// an incremental translation, we have to keep all bindings since they may be used later on.
 	
 		AnnotatedNode<Formula> actualAnnotated = originalAnnotated;
 		if (!incremental) {
-			// [HASLab] retain the relations of the complete formula
-			bounds.relations().retainAll(originalAnnotated.relations());
-			if (!originalAnnotated.usesInts()) bounds.ints().clear();
-			// [HASLab] if dealing with a decomposed problem, split and resolve
-			// the formula and remove spurious variables from amalgamated as well
+			// [HASLab] if dealing with a decomposed problem, split and remove spurious variables from amalgamated as well
 			if (bounds instanceof PardinusBounds) {
 				PardinusBounds pbounds = (PardinusBounds) bounds;
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
 					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula, pbounds);
-					pbounds.amalgamated().relations().retainAll(originalAnnotated.relations());
-					if (!originalAnnotated.usesInts()) pbounds.amalgamated().ints().clear();
 					Formula actual = pbounds.integrated()?slices.getValue():slices.getKey();
 					options.reporter().debug("Sliced formula: "+actual);
 					actualAnnotated = logging ? annotateRoots(actual) : annotate(actual);
+					pbounds.amalgamated().relations().retainAll(originalAnnotated.relations());
+					if (!originalAnnotated.usesInts()) pbounds.amalgamated().ints().clear();
 				} 
 			}
+			// [HASLab] retain the relations for the sliced formula
+			bounds.relations().retainAll(actualAnnotated.relations());
+			if (!actualAnnotated.usesInts()) bounds.ints().clear();
 		}
 
 		// Detect symmetries.
@@ -470,7 +465,7 @@ public final class Translator {
 		// eliminate top-level predicates, and also by skolemizing.  Then translate the optimize
 		// formula and bounds to a circuit, augment the circuit with a symmetry breaking predicate 
 		// that eliminates any remaining symmetries, and translate everything to CNF.
-		return toBoolean(optimizeFormulaAndBounds(actualAnnotated, originalAnnotated.predicates(), breaker), breaker);
+		return toBoolean(optimizeFormulaAndBounds(actualAnnotated, breaker), breaker);
 	}
 	
 	/**
@@ -493,9 +488,7 @@ public final class Translator {
 	 * @ensures this.options.reporter().optimizingBoundsAndFormula()
 	 * @return some f: AnnotatedNode<Formula> | meaning(f.node, this.bounds, this.options) = meaning(this.originalFormula, this.originalBounds, this.options)
 	 */
-	// [HASLab] consider predicates that may not belong to the formula but that
-	// may break the symmetries (for decomposed model finding)
-	private AnnotatedNode<Formula> optimizeFormulaAndBounds(AnnotatedNode<Formula> annotated, Map<Name,Set<RelationPredicate>> preds, SymmetryBreaker breaker) {	
+	private AnnotatedNode<Formula> optimizeFormulaAndBounds(AnnotatedNode<Formula> annotated, SymmetryBreaker breaker) {	
 		options.reporter().optimizingBoundsAndFormula();
 
 		if (logging) {  
@@ -509,9 +502,9 @@ public final class Translator {
 			if (coreGranularity>1) { 
 				annotated = flatten(annotated, options.coreGranularity()==3);
 			}
-			return inlinePredicates(annotated, breaker.breakMatrixSymmetries(preds, false)); // [HASLab] predicate map
+			return inlinePredicates(annotated, breaker.breakMatrixSymmetries(annotated.predicates(), false));
 		} else {  			
-			annotated = inlinePredicates(annotated, breaker.breakMatrixSymmetries(preds, true).keySet());  // [HASLab] predicate map
+			annotated = inlinePredicates(annotated, breaker.breakMatrixSymmetries(annotated.predicates(), true).keySet());
 			return options.skolemDepth()>=0 ? Skolemizer.skolemize(annotated, bounds, options) : annotated;
 		}
 		
@@ -770,7 +763,7 @@ public final class Translator {
 		}
 		
 		// [HASLab] consider the remainder bounds in decomposed problems.
-		if (optimized instanceof PardinusBounds && ((PardinusBounds) original).amalgamated() != null) {
+		if (optimized instanceof PardinusBounds && ((PardinusBounds) original).integrated()) {
 			PardinusBounds b = ((PardinusBounds) original).amalgamated();
 			for(Relation r : b.relations()) {
 				if (!((PardinusBounds) optimized).amalgamated().relations().contains(r)) {
