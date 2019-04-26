@@ -25,11 +25,20 @@ import kodkod.instance.PardinusBounds;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.Timeout;
+import org.junit.runners.model.TestTimedOutException;
 
 public class RingTests {
 	PardinusSolver psolver;
 	
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+	@Rule
+    public final ExpectedException thrown = ExpectedException.none();
+
 	@Before 
 	public void method() throws InterruptedException {
 		
@@ -64,6 +73,7 @@ public class RingTests {
 	
 	@Test 
 	public void testSAT9() throws InterruptedException {
+		thrown.expect(TestTimedOutException.class);
 		int n = 9;
 		int t = 20;
 		Variant1 v1 = Variant1.BADLIVENESS;
@@ -86,6 +96,7 @@ public class RingTests {
 	
 	@Test 
 	public void testSAT6() throws InterruptedException {
+		thrown.expect(TestTimedOutException.class);
 		int n = 6;
 		int t = 20;
 		Variant1 v1 = Variant1.BADLIVENESS;
@@ -218,7 +229,7 @@ public class RingTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertFalse(model.shortName()+": SAT", solution.sat());
+		assertTrue(model.shortName()+": SAT", solution.sat());
 //		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 415);
 //		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 415);
 //		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);

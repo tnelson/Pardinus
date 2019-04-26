@@ -50,7 +50,9 @@ import kodkod.util.ints.IntSet;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -70,6 +72,9 @@ public class SymmetryTests {
 	private ExtendedOptions opt;
 	private Set<IntSet> last;
 	private boolean trivial_config;
+
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
 	@Before
 	public void method() throws InterruptedException {

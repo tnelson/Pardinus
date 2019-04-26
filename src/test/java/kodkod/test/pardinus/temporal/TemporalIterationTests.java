@@ -29,8 +29,6 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-// TODO: test decomposed
-
 public class TemporalIterationTests {
 
 	@Test

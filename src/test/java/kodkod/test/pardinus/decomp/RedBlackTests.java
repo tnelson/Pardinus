@@ -231,7 +231,6 @@ public class RedBlackTests {
 	
 	@Test 
 	public void testUNSAT5() throws InterruptedException {
-		thrown.expect(TestTimedOutException.class);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 5;
 		Variant1 v1 = Variant1.THEOREM;
