@@ -3,4 +3,4 @@ before_script:
   - wget --no-check-certificate https://waf.io/waf-1.8.12
   - chmod u+x waf-1.8.12
 script:
-  - ./waf-1.8.12 distclean configure build &&
+  - ./waf-1.8.12 distclean configure build
