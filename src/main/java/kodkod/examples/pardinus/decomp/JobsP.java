@@ -14,7 +14,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class JobsP implements DModel {
+public class JobsP extends DModel {
 
 	final private Relation Person, Job, Male, Female, HoldsJob, Husband, QualifiedJobs, Golfers, police, chef, roberta, nurse, actor, clerk, boxer, Pete;
 	final private Universe u;

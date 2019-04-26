@@ -66,7 +66,7 @@ import kodkod.instance.Universe;
  * </pre>
  * @author Emina Torlak
  */
-public final class RingP implements DModel {
+public final class RingP extends DModel {
 
 	public enum Variant1 {
 		BADLIVENESS,

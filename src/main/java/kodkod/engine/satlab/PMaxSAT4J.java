@@ -44,7 +44,7 @@ import org.sat4j.specs.IteratorInt;
  * 
  * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
-final class PMaxSAT4J implements WTargetSATSolver { 
+final public class PMaxSAT4J implements WTargetSATSolver { 
 	private WeightedMaxSatDecorator solver;
 	private IOptimizationProblem optproblem;
 	private ReadOnlyIVecInt wrapper;
@@ -156,8 +156,6 @@ final class PMaxSAT4J implements WTargetSATSolver {
 				solver.addHardClause(wrapper.wrap(x));
 		} catch (ContradictionException e) {
 			sat = Boolean.FALSE;
-			e.printStackTrace();
-			throw new RuntimeException("contradiction");
 		}		
 
 		if (!Boolean.FALSE.equals(sat)) {

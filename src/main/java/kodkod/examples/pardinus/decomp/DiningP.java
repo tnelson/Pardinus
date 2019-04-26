@@ -16,7 +16,7 @@ import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
 
-public class DiningP implements DModel {
+public class DiningP extends DModel {
 
 	final private Universe u;
 

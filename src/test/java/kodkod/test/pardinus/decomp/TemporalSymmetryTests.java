@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.test.pardinus.temporal;
+package kodkod.test.pardinus.decomp;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,7 +65,7 @@ import org.junit.runners.Parameterized.Parameters;
  *
  */
 @RunWith(Parameterized.class)
-public class SymmetryTests {
+public class TemporalSymmetryTests {
 	private PardinusSolver dsolver;
 	private ExtendedOptions opt;
 	private Set<IntSet> last;
@@ -111,7 +111,7 @@ public class SymmetryTests {
 	private VariantFormulas v2;
 	private VariantOrder v3;
 
-	public SymmetryTests(VariantBounds v1, VariantFormulas v2, VariantOrder v3) {
+	public TemporalSymmetryTests(VariantBounds v1, VariantFormulas v2, VariantOrder v3) {
 		this.v1 = v1;
 		this.v2 = v2;
 		this.v3 = v3;

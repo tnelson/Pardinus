@@ -112,7 +112,7 @@ public class ElectrodReader {
 		if (insts.size() == 0)
 			return null;
 
-		return new TemporalInstance(insts, loop);
+		return new TemporalInstance(insts, loop, 1);
 	}
 
 	/**

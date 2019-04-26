@@ -75,8 +75,8 @@ public class DefCond {
         }
         BooleanValue ret = value; 
         if (!env.isNegated()) {
+        	for (DefCond e : univQuantInts) ret = factory.or(ret, e.getAccumOverflow());
             for (DefCond e : extQuantInts) ret = factory.and(ret, factory.not(e.getAccumOverflow()));
-            for (DefCond e : univQuantInts) ret = factory.or(ret, e.getAccumOverflow());
         } else {
             for (DefCond e : extQuantInts) ret = factory.or(ret, e.getAccumOverflow());
             for (DefCond e : univQuantInts) ret = factory.and(ret, factory.not(e.getAccumOverflow()));

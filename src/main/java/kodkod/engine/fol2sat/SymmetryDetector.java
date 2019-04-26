@@ -137,6 +137,7 @@ public final class SymmetryDetector {
 	private TupleSet[] sort(Bounds bounds) {
 		final List<TupleSet> sets = new ArrayList<TupleSet>(bounds.relations().size());
 		for(Relation r : bounds.relations()) {
+			if (r.isAtom()) continue; // [HASLab] ignored reified atoms
 			final TupleSet lower = bounds.lowerBound(r);
 			final TupleSet upper = bounds.upperBound(r);
 			if (!lower.isEmpty() && lower.size()<upper.size()) { sets.add(lower); }

@@ -44,7 +44,7 @@ import kodkod.instance.Universe;
  * @author Nuno Macedo // [HASLab] decomposed model finding
  *
  */
-public final class SymmetryP implements DModel {
+public final class SymmetryP extends DModel {
 
 	final private int n, m;
 

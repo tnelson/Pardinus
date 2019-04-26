@@ -22,6 +22,7 @@
  */
 package kodkod.engine.unbounded;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -63,7 +64,6 @@ import kodkod.ast.TempExpression;
 import kodkod.ast.UnaryExpression;
 import kodkod.ast.UnaryIntExpression;
 import kodkod.ast.UnaryTempFormula;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.FormulaOperator;
@@ -71,7 +71,6 @@ import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.VoidVisitor;
-import kodkod.engine.bool.BooleanFormula;
 import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
@@ -152,8 +151,29 @@ public class ElectrodPrinter {
 
 		};
 		opt.setReporter(reporter);
+		
+//		Map<Name, Set<RelationPredicate>> preds = AnnotatedNode.annotate(formula).predicates();
+//		for (RelationPredicate pred : preds.get(Name.FUNCTION)) {
+//			RelationPredicate.Function func = (RelationPredicate.Function) pred;
+//			Expression upp = bounds.upperSymbBounds(func.relation());
+//			if (upp != null && upp instanceof BinaryExpression && ((BinaryExpression) upp).op().equals(ExprOperator.PRODUCT) && 
+//					((BinaryExpression) upp).left().equals(func.domain()) && ((BinaryExpression) upp).right().equals(func.range()))
+//				System.out.println(func.relation() + " : " + func.domain() +" -> "+func.targetMult()+" "+func.range());
+//		}
+		
 
-		Whole t = Translator.translate(formula, bounds, opt);
+		// retrieve the additional formula imposed by the symbolic
+		// bounds, depending on execution stage
+		Formula symbForm = Formula.TRUE;
+		// if decomposed mode, the amalgamated bounds are always considered
+		if (opt.decomposed() && bounds.amalgamated() != null)
+			symbForm = bounds.amalgamated().resolve(opt.reporter());
+		// otherwise use regular bounds
+		else
+			symbForm = bounds.resolve(opt.reporter());
+		// NOTE: this is already being performed inside the translator, but is not accessible
+
+		Whole t = Translator.translate(formula.and(symbForm), bounds, opt);
 		bounds = (PardinusBounds) t.bounds();
 
 		try {
@@ -161,7 +181,7 @@ public class ElectrodPrinter {
 			sb.append(printUniverse(bounds.universe()));
 			sb.append(printBounds(bounds));
 			sb.append(printSymmetries(temp.toString()));
-			sb.append(printConstraint(formula));
+			sb.append(printConstraint(formula.and(symbForm)));
 			return sb.toString();
 		} catch (Exception e) {
 			throw new InvalidUnboundedProblem(e);
@@ -236,7 +256,7 @@ public class ElectrodPrinter {
 		StringBuilder sb = new StringBuilder();
 		Bounds bnd = bounds;
 		for (Relation r : bnd.relations()) {
-			if (r instanceof VarRelation)
+			if (r.isVariable())
 				sb.append("var ");
 			else
 				sb.append("const ");
@@ -833,7 +853,7 @@ public class ElectrodPrinter {
 					append("]");
 					break;
 				case FUNCTION : 
-					visit((QuantifiedFormula) node.toConstraints());
+					visit((BinaryFormula) node.toConstraints());
 					break;
 				case TOTAL_ORDERING : 
 					visit((NaryFormula) node.toConstraints());
@@ -845,36 +865,43 @@ public class ElectrodPrinter {
 			}
 			
 		}
-	
+
+	static private final String[] protected_keywords = { "run", "invariant", "true", "false", "next", "always",
+			"sometime", "eventually", "until", "releases", "previous", "historically", "once", "since", "all", "some",
+			"one", "no", "lone", "let", "disj", "iff", "implies", "then", "else", "or", "and", "in", "not", "inst",
+			"sym", "var", "const", "univ", "iden", "none" };
+
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by
-	 * removing '/' and '.' symbols.
+	 * removing '/', '.' and '$' symbols.
 	 * 
-	 * TODO: dollar signs $ on skolemized variables
+	 * TODO: what if id already has # symbols?
 	 * 
-	 * @param id
-	 *            the identifier.
+	 * @param id the identifier.
 	 * @return the normalized identifier.
 	 */
 	static String normRel(String id) {
-		if (id.isEmpty()) return "unnamed#unnamed";
-		return id.replace("/", "##").replace(".", "#");
+		if (id.isEmpty())
+			return "unnamed#unnamed";
+		else if (Arrays.asList(protected_keywords).contains(id))
+			id = "p#" + id;
+		return id.replace("/", "##").replace(".", "#").replace("$", "skolem#");
 	}
-	
+
 	/**
-	 * Converts identifiers that are compatible with Electrod back to their
-	 * Kodkod internal representation.
+	 * Converts identifiers that are compatible with Electrod back to their Kodkod
+	 * internal representation.
 	 * 
-	 * TODO: dollar signs $ on skolemized variables
+	 * * TODO: what if id already has # symbols?
 	 * 
-	 * @param id
-	 *            the identifier.
+	 * @param id the identifier.
 	 * @return the denormalized identifier.
 	 */
 	static String denormRel(String id) {
-		if (id.equals("unnamed#unnamed")) return "";
-		return id.replace("##", "/").replace("#", ".");
+		if (id.equals("unnamed#unnamed"))
+			return "";
+		return id.replace("p#", "").replace("skolem#", "$").replace("##", "/").replace("#", ".");
 	}
-	
+
 }
 

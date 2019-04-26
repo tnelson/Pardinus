@@ -55,7 +55,7 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		this.threads = options.threads;
 		this.target_mode = options.target_mode;
 		this.decomp_mode = options.decomp_mode;
-		this.config_options = options.config_options.clone();
+		this.config_options = options.config_options!=null?options.config_options.clone():null;
 		this.trace_length = options.trace_length;
 		this.min_trace_length = options.min_trace_length;
 		this.name = options.name;

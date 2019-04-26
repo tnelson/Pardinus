@@ -129,8 +129,8 @@ public class SLF4JReporter implements Reporter {
 	 */
 	public void debug(String debug) {
 		if (Options.isDebug()) {
-			if (debug.length() >= 120)
-				LOGGER.debug(debug.substring(0, 120)+"...");
+			if (debug.length() >= 320)
+				LOGGER.debug(debug.substring(0, 320)+"...");
 			else
 				LOGGER.debug(debug);
 		}

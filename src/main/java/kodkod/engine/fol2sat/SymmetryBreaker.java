@@ -222,6 +222,10 @@ final class SymmetryBreaker {
 					if (!rparts.representatives.contains(sym.min())) 
 						continue;  // r does not range over sym
 					
+					// [HASLab]
+					if (r.isSkolem() && options.temporal())
+						continue;
+					
 					// [HASLab] configuration matrices have a set of variables assigned T.
 					// when the process iterates over these, we may obtain variables that are
 					// not in the original SBP order; eg, if originally we had [1,2] < [3,4],
@@ -535,7 +539,9 @@ final class SymmetryBreaker {
 	private final Formula breakTotalOrder(RelationPredicate.TotalOrdering total, boolean aggressive) {
 		final Relation first = total.first(), last = total.last(), ordered = total.ordered(), relation = total.relation();
 		final IntSet domain = bounds.upperBound(ordered).indexView();		
-	
+
+		// [HASLab] explorer, this avoids breaking the symmetry on total order relations whose bounds are not symmetric
+		// however, when exploring, these are already fixed from the fixed prefix and would not be identified as so
 		if (symmetricColumnPartitions(ordered)!=null && 
 			bounds.upperBound(first).indexView().contains(domain.min()) && 
 			bounds.upperBound(last).indexView().contains(domain.max())) {

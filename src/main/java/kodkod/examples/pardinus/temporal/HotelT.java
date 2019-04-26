@@ -25,7 +25,6 @@ package kodkod.examples.pardinus.temporal;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Evaluator;
@@ -46,14 +45,15 @@ import java.util.List;
 /**
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
-public class HotelT implements DModel {
+public class HotelT extends DModel {
 
 	private int n;
 	final private Variant variant;
 
 	private final Relation key, key_first, key_last, key_next;
 	private final Relation room, guest, rkeys;
-	private final VarRelation current, lastkey, occupant, gkeys;
+	private final Relation current, lastkey, occupant, gkeys;
+	private final Universe u;
 
 	public enum Variant {
 		INTERVENES, NOINTERVENES;
@@ -66,17 +66,29 @@ public class HotelT implements DModel {
 		key = Relation.unary("Key");
 		guest = Relation.unary("Guest");
 		room = Relation.unary("Room");
-		rkeys = Relation.nary("Room#keys", 2);
-		key_first = Relation.unary("ordering##Ord#First");
-		key_last = Relation.unary("ordering##Ord#Last");
-		key_next = Relation.nary("ordering##Ord#Next", 2);
+		rkeys = Relation.nary("Room.keys", 2);
+		key_first = Relation.unary("ordering/Ord.First");
+		key_last = Relation.unary("ordering/Ord.Last");
+		key_next = Relation.nary("ordering/Ord.Next", 2);
 
-		current = VarRelation.nary("Room#currentKey", 2);
-		lastkey = VarRelation.nary("FrontDesk#lastKey", 2);
-		occupant = VarRelation.nary("FrontDesk#occupant", 2);
-		gkeys = VarRelation.nary("Guest#gkeys", 2);
+		current = Relation.binary_variable("Room.currentKey");
+		lastkey = Relation.binary_variable("FrontDesk.lastKey");
+		occupant = Relation.binary_variable("FrontDesk.occupant");
+		gkeys = Relation.binary_variable("Guest.gkeys");
+		
+		List<String> atoms = new ArrayList<String>(n*6);
+		for (int i = 0; i < n+3; i++) {
+			atoms.add("Key" + i);
+		}
+		for (int i = 0; i < n; i++) {
+			atoms.add("Room" + i);
+		}
+		for (int i = 0; i < n+2; i++) {
+			atoms.add("Guest" + i);
+		}
+		u = new Universe(atoms);
 	}
-
+	
 	private Formula init() {
 		Variable r = Variable.unary("r");
 		Formula x158 = r.join(lastkey).eq(r.join(current));
@@ -305,24 +317,11 @@ public class HotelT implements DModel {
 	}
 	
 	public PardinusBounds bounds1() {
-		final List<String> atoms = new ArrayList<String>(3 * n);
-		for (int i = 0; i < n; i++) {
-			atoms.add("Key" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Room" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Guest" + i);
-		}
-
-		Universe u = new Universe(atoms);
-
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n - 1)));
-		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
+		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+3 - 1)));
+		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n+2 - 1)));
 		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room" + (n - 1)));
 
 		b.boundExactly(key, kb);
@@ -337,24 +336,12 @@ public class HotelT implements DModel {
 	}
 
 	public PardinusBounds bounds2() {
-		final List<String> atoms = new ArrayList<String>(3 * n);
-		for (int i = 0; i < n; i++) {
-			atoms.add("Key" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Room" + i);
-		}
-		for (int i = 0; i < n; i++) {
-			atoms.add("Guest" + i);
-		}
-
-		Universe u = new Universe(atoms);
 
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n - 1)));
-		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
+		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+3 - 1)));
+		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n+2 - 1)));
 		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room" + (n - 1)));
 
 		b.bound(lastkey, rb.product(kb));
@@ -376,7 +363,7 @@ public class HotelT implements DModel {
 			f2 = f2.and(noIntervenes());
 		return f2;
 	}
-
+	
 	@Override
 	public String shortName() {
 		// TODO Auto-generated method stub

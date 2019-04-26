@@ -101,7 +101,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void end(DProblem<S> sol) {
+	synchronized public void end(DProblem<S> sol) {
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
@@ -169,7 +169,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	public void failed(Throwable e) {
 		solver_partial.options().reporter().warning("Integrated solver failed.");
 		if (Options.isDebug())
-			solver_partial.options().reporter().debug(e.getStackTrace().toString());
+			solver_partial.options().reporter().debug(e.getLocalizedMessage());
 		running.decrementAndGet();
 		// if last running integrated...
 		if (monitor.isConfigsDone()
@@ -203,10 +203,12 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
 	
 	void launchBatch(boolean first) {
-		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(50);
+		int size = 50;
+		
+		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(size);
 
 		// collects a batch of configurations
-		while (configs.hasNext() && problem_queue.size() < 50) {
+		while (configs.hasNext() && problem_queue.size() < size) {
 			Solution config = configs.next();
 
 			if (config.unsat()) {
@@ -272,7 +274,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
 			launchBatch(false);
 			
-		if (executor.isShutdown() && running.get() == 0)
+		if (monitor.isConfigsDone() && running.get() == 0)
 			return !solution_queue.isEmpty();
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output

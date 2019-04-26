@@ -31,6 +31,7 @@ import java.util.Set;
 import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
+import kodkod.engine.Solution.Outcome;
 import kodkod.engine.Solver;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
@@ -49,7 +50,9 @@ import kodkod.util.ints.IntSet;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -68,6 +71,10 @@ public class SymmetryTests {
 	private PardinusSolver dsolver;
 	private ExtendedOptions opt;
 	private Set<IntSet> last;
+	private boolean trivial_config;
+
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
 	@Before
 	public void method() throws InterruptedException {
@@ -98,6 +105,12 @@ public class SymmetryTests {
 				}
 				if (Options.isDebug())
 					super.debug("symmetry: " + x.toString());
+			}
+			
+			@Override
+			public void reportConfigs(int configs, int vars, int pvars, int clauses) {
+				super.reportConfigs(configs, vars, pvars, clauses);
+				trivial_config = vars == 0;
 			}
 
 		};
@@ -220,6 +233,8 @@ public class SymmetryTests {
 				};
 		return Arrays.asList(data);
 	}
+	
+
 
 	@Test
 	public void test() {
@@ -228,22 +243,26 @@ public class SymmetryTests {
 		String[] args = new String[] { n + "", v1.name(), v2.name(), v3.name() };
 		DModel model = new SymmetryP(args);
 
+		
 		opt.setBitwidth(model.getBitwidth());
 		opt.setRunTemporal(false);
 		opt.setRunDecomposed(true);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		dsolver = new PardinusSolver(opt);
-		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),
-				model.bounds2());
-		final Formula formula = model.partition1().and(model.partition2());
+		final PardinusBounds bounds = model.bounds();
+		final Formula formula = model.formula();
+		
 		Iterator<Solution> solution ;
 		
 		System.out.println("----- Solving decomposed -----");
 		solution = dsolver.solveAll(formula, bounds);
 		int decomp_counter = 0;
 
+		boolean trivial_decomp = false;
 		while (solution.hasNext()) {
 			Solution sol = solution.next();
+			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+				trivial_decomp = true;
 			decomp_counter++;
 			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
 			if (sol.sat())
@@ -262,8 +281,11 @@ public class SymmetryTests {
 		Solver solver = new Solver(opt);
 		solution = solver.solveAll(formula, bounds.amalgamated());
 		int batch_counter = 0;
+		boolean trivial_batch = false;
 		while (solution.hasNext()) {
 			Solution sol = solution.next();
+			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+				trivial_batch = true;
 			batch_counter++;
 			System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
 			if (sol.sat())
@@ -274,7 +296,10 @@ public class SymmetryTests {
 		Set<IntSet> batch_syms = last;
 
 		Assert.assertEquals(batch_syms, decomp_syms); // compares batch syms with config syms
-		Assert.assertEquals(batch_counter, decomp_counter);
+		if (!trivial_batch && !trivial_decomp && !trivial_config)
+			Assert.assertEquals(batch_counter, decomp_counter);
+		else
+			Assert.assertEquals(batch_counter == 0, decomp_counter == 0);
 
 	}
 

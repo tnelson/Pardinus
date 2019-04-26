@@ -24,6 +24,7 @@ package kodkod.ast;
 import static kodkod.ast.operator.IntCastOperator.BITSETCAST;
 import static kodkod.ast.operator.IntCastOperator.INTCAST;
 import static kodkod.ast.operator.IntCompOperator.EQ;
+import static kodkod.ast.operator.IntCompOperator.NEQ;
 import static kodkod.ast.operator.IntCompOperator.GT;
 import static kodkod.ast.operator.IntCompOperator.GTE;
 import static kodkod.ast.operator.IntCompOperator.LT;
@@ -78,6 +79,16 @@ public abstract class IntExpression extends Node {
 		return this.compare(EQ, intExpr);
 	}
 	
+	/**
+	 * Returns a formula stating that the given int expression and 
+	 * this have a different value.  The effect
+     * of this method is the same as calling this.compare(NEQ, intExpr).
+	 * @return this.compare(NEQ, intExpr)
+	 */
+	public final Formula neq(IntExpression intExpr) {
+		return this.compare(NEQ, intExpr);
+	}
+
 	/**
 	 * Returns a formula stating that the value of this int expression is less than the 
 	 * value of the given int expression  The effect
