@@ -8,9 +8,9 @@ import org.junit.runners.Suite;
 	BaseTests.class,
 	SlicerUnitTesting.class,
 	SymmetryTests.class,
+	HotelTests.class,
 	RedBlackTests.class,
 	RingTests.class,
-	HotelTests.class
 })
 
 public class AllDecompTests {}

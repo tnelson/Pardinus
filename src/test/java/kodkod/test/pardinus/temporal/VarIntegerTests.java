@@ -11,7 +11,6 @@ import org.junit.Test;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.IntConstant;
-import kodkod.ast.IntExpression;
 import kodkod.ast.Relation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;

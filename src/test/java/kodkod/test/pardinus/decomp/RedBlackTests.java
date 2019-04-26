@@ -1,6 +1,7 @@
 package kodkod.test.pardinus.decomp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
@@ -26,6 +27,11 @@ import kodkod.util.ints.IntSet;
 import org.junit.Before;
 import org.junit.Test;
 
+/*
+ * The automatic partition of this model is not ideal for UNSAT problems, since 
+ * the "theorem" formula moves to the partial solution, giving rise to several 
+ * extra configs due to skolemization.
+ */
 public class RedBlackTests {
 	PardinusSolver psolver;
 	ExtendedOptions opt, opt2;
@@ -34,9 +40,9 @@ public class RedBlackTests {
 	public void method() throws InterruptedException {
 		
 		opt = new ExtendedOptions();
+		opt.setRunDecomposed(true);
 		opt.setSymmetryBreaking(20);
 		opt.setSolver(SATFactory.Glucose);
-		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
 		opt2 = new ExtendedOptions(opt);
 		opt2.setRunTarget(false);
@@ -66,6 +72,7 @@ public class RedBlackTests {
 	
 	@Test 
 	public void testSAT3() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 3;
 		Variant1 v1 = Variant1.COUNTER;
 		Variant2 v2 = Variant2.V1;
@@ -82,13 +89,14 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 5);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 5);
+		assertEquals(model.shortName()+": #Configs", 5, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
 	public void testSAT4() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 4;
 		Variant1 v1 = Variant1.COUNTER;
 		Variant2 v2 = Variant2.V1;
@@ -105,13 +113,14 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 14);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 14);
+		assertEquals(model.shortName()+": #Configs", 14, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
 	public void testSAT5() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 5;
 		Variant1 v1 = Variant1.COUNTER;
 		Variant2 v2 = Variant2.V1;
@@ -129,13 +138,14 @@ public class RedBlackTests {
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		System.out.println(solution.instance());
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 42);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 42);
+		assertEquals(model.shortName()+": #Configs", 42, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
 	public void testSAT6() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 6;
 		Variant1 v1 = Variant1.COUNTER;
 		Variant2 v2 = Variant2.V1;
@@ -152,13 +162,15 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 132);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 132);
+		// 132, but decomp launches batches of 50
+		assertEquals(model.shortName()+": #Configs", 100, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
 	public void testUNSAT3() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 3;
 		Variant1 v1 = Variant1.THEOREM;
 		Variant2 v2 = Variant2.V1;
@@ -175,13 +187,16 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 5);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 5);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+//		assertEquals(model.shortName()+": #Runs", 5, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+//		assertEquals(model.shortName()+": #Configs", 5, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
+		assertEquals(model.shortName()+": #Runs", 4, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+		assertEquals(model.shortName()+": #Configs", 4, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
 	public void testUNSAT4() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 4;
 		Variant1 v1 = Variant1.THEOREM;
 		Variant2 v2 = Variant2.V1;
@@ -198,13 +213,16 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 14);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 14);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+//		assertEquals(model.shortName()+": #Runs", 14, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+//		assertEquals(model.shortName()+": #Configs", 14, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
+		assertEquals(model.shortName()+": #Runs", 28, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+		assertEquals(model.shortName()+": #Configs", 28, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
 	public void testUNSAT5() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 5;
 		Variant1 v1 = Variant1.THEOREM;
 		Variant2 v2 = Variant2.V1;
@@ -221,13 +239,16 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 42);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 42);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+//		assertEquals(model.shortName()+": #Runs", 42, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+//		assertEquals(model.shortName()+": #Configs", 42, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
+		assertEquals(model.shortName()+": #Runs", 152, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+		assertEquals(model.shortName()+": #Configs", 152, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
 	public void testUNSAT6() throws InterruptedException {
+		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 6;
 		Variant1 v1 = Variant1.THEOREM;
 		Variant2 v2 = Variant2.V1;
@@ -244,9 +265,11 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns(), 132);
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 132);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+//		assertEquals(model.shortName()+": #Runs", 132, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+//		assertEquals(model.shortName()+": #Configs", 132, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
+		assertEquals(model.shortName()+": #Runs", 748, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+		assertEquals(model.shortName()+": #Configs", 748, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
 	@Test 
@@ -268,10 +291,10 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 5);
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 6);
-		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated());
 	}
 	
 	@Test 
@@ -293,7 +316,7 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 14);
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 14);
 //		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
@@ -318,10 +341,10 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 42);
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 42);
-		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated());
 	}
 	
 	@Test 
@@ -343,10 +366,10 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 132);
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 132);
-		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertTrue(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated());
 	}
 	
 	@Test 
@@ -368,10 +391,10 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 5);
-		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 6);
-		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 4);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 5);
+		assertTrue(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated());
 	}
 	
 	@Test 
@@ -394,8 +417,8 @@ public class RedBlackTests {
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 14);
-		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 14);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 28);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 29);
 		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
 	}
 	
@@ -418,10 +441,10 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 42);
-		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 42);
-		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 152);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 153);
+		assertTrue(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated());
 	}
 	
 	@Test 
@@ -443,9 +466,9 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 132);
-		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() < 132);
-		assertEquals(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated(), true);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 748);
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 749);
+		assertTrue(model.shortName()+": Amalg", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated());
 	}
 }
