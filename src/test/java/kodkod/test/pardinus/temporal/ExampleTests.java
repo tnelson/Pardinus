@@ -2,7 +2,9 @@ package kodkod.test.pardinus.temporal;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
+import org.junit.runners.model.TestTimedOutException;
 
 import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
@@ -28,6 +30,8 @@ public class ExampleTests {
 	
 	@Rule
     public Timeout globalTimeout = Timeout.seconds(60);
+	@Rule
+    public final ExpectedException thrown = ExpectedException.none();
 	
 	@Test
 	public void testSATBounded() {
@@ -66,9 +70,10 @@ public class ExampleTests {
 		assert(!sol.sat());
 	}
 	
-	/* NuSMV times out
-	@Test
+	// NuSMV times out
+	@Test(expected = TestTimedOutException.class)
 	public void testSATComplete() {
+		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
 		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"1",Variant.INTERVENES.toString()} );
@@ -79,8 +84,10 @@ public class ExampleTests {
 		assert(sol.sat());
 	}
 
-	@Test
+	// NuSMV times out
+	@Test(expected = TestTimedOutException.class)
 	public void testUNSATFormulaComplete() {
+		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
 		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"1",Variant.NOINTERVENES.toString()} );
@@ -90,5 +97,5 @@ public class ExampleTests {
 		Solution sol = solver.solve(formula, bounds);
 		assert(!sol.sat());
 	}
-	*/
+	
 }

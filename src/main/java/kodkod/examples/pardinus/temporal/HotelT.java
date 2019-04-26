@@ -66,15 +66,15 @@ public class HotelT extends DModel {
 		key = Relation.unary("Key");
 		guest = Relation.unary("Guest");
 		room = Relation.unary("Room");
-		rkeys = Relation.nary("Room#keys", 2);
-		key_first = Relation.unary("ordering##Ord#First");
-		key_last = Relation.unary("ordering##Ord#Last");
-		key_next = Relation.nary("ordering##Ord#Next", 2);
+		rkeys = Relation.nary("Room.keys", 2);
+		key_first = Relation.unary("ordering/Ord.First");
+		key_last = Relation.unary("ordering/Ord.Last");
+		key_next = Relation.nary("ordering/Ord.Next", 2);
 
-		current = Relation.binary_variable("Room#currentKey");
-		lastkey = Relation.binary_variable("FrontDesk#lastKey");
-		occupant = Relation.binary_variable("FrontDesk#occupant");
-		gkeys = Relation.binary_variable("Guest#gkeys");
+		current = Relation.binary_variable("Room.currentKey");
+		lastkey = Relation.binary_variable("FrontDesk.lastKey");
+		occupant = Relation.binary_variable("FrontDesk.occupant");
+		gkeys = Relation.binary_variable("Guest.gkeys");
 		
 		List<String> atoms = new ArrayList<String>(n*6);
 		for (int i = 0; i < n+3; i++) {

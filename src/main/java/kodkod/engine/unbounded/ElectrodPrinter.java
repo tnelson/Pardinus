@@ -22,6 +22,7 @@
  */
 package kodkod.engine.unbounded;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -864,32 +865,43 @@ public class ElectrodPrinter {
 			}
 			
 		}
-	
+
+	static private final String[] protected_keywords = { "run", "invariant", "true", "false", "next", "always",
+			"sometime", "eventually", "until", "releases", "previous", "historically", "once", "since", "all", "some",
+			"one", "no", "lone", "let", "disj", "iff", "implies", "then", "else", "or", "and", "in", "not", "inst",
+			"sym", "var", "const", "univ", "iden", "none" };
+
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by
 	 * removing '/', '.' and '$' symbols.
 	 * 
-	 * @param id
-	 *            the identifier.
+	 * TODO: what if id already has # symbols?
+	 * 
+	 * @param id the identifier.
 	 * @return the normalized identifier.
 	 */
 	static String normRel(String id) {
-		if (id.isEmpty()) return "unnamed#unnamed";
-		return id.replace("/", "##").replace(".", "#").replace("$","skolem#");
+		if (id.isEmpty())
+			return "unnamed#unnamed";
+		else if (Arrays.asList(protected_keywords).contains(id))
+			id = "p#" + id;
+		return id.replace("/", "##").replace(".", "#").replace("$", "skolem#");
 	}
-	
+
 	/**
-	 * Converts identifiers that are compatible with Electrod back to their
-	 * Kodkod internal representation.
+	 * Converts identifiers that are compatible with Electrod back to their Kodkod
+	 * internal representation.
 	 * 
-	 * @param id
-	 *            the identifier.
+	 * * TODO: what if id already has # symbols?
+	 * 
+	 * @param id the identifier.
 	 * @return the denormalized identifier.
 	 */
 	static String denormRel(String id) {
-		if (id.equals("unnamed#unnamed")) return "";
-		return id.replace("skolem#","$").replace("##", "/").replace("#", ".");
+		if (id.equals("unnamed#unnamed"))
+			return "";
+		return id.replace("p#", "").replace("skolem#", "$").replace("##", "/").replace("#", ".");
 	}
-	
+
 }
 

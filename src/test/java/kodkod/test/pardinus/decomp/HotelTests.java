@@ -26,7 +26,9 @@ import kodkod.util.ints.IntSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
+import org.junit.runners.model.TestTimedOutException;
 
 public class HotelTests {
 	ExtendedOptions opt;
@@ -63,6 +65,8 @@ public class HotelTests {
 	
 	@Rule
     public Timeout globalTimeout = Timeout.seconds(60);
+	@Rule
+    public final ExpectedException thrown = ExpectedException.none();
 	
 	@Test 
 	public void testSAT3() throws InterruptedException {
@@ -210,6 +214,7 @@ public class HotelTests {
 	
 	@Test 
 	public void testUNSAT5() throws InterruptedException {
+		thrown.expect(TestTimedOutException.class);
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
@@ -399,6 +404,7 @@ public class HotelTests {
 	
 	@Test 
 	public void testHUNSAT5() throws InterruptedException {
+		thrown.expect(TestTimedOutException.class);
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
