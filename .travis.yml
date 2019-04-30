@@ -6,7 +6,11 @@ before_install:
   - opam init -a --disable-sandboxing 
   - opam update
   - eval $(opam env)
-  - echo $PATH
   - curl -L "http://nusmv.fbk.eu/distrib/NuSMV-2.6.0-zchaff-linux64.tar.gz" | tar --extract --gzip --strip-components=2 -C $HOME/bin "NuSMV-2.6.0-Linux/bin/NuSMV"
 
 script: mvn clean package -P solvers
+
+cache:
+  directories:
+  - $HOME/.opam
+  - $HOME/.m2
