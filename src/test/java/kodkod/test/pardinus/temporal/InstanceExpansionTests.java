@@ -249,7 +249,7 @@ public class InstanceExpansionTests {
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(10);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
@@ -306,7 +306,7 @@ public class InstanceExpansionTests {
 		opt.setRunTemporal(false);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
@@ -354,7 +354,7 @@ public class InstanceExpansionTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);

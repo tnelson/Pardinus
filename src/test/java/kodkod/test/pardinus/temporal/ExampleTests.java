@@ -36,7 +36,7 @@ public class ExampleTests {
 	@Test
 	public void testSATBounded() {
 		options.setRunUnbounded(false);
-		options.setSolver(SATFactory.DefaultSAT4J);
+		options.setSolver(SATFactory.MiniSat);
 		HotelT model = new HotelT(new String[] {"2",Variant.INTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();
@@ -48,7 +48,7 @@ public class ExampleTests {
 	@Test
 	public void testUNSATLengthBounded() {
 		options.setRunUnbounded(false);
-		options.setSolver(SATFactory.DefaultSAT4J);
+		options.setSolver(SATFactory.MiniSat);
 		options.setMaxTraceLength(3);
 		HotelT model = new HotelT(new String[] {"2",Variant.INTERVENES.toString()} );
 		Formula formula = model.formula();
@@ -61,7 +61,7 @@ public class ExampleTests {
 	@Test
 	public void testUNSATFormulaBounded() {
 		options.setRunUnbounded(false);
-		options.setSolver(SATFactory.DefaultSAT4J);
+		options.setSolver(SATFactory.MiniSat);
 		HotelT model = new HotelT(new String[] {"2",Variant.NOINTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();

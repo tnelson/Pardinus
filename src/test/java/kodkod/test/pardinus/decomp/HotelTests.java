@@ -55,7 +55,7 @@ public class HotelTests {
 		opt = new ExtendedOptions();
 		opt.setRunDecomposed(true);
 		opt.setSymmetryBreaking(20);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
 		opt.setRunTemporal(false);

@@ -66,7 +66,7 @@ public class BaseTests {
 
 	@Test
 	public void testSAT() {
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -106,7 +106,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATTrivialConfig() {
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -146,7 +146,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATTrivialRem() {
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -188,7 +188,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATTrivialSomeRem() {
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -228,7 +228,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSAT2() {
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
