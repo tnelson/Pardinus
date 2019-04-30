@@ -52,7 +52,7 @@ point to the JDK 8 home directory.
 - Tiago Guimarães, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - 2014
 
 ## History
-### Pardinus ([1.1.0](https://github.com/haslab/Pardinus/releases/tag/v1.0)) (April 2019)
+### Pardinus ([1.1.0](https://github.com/haslab/Pardinus/releases/tag/v1.1)) (April 2019)
 - Major [changes](https://github.com/haslab/Pardinus/pull/29) to the solving engine
 
 ### Pardinus ([1.0.0](https://github.com/haslab/Pardinus/releases/tag/v1.0)) (January 2018)
