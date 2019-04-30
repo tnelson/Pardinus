@@ -14,3 +14,4 @@ cache:
   directories:
   - $HOME/.opam
   - $HOME/.m2
+  - build/jni
