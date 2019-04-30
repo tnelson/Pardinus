@@ -60,7 +60,7 @@ public class HotelTests {
 		opt.setThreads(4);
 		opt.setRunTemporal(false);
 
-		opt.setReporter(rep);
+//		opt.setReporter(rep);
 	}
 	
 	@Rule

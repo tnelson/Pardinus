@@ -36,14 +36,14 @@ public class TemporalIterationTests {
 		int n = 2;
 
 		Relation a = Relation.unary_variable("a");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -54,7 +54,7 @@ public class TemporalIterationTests {
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(4);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -65,56 +65,56 @@ public class TemporalIterationTests {
 			c++;
 			if (sol.sat()) {
 				Evaluator eval = new Evaluator(sol.instance());
-				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),0));
-				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),1));
-				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),2));
-				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(),3));
-				assertTrue(eval.evaluate(a.no(),0));
-				assertFalse(eval.evaluate(a.no(),1));
-				assertTrue(eval.evaluate(a.no(),2));
-				assertFalse(eval.evaluate(a.no(),3));
-				assertFalse(eval.evaluate(a.no().next(),0));
-				assertTrue(eval.evaluate(a.no().next(),1));
-				assertFalse(eval.evaluate(a.no().next(),2));
-				assertTrue(eval.evaluate(a.no().next(),3));
-				assertTrue(eval.evaluate(a.no().next(),1));
-				assertTrue(eval.evaluate(a,0).isEmpty());
-				assertFalse(eval.evaluate(a,1).isEmpty());
-				assertTrue(eval.evaluate(a,2).isEmpty());
-				assertFalse(eval.evaluate(a,3).isEmpty());
-				assertFalse(eval.evaluate(a.prime(),0).isEmpty());
-				assertTrue(eval.evaluate(a.prime(),1).isEmpty());
-				assertFalse(eval.evaluate(a.prime(),2).isEmpty());
-				assertTrue(eval.evaluate(a.prime(),3).isEmpty());
-				assertEquals(eval.evaluate(a.count(),0),0);
-				assertTrue(eval.evaluate(a.count(),1)>0);
-				assertEquals(eval.evaluate(a.count(),2),0);
-				assertTrue(eval.evaluate(a.count(),3)>0);
-				assertTrue(eval.evaluate(a.prime().count(),0)>0);
-				assertEquals(eval.evaluate(a.prime().count(),1),0);
-				assertTrue(eval.evaluate(a.prime().count(),2)>0);
-				assertEquals(eval.evaluate(a.prime().count(),3),0);
-				System.out.println(sol.instance().toString());
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(), 0));
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(), 1));
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(), 2));
+				assertTrue(eval.evaluate(a.eq(a.prime()).not().always(), 3));
+				assertTrue(eval.evaluate(a.no(), 0));
+				assertFalse(eval.evaluate(a.no(), 1));
+				assertTrue(eval.evaluate(a.no(), 2));
+				assertFalse(eval.evaluate(a.no(), 3));
+				assertFalse(eval.evaluate(a.no().next(), 0));
+				assertTrue(eval.evaluate(a.no().next(), 1));
+				assertFalse(eval.evaluate(a.no().next(), 2));
+				assertTrue(eval.evaluate(a.no().next(), 3));
+				assertTrue(eval.evaluate(a.no().next(), 1));
+				assertTrue(eval.evaluate(a, 0).isEmpty());
+				assertFalse(eval.evaluate(a, 1).isEmpty());
+				assertTrue(eval.evaluate(a, 2).isEmpty());
+				assertFalse(eval.evaluate(a, 3).isEmpty());
+				assertFalse(eval.evaluate(a.prime(), 0).isEmpty());
+				assertTrue(eval.evaluate(a.prime(), 1).isEmpty());
+				assertFalse(eval.evaluate(a.prime(), 2).isEmpty());
+				assertTrue(eval.evaluate(a.prime(), 3).isEmpty());
+				assertEquals(eval.evaluate(a.count(), 0), 0);
+				assertTrue(eval.evaluate(a.count(), 1) > 0);
+				assertEquals(eval.evaluate(a.count(), 2), 0);
+				assertTrue(eval.evaluate(a.count(), 3) > 0);
+				assertTrue(eval.evaluate(a.prime().count(), 0) > 0);
+				assertEquals(eval.evaluate(a.prime().count(), 1), 0);
+				assertTrue(eval.evaluate(a.prime().count(), 2) > 0);
+				assertEquals(eval.evaluate(a.prime().count(), 3), 0);
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(9, c);
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void test() {
 		int n = 2;
 
 		Relation a = Relation.unary_variable("a");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -125,7 +125,7 @@ public class TemporalIterationTests {
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -134,28 +134,29 @@ public class TemporalIterationTests {
 		while (sols.hasNext()) {
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(10, c);
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testLower() {
 		final int n = 3;
 
 		Relation a = Relation.unary_variable("a");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
 		TupleSet ls = f.setOf(f.tuple("A0"));
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, ls, as);
@@ -166,121 +167,122 @@ public class TemporalIterationTests {
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
-					
+
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
-		
+
 		assertEquals(96, c);
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testPast() {
 		final int n = 1;
 
 		Relation a = Relation.unary_variable("a");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		Formula formula = a.some().previous().once().eventually().and(a.no());
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
-					
+
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
 				Evaluator eval = new Evaluator(sol.instance());
-				assertTrue(eval.evaluate(a.no(),0));
-				assertFalse(eval.evaluate(Expression.NONE.no().previous(),0));
-				assertTrue(eval.evaluate(a.no().previous(),1));
-				System.out.println(sol.instance().toString());
+				assertTrue(eval.evaluate(a.no(), 0));
+				assertFalse(eval.evaluate(Expression.NONE.no().previous(), 0));
+				assertTrue(eval.evaluate(a.no().previous(), 1));
+//				System.out.println(sol.instance().toString());
 			}
 		}
-		
+
 		assertEquals(9, c);
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testLowerUbd() {
 		final int n = 2;
 
 		Relation a = Relation.unary_variable("a");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
 		TupleSet ls = f.setOf(f.tuple("A0"));
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, ls, as);
 		Formula formula = a.some().always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
-		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+//		opt.setReporter(new SLF4JReporter());
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(5);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
-		
+
 		while (sols.hasNext() && c < 10) {
-					
+
 			Solution sol = sols.next();
 			c++;
 
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
-		
+
 		assertEquals(10, c);
 		solver.free();
 
 	}
-	
 
 	@Test
 	public void testTempSkolem() {
@@ -290,13 +292,13 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
 		TupleSet ls = f.setOf(f.tuple("A0"));
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, ls, as);
@@ -304,28 +306,29 @@ public class TemporalIterationTests {
 		Formula formula = a.eq(b).always().eventually();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
-					
+
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(5, c);
 		solver.free();
 	}
-	
+
 	@Test
 	public void testSkolem() {
 		int n = 2;
@@ -334,12 +337,12 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.boundExactly(a, as);
@@ -349,28 +352,29 @@ public class TemporalIterationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSkolemDepth(1);
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
-					
+
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(6, c);
 		solver.free();
 	}
-	
+
 	@Test
 	public void testSkolem2() {
 		int n = 2;
@@ -379,12 +383,12 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -394,29 +398,29 @@ public class TemporalIterationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSkolemDepth(1);
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
-					
+
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(24, c);
 		solver.free();
 	}
-	
-	
+
 	@Test
 	public void testSkolemUnb() {
 		int n = 2;
@@ -425,12 +429,12 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -439,30 +443,31 @@ public class TemporalIterationTests {
 		Formula formula = v.in(a).forSome(v.oneOf(b)).always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
 		opt.setSkolemDepth(1);
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
-		
+
 		while (sols.hasNext() && c < 5) {
-					
+
 			Solution sol = sols.next();
 			c++;
 
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
-		
+
 		assertEquals(5, c);
 		solver.free();
 	}
@@ -475,13 +480,13 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
 		TupleSet ls = f.setOf(f.tuple("A0"));
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -489,29 +494,29 @@ public class TemporalIterationTests {
 		Formula formula = a.some().always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
-					
+
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(9, c);
 		solver.free();
 	}
-	
-	
+
 	@Test
 	public void testTempSkolemUbd() {
 		int n = 2;
@@ -520,13 +525,13 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
 		TupleSet ls = f.setOf(f.tuple("A0"));
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, ls, as);
@@ -534,33 +539,34 @@ public class TemporalIterationTests {
 		Formula formula = a.eq(b).always().eventually();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
-		
+
 		while (sols.hasNext() && c < 10) {
-					
+
 			Solution sol = sols.next();
 			c++;
 
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
-		
+
 		assertEquals(10, c);
 		solver.free();
 	}
-	
+
 	@Test
 	public void testTempSkolemTotalOrder() {
 		int n = 2;
@@ -572,12 +578,12 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -588,29 +594,30 @@ public class TemporalIterationTests {
 		Formula formula = b.in(a).always().eventually().and(an.totalOrder(a, af, al));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
 		while (sols.hasNext()) {
-					
+
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(2, c);
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testTempSkolemTotalOrderUbd() {
 		int n = 2;
@@ -622,12 +629,12 @@ public class TemporalIterationTests {
 		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
@@ -638,34 +645,35 @@ public class TemporalIterationTests {
 		Formula formula = b.in(a).always().eventually().and(an.totalOrder(a, af, al));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
 		int c = 0;
-		
+
 		while (sols.hasNext() && c < 10) {
-					
+
 			Solution sol = sols.next();
 			c++;
 
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
-		
+
 		assertEquals(2, c);
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testSymb() {
 		int n = 2;
@@ -673,18 +681,18 @@ public class TemporalIterationTests {
 		Relation a = Relation.unary_variable("a");
 		Relation b = Relation.unary_variable("b");
 		Relation c = Relation.unary_variable("c");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 		TupleSet ls = f.setOf(f.tuple("A0"));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(c, ls,ls);
+		bounds.bound(c, ls, ls);
 		bounds.bound(a, as);
 		bounds.bound(b, c, a);
 		Formula formula = a.eq(a).and(b.eq(b));
@@ -694,7 +702,7 @@ public class TemporalIterationTests {
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -704,42 +712,42 @@ public class TemporalIterationTests {
 			Solution sol = sols.next();
 			cc++;
 			if (sol.sat()) {
-				System.out.println(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(16, cc);
 		solver.free();
 	}
-	
+
 	@Test
 	public void testSymb2() {
 		int n = 1;
-		
+
 		Relation a = Relation.unary_variable("a");
 		Relation b = Relation.binary_variable("b");
 		Relation c = Relation.unary_variable("c");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 		TupleSet ls = f.setOf(f.tuple("A0"));
 
 		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(c, ls,ls);
+		bounds.bound(c, ls, ls);
 		bounds.bound(a, as);
 		bounds.bound(b, c.product(c), a.product(a));
 		Formula formula = a.eq(a).and(b.eq(b));
-		
+
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -749,33 +757,33 @@ public class TemporalIterationTests {
 			Solution sol = sols.next();
 			cc++;
 			if (sol.sat()) {
-				System.out.println(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(2, cc);
 		solver.free();
 	}
-	
+
 	@Test
 	public void testDecomposed() {
 		int n = 2;
 
 		Relation a = Relation.unary("a");
 		Relation b = Relation.unary_variable("b");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds1 = new PardinusBounds(uni);
 		bounds1.bound(a, as);
 		PardinusBounds bounds2 = new PardinusBounds(uni);
 		bounds2.bound(b, as);
-		PardinusBounds bounds = new PardinusBounds(bounds1,bounds2);
+		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.lone().and(a.in(b).always());
 
 		ExtendedOptions opt = new ExtendedOptions();
@@ -783,7 +791,7 @@ public class TemporalIterationTests {
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(true);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -792,8 +800,9 @@ public class TemporalIterationTests {
 		while (sols.hasNext()) {
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(24, c);
 		solver.free();
@@ -806,20 +815,20 @@ public class TemporalIterationTests {
 
 		Relation a = Relation.unary("a");
 		Relation b = Relation.unary_variable("b");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds1 = new PardinusBounds(uni);
 		bounds1.bound(a, as);
 		PardinusBounds bounds2 = new PardinusBounds(uni);
 		bounds2.bound(b, as);
-		PardinusBounds bounds = new PardinusBounds(bounds1,bounds2);
+		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.lone().and(a.in(b).always());
 
 		ExtendedOptions opt = new ExtendedOptions();
@@ -827,7 +836,7 @@ public class TemporalIterationTests {
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(true);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -836,34 +845,35 @@ public class TemporalIterationTests {
 		while (sols.hasNext()) {
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(8, c);
 		solver.free();
 
 	}
-	
+
 	@Test
 	public void testDecomposedSymb() {
 		int n = 2;
 
 		Relation a = Relation.unary("a");
 		Relation b = Relation.unary_variable("b");
-		
+
 		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i ++)
-			atoms[i] = "A"+i;
-		
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
 		Universe uni = new Universe(atoms);
 		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
 
 		PardinusBounds bounds1 = new PardinusBounds(uni);
 		bounds1.bound(a, as);
 		PardinusBounds bounds2 = new PardinusBounds(uni);
 		bounds2.bound(b, a, Expression.UNIV);
-		PardinusBounds bounds = new PardinusBounds(bounds1,bounds2);
+		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.lone().and(b.in(b).always());
 
 		ExtendedOptions opt = new ExtendedOptions();
@@ -871,9 +881,9 @@ public class TemporalIterationTests {
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(true);
 		PardinusSolver solver = new PardinusSolver(opt);
-		
+
 		Solution sol = solver.solve(formula, bounds);
-		
+
 		assertTrue(sol.sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -882,15 +892,15 @@ public class TemporalIterationTests {
 		while (sols.hasNext()) {
 			sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(24, c);
 		solver.free();
 
 	}
-	
-	@Test
+
 	public void hotel() {
 		final int t = 2, ty = 1;
 		List<List<Long>> alls;
@@ -926,23 +936,22 @@ public class TemporalIterationTests {
 				long now = System.currentTimeMillis() - then;
 
 				if (sol.sat()) {
-					System.out.println(sol);
+//					System.out.println(sol);
 					times.add(now);
 				}
 			}
 			solver.free();
 			alls.add(times);
 		}
-		
+
 		int nss = alls.get(0).size();
 		for (int i = 0; i < nss; i++) {
 			for (List<Long> lll : alls)
-				System.out.print(lll.get(i)+"\t");
+				System.out.print(lll.get(i) + "\t");
 			System.out.println();
 		}
 	}
-	
-	@Test
+
 	public void election() {
 		Relation id = Relation.unary("Id");
 		Relation next = Relation.binary("next");
@@ -968,18 +977,17 @@ public class TemporalIterationTests {
 		Formula f6a = outbox.prime().eq((e6a).union(e6b));
 		Formula f6 = f6a.forSome(p6.oneOf(process).and(i6.oneOf(p6.join(outbox)))).always();
 		Variable p7 = Variable.unary("p");
-		Formula f7a = (p7.join(idf).in(p7.join(outbox))
-				.and(p7.join(idf).in(p7.join(outbox)).not().previous())).once();
+		Formula f7a = (p7.join(idf).in(p7.join(outbox)).and(p7.join(idf).in(p7.join(outbox)).not().previous())).once();
 		Formula f7 = elected.eq(f7a.comprehension(p7.oneOf(process))).always();
-		
-		Variable p8 = Variable.unary("p"); 
-		Variable i8 = Variable.unary("i"); 
-		
+
+		Variable p8 = Variable.unary("p");
+		Variable i8 = Variable.unary("i");
+
 		// all p:Process | always some i : p.outbox implies eventually i not in p.outbox
-		
+
 		Formula f8a = (i8.in(p8.join(outbox))).implies(i8.in(p8.join(outbox)).not().eventually());
 		Formula f8 = f8a.forAll(i8.oneOf(id)).forAll(p8.oneOf(process)).always();
-		
+
 		Formula formula = NaryFormula.and(f1, f2, f3, f4, f5, f6, f7, f8, elected.some().eventually());
 
 		int nn = 6, tt = 2, ty = 4;
@@ -1029,7 +1037,6 @@ public class TemporalIterationTests {
 					opt.setMaxTraceLength(t);
 					PardinusSolver solver = new PardinusSolver(opt);
 
-
 //			assertTrue(solver.solve(formula, bounds).sat());
 
 					Iterator<Solution> sols = solver.solveAll(formula, bounds);
@@ -1037,7 +1044,7 @@ public class TemporalIterationTests {
 //			System.out.println(bounds);
 //			System.out.println(formula);
 
-					for (int j = 0; sols.hasNext() && j < 200 ; j++) {
+					for (int j = 0; sols.hasNext() && j < 200; j++) {
 						long then = System.currentTimeMillis();
 						Solution sol = sols.next();
 						long now = System.currentTimeMillis() - then;
@@ -1054,16 +1061,16 @@ public class TemporalIterationTests {
 			alls.add(times);
 		}
 		for (int j = 0; j <= 0; j++) {
-			System.out.println(j+1);
+			System.out.println(j + 1);
 			int nss = alls.get(0).get(j).size();
 			for (int i = 0; i < nss; i++) {
 				for (List<List<Long>> lll : alls)
-					System.out.print(lll.get(j).get(i)+"\t");
+					System.out.print(lll.get(j).get(i) + "\t");
 				System.out.println();
 			}
 			System.out.println();
 		}
-		
+
 		System.out.println("------");
 
 		TemporalPardinusSolver.SATOPTITERATION = true;
@@ -1118,7 +1125,7 @@ public class TemporalIterationTests {
 //			System.out.println(bounds);
 //			System.out.println(formula);
 
-					for (int j = 0; sols.hasNext() && j < 200 ; j++) {
+					for (int j = 0; sols.hasNext() && j < 200; j++) {
 						long then = System.currentTimeMillis();
 						Solution sol = sols.next();
 						long now = System.currentTimeMillis() - then;
@@ -1135,11 +1142,11 @@ public class TemporalIterationTests {
 			alls.add(times);
 		}
 		for (int j = 0; j <= 0; j++) {
-			System.out.println(j+1);
+			System.out.println(j + 1);
 			int nss = alls.get(0).get(j).size();
 			for (int i = 0; i < nss; i++) {
 				for (List<List<Long>> lll : alls)
-					System.out.print(lll.get(j).get(i)+"\t");
+					System.out.print(lll.get(j).get(i) + "\t");
 				System.out.println();
 			}
 			System.out.println();

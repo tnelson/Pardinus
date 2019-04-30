@@ -5,8 +5,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	SymmetryTests.class,
-	ResolutionTests.class
+//	SymmetryTests.class,
+//	ResolutionTests.class
 })
 
 public class AllSymbolicTests {}

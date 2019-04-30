@@ -46,7 +46,7 @@ public final class Simetria {
 		Solver solver = new Solver();
 //		solver.options().setSolver(SATFactory.externalPMaxSATFactory("/Users/alcino/Documents/workspace/Exemplos/yices", null, 2));
 //		solver.options().setSolver(SATFactory.IncrementalSAT4J);
-		solver.options().setSolver(SATFactory.PMaxYices);
+		solver.options().setSolver(SATFactory.PMaxSAT4J);
 		solver.options().setBitwidth(5);
 		solver.options().setSymmetryBreaking(3);
 		Iterator<Solution> sols = solver.solveAll(model.formula(3),model.bounds(5));

@@ -57,8 +57,9 @@ public class VarIntegerTests {
 		while (sols.hasNext()) {
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(29, c);
 		
@@ -100,8 +101,9 @@ public class VarIntegerTests {
 		while (sols.hasNext()) {
 			Solution sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
 		}
 		assertEquals(7, c);
 		solver.free();

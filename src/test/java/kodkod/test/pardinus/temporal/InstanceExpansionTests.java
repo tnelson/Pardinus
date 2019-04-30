@@ -81,7 +81,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -138,7 +138,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -190,7 +190,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -244,7 +244,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
@@ -302,7 +302,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(false);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
@@ -350,7 +350,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);

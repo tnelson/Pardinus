@@ -10,17 +10,17 @@ public class Main {
 
 	public static void main(String[] args) {
 		//aquecimento:
-		Graph.graph(30, 3, SATFactory.PMaxYices);
+		Graph.graph(30, 3, SATFactory.PMaxSAT4J);
 		
 //		//Test Graph
 		System.out.println("=============Graph=====================");
-		System.out.println("no targets Yices");
-		Graph.notarget(SATFactory.Yices);
-		Graph.graph_notarget(20, 3, SATFactory.DefaultSAT4J);
-		System.out.println("no targets SAT4J");
-		Graph.notarget(SATFactory.DefaultSAT4J);
-		System.out.println("targets Yices");
-		Graph.target(SATFactory.PMaxYices);
+//		System.out.println("no targets Yices");
+//		Graph.notarget(SATFactory.Yices);
+//		Graph.graph_notarget(20, 3, SATFactory.DefaultSAT4J);
+//		System.out.println("no targets SAT4J");
+//		Graph.notarget(SATFactory.DefaultSAT4J);
+//		System.out.println("targets Yices");
+//		Graph.target(SATFactory.PMaxYices);
 		System.out.println("targets SAT4J");
 		Graph.graph(30, 3, SATFactory.PMaxSAT4J);
 		Graph.target(SATFactory.PMaxSAT4J);

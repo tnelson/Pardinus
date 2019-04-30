@@ -34,6 +34,7 @@ import kodkod.engine.Solution;
 import kodkod.engine.Solution.Outcome;
 import kodkod.engine.Solver;
 import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.config.Options;
@@ -84,7 +85,7 @@ public class SymmetryTests {
 		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
-		Reporter rep = new SLF4JReporter() {
+		Reporter rep = new AbstractReporter() {
 			private Bounds bounds;
 
 			@Override
@@ -254,7 +255,7 @@ public class SymmetryTests {
 		
 		Iterator<Solution> solution ;
 		
-		System.out.println("----- Solving decomposed -----");
+//		System.out.println("----- Solving decomposed -----");
 		solution = dsolver.solveAll(formula, bounds);
 		int decomp_counter = 0;
 
@@ -264,18 +265,18 @@ public class SymmetryTests {
 			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
 				trivial_decomp = true;
 			decomp_counter++;
-			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
-			if (sol.sat())
-				System.out.println(sol.instance().relationTuples());
-			else
-				System.out.println();
+//			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
+//			if (sol.sat())
+//				System.out.println(sol.instance().relationTuples());
+//			else
+//				System.out.println();
 
 		}
 		Set<IntSet> decomp_syms = last;
 		dsolver.free();
 		last = null;
 
-		System.out.println("----- Solving in batch -----");
+//		System.out.println("----- Solving in batch -----");
 
 		opt.setRunDecomposed(false);
 		Solver solver = new Solver(opt);
@@ -287,15 +288,16 @@ public class SymmetryTests {
 			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
 				trivial_batch = true;
 			batch_counter++;
-			System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
-			if (sol.sat())
-				System.out.println(sol.instance().relationTuples());
-			else
-				System.out.println();
+//			System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
+//			if (sol.sat())
+//				System.out.println(sol.instance().relationTuples());
+//			else
+//				System.out.println();
 		}
 		Set<IntSet> batch_syms = last;
 
-		Assert.assertEquals(batch_syms, decomp_syms); // compares batch syms with config syms
+		Assert.assertEquals(batch_syms, decomp_syms); 
+		// compares batch syms with config syms
 		if (!trivial_batch && !trivial_decomp && !trivial_config)
 			Assert.assertEquals(batch_counter, decomp_counter);
 		else

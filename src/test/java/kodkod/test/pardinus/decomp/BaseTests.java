@@ -59,9 +59,9 @@ public class BaseTests {
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(false);
-		Reporter rep = new SLF4JReporter();
-		opt.setReporter(rep);
-		opt.configOptions().setReporter(rep);
+//		Reporter rep = new SLF4JReporter();
+//		opt.setReporter(rep);
+//		opt.configOptions().setReporter(rep);
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 13; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -137,7 +137,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 15; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -181,7 +181,7 @@ public class BaseTests {
 			sb.append("** "+sol.instance().relationTuples().toString()+"\n");
 			assertTrue("base problem should be sat", sol.sat());
 		}
-		System.out.println(sb.toString());
+//		System.out.println(sb.toString());
 		sol = sols.next();
 		assertFalse("base problem should have 9 sols", sol.sat());
 	}
@@ -219,7 +219,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 9; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -259,7 +259,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 13; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();

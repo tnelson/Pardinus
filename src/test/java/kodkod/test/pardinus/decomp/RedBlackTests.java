@@ -74,8 +74,8 @@ public class RedBlackTests {
 				System.out.println(debug);
 			}
 		};
-		opt.setReporter(rep);
-		opt2.setReporter(rep);
+//		opt.setReporter(rep);
+//		opt2.setReporter(rep);
 		psolver = new PardinusSolver(opt);
 	}
 	
@@ -146,7 +146,7 @@ public class RedBlackTests {
 		final Formula f2 = model.partition2();
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		System.out.println(solution.instance());
+//		System.out.println(solution.instance());
 		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 42);
 		assertEquals(model.shortName()+": #Configs", 42, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());

@@ -88,9 +88,9 @@ public class ReificationTests {
 		
 		Instance inst = solution.next().instance();
 
-		System.out.println(inst.toString());
-		System.out.println(inst.formulate(bounds,x,formula));
-		System.out.println(x);
+//		System.out.println(inst.toString());
+//		System.out.println(inst.formulate(bounds,x,formula));
+//		System.out.println(x);
 		
 		formula = formula.and(inst.formulate(bounds,x,formula).not());
 
@@ -98,9 +98,9 @@ public class ReificationTests {
 		
 		inst = solution.next().instance();
 		
-		System.out.println(inst.toString());
-		System.out.println(inst.formulate(bounds,x,formula));
-		System.out.println(x);
+//		System.out.println(inst.toString());
+//		System.out.println(inst.formulate(bounds,x,formula));
+//		System.out.println(x);
 	
 		formula = formula.and(inst.formulate(bounds,x,formula).not());
 
@@ -108,9 +108,9 @@ public class ReificationTests {
 
 		inst = solution.next().instance();
 
-		System.out.println(inst.toString());
-		System.out.println(inst.formulate(bounds,x,formula));
-		System.out.println(x);
+//		System.out.println(inst.toString());
+//		System.out.println(inst.formulate(bounds,x,formula));
+//		System.out.println(x);
 
 		solver.free();
 
@@ -141,7 +141,7 @@ public class ReificationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -150,10 +150,10 @@ public class ReificationTests {
 		
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 		
-		System.out.println(solution.next().instance());
-		System.out.println(solution.next().instance());
-		System.out.println(solution.next().instance());
-		System.out.println(solution.next().instance());
+//		System.out.println(solution.next().instance());
+//		System.out.println(solution.next().instance());
+//		System.out.println(solution.next().instance());
+//		System.out.println(solution.next().instance());
 		
 		solver.free();
 

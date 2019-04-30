@@ -25,7 +25,7 @@ public class ExampleTests {
 		options.setRunTemporal(true);
 		options.setRunDecomposed(false);
 		options.setMaxTraceLength(10);
-		options.setReporter(new SLF4JReporter());
+//		options.setReporter(new SLF4JReporter());
 	}
 	
 	@Rule

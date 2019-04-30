@@ -67,7 +67,7 @@ public class RingTests {
 				System.out.println(debug);				
 			}
 		};
-		opt.setReporter(rep);
+//		opt.setReporter(rep);
 		psolver = new PardinusSolver(opt);
 	}
 	
@@ -115,7 +115,7 @@ public class RingTests {
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() >= 200);
-}
+	}
 	
 
 	@Test 
