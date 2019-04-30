@@ -345,12 +345,10 @@ final class SymmetryBreaker {
 				// [HASLab] the order of the variable lexer may not change
 				// from the config stage to the integrated stage, thus the
 				// integrated variables must be kept at the end.
-//				if (bounds instanceof DecompBounds) { // adding this condition breaks everything!
-					if (isConfigStage(o1.relation) && !isConfigStage(o2.relation))
-						return -1;
-					else if (isConfigStage(o2.relation) && !isConfigStage(o1.relation))
-						return 1;
-//				}
+				if (isConfigStage(o1.relation) && !isConfigStage(o2.relation))
+					return -1;
+				else if (isConfigStage(o2.relation) && !isConfigStage(o1.relation))
+					return 1;
 				final int acmp = o1.relation.arity() - o2.relation.arity();
 				return acmp!=0 ? acmp : String.valueOf(o1.relation.name()).compareTo(String.valueOf(o2.relation.name()));
 			}
