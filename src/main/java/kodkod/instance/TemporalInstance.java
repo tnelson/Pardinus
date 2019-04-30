@@ -89,9 +89,9 @@ public class TemporalInstance extends Instance {
 		
 		Map<Relation, TupleSet> expRels = stateIdomify(this.universe(), instances, loop);
 		for (Relation r : expRels.keySet())
-			this.add(r, expRels.get(r));
+			super.add(r, expRels.get(r));
 		for(IndexedEntry<TupleSet> entry : instances.get(0).intTuples())
-			this.add(entry.index(), universe().factory().setOf(entry.value().iterator().next().atom(0)));
+			super.add(entry.index(), universe().factory().setOf(entry.value().iterator().next().atom(0)));
 
 		this.static_universe = instances.get(0).universe();
 		this.states = instances;
@@ -373,6 +373,34 @@ public class TemporalInstance extends Instance {
 	public Universe staticUniverse() {
 		return static_universe;
 	}
+	
+	/**
+	 * Maps the given relation to the given tuple set.  
+	 * @ensures this.tuples' = this.tuples ++ relation->s
+	 * @throws NullPointerException  relation = null || s = null
+	 * @throws IllegalArgumentException  relation.arity != s.arity
+	 * @throws IllegalArgumentException  s.universe != this.universe
+	 * @throws UnsupportedOperationException  this is an unmodifiable instance
+	 */
+	public void add(final Relation relation, TupleSet s) {
+		if (!s.universe().equals(universe()) && !s.universe().equals(staticUniverse()))
+			throw new IllegalArgumentException("s.universe!=this.universe");
+		if (relation.arity()!=s.arity())
+			throw new IllegalArgumentException("relation.arity!=s.arity");
+		
+		if (s.universe().equals(universe())) {
+			super.add(relation,s);
+			for (int i = 0; i < states.size(); i++) {
+				states.get(i).add(relation, TemporalBoundsExpander.convertToUniv(s, static_universe));
+			}
+		} else {
+			super.add(relation,TemporalBoundsExpander.convertToUniv(s, universe()));
+			for (int i = 0; i < states.size(); i++) {
+				states.get(i).add(relation, s);
+			}
+		}
+	}
+
 	
 	/**
 	 * {@inheritDoc}
