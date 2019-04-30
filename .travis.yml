@@ -6,4 +6,4 @@ before_install:
   - opam init -a --disable-sandboxing 
   - opam update
 
-script: mvn clean package -DskipTests -P solvers
+script: mvn clean package -P solvers
