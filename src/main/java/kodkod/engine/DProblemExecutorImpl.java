@@ -101,7 +101,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void end(DProblem<S> sol) {
+	synchronized public void end(DProblem<S> sol) {
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
