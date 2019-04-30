@@ -101,7 +101,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	synchronized public void end(DProblem<S> sol) {
+	public void end(DProblem<S> sol) {
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
@@ -203,7 +203,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
 	
 	void launchBatch(boolean first) {
-		int size = 50;
+		int size = 20;
 		
 		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(size);
 
