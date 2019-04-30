@@ -125,6 +125,9 @@ public class PardinusSolver implements
 		assert options.temporal() || !options.unbounded();
 		assert options.unbounded() == options.solver().unbounded();
 		
+		if (options.unbounded() && !options.solver().unbounded())
+			throw new IllegalArgumentException("Cannot run complete with purely bounded solver.");
+			
 		if (options.decomposed()) {
 
 			if (options.temporal()) {
