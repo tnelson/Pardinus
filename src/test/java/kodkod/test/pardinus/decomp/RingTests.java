@@ -46,7 +46,7 @@ public class RingTests {
 
 		opt.setRunDecomposed(true);
 		opt.setSymmetryBreaking(20);
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.Glucose);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		opt.setThreads(4);
 		

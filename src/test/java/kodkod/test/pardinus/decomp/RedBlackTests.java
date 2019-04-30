@@ -51,7 +51,7 @@ public class RedBlackTests {
 		opt = new ExtendedOptions();
 		opt.setRunDecomposed(true);
 		opt.setSymmetryBreaking(20);
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.Glucose);
 		opt.setThreads(4);
 		opt2 = new ExtendedOptions(opt);
 		opt2.setRunTarget(false);
