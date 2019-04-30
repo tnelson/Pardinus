@@ -1,2 +1,6 @@
 language: java
+
+before_install:
+  - sudo apt-get install opam
+
 script: mvn clean package -DskipTests -P solvers
