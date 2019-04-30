@@ -2,7 +2,7 @@ language: java
 
 before_install:
   - sudo apt-get install opam
-  - opam init
+  - opam init -a --disable-sandboxing 
   - opam update
 
 script: mvn clean package -DskipTests -P solvers
