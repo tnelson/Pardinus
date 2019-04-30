@@ -5,6 +5,7 @@ before_install:
   - sudo chmod 755 /usr/bin/opam
   - opam init -a --disable-sandboxing 
   - opam update
+  - eval $(opam env)
   - echo $PATH
   - curl -L "http://nusmv.fbk.eu/distrib/NuSMV-2.6.0-zchaff-linux64.tar.gz" | tar --extract --gzip --strip-components=2 -C $HOME/bin "NuSMV-2.6.0-Linux/bin/NuSMV"
 
