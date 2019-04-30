@@ -203,7 +203,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
 	
 	void launchBatch(boolean first) {
-		int size = 20;
+		int size = 50;
 		
 		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(size);
 
