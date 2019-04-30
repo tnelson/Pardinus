@@ -1,4 +1,5 @@
 language: java
+<<<<<<< HEAD
 
 before_install:
   - sudo wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux -O /usr/bin/opam
