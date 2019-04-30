@@ -82,7 +82,7 @@ public class SymmetryTests {
 
 		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
-		opt.setSolver(SATFactory.Glucose);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
 		Reporter rep = new AbstractReporter() {

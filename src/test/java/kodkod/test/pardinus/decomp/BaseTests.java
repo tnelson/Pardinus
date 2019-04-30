@@ -66,7 +66,7 @@ public class BaseTests {
 
 	@Test
 	public void testSAT() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -106,7 +106,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATTrivialConfig() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -146,7 +146,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATTrivialRem() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -188,7 +188,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATTrivialSomeRem() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -228,7 +228,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSAT2() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 
@@ -270,7 +270,7 @@ public class BaseTests {
 	/*
 	@Test
 	public void testSATLen() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setMinTraceLength(10);
@@ -308,7 +308,7 @@ public class BaseTests {
 	
 	@Test
 	public void testUNSATLen() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setMaxTraceLength(1);
@@ -345,7 +345,7 @@ public class BaseTests {
 	
 	@Test
 	public void testUNSAT() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
@@ -454,7 +454,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid1() {
 		try {
-			opt.setSolver(SATFactory.MiniSat);
+			opt.setSolver(SATFactory.DefaultSAT4J);
 			opt.setRunTemporal(false);
 			opt.setRunUnbounded(false);
 			dsolver = new PardinusSolver(opt);
@@ -490,7 +490,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid5() {
 		try {
-			opt.setSolver(SATFactory.MiniSat);
+			opt.setSolver(SATFactory.DefaultSAT4J);
 			opt.setRunTemporal(false);
 			opt.setRunUnbounded(false);
 			opt.setMaxTraceLength(0);
@@ -550,7 +550,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid4() {
 		try {
-			opt.setSolver(SATFactory.MiniSat);
+			opt.setSolver(SATFactory.DefaultSAT4J);
 			opt.setRunTemporal(true);
 			opt.setRunUnbounded(true);
 			dsolver = new PardinusSolver(opt);
