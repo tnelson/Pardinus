@@ -345,12 +345,10 @@ final class SymmetryBreaker {
 				// [HASLab] the order of the variable lexer may not change
 				// from the config stage to the integrated stage, thus the
 				// integrated variables must be kept at the end.
-//				if (bounds instanceof DecompBounds) { // adding this condition breaks everything!
-					if (isConfigStage(o1.relation) && !isConfigStage(o2.relation))
-						return -1;
-					else if (isConfigStage(o2.relation) && !isConfigStage(o1.relation))
-						return 1;
-//				}
+				if (isConfigStage(o1.relation) && !isConfigStage(o2.relation))
+					return -1;
+				else if (isConfigStage(o2.relation) && !isConfigStage(o1.relation))
+					return 1;
 				final int acmp = o1.relation.arity() - o2.relation.arity();
 				return acmp!=0 ? acmp : String.valueOf(o1.relation.name()).compareTo(String.valueOf(o2.relation.name()));
 			}
@@ -539,7 +537,6 @@ final class SymmetryBreaker {
 	private final Formula breakTotalOrder(RelationPredicate.TotalOrdering total, boolean aggressive) {
 		final Relation first = total.first(), last = total.last(), ordered = total.ordered(), relation = total.relation();
 		final IntSet domain = bounds.upperBound(ordered).indexView();		
-	
 		// [HASLab] explorer, this avoids breaking the symmetry on total order relations whose bounds are not symmetric
 		// however, when exploring, these are already fixed from the fixed prefix and would not be identified as so
 		if (symmetricColumnPartitions(ordered)!=null && 

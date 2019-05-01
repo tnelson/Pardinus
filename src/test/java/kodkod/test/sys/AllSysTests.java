@@ -6,7 +6,8 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	ExamplesTestWithRegularSolver.class,
-	ExamplesTestWithIncrementalSolver.class})
+//	ExamplesTestWithRegularSolver.class,
+//	ExamplesTestWithIncrementalSolver.class
+})
 
 public class AllSysTests {}

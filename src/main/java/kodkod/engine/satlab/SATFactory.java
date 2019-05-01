@@ -226,28 +226,28 @@ public abstract class SATFactory {
 				null, true, opts);
 	}
 
-	/**
-	 * The factory that produces instances of the yices solver.
-	 */
-	// [HASLab]
-	public static final SATFactory Yices = new SATFactory() {
-		public SATSolver instance() {
-			return new Yices();
-		}
-		public String toString() { return "Yices"; }
-	};
-
-	/**
-	 * The factory that produces instances of the default PMax-SAT yices solver.
-	 */
-	// [HASLab]	
-	public static final SATFactory PMaxYices = new SATFactory() {
-		public SATSolver instance() {
-			return new PMaxYicesNative();
-		}
-		public boolean maxsat() { return true; }
-		public String toString() { return "PMaxYicesNative"; }
-	};
+//	/**
+//	 * The factory that produces instances of the yices solver.
+//	 */
+//	// [HASLab]
+//	public static final SATFactory Yices = new SATFactory() {
+//		public SATSolver instance() {
+//			return new Yices();
+//		}
+//		public String toString() { return "Yices"; }
+//	};
+//
+//	/**
+//	 * The factory that produces instances of the default PMax-SAT yices solver.
+//	 */
+//	// [HASLab]	
+//	public static final SATFactory PMaxYices = new SATFactory() {
+//		public SATSolver instance() {
+//			return new PMaxYicesNative();
+//		}
+//		public boolean maxsat() { return true; }
+//		public String toString() { return "PMaxYicesNative"; }
+//	};
 
 	/**
 	 * The factory that produces instances of the default PMax-SAT yices solver

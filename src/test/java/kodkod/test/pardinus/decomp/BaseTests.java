@@ -59,9 +59,9 @@ public class BaseTests {
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(false);
-		Reporter rep = new SLF4JReporter();
-		opt.setReporter(rep);
-		opt.configOptions().setReporter(rep);
+//		Reporter rep = new SLF4JReporter();
+//		opt.setReporter(rep);
+//		opt.configOptions().setReporter(rep);
 	}
 
 	@Test
@@ -97,7 +97,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 13; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -137,7 +137,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 15; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -181,7 +181,7 @@ public class BaseTests {
 			sb.append("** "+sol.instance().relationTuples().toString()+"\n");
 			assertTrue("base problem should be sat", sol.sat());
 		}
-		System.out.println(sb.toString());
+//		System.out.println(sb.toString());
 		sol = sols.next();
 		assertFalse("base problem should have 9 sols", sol.sat());
 	}
@@ -219,7 +219,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 9; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -259,7 +259,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 13; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -270,7 +270,7 @@ public class BaseTests {
 	/*
 	@Test
 	public void testSATLen() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setMinTraceLength(10);
@@ -308,7 +308,7 @@ public class BaseTests {
 	
 	@Test
 	public void testUNSATLen() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setMaxTraceLength(1);
@@ -345,7 +345,7 @@ public class BaseTests {
 	
 	@Test
 	public void testUNSAT() {
-		opt.setSolver(SATFactory.MiniSat);
+		opt.setSolver(SATFactory.DefaultSAT4J);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
@@ -454,7 +454,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid1() {
 		try {
-			opt.setSolver(SATFactory.MiniSat);
+			opt.setSolver(SATFactory.DefaultSAT4J);
 			opt.setRunTemporal(false);
 			opt.setRunUnbounded(false);
 			dsolver = new PardinusSolver(opt);
@@ -490,7 +490,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid5() {
 		try {
-			opt.setSolver(SATFactory.MiniSat);
+			opt.setSolver(SATFactory.DefaultSAT4J);
 			opt.setRunTemporal(false);
 			opt.setRunUnbounded(false);
 			opt.setMaxTraceLength(0);
@@ -550,7 +550,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid4() {
 		try {
-			opt.setSolver(SATFactory.MiniSat);
+			opt.setSolver(SATFactory.DefaultSAT4J);
 			opt.setRunTemporal(true);
 			opt.setRunUnbounded(true);
 			dsolver = new PardinusSolver(opt);

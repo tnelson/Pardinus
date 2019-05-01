@@ -34,6 +34,7 @@ import kodkod.engine.config.DecomposedOptions;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.PardinusOptions;
+import kodkod.engine.config.Reporter;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 
@@ -125,8 +126,13 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 			sol = executor.next();
 			executor.terminate();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			options.reporter().debug("Waiting for next interrupted.");
+			try {
+				executor.terminate();
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+//			e.printStackTrace();
 		}
 		return sol;
 	}
@@ -162,11 +168,13 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	
 	private static class DSolutionIterator<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> implements Iterator<Solution> {
 		private DProblemExecutor<S> executor;
-
+		private Reporter reporter;
+		
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
 		DSolutionIterator(Formula formula, PardinusBounds bounds, DecomposedOptions options, ExtendedSolver solver1, S solver2) {
+			reporter = options.reporter();
 			if (options.decomposedMode() == DMode.EXHAUSTIVE)
 				executor = new DStatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
 			else if (options.decomposedMode() == DMode.HYBRID)
@@ -191,8 +199,14 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 			try {
 				return executor.hasNext();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				reporter.debug("Waiting for next interrupted.");
+				try {
+					executor.terminate();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				// Should throw AbortedException
+//				e.printStackTrace();
 			}
 			return false;
 		}
@@ -209,14 +223,14 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 					throw new RuntimeException("Integrated solver failed.");
 				return sol;
 			} catch (InterruptedException e) {
+				reporter.debug("Waiting for next interrupted.");
 				try {
 					executor.terminate();
 				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				// Should throw AbortedException
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 			return null;
 		}

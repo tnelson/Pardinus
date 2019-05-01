@@ -233,7 +233,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		if (TemporalTranslator.isTemporal(relationPredicate))
 			// cannot simply expand since it would loose symmetry breaking
 			// return relationPredicate.toConstraints().always().accept(this);
-			throw new UnsupportedOperationException("Total orders over variable relations still no supported.");
+			throw new UnsupportedOperationException("Total orders over variable relations not supported.");
 		else
 			return relationPredicate;
 	}

@@ -27,6 +27,7 @@ import static kodkod.util.ints.Ints.unmodifiableSequence;
 
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -402,7 +403,7 @@ public class PardinusBounds extends Bounds {
 		if (integrated)
 			throw new IllegalArgumentException("Already integrated.");
 		if (amalgamated == null)
-			throw new IllegalArgumentException("Not decomposed bounds.");
+			throw new IllegalArgumentException("Decomposed solving requires decomposed bounds.");
 		if (!sol.sat())
 			throw new IllegalArgumentException("Can't integrate unsat.");
 		
@@ -564,13 +565,9 @@ public class PardinusBounds extends Bounds {
 		List<Formula> xtra = new ArrayList<Formula>();
 		
 		Set<Relation> rs = new HashSet<Relation>(relations_symb);
-		boolean isvar = false;
-		for (Relation r : rs) {
-			if (r.isVariable()) isvar = true;
+		for (Relation r : rs)
 			xtra.addAll(symbolic.resolve(r,reporter));
-		}
 		Formula res = NaryFormula.and(xtra);
-		if (isvar) res = res.always();
 		reporter.debug("Additional resolution formula: "+res);
 		return res;
 	}
@@ -809,12 +806,11 @@ public class PardinusBounds extends Bounds {
 		/**
 		 * Resolves a relation's symbolic bounds and all its dependencies. If no
 		 * symbolic bounds or already exact constant bounds, does nothing. If bounds are
-		 * not exact after resolution, additional constraints are created.
+		 * not exact after resolution, additional constraints are returned, including
+		 * all those of dependencies.
 		 * 
-		 * @param rel
-		 *            the relation whose bounds are to be resolved.
-		 * @param reporter
-		 *            a reporter
+		 * @param rel      the relation whose bounds are to be resolved.
+		 * @param reporter a reporter
 		 * @return the extra formulas if the bounds are not exact
 		 */
 		private List<Formula> resolve(Relation rel, Reporter reporter) {
@@ -867,11 +863,16 @@ public class PardinusBounds extends Bounds {
 				Formula x = rel.in(upperSymbBound(rel));
 				constr = constr==null?x:constr.and(x);
 			}
+			
 
 			relations_symb.remove(rel);
 			
-			if (constr != null)
+			if (constr != null) {
+				// if temporal constraint, quantify universally
+				if (TemporalTranslator.isTemporal(constr))
+					constr = constr.always();
 				constrs.add(constr);
+			}
 			
 			return constrs;
 		}
@@ -893,8 +894,9 @@ public class PardinusBounds extends Bounds {
 				us.put(compls.get(r), uppers.get(r));
 			us.putAll(dereif);
 			Instance i = new Instance(universe(), us, intBounds());
-			Evaluator eval = new Evaluator(i);
-			return eval.evaluate(bound);
+			TemporalInstance ti = new TemporalInstance(Arrays.asList(i), 0, 1);
+			Evaluator eval = new Evaluator(ti);
+			return eval.evaluate(bound,0);
 		}
 
 		/**
@@ -914,8 +916,9 @@ public class PardinusBounds extends Bounds {
 				us.put(compls.get(r), lowers.get(r));
 			us.putAll(dereif);
 			Instance i = new Instance(universe(), us, intBounds());
-			Evaluator eval = new Evaluator(i);
-			return eval.evaluate(e);
+			TemporalInstance ti = new TemporalInstance(Arrays.asList(i), 0, 1);
+			Evaluator eval = new Evaluator(ti);
+			return eval.evaluate(e,0);
 		}
 
 		/**

@@ -149,9 +149,8 @@ public class TemporalTranslator {
 		// [HASLab] if decomposed mode, the amalgamated bounds are always considered
 		if (options.decomposed() && bounds.amalgamated() != null)
 			symbForm = bounds.amalgamated().resolve(options.reporter());
-		// [HASLab] otherwise use regular bounds
-		else
-			symbForm = bounds.resolve(options.reporter());
+		// [HASLab] then use regular bounds
+		symbForm = symbForm.and(bounds.resolve(options.reporter()));
 
 		formula = formula.and(symbForm);
 		

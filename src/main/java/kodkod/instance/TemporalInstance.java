@@ -60,6 +60,7 @@ public class TemporalInstance extends Instance {
 	private final List<Instance> states;
 	/** The looping state. */
 	public final int loop;
+	private final Universe static_universe;
 
 	/**
 	 * Creates a new temporal instance from a sequence of states and a looping
@@ -88,10 +89,11 @@ public class TemporalInstance extends Instance {
 		
 		Map<Relation, TupleSet> expRels = stateIdomify(this.universe(), instances, loop);
 		for (Relation r : expRels.keySet())
-			this.add(r, expRels.get(r));
+			super.add(r, expRels.get(r));
 		for(IndexedEntry<TupleSet> entry : instances.get(0).intTuples())
-			this.add(entry.index(), universe().factory().setOf(entry.value().iterator().next().atom(0)));
+			super.add(entry.index(), universe().factory().setOf(entry.value().iterator().next().atom(0)));
 
+		this.static_universe = instances.get(0).universe();
 		this.states = instances;
 		this.loop = loop;
 	}
@@ -158,10 +160,10 @@ public class TemporalInstance extends Instance {
 		super(instance.universe(), new HashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
 		Evaluator eval = new Evaluator(this);
 		// evaluate last relation
-		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST,0).iterator().next();
+		Tuple tuple_last = eval.evaluate(TemporalTranslator.LAST).iterator().next();
 		int end = TemporalTranslator.interpretState(tuple_last);
 		// evaluate loop relation
-		TupleSet tupleset_loop = eval.evaluate(TemporalTranslator.LOOP,0);
+		TupleSet tupleset_loop = eval.evaluate(TemporalTranslator.LOOP);
 		if (!tupleset_loop.iterator().hasNext())
 			throw new IllegalArgumentException("Looping state must exist.");
 		Tuple tuple_loop = tupleset_loop.iterator().next();
@@ -169,7 +171,7 @@ public class TemporalInstance extends Instance {
 
 		states = new ArrayList<Instance>();
 		
-		Iterator<Tuple> tupleset_times = eval.evaluate(TemporalTranslator.STATE,0).iterator();
+		Iterator<Tuple> tupleset_times = eval.evaluate(TemporalTranslator.STATE).iterator();
 		Set<Object> atom_times = new HashSet<Object>();
 		while (tupleset_times.hasNext())
 			atom_times.add(tupleset_times.next().atom(0));
@@ -179,7 +181,7 @@ public class TemporalInstance extends Instance {
 		while (old_atoms.hasNext())
 			atoms.add(old_atoms.next());
 
-		Universe static_universe = new Universe(atoms);
+		static_universe = new Universe(atoms);
 		// for each state, create a new instance by evaluating relations at that state
 		for (int i = 0; i <= end; i++) {
 			Instance inst = new Instance(static_universe);
@@ -194,6 +196,11 @@ public class TemporalInstance extends Instance {
 				}
 				inst.add(r, ts);
 			}
+			
+			for(IndexedEntry<TupleSet> entry : extbounds.intBounds()) {
+				Tuple t = static_universe.factory().tuple(entry.value().iterator().next().atom(0));
+				inst.add(entry.index(), static_universe.factory().setOf(t));
+			}	
 			
 			states.add(inst);
 		}
@@ -355,6 +362,45 @@ public class TemporalInstance extends Instance {
 		int loopsize = prefixLength() - loop;
 		return i < prefixLength() ? i : (((i-prefixLength()) % loopsize) + loop);
 	}
+	
+	/**
+	 * Returns the static universe from which the tuples in the temporal instance
+	 * are drawn. Contrasts with {@link #universe()} that represents the expanded
+	 * version of the instance.
+	 * 
+	 * @return this.static_universe
+	 */
+	public Universe staticUniverse() {
+		return static_universe;
+	}
+	
+	/**
+	 * Maps the given relation to the given tuple set.  
+	 * @ensures this.tuples' = this.tuples ++ relation->s
+	 * @throws NullPointerException  relation = null || s = null
+	 * @throws IllegalArgumentException  relation.arity != s.arity
+	 * @throws IllegalArgumentException  s.universe != this.universe
+	 * @throws UnsupportedOperationException  this is an unmodifiable instance
+	 */
+	public void add(final Relation relation, TupleSet s) {
+		if (!s.universe().equals(universe()) && !s.universe().equals(staticUniverse()))
+			throw new IllegalArgumentException("s.universe!=this.universe");
+		if (relation.arity()!=s.arity())
+			throw new IllegalArgumentException("relation.arity!=s.arity");
+		
+		if (s.universe().equals(universe())) {
+			super.add(relation,s);
+			for (int i = 0; i < states.size(); i++) {
+				states.get(i).add(relation, TemporalBoundsExpander.convertToUniv(s, static_universe));
+			}
+		} else {
+			super.add(relation,TemporalBoundsExpander.convertToUniv(s, universe()));
+			for (int i = 0; i < states.size(); i++) {
+				states.get(i).add(relation, s);
+			}
+		}
+	}
+
 	
 	/**
 	 * {@inheritDoc}

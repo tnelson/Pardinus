@@ -96,9 +96,6 @@ public final class TemporalPardinusSolver
 	public TemporalPardinusSolver(ExtendedOptions options) {
 		if (options == null)
 			throw new NullPointerException();
-
-		assert !options.decomposed();
-
 		this.options = options;
 	}
 

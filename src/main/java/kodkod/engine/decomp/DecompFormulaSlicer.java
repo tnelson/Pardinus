@@ -72,17 +72,16 @@ public class DecompFormulaSlicer {
 	 *            variables.
 	 * @return two conjuncts of the formula according to the selected variables.
 	 */
-	public static Entry<Formula, Formula> slice(Formula formula,
-			PardinusBounds bounds) {
+	public static Entry<Formula, Formula> slice(Formula formula, PardinusBounds bounds) {
 		Set<Relation> partials = new HashSet<Relation>();
 		if (bounds.integrated()) {
 			for (Relation r : bounds.relations())
 				// new relation, probably from trivial iteration
 				if (!bounds.amalgamated.relations().contains(r)) {} 
-				// was partial, now solved, or was already constant
-				else if (bounds.amalgamated.lowerBound(r).size() != bounds.lowerBound(r).size()
-						|| bounds.amalgamated.upperBound(r).size() != bounds.upperBound(r).size()
-						|| bounds.amalgamated.upperBound(r).size() == bounds.amalgamated.lowerBound(r).size())
+				// still symbolic, not partial
+				else if (bounds.lowerSymbBound(r) != null) {} 
+				// if exactly bound, was part of the partial problem
+				else if (bounds.amalgamated.upperBound(r).size() == bounds.amalgamated.lowerBound(r).size())
 					partials.add(r);
 		} else {
 			// if not integrated, bounds are the partial
@@ -100,19 +99,8 @@ public class DecompFormulaSlicer {
 				&& ((BinaryFormula) form).op() == FormulaOperator.AND) {
 			Set<Relation> rsl = ((BinaryFormula) form).left().accept(col);
 			Set<Relation> rsr = ((BinaryFormula) form).right().accept(col);
-			if (partials.containsAll(rsl)) {
-				if (!partials.containsAll(rsr)) {
-					f2.add(((BinaryFormula) form).right());
-					f1.add(((BinaryFormula) form).left());
-				}
-			} else {
-				if (partials.containsAll(rsr)) {
-					f2.add(((BinaryFormula) form).left());
-					f1.add(((BinaryFormula) form).right());
-				} else {
-					f2.add(form);
-				}
-			}
+			(partials.containsAll(rsl)?f1:f2).add(((BinaryFormula) form).left());
+			(partials.containsAll(rsr)?f1:f2).add(((BinaryFormula) form).right());
 		} else if (form instanceof NaryFormula
 				&& ((NaryFormula) form).op() == FormulaOperator.AND) {
 			Iterator<Formula> it = ((NaryFormula) form).iterator();

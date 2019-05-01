@@ -32,6 +32,7 @@ import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
+import kodkod.engine.config.AbstractReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.config.Options;
@@ -49,7 +50,9 @@ import kodkod.util.ints.IntSet;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -69,15 +72,18 @@ public class UbdSymmetryTests {
 	private ExtendedOptions opt;
 	private Set<IntSet> last;
 
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
 	@Before
 	public void method() throws InterruptedException {
 
 		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
-		Reporter rep = new SLF4JReporter() {
+		Reporter rep = new AbstractReporter() {
 			private Bounds bounds;
 
 			@Override
@@ -124,16 +130,16 @@ public class UbdSymmetryTests {
 				{ VariantBounds.V4, VariantFormulas.V1, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, symmetric b2
 				{ VariantBounds.V5, VariantFormulas.V1, VariantOrder.V1 }, // unsat, p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
 				{ VariantBounds.V6, VariantFormulas.V1, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 trivial,     asymmetric b1, asymmetric b2
-				{ VariantBounds.V1, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
+//				{ VariantBounds.V1, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  symmetric b2
 				{ VariantBounds.V2, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, symmetric b1,  asymmetric b2
-				{ VariantBounds.V3, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
-				{ VariantBounds.V4, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+//				{ VariantBounds.V3, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
+//				{ VariantBounds.V4, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, symmetric b2
 				{ VariantBounds.V5, VariantFormulas.V2, VariantOrder.V1 }, // unsat, p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
 				{ VariantBounds.V6, VariantFormulas.V2, VariantOrder.V1 }, // sat,   p1 non-trivial, p2 non-trivial, asymmetric b1, asymmetric b2
 				{ VariantBounds.V1, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  symmetric b2
 				{ VariantBounds.V2, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, symmetric b1,  asymmetric b2
-				{ VariantBounds.V3, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
-				{ VariantBounds.V4, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+//				{ VariantBounds.V3, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
+//				{ VariantBounds.V4, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, symmetric b2
 				{ VariantBounds.V5, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
 				{ VariantBounds.V6, VariantFormulas.V3, VariantOrder.V1 }, // sat,   p1 trivial,     p2 non-trivial, asymmetric b1, asymmetric b2
 				{ VariantBounds.V1, VariantFormulas.V4, VariantOrder.V1 }, // sat,   p1 trivial,     p2 trivial,     symmetric b1,  symmetric b2
@@ -241,25 +247,26 @@ public class UbdSymmetryTests {
 		final Formula formula = model.partition1().and(model.partition2());
 		Iterator<Solution> sols;
 		
-		System.out.println("----- Solving decomposed -----");
+//		System.out.println("----- Solving decomposed -----");
 		sols = dsolver.solveAll(formula, bounds);
 		Solution sol;
 		int decomp_counter = 0;
 		while (sols.hasNext()) {
 			sol = sols.next();
 		
-			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
+//			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
 			if (sol.sat()) {
 				decomp_counter++;
-				System.out.println(sol.instance().relationTuples());
-			} else
-				System.out.println();
+//				System.out.println(sol.instance().relationTuples());
+			} else {
+//				System.out.println();
+			}
 		}
 		Set<IntSet> decomp_syms = last;
 		dsolver.free();
 		last = null;
 		
-		System.out.println("----- Solving in batch -----");
+//		System.out.println("----- Solving in batch -----");
 
 		opt.setRunDecomposed(false);
 		PardinusSolver solver = new PardinusSolver(opt);
@@ -267,12 +274,13 @@ public class UbdSymmetryTests {
 		mbounds.merge(model.bounds2());
 		sol = solver.solve(formula, mbounds);
 		int batch_counter = 0;
-		System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
+//		System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
 		if (sol.sat()) {
 			batch_counter++;
-			System.out.println(sol.instance().relationTuples());
-		} else
-			System.out.println();
+//			System.out.println(sol.instance().relationTuples());
+		} else {
+//			System.out.println();
+		}
 		Set<IntSet> batch_syms = last;
 		solver.free();
 		

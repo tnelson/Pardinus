@@ -3,6 +3,8 @@ Pardinus
 
 Pardinus is Kodkod's (slightly bulkier) Iberian cousin.
 
+<a href="https://travis-ci.org/haslab/Pardinus"><img align="right" alt="Build Status" src="https://travis-ci.org/haslab/Pardinus.svg?branch=master"/></a>
+
 This repository includes the source code for the Pardinus solver, an extension to the [Kodkod](http://alloy.mit.edu/kodkod/index.html) solver for relational logic. It extends Kodkod with the following functionalities:
 * Target-oriented and weighted-target oriented model finding
 * Model finding over (past and future) LTL relational formulas
@@ -50,6 +52,9 @@ point to the JDK 8 home directory.
 - Tiago Guimarães, HASLab, INESC TEC & Universidade do Minho, Portugal, 2013 - 2014
 
 ## History
+### Pardinus ([1.1.0](https://github.com/haslab/Pardinus/releases/tag/v1.1)) (April 2019)
+- Major [changes](https://github.com/haslab/Pardinus/pull/29) to the solving engine
+
 ### Pardinus ([1.0.0](https://github.com/haslab/Pardinus/releases/tag/v1.0)) (January 2018)
 <!--- FM,ABZ 18 submissions --->
 - Support for unbounded model finding in SMV through [Electrod](https://github.com/grayswandyr/electrod/releases/tag/0.1)
