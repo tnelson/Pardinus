@@ -253,11 +253,15 @@ public class Instance implements Cloneable {
 
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {
-			if (!reif.keySet().contains(universe().atom(i))) {
-				Relation r = Relation.atom(universe().atom(i).toString());
+			Relation r;
+			if (reif.keySet().contains(universe().atom(i)))
+				r = (Relation) reif.get(universe().atom(i));
+			else {
+				r = Relation.atom(universe().atom(i).toString());
 				reif.put(universe().atom(i), r);
-				bounds.boundExactly(r, bounds.universe().factory().setOf(universe().atom(i)));
 			}
+			if (!bounds.relations.contains(r))
+				bounds.boundExactly(r, bounds.universe().factory().setOf(universe().atom(i)));
 		}
 
 		// create an equality for every relation
@@ -265,7 +269,7 @@ public class Instance implements Cloneable {
 		List<Formula> res = new ArrayList<Formula>();
 		for (Relation rel : tuples.keySet()) {
 			// do not translate relations from reified from atoms
-			if (reif.values().contains(rel) || (relevants != null && !relevants.contains(rel)))
+			if (rel.isAtom())
 				continue;
 
 			TupleSet tset = tuples.get(rel);

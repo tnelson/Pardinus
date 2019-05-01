@@ -274,6 +274,7 @@ public final class TemporalPardinusSolver
 			this.current_trace = options.minTraceLength() - 1;
 			this.originalBounds = bounds;
 			this.originalFormula = formula;
+			this.reifs.putAll(originalBounds.reifs());
 
 			TemporalTranslator tmptrans = new TemporalTranslator(originalFormula, bounds, options);
 			Formula extformula = tmptrans.translate();

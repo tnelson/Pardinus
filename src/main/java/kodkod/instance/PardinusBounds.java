@@ -961,4 +961,8 @@ public class PardinusBounds extends Bounds {
 		}
 	}
 
+	public Map<Object, Relation> reifs() {
+		return symbolic.reif;
+	}
+
 }

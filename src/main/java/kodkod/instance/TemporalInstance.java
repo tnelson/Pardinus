@@ -229,16 +229,19 @@ public class TemporalInstance extends Instance {
 		// reify atoms not yet reified
 		Universe sta_uni = states.get(0).universe();
 		for (int i = 0; i < sta_uni.size(); i++) {
+			Expression r;
 			if (!reif.keySet().contains(sta_uni.atom(i))) {
-				Expression r;
 				if (SomeDisjPattern) {
 					r = Variable.unary(sta_uni.atom(i).toString());
 				} else {
 					r = Relation.atom(sta_uni.atom(i).toString());
-					bounds.boundExactly((Relation ) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 				}
 				reif.put(sta_uni.atom(i), r);
+			} else {
+				r = reif.get(sta_uni.atom(i));
 			}
+			if (!bounds.relations.contains((Relation) r) && !SomeDisjPattern)
+				bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 		}
 
 		// create the constraint for each state
