@@ -210,14 +210,14 @@ public class RingT extends DModel {
 			// (p.join(id)).in(p.join(toSend).join(t).difference(p.join(toSend).join(t.join(tord.transpose()))));
 			// {p: Process | (after { p.id in p.toSend }) and p.id not in
 			// p.toSend} }
-			c = (p.join(id)).in(p.join(toSend)).next().and(p.join(id).in(p.join(toSend)).not());/*
+			c = (p.join(id)).in(p.join(toSend)).after().and(p.join(id).in(p.join(toSend)).not());/*
 																								 * TEMPORAL
 																								 * OP
 																								 */
 		else
 			// c =
 			// p.in(p.join(toSend).join(t).difference(p.join(toSend).join(t.join(tord.transpose()))));
-			c = p.in(p.join(toSend)).next().and((p.in(p.join(toSend))).not());/*
+			c = p.in(p.join(toSend)).after().and((p.in(p.join(toSend))).not());/*
 																			 * TEMPORAL
 																			 * OP
 																			 */

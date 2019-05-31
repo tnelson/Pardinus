@@ -191,7 +191,7 @@ public class HotelT extends DModel {
 		Formula checkin = checkin(r, k, g);
 		Formula entry = entry(r, k, g);
 
-		Formula x394 = checkin.implies(entry.next());/* TEMPORAL OP */
+		Formula x394 = checkin.implies(entry.after());/* TEMPORAL OP */
 
 		return x394.forAll(g.oneOf(guest).and(r.oneOf(room)).and(k.oneOf(key))).always();/*
 																						 * TEMPORAL
@@ -400,7 +400,7 @@ public class HotelT extends DModel {
 			System.out.println(eval.evaluate(model.occupant, 7));
 			System.out.println(eval.evaluate(model.occupant, 8));
 			System.out.println(eval.evaluate(model.occupant, 9));
-			System.out.println(eval.evaluate((model.occupant.no()).next()));
+			System.out.println(eval.evaluate((model.occupant.no()).after()));
 		}
 		return;
 	}

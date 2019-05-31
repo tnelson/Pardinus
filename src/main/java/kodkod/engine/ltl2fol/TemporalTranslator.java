@@ -288,7 +288,7 @@ public class TemporalTranslator {
 			public Integer visit(UnaryTempFormula x) {
 				int n = 0;
 				if (x.op().equals(TemporalOperator.ONCE) || x.op().equals(TemporalOperator.HISTORICALLY)
-						|| x.op().equals(TemporalOperator.PREVIOUS))
+						|| x.op().equals(TemporalOperator.PREVIOUSLY))
 					n = 1;
 				int l = x.formula().accept(this);
 				return n + l;
@@ -336,7 +336,7 @@ public class TemporalTranslator {
 
 			public Integer visit(BinaryTempFormula x) {
 				int n = 0;
-				if (x.op().equals(TemporalOperator.SINCE) || x.op().equals(TemporalOperator.TRIGGER))
+				if (x.op().equals(TemporalOperator.SINCE) || x.op().equals(TemporalOperator.TRIGGERED))
 					n = 1;
 				int l = max(x.left().accept(this), x.right().accept(this));
 				return n + l;

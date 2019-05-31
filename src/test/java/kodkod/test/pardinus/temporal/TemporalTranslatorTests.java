@@ -46,7 +46,7 @@ public class TemporalTranslatorTests {
 	/* Declarations */
 	@Test
 	public final void test() {
-		Formula initial = (elected.eq(elected.prime()).not()).next();
+		Formula initial = (elected.eq(elected.prime()).not()).after();
 		Formula result = elected.getExpansion().join(FIRST.join(TRACE)).eq(elected.getExpansion().join(FIRST.join(TRACE).join(TRACE))).not();
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
 	}
@@ -130,7 +130,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_next() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.in(toSend.join(v)).and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).next();
+		Formula initial = v.in(toSend.join(v)).and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).after();
 		Formula result = (v.in(toSend.getExpansion().join(FIRST.join(TRACE)).join(v)).and(v.in(toSend.getExpansion().join(FIRST.join(TRACE)).join(v))).forAll(v.oneOf(Process)));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
 	}
@@ -182,7 +182,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_previous() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.in(toSend.join(v)).and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).previous();
+		Formula initial = v.in(toSend.join(v)).and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).previously();
 		Formula result = FIRST.join(PREFIX.transpose()).some().and(v.in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose())).join(v)).and(v.in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose())).join(v))).forAll(v.oneOf(Process)));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
 	}
@@ -200,7 +200,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_post_next_always() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.join(toSend.prime()).eq(v.join(toSend)).next().always();
+		Formula initial = v.join(toSend.prime()).eq(v.join(toSend)).after().always();
 		Variable t = Variable.unary("t0");
 		Formula result = ((v.join(toSend.getExpansion().join(t.join(TRACE).join(TRACE))).eq(v.join(toSend.getExpansion().join(t.join(TRACE))))).forAll(t.oneOf(FIRST.join(TRACE.reflexiveClosure()))));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
@@ -219,7 +219,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_post_next_eventually() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.join(toSend.prime()).eq(v.join(toSend).prime().prime()).next().eventually();
+		Formula initial = v.join(toSend.prime()).eq(v.join(toSend).prime().prime()).after().eventually();
 		Variable t = Variable.unary("t0");
 		Formula result = ((v.join(toSend.getExpansion().join(t.join(TRACE).join(TRACE))).eq(v.join(toSend.getExpansion().join(t.join(TRACE).join(TRACE).join(TRACE)))))).forSome(t.oneOf(FIRST.join(TRACE.reflexiveClosure())));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
@@ -227,7 +227,7 @@ public class TemporalTranslatorTests {
 	
 	@Test
 	public final void simple_post_next() {
-		Formula initial = toSend.prime().eq(toSend).next();
+		Formula initial = toSend.prime().eq(toSend).after();
 		Formula result = (toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE)).eq(toSend.getExpansion().join(FIRST.join(TRACE))));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
 	}
@@ -269,7 +269,7 @@ public class TemporalTranslatorTests {
 
 	@Test
 	public final void simple_release() {
-		Formula initial = Process.join(toSend).some().release(Process.join(toSend).lone());
+		Formula initial = Process.join(toSend).some().releases(Process.join(toSend).lone());
 		Variable t = Variable.unary("t1");
 		Variable t1 = Variable.unary("t2");
 		Variable t2 = Variable.unary("t0");
@@ -283,7 +283,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_release_post() {
 		Variable v = Variable.unary("p");
-		Formula initial = toSend.join(v).eq(toSend.join(v)).release(Process.join(toSend.prime()).lone()).forAll(v.oneOf(Process));
+		Formula initial = toSend.join(v).eq(toSend.join(v)).releases(Process.join(toSend.prime()).lone()).forAll(v.oneOf(Process));
 		Variable t = Variable.unary("t1");
 		Variable t1 = Variable.unary("t2");
 		Variable t2 = Variable.unary("t0");
@@ -339,7 +339,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_next_always() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.in(toSend.join(v)).next().and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).always();
+		Formula initial = v.in(toSend.join(v)).after().and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).always();
 		Variable t = Variable.unary("t0");
 		Formula result = (v.in(toSend.getExpansion().join(t.join(TRACE)).join(v)).and(v.in(toSend.getExpansion().join(t).join(v))).forAll(v.oneOf(Process)).forAll(t.oneOf(FIRST.join(TRACE.reflexiveClosure()))));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
@@ -348,7 +348,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_previous_always() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.in(toSend.join(v)).previous().and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).always();
+		Formula initial = v.in(toSend.join(v)).previously().and(v.in(toSend.join(v))).forAll(v.oneOf(Process)).always();
 		Variable t = Variable.unary("t0");
 		Formula result = ((t.join(PREFIX.transpose()).some().and(v.in(toSend.getExpansion().join(t.join(PREFIX.transpose())).join(v)))).and(v.in(toSend.getExpansion().join(t).join(v))).forAll(v.oneOf(Process)).forAll(t.oneOf(FIRST.join(TRACE.reflexiveClosure()))));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
@@ -357,7 +357,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_previous_always_eventually() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.in(toSend.join(v)).previous().and(v.in(toSend.join(v)).always().and(v.in(toSend.join(v)))).forAll(v.oneOf(Process)).eventually();
+		Formula initial = v.in(toSend.join(v)).previously().and(v.in(toSend.join(v)).always().and(v.in(toSend.join(v)))).forAll(v.oneOf(Process)).eventually();
 		Variable t = Variable.unary("t0");
 		Variable t1 = Variable.unary("t1");
 		Formula f1 = t.join(PREFIX.transpose()).some().and(v.in(toSend.getExpansion().join(t.join(PREFIX.transpose())).join(v)));
@@ -369,7 +369,7 @@ public class TemporalTranslatorTests {
 	@Test
 	public final void simple_next_eventually_eventually() {
 		Variable v = Variable.unary("p");
-		Formula initial = v.in(toSend.join(v)).next().and(v.in(toSend.join(v)).eventually().and(v.in(toSend.join(v)))).forAll(v.oneOf(Process)).eventually();
+		Formula initial = v.in(toSend.join(v)).after().and(v.in(toSend.join(v)).eventually().and(v.in(toSend.join(v)))).forAll(v.oneOf(Process)).eventually();
 		Variable t = Variable.unary("t0");
 		Variable t1 = Variable.unary("t1");
 		Formula f1 = (v.in(toSend.getExpansion().join(t.join(TRACE)).join(v)));
@@ -408,7 +408,7 @@ public class TemporalTranslatorTests {
 
 	@Test
 	public final void simple_release_always() {
-		Formula initial = Process.join(toSend).some().release(Process.join(toSend).lone()).always();
+		Formula initial = Process.join(toSend).some().releases(Process.join(toSend).lone()).always();
 		Variable t = Variable.unary("t2");
 		Variable t1 = Variable.unary("t3");
 		Variable t2 = Variable.unary("t1");
@@ -457,7 +457,7 @@ public class TemporalTranslatorTests {
 	
 	@Test
 	public final void nested_next() {
-		Formula initial = (toSend.in(toSend).next().next()).and(toSend.in(toSend).next()).next();
+		Formula initial = (toSend.in(toSend).after().after()).and(toSend.in(toSend).after()).after();
 		Formula f1 = (toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE).join(TRACE)).in(toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE).join(TRACE))));
 		Formula f2 = (toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE)).in(toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE))));
 		Formula result = (f1.and(f2));
@@ -466,7 +466,7 @@ public class TemporalTranslatorTests {
 	
 	@Test
 	public final void nested_next_prime() {
-		Formula initial = (toSend.in(toSend).next().next()).and(toSend.in(toSend.prime()).next()).next();
+		Formula initial = (toSend.in(toSend).after().after()).and(toSend.in(toSend.prime()).after()).after();
 		Formula f1 = ((toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE).join(TRACE)).in(toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE).join(TRACE)))));
 		Formula f2 = (toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE)).in(toSend.getExpansion().join(FIRST.join(TRACE).join(TRACE).join(TRACE))));
 		Formula result = (f1.and(f2));
@@ -475,7 +475,7 @@ public class TemporalTranslatorTests {
 	
 	@Test
 	public final void nested_previous() {
-		Formula initial = (toSend.in(toSend).previous().previous()).and(toSend.in(toSend).previous()).previous();
+		Formula initial = (toSend.in(toSend).previously().previously()).and(toSend.in(toSend).previously()).previously();
 		Formula f1 = FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).some().and(FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).join(PREFIX.transpose()).some().and(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).join(PREFIX.transpose())).in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).join(PREFIX.transpose())))));
 		Formula f2 = FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).some().and(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(PREFIX.transpose())).in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()))));
 		Formula result = FIRST.join(PREFIX.transpose()).some().and(f1.and(f2));		
@@ -484,7 +484,7 @@ public class TemporalTranslatorTests {
 	
 	@Test
 	public final void nested_previous_next() {
-		Formula initial = (toSend.in(toSend)).next().previous();
+		Formula initial = (toSend.in(toSend)).after().previously();
 		Formula f1 = (toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(TRACE)).in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(TRACE))));
 		Formula result = FIRST.join(PREFIX.transpose()).some().and(f1);		
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
@@ -492,7 +492,7 @@ public class TemporalTranslatorTests {
 	
 	@Test
 	public final void nested_previous_prime() {
-		Formula initial = (toSend.in(toSend.prime())).previous();
+		Formula initial = (toSend.in(toSend.prime())).previously();
 		Formula f1 = (toSend.getExpansion().join(FIRST.join(PREFIX.transpose())).in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(TRACE))));
 		Formula result = FIRST.join(PREFIX.transpose()).some().and(f1);		
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false)).child(1).toString());
@@ -500,7 +500,7 @@ public class TemporalTranslatorTests {
 	
 	@Test
 	public final void nested_previous_next_prime() {
-		Formula initial = ((toSend.prime().prime().in(toSend.prime()).next()).and((toSend.prime().prime().in(toSend.prime()).previous()))).previous();
+		Formula initial = ((toSend.prime().prime().in(toSend.prime()).after()).and((toSend.prime().prime().in(toSend.prime()).previously()))).previously();
 		Formula f1 = (toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(TRACE).join(TRACE).join(TRACE)).in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(TRACE).join(TRACE))));
 		Formula f2 = FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).some().and(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).join(TRACE).join(TRACE)).in(toSend.getExpansion().join(FIRST.join(PREFIX.transpose()).join(PREFIX.transpose()).join(TRACE))));
 		Formula result = FIRST.join(PREFIX.transpose()).some().and(f1.and(f2));		

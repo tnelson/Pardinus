@@ -77,7 +77,7 @@ public class ExplorationTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula formula = ((a.eq(a.prime()).not())).always().and(b.some().next()).and(b.no().always().eventually());
+		Formula formula = ((a.eq(a.prime()).not())).always().and(b.some().after()).and(b.no().always().eventually());
 
 		ExtendedOptions opt = new ExtendedOptions();
 
@@ -198,7 +198,7 @@ public class ExplorationTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula formula = ((a.eq(a.prime()).not())).always().and(b.some().next()).and(b.no().always().eventually());
+		Formula formula = ((a.eq(a.prime()).not())).always().and(b.some().after()).and(b.no().always().eventually());
 
 		ExtendedOptions opt = new ExtendedOptions();
 
@@ -273,7 +273,7 @@ public class ExplorationTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula formula = ((a.eq(a))).always().and(b.some().next()).and(b.no().always().eventually());
+		Formula formula = ((a.eq(a))).always().and(b.some().after()).and(b.no().always().eventually());
 
 		ExtendedOptions opt = new ExtendedOptions();
 
@@ -329,7 +329,7 @@ public class ExplorationTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula formula = ((a.eq(a))).always().and(b.some().next()).and(b.no().always().eventually());
+		Formula formula = ((a.eq(a))).always().and(b.some().after()).and(b.no().always().eventually());
 
 		ExtendedOptions opt = new ExtendedOptions();
 

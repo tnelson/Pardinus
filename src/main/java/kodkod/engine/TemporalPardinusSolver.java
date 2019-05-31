@@ -322,7 +322,7 @@ public final class TemporalPardinusSolver
 					Formula curr = prev.state(state).formulate(originalBounds, reifs, relevants).not();
 
 					for (int i = 0; i < state; i++)
-						curr = curr.next();
+						curr = curr.after();
 
 					f = explorations.get(state) == null ? Formula.TRUE : explorations.get(state);
 
@@ -382,7 +382,7 @@ public final class TemporalPardinusSolver
 				Formula curr = prev.state(state).formulate(originalBounds, reifs, relevants).not();
 				
 				for (int i = 0; i < state; i++)
-					curr = curr.next();
+					curr = curr.after();
 				
 				f = explorations.get(state) == null ? Formula.TRUE : explorations.get(state);
 
