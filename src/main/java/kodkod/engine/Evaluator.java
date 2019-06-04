@@ -190,7 +190,7 @@ public final class Evaluator {
 		if (!(instance instanceof TemporalInstance))
 			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
 		// temporal instances are always evaluated using the static expansion
-		Expression e1 = LTL2FOLTranslator.translate(expression, instant, false); 
+		Expression e1 = LTL2FOLTranslator.translate(expression, instant, instance.contains(TemporalTranslator.UNROLL_MAP)); 
 		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
 		TupleSet exttuple = instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 		// convert back into static universe, if available; will fail for initializing temporal instances

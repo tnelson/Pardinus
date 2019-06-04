@@ -207,10 +207,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	@Override
 	public Expression visit(ConstantExpression constant) {
+		Expression eu = STATE;
+		if (has_past) eu = UNROLL_MAP.join(STATE);
 		if (constant.equals(Expression.UNIV))
-			return constant.difference(UNROLL_MAP.join(STATE));
+			return constant.difference(eu);
 		else if (constant.equals(Expression.IDEN)) 
-			return constant.difference(UNROLL_MAP.join(STATE).product(UNROLL_MAP.join(STATE)));
+			return constant.difference(eu.product(eu));
 		else
 			return constant;
 	}
