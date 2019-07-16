@@ -22,8 +22,10 @@
  */
 package kodkod.engine.ltl2fol;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -110,12 +112,6 @@ public class TemporalTranslator {
 
 	public static final String STATE_SEP = "_";
 
-	/**
-	 * The constraint forcing the time trace to be infinite. Forces the loop to
-	 * exist.
-	 */
-//	public static final Formula INFINITE = LOOP.one();
-
 	public static final Expression START = L_FIRST.product(FIRST).union(L_FIRST.join(L_PREFIX.closure()).product(LOOP));
 
 	/** The original temporal formula. */
@@ -124,9 +120,9 @@ public class TemporalTranslator {
 	public final PardinusBounds bounds;
 	/** The past operator depth. */
 	public final int past_depth;
-//	/** Whether the formula has an "alaways" operator. */
-//	private boolean has_always;
 
+	public final Map<Formula,Formula> log = new HashMap<Formula,Formula>();
+	
 	/**
 	 * Constructs a new temporal translator to expand temporal formulas and variable
 	 * bounds.
@@ -192,7 +188,7 @@ public class TemporalTranslator {
 	 * @return the static version of the temporal formula.
 	 */
 	public Formula translate() {
-		return LTL2FOLTranslator.translate(formula, 0, past_depth > 1);
+		return LTL2FOLTranslator.translate(formula, 0, past_depth > 1, log);
 	}
 
 	/**

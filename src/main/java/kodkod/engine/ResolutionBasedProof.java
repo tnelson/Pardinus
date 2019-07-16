@@ -151,7 +151,7 @@ final class ResolutionBasedProof extends Proof {
 				// one of them in the core.
 				final TranslationRecord rec = itr.next();
 				if (seenUnits.add(rec.literal())) {
-					coreRoots.put(rec.translated(), rec.node());
+					coreRoots.put(log().temporalLog(rec.translated()), rec.node()); // [HASLab] get original temporal
 				}  
 			}
 			coreRoots = Collections.unmodifiableMap(coreRoots);

@@ -22,6 +22,8 @@
  */
 package kodkod.engine;
 
+import java.util.HashMap;
+
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
@@ -138,7 +140,7 @@ public final class Evaluator {
 		if (!(instance instanceof TemporalInstance))
 			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
 		// temporal instances are evaluated using the static expansion
-		formula = LTL2FOLTranslator.translate(formula, instant, false);
+		formula = LTL2FOLTranslator.translate(formula, instant, false, new HashMap<Formula,Formula>());
 		return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
 	

@@ -22,6 +22,7 @@
 package kodkod.engine.fol2sat;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.Formula;
@@ -42,6 +43,7 @@ import kodkod.instance.Bounds;
  * @author Emina Torlak
  */
 public abstract class TranslationLog {
+
 	TranslationLog() {}
 	
 	/**
@@ -101,6 +103,20 @@ public abstract class TranslationLog {
 	 */
 	public final Iterator<TranslationRecord> replay() {
 		return replay(RecordFilter.ALL);
+	}
+
+	// [HASLab] store the expansion of temporal formulas
+	private Map<Formula, Formula> tmpLog = null;
+
+	// [HASLab]
+	public void temporalLog(Map<Formula,Formula> tmpLog) {
+		this.tmpLog = tmpLog;
+	}
+
+	// [HASLab]
+	public Formula temporalLog(Formula form) {
+		if (tmpLog == null) return null;
+		return tmpLog.get(form);
 	}
 	
 //	/**
