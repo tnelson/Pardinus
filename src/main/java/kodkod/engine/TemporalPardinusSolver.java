@@ -141,7 +141,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 					traceLength++;
 					extbounds = tmptrans.expand(traceLength);
 					translation = Translator.translate(extformula, extbounds, options);
-					translation.log().logTempTranslation(tmptrans.log);
+					if (options.logTranslation() > 0)
+						translation.log().logTempTranslation(tmptrans.tempTransLog);
 				} while (translation.trivial() && traceLength <= options.maxTraceLength());
 
 				endTransl = System.currentTimeMillis();
@@ -284,7 +285,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 				current_trace++;
 				this.extbounds = tmptrans.expand(current_trace);
 				this.translation = Translator.translate(extformula, extbounds, options);
-				this.translation.log().logTempTranslation(tmptrans.log);
+				if (options.logTranslation() > 0)
+					this.translation.log().logTempTranslation(tmptrans.tempTransLog);
 			} while (this.translation.trivial() && current_trace <= options.maxTraceLength());
 
 			this.translTime = System.currentTimeMillis() - translTime;
@@ -360,7 +362,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 					Formula exp_reforms = tmptrans.translate();
 					long translStart = System.currentTimeMillis();
 					translation = Translator.translate(exp_reforms, extbounds, opt);
-					translation.log().logTempTranslation(tmptrans.log);
+					if (opt.logTranslation() > 0)
+						translation.log().logTempTranslation(tmptrans.tempTransLog);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
 					incremented = false;
@@ -556,7 +559,8 @@ public final class TemporalPardinusSolver implements KodkodSolver<PardinusBounds
 			extbounds = tmptrans.expand(1);
 			this.extformula = tmptrans.translate();
 			this.translation = Translator.translate(extformula, extbounds, options);
-			this.translation.log().logTempTranslation(tmptrans.log);
+			if (options.logTranslation() > 0)
+				this.translation.log().logTempTranslation(tmptrans.tempTransLog);
 			this.translTime = System.currentTimeMillis() - translTime;
 			this.opt = options;
 		}

@@ -120,8 +120,8 @@ public class TemporalTranslator {
 	public final PardinusBounds bounds;
 	/** The past operator depth. */
 	public final int past_depth;
-
-	public final Map<Formula,Formula> log = new HashMap<Formula,Formula>();
+	/** Map logging the translation of temporal formulas, from resulting formula to original one. **/
+	public final Map<Formula,Formula> tempTransLog = new HashMap<Formula,Formula>();
 	
 	/**
 	 * Constructs a new temporal translator to expand temporal formulas and variable
@@ -188,7 +188,7 @@ public class TemporalTranslator {
 	 * @return the static version of the temporal formula.
 	 */
 	public Formula translate() {
-		return LTL2FOLTranslator.translate(formula, 0, past_depth > 1, log);
+		return LTL2FOLTranslator.translate(formula, 0, past_depth > 1, tempTransLog);
 	}
 
 	/**

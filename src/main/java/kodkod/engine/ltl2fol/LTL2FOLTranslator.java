@@ -23,7 +23,6 @@
 package kodkod.engine.ltl2fol;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -107,11 +106,11 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 *            the LTL formula to be converted.
 	 * @param has_past
 	 *            whether the formula has past operators.
-	 * @param log
+	 * @param tempTransLog
 	 * 			  map logging the translation of top-level formulas.
 	 * @return the resulting FOL formula.
 	 */
-	public static Formula translate(Formula form, int state, boolean has_past, Map<Formula,Formula> log) {
+	public static Formula translate(Formula form, int state, boolean has_past, Map<Formula,Formula> tempTransLog) {
 		LTL2FOLTranslator translator = new LTL2FOLTranslator(has_past);
 
 		Formula f;
@@ -149,7 +148,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 		// log translation of top-level formulas
 		for (Formula fs : Nodes.roots(form)) {
-			log.put(fs.accept(translator), fs);
+			tempTransLog.put(fs.accept(translator), fs);
 		}
 		
 		Formula hack = Formula.TRUE;
@@ -159,7 +158,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 				hack = hack.and(r.join(LOOP.join(PREFIX.transpose())).eq(r.join(LAST)));
 		}
 		
-		return Formula.and(f,Formula.and(log.keySet()),hack);
+		return Formula.and(f,Formula.and(tempTransLog.keySet()),hack);
 	}
 
 	/**
