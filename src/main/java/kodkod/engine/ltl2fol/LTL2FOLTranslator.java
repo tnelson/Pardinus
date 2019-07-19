@@ -25,6 +25,7 @@ package kodkod.engine.ltl2fol;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.BinaryTempFormula;
@@ -40,6 +41,8 @@ import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractReplacer;
+import kodkod.util.nodes.Nodes;
+
 import static kodkod.engine.ltl2fol.TemporalTranslator.L_FIRST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.L_LAST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.L_PREFIX;
@@ -103,9 +106,11 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 *            the LTL formula to be converted.
 	 * @param has_past
 	 *            whether the formula has past operators.
+	 * @param tempTransLog
+	 * 			  map logging the translation of top-level formulas.
 	 * @return the resulting FOL formula.
 	 */
-	public static Formula translate(Formula form, int state, boolean has_past) {
+	public static Formula translate(Formula form, int state, boolean has_past, Map<Formula,Formula> tempTransLog) {
 		LTL2FOLTranslator translator = new LTL2FOLTranslator(has_past);
 
 		Formula f;
@@ -141,7 +146,10 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		translator.pushLevel();
 		translator.pushVariable(state);
 
-		Formula result = form.accept(translator);
+		// log translation of top-level formulas
+		for (Formula fs : Nodes.roots(form)) {
+			tempTransLog.put(fs.accept(translator), fs);
+		}
 		
 		Formula hack = Formula.TRUE;
 		if (!TemporalTranslator.ExplicitUnrolls) {
@@ -150,7 +158,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 				hack = hack.and(r.join(LOOP.join(PREFIX.transpose())).eq(r.join(LAST)));
 		}
 		
-		return Formula.and(f,result,hack);
+		return Formula.and(f,Formula.and(tempTransLog.keySet()),hack);
 	}
 
 	/**
@@ -207,10 +215,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	@Override
 	public Expression visit(ConstantExpression constant) {
+		Expression eu = STATE;
+		if (has_past) eu = UNROLL_MAP.join(STATE);
 		if (constant.equals(Expression.UNIV))
-			return constant.difference(STATE);
+			return constant.difference(eu);
 		else if (constant.equals(Expression.IDEN)) 
-			return constant.difference(STATE.product(STATE));
+			return constant.difference(eu.product(eu));
 		else
 			return constant;
 	}

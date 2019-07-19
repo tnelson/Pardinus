@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
@@ -142,7 +143,7 @@ public class PastUnrollingTests {
 		// force wrong unrolls
 		tt = NNFReplacer.nnf(tt);
 		Bounds bb = TemporalBoundsExpander.expand(b, n, 1);
-		Formula ff = LTL2FOLTranslator.translate(tt, 0, false);
+		Formula ff = LTL2FOLTranslator.translate(tt, 0, false, new HashMap<Formula,Formula>());
 
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
@@ -208,7 +209,7 @@ public class PastUnrollingTests {
 		// force wrong unrolls
 		tt = NNFReplacer.nnf(tt);
 		Bounds bb = TemporalBoundsExpander.expand(b, n, 2);
-		Formula ff = LTL2FOLTranslator.translate(tt, 0, true);
+		Formula ff = LTL2FOLTranslator.translate(tt, 0, true, new HashMap<Formula,Formula>());
 
 		ExtendedOptions options = new ExtendedOptions();
 		Solver solver = new Solver(options);
