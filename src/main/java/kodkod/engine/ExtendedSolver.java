@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
@@ -92,7 +93,8 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
 	 * @author Emina Torlak
 	 */
-	public final static class SolutionIterator implements Iterator<Solution> {
+	// [HASLab]
+	public final static class SolutionIterator implements Explorer<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
@@ -300,11 +302,29 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 			this.weights = weights;
 			return next();
 		}
+
+		// [HASLab]
+		@Override
+		public Solution branch(int state, Set<Relation> ignore, boolean exclude) {
+			throw new UnsupportedOperationException("No branching on regular Kodkod.");
+		}
+
+		// [HASLab]
+		@Override
+		public Solution branch(int state, Map<Relation, TupleSet> upper, boolean exclude) {
+			throw new UnsupportedOperationException("No branching on regular Kodkod.");
+		}
+
+		// [HASLab]
+		@Override
+		public boolean hasBranch(int state, Map<Relation, TupleSet> upper) {
+			throw new UnsupportedOperationException("No branching on regular Kodkod.");
+		}
 	}	
 	
 	// [HASLab]
 	@Override
-	protected Iterator<Solution> iterator(Formula formula, Bounds bounds, Options options) {
+	protected Explorer<Solution> iterator(Formula formula, Bounds bounds, Options options) {
 		return new SolutionIterator(formula, bounds, options());
 	}
 		

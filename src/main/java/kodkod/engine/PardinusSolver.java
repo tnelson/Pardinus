@@ -187,7 +187,9 @@ public class PardinusSolver implements
 //		if (!(this.solver instanceof IterableSolver))
 //			throw new UnsupportedOperationException();
 
-		return ((TemporalSolver<ExtendedOptions>) solver).solveAll(formula, bounds);				
+		if (solver instanceof TemporalSolver)
+			return ((TemporalSolver) solver).solveAll(formula, bounds);	
+		else return  (Explorer<Solution>) ((ExtendedSolver) solver).solveAll(formula, bounds);	
 	}
 
 }

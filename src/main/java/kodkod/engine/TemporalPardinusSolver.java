@@ -492,6 +492,10 @@ public final class TemporalPardinusSolver
 		 * @see java.util.Iterator#next()
 		 */
 		public Solution next() {
+			if (!explorations.isEmpty()) { // [HASLab]
+				this.current_trace = opt.minTraceLength();
+				explorations.clear();
+			}
 			if (!hasNext())
 				throw new NoSuchElementException();
 			try {
@@ -532,7 +536,7 @@ public final class TemporalPardinusSolver
 					if (!SATOPTITERATION) {
 						// this must not be done before incrementing because the new bounds
 						// would be inconsistent with the then extended formula
-						// NOTE: this comment seems deprecated, push to outside loop and test
+						// NOTE: this comment seems deprecated, push to outside loop and test	
 						for (Instance i : previousSols)
 							reforms = reforms.and(i.formulate(originalBounds, reifs, originalFormula).not());
 						opt.reporter().debug(reforms + "");
