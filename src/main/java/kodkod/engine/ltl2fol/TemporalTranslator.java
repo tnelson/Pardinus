@@ -247,7 +247,7 @@ public class TemporalTranslator {
 	}
 
 	/** Count the depth of past operators of the given AST tree. */
-	private static int countHeight(Node node) {
+	public static int countHeight(Node node) {
 		ReturnVisitor<Integer, Integer, Integer, Integer> vis = new ReturnVisitor<Integer, Integer, Integer, Integer>() {
 			private int max(int a, int b) {
 				return (a >= b) ? a : b;

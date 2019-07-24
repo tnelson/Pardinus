@@ -23,6 +23,7 @@
 package kodkod.instance;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import kodkod.engine.Evaluator;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.util.ints.IndexedEntry;
+import kodkod.util.ints.Ints;
 
 /**
  * Represents a temporal instance of a temporal relational problem containing
@@ -60,6 +62,8 @@ public class TemporalInstance extends Instance {
 	private final List<Instance> states;
 	/** The looping state. */
 	public final int loop;
+	/** The looping state. */
+	public final int unrolls;
 	private final Universe static_universe;
 
 	/**
@@ -87,7 +91,7 @@ public class TemporalInstance extends Instance {
 		if (loop < 0 || loop >= instances.size())
 			throw new IllegalArgumentException("Looping state must be between 0 and instances.length.");
 		
-		Map<Relation, TupleSet> expRels = stateIdomify(this.universe(), instances, loop);
+		Map<Relation, TupleSet> expRels = stateIdomify(this.universe(), instances, loop, unrolls);
 		for (Relation r : expRels.keySet())
 			super.add(r, expRels.get(r));
 		for(IndexedEntry<TupleSet> entry : instances.get(0).intTuples())
@@ -96,6 +100,7 @@ public class TemporalInstance extends Instance {
 		this.static_universe = instances.get(0).universe();
 		this.states = instances;
 		this.loop = loop;
+		this.unrolls = unrolls;
 	}
 
 	/**
@@ -106,7 +111,7 @@ public class TemporalInstance extends Instance {
 	 *            the sequence of instances representing a trace
 	 * @return the trace represented in a state idiom
 	 */
-	private static Map<Relation, TupleSet> stateIdomify(Universe u, List<Instance> instances, int loop) {
+	private static Map<Relation, TupleSet> stateIdomify(Universe u, List<Instance> instances, int loop, int unrolls) {
 		assert(loop >= 0 && loop < instances.size());
 		// first instances.size() atoms will be the state atoms
 		Map<Relation, TupleSet> instance = new HashMap<Relation, TupleSet>();
@@ -128,14 +133,32 @@ public class TemporalInstance extends Instance {
 				}
 				instance.put(r, ts);
 			}
-		instance.put(TemporalTranslator.LAST, u.factory().setOf(u.atom(instances.size() - 1)));
+		instance.put(TemporalTranslator.LAST, u.factory().setOf(u.atom(instances.size()*unrolls - 1)));
 		instance.put(TemporalTranslator.FIRST, u.factory().setOf(u.atom(0)));
-		instance.put(TemporalTranslator.LOOP, u.factory().setOf(u.atom(loop)));
-		instance.put(TemporalTranslator.STATE,
-				u.factory().range(u.factory().tuple(u.atom(0)), u.factory().tuple(u.atom(instances.size() - 1))));
+		instance.put(TemporalTranslator.LOOP, u.factory().setOf(u.atom(instances.size()*(unrolls-1)+loop)));
+		TupleSet x = u.factory().range(u.factory().tuple(u.atom(0)), u.factory().tuple(u.atom(instances.size() - 1)));
+		for (int i = 1; i < unrolls; i++) {
+			x.addAll(u.factory().range(u.factory().tuple(u.atom(i*instances.size()+loop)), u.factory().tuple(u.atom((i+1)*instances.size()-1))));
+		}
+		instance.put(TemporalTranslator.STATE,x);
+		if (unrolls > 1) { // otherwise no need for unrolls
+			TupleSet unrollMap = u.factory().noneOf(2);
+			for (int i = 0; i < instances.size(); i++) {
+				for (int j = 0; j < unrolls; j++)
+					unrollMap.add(u.factory().tuple(u.atom(i+j*instances.size()),u.atom(i)));
+			}
+			instance.put(TemporalTranslator.UNROLL_MAP, unrollMap);
+			instance.put(TemporalTranslator.LAST_, u.factory().setOf(u.atom(instances.size() - 1)));
+		}
+
 		TupleSet nxt = u.factory().noneOf(2);
 		for (int i = 0; i < instances.size() - 1; i++)
 			nxt.add(u.factory().tuple(u.atom(i), u.atom(i + 1)));
+		for (int j = 1; j < unrolls; j++) {
+			nxt.add(u.factory().tuple(u.atom(j*instances.size()-1),u.atom(j*instances.size()+loop)));
+			for (int i = loop; i < instances.size()-1; i++)
+				nxt.add(u.factory().tuple(u.atom(j*instances.size()+i),u.atom(j*instances.size()+i+1)));
+		}
 		instance.put(TemporalTranslator.PREFIX, nxt);
 		return instance;
 	}
@@ -168,7 +191,7 @@ public class TemporalInstance extends Instance {
 			throw new IllegalArgumentException("Looping state must exist.");
 		Tuple tuple_loop = tupleset_loop.iterator().next();
 		loop = TemporalTranslator.interpretState(tuple_loop);
-
+		unrolls = TemporalTranslator.interpretUnroll(tuple_loop);
 		states = new ArrayList<Instance>();
 		
 		Iterator<Tuple> tupleset_times = eval.evaluate(TemporalTranslator.STATE).iterator();
@@ -425,4 +448,12 @@ public class TemporalInstance extends Instance {
 		return sb.toString();
 	}
 
+	
+	/**
+	 * Returns an unmodifiable view of this instance.
+	 * @return an unmodifiable view of this instance.
+	 */
+	public TemporalInstance unmodifiableView() {
+		return new TemporalInstance(Collections.unmodifiableList(states), loop, unrolls);
+	}
 }
