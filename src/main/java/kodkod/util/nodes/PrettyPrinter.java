@@ -342,7 +342,10 @@ public final class PrettyPrinter {
 		// [HASLab]
 		public void visit(UnaryTempFormula node) { 
 			keyword(node.op());
+			final boolean pchild = parenthesize(node.formula());
+			indent += pchild ? 2 : 1;
 			visitChild(node.formula(), parenthesize(node.op(), node.formula()));
+			indent -= pchild ? 2 : 1;
 		}
 		
 		/** @ensures appends the given op and child to this.tokens; the child is 
