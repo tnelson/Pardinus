@@ -249,6 +249,8 @@ public class Instance implements Cloneable {
 	// [HASLab]
 	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
 
+		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
+
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {
 			Relation r;
@@ -267,7 +269,7 @@ public class Instance implements Cloneable {
 		List<Formula> res = new ArrayList<Formula>();
 		for (Relation rel : tuples.keySet()) {
 			// do not translate relations from reified from atoms
-			if (rel.isAtom())
+			if (rel.isAtom() || (relevants != null && !relevants.contains(rel)))
 				continue;
 
 			TupleSet tset = tuples.get(rel);

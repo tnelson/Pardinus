@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import kodkod.ast.Decls;
@@ -37,6 +38,7 @@ import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.Evaluator;
+import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.util.ints.IndexedEntry;
@@ -267,53 +269,62 @@ public class TemporalInstance extends Instance {
 				bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 		}
 
+		Set<Relation> stats = new HashSet<Relation>();
+		for (Relation r : states.get(0).relations())
+			if (!r.isVariable())
+				stats.add(r);
+		Entry<Formula, Formula> slcs = DecompFormulaSlicer.slice(formula,stats);
+		
 		// create the constraint for each state
 		// S0 and after (S1 and after ...)
 		Formula res;
 		if (states.isEmpty())
 			res = Formula.TRUE;
-		else
-			res = states.get(prefixLength() - 1).formulate(bounds,reif,formula);
+		else {
+			res = states.get(prefixLength() - 1).formulate(bounds,reif,slcs.getValue());
 
-		for (int i = prefixLength() - 2; i >= 0; i--)
-			res = states.get(i).formulate(bounds,reif,formula).and(res.after());
-
-		// create the looping constraint
-		// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
-		// after^(end-loop) Sloop+1 && ...)
-		Formula rei = states.get(loop).formulate(bounds,reif,formula);
-		Formula rei2 = rei;
-		for (int j = loop; j < prefixLength(); j++)
-			rei2 = rei2.after();
-
-		Formula looping = rei.implies(rei2);
-		for (int i = loop + 1; i < prefixLength(); i++) {
-			rei = states.get(i).formulate(bounds,reif,formula);
-			rei2 = rei;
+			for (int i = prefixLength() - 2; i >= 0; i--)
+				res = states.get(i).formulate(bounds,reif,slcs.getValue()).and(res.after());
+	
+			res = states.get(prefixLength() - 1).formulate(bounds,reif,slcs.getKey()).and(res);
+			
+			// create the looping constraint
+			// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
+			// after^(end-loop) Sloop+1 && ...)
+			Formula rei = states.get(loop).formulate(bounds,reif,slcs.getValue());
+			Formula rei2 = rei;
 			for (int j = loop; j < prefixLength(); j++)
 				rei2 = rei2.after();
-			looping = looping.and(rei.implies(rei2));
-		}
-		looping = looping.always();
-		for (int i = 0; i < loop; i++)
-			looping = looping.after();
-
-		res = res.and(looping);
-
-		if (SomeDisjPattern) {
-			Decls decls = null;
-			Expression al = null;
-			for (Expression e : reif.values()) {
-				if (decls == null) {
-					al = e;
-					decls = ((Variable) e).oneOf(Expression.UNIV);
-				} else {
-					al = al.union(e);
-					decls = decls.and(((Variable) e).oneOf(Expression.UNIV));
-				}
+	
+			Formula looping = rei.implies(rei2);
+			for (int i = loop + 1; i < prefixLength(); i++) {
+				rei = states.get(i).formulate(bounds,reif,slcs.getValue());
+				rei2 = rei;
+				for (int j = loop; j < prefixLength(); j++)
+					rei2 = rei2.after();
+				looping = looping.and(rei.implies(rei2));
 			}
-			res = (al.eq(Expression.UNIV)).and(res);
-			res = res.forSome(decls);
+			looping = looping.always();
+			for (int i = 0; i < loop; i++)
+				looping = looping.after();
+	
+			res = res.and(looping);
+	
+			if (SomeDisjPattern) {
+				Decls decls = null;
+				Expression al = null;
+				for (Expression e : reif.values()) {
+					if (decls == null) {
+						al = e;
+						decls = ((Variable) e).oneOf(Expression.UNIV);
+					} else {
+						al = al.union(e);
+						decls = decls.and(((Variable) e).oneOf(Expression.UNIV));
+					}
+				}
+				res = (al.eq(Expression.UNIV)).and(res);
+				res = res.forSome(decls);
+			}
 		}
 
 		return res;
