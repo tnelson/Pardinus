@@ -161,23 +161,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 * {@inheritDoc}
 		 */
 		@Override
-		public Solution branch(int state, Set<Relation> ignore, boolean exclude) {
-			throw new UnsupportedOperationException("Branching solutions not currently supported.");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public Solution branch(int state, Map<Relation,TupleSet> upper, boolean exclude) {
-			throw new UnsupportedOperationException("Branching solutions not currently supported.");
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public boolean hasBranch(int state, Map<Relation, TupleSet> upper) {
+		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
 			throw new UnsupportedOperationException("Branching solutions not currently supported.");
 		}
 

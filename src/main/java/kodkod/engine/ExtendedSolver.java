@@ -305,19 +305,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 
 		// [HASLab]
 		@Override
-		public Solution branch(int state, Set<Relation> ignore, boolean exclude) {
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-
-		// [HASLab]
-		@Override
-		public Solution branch(int state, Map<Relation, TupleSet> upper, boolean exclude) {
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-
-		// [HASLab]
-		@Override
-		public boolean hasBranch(int state, Map<Relation, TupleSet> upper) {
+		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
 			throw new UnsupportedOperationException("No branching on regular Kodkod.");
 		}
 	}	

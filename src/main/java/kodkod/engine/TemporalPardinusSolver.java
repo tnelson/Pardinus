@@ -294,96 +294,22 @@ public final class TemporalPardinusSolver
 		}
 
 		private Map<Integer, Formula> explorations = new HashMap<Integer, Formula>();
-		private Map<Map<Relation, TupleSet>, Solution> cached_branches = new HashMap<Map<Relation, TupleSet>, Solution>();
-		private int cached_length = -1;
 
 		/**
 		 * {@inheritDoc}
 		 */
 		// [HASLab] explorer
-		// TODO: cache for different states
-		public Solution branch(int state, Map<Relation, TupleSet> upper, boolean exclude) {
-			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
-			
-			// currently only caching for a single state
-			if (state != cached_length) {
-				cached_branches.clear();
-				cached_length = -1;
-			}
-
-			Solution sol;
-			if (cached_branches.containsKey(upper))
-				sol = cached_branches.get(upper);
-			else {
-				Formula f = Formula.TRUE;
-
-				if (exclude) {
-					TemporalInstance prev = previousSols.get(previousSols.size() - 1);
-
-					Formula relevants = Formula.TRUE;
-					for (Relation r : prev.state(state).relations())
-						relevants = relevants.and(r.eq(r));
-					Formula curr = prev.state(state).formulate(originalBounds, reifs, relevants).not();
-
-					for (int i = 0; i < state; i++)
-						curr = curr.after();
-
-					f = explorations.get(state) == null ? Formula.TRUE : explorations.get(state);
-
-					explorations.put(state, f.and(curr));
-				}
-
-				sol = branchCore(state + 1, f, upper);
-			}
-
-			// store the reformulated instance
-			if (sol.sat())
-				previousSols.add((TemporalInstance) sol.instance());
-			else
-				translation = null; // unsat, no more solutions
-			return sol;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		// [HASLab] explorer
-		public boolean hasBranch(int state, Map<Relation, TupleSet> upper) {
-
-			// currently only caching for a single state
-			if (state != cached_length) {
-				cached_branches.clear();
-				cached_length = state;
-			} else if (cached_branches.containsKey(upper))
-				return true;
-
-			Formula f = Formula.TRUE;
-			Solution sol = branchCore(state + 1, f, upper);
-			if (sol.sat())
-				cached_branches.put(upper, sol);
-
-			return sol.sat();
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		// [HASLab] explorer
-		public Solution branch(int state, Set<Relation> ignore, boolean exclude) {
-			// currently only caching for #branch(int,Map,exclude)
-			cached_branches.clear();
-
-			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
+		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
 
 			Formula f = Formula.TRUE;
 			if (exclude) {
 				TemporalInstance prev = previousSols.get(previousSols.size() - 1);
 				
 				Formula relevants = Formula.TRUE;
-				for (Relation r : prev.state(state).relations())
+				for (Relation r : prev.state(state<0?0:state).relations())
 					if (!ignore.contains(r))
 						relevants = relevants.and(r.eq(r));
-				Formula curr = prev.state(state).formulate(originalBounds, reifs, relevants).not();
+				Formula curr = prev.state(state<0?0:state).formulate(originalBounds, reifs, relevants).not();
 				
 				for (int i = 0; i < state; i++)
 					curr = curr.after();
@@ -395,10 +321,12 @@ public final class TemporalPardinusSolver
 				f = f.and(curr); // this differs from #branch(int,Map,exclude)
 			}
 
-			Solution sol = branchCore(state, f, new HashMap<Relation, TupleSet>());
+			Solution sol = branchCore(state, f, upper);
 			// store the reformulated instance
-			if (sol.sat())
+			if (sol.sat()) {
 				previousSols.add((TemporalInstance) sol.instance());
+				explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
+			}
 			else
 				translation = null; // unsat, no more solutions
 
@@ -423,7 +351,7 @@ public final class TemporalPardinusSolver
 			this.translTime = System.currentTimeMillis();
 
 			// if >0, maybe will not increase, but 0 always increases
-			current_trace = state == 0 ? 1 : state;
+			current_trace = state <= 0 ? 1 : state;
 			incremented = true;
 
 			boolean isSat = false;
@@ -439,7 +367,7 @@ public final class TemporalPardinusSolver
 				// (possible in the action scenario)
 				TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(form), originalBounds, opt);
 				extbounds = tmptrans.expand(current_trace);
-				TemporalBoundsExpander.extend(originalBounds, extbounds, state, current_trace, prev, upper);
+				TemporalBoundsExpander.extend(originalBounds, extbounds, state<0?0:state, current_trace, prev, upper);
 				Formula exp_reforms = tmptrans.translate();
 				long translStart = System.currentTimeMillis();
 				translation = Translator.translate(exp_reforms, extbounds, opt);
@@ -960,17 +888,7 @@ public final class TemporalPardinusSolver
 		}
 
 		@Override
-		public Solution branch(int state, Set<Relation> ignore, boolean exclude) {
-			throw new UnsupportedOperationException("Branching solutions not currently supported.");
-		}
-
-		@Override
-		public Solution branch(int state, Map<Relation, TupleSet> upper, boolean exclude) {
-			throw new UnsupportedOperationException("Branching solutions not currently supported.");
-		}
-
-		@Override
-		public boolean hasBranch(int state, Map<Relation, TupleSet> upper) {
+		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> upper, boolean exclude) {
 			throw new UnsupportedOperationException("Branching solutions not currently supported.");
 		}
 
