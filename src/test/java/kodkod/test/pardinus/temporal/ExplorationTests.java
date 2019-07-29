@@ -301,7 +301,7 @@ public class ExplorationTests {
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(5).toString());
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(7).toString());
 
-		sol = sols.branch(4,Collections.singletonMap(b, bs),true);
+		sol = sols.branch(4,Collections.emptySet(), Collections.singletonMap(b, bs),true);
 		System.out.println(sol.instance());
 		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
 
@@ -348,67 +348,67 @@ public class ExplorationTests {
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		// expand beyond prefix size, unrolls but must still expand
-		sol = sols.branch(3, new HashSet<Relation>(),true);
+		sol = sols.branch(3, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>(),true);
+		sol = sols.branch(3, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>(),true);
+		sol = sols.branch(3, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>(),true);
+		sol = sols.branch(3, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(5, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(3, new HashSet<Relation>(),true);
+		sol = sols.branch(3, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertFalse(sol.sat());
 
-		sol = sols.branch(1, new HashSet<Relation>(),true);
+		sol = sols.branch(1, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(2, new HashSet<Relation>(),true);
+		sol = sols.branch(2, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
-		sol = sols.branch(0, new HashSet<Relation>(),true);
+		sol = sols.branch(0, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());
 
