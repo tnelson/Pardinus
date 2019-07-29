@@ -304,7 +304,7 @@ public class TemporalBoundsExpander {
 	 * @param prefxLen
 	 * @param traceLen
 	 * @param inst
-	 * @param excepts
+	 * @param excepts relations that will be bound exactly to this tuple set.
 	 * @return
 	 */
 	public static Bounds extend(PardinusBounds tmpBounds, Bounds extBounds, int prefxLen, int traceLen, TemporalInstance inst, Map<Relation,TupleSet> excepts) {
@@ -329,7 +329,7 @@ public class TemporalBoundsExpander {
 				if (i < traceLen && i < prefxLen) {
 					if (excepts.containsKey(r)) {
 						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
-						low.addAll(tupleSetL.product(time));
+						low.addAll(convertToUniv(excepts.get(r),u).product(time));
 						upp.addAll(convertToUniv(excepts.get(r),u).product(time));
 					} else {
 						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
@@ -349,7 +349,11 @@ public class TemporalBoundsExpander {
 			} else {
 				if (inst.contains(r)) { // due to reified atoms
 					if (prefxLen == 0) { // only way to have these changed
-						extBounds.bound(r, tupleSetL, tupleSetU);
+						if (excepts.containsKey(r)) {
+							extBounds.bound(r, convertToUniv(excepts.get(r),u), convertToUniv(excepts.get(r),u));
+						} else {
+							extBounds.bound(r, tupleSetL, tupleSetU);
+						}
 					}
 					else {
 						TupleSet ts = eval.evaluate(r);
