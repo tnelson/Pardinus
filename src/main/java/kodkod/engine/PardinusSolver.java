@@ -146,7 +146,7 @@ public class PardinusSolver implements
 
 			if (options.temporal()) {
 				TemporalSolver<ExtendedOptions> solver;
-				if (options.unbounded())
+				if (options.solver().toString().equals("electrod"))
 					solver = new ElectrodSolver(options);
 				else 
 					solver = new TemporalPardinusSolver(options);

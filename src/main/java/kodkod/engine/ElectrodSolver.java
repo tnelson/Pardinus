@@ -205,6 +205,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		List<String> args = new ArrayList<String>();
 		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
+		if (!options.unbounded()) {
+			args.add("--bmc"); args.add(options.maxTraceLength()+"");
+		}
 		args.add(Options.isDebug()?"-v":"--");
 		args.add(file+".elo");
 				

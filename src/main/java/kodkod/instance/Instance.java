@@ -250,7 +250,7 @@ public class Instance implements Cloneable {
 	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
 
 		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
-
+		
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {
 			Relation r;
