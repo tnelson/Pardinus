@@ -206,6 +206,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
 		if (!options.unbounded()) {
+			if (options.minTraceLength() != 1) throw new IllegalArgumentException("BMC trace length must start at 1.");
 			args.add("--bmc"); args.add(options.maxTraceLength()+"");
 		}
 		args.add(Options.isDebug()?"-v":"--");
