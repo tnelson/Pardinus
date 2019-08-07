@@ -127,7 +127,10 @@ public class PardinusSolver implements
 		
 		if (options.unbounded() && !options.solver().unbounded())
 			throw new IllegalArgumentException("Cannot run complete with purely bounded solver.");
-			
+
+		if (!options.temporal() && options.solver().unbounded())
+			throw new IllegalArgumentException("Cannot run static with complete model checkers.");
+
 		if (options.decomposed()) {
 
 			if (options.temporal()) {
