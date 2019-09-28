@@ -391,7 +391,13 @@ public final class TemporalPardinusSolver
 				}
 			}
 
+			if (transl == null) { // init scope beyond max
+				TemporalTranslator tmptrans = new TemporalTranslator(Formula.FALSE, originalBounds, opt);
+				transl = Translator.translate(Formula.FALSE, tmptrans.expand(1), opt);
+			}
+			
 			final Statistics stats = new Statistics(transl, translTime, solveTime);
+
 			final Solution sol;
 
 			if (isSat) {
@@ -568,6 +574,7 @@ public final class TemporalPardinusSolver
 			}
 
 			final Statistics stats = new Statistics(transl, translTime, solveTime);
+
 			final Solution sol;
 
 			if (isSat) {
