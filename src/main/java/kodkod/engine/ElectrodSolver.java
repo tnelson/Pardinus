@@ -214,7 +214,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				
 		builder = new ProcessBuilder(args);
 		
-		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
+		builder.environment().put("PATH", builder.environment().get("PATH"));
 		builder.redirectErrorStream(true);
 		int ret = -1;
 		final Process p;
