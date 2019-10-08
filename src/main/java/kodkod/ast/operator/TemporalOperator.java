@@ -31,13 +31,13 @@ package kodkod.ast.operator;
  */
 public enum TemporalOperator {
     /** Next unary temporal operator. */
-    NEXT 			{ public String toString() { return "next"; }},
+    NEXT 			{ public String toString() { return "after"; }},
     /** Always unary temporal operator. */
     ALWAYS  		{ public String toString() { return "always"; }},
     /** Eventually unary temporal operator. */
     EVENTUALLY 		{ public String toString() { return "eventually"; }},
     /** Previous unary temporal operator. */
-    PREVIOUS 		{ public String toString() { return "previous"; }},
+    PREVIOUS 		{ public String toString() { return "before"; }},
     /** Historically unary temporal operator. */
     HISTORICALLY  	{ public String toString() { return "historically"; }},
     /** Once unary temporal operator. */
@@ -45,11 +45,11 @@ public enum TemporalOperator {
     /** Until binary temporal operator. */
     UNTIL 			{ public String toString() { return "until"; }},
     /** Release binary temporal operator. */
-    RELEASE 		{ public String toString() { return "release"; }},
+    RELEASE 		{ public String toString() { return "releases"; }},
     /** Since binary temporal operator. */
     SINCE 			{ public String toString() { return "since"; }},
     /** Trigger binary temporal operator. */
-    TRIGGER 		{ public String toString() { return "trigger"; }},
+    TRIGGER 		{ public String toString() { return "triggered"; }},
     /** Priming temporal operator. */
     PRIME 			{ public String toString() { return "'";} };
   	
