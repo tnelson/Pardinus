@@ -29,6 +29,7 @@ import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.instance.PardinusBounds;
@@ -41,7 +42,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -81,7 +82,7 @@ public class ExplorationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-//		opt.setReporter(new SLF4JReporter());
+		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
@@ -95,31 +96,37 @@ public class ExplorationTests {
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 		
-		// needs to expand by 1
-		Formula ext = a.eq(a.prime()).not();
-		System.out.println("Extending with "+ext);
-//		sol = sols.branch(4,ext);
+		System.out.println("Extending at 3.");
+		sol = sols.branch(3, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 
-		// needs to expand by 3
-		ext = b.eq(b.prime()).not();
-		System.out.println("Extending with "+ext);
-//		sol = sols.branch(5,ext);
+		// needs to expand by 2
+		System.out.println("Extending at 3.");
+		sol = sols.branch(3, Collections.emptySet(), Collections.emptyMap(), true);
+		System.out.println(sol.instance());
+		assertEquals(6, ((TemporalInstance) sol.instance()).prefixLength());
+
+		// needs to expand by 4
+		System.out.println("Extending at 5 and ignoring a.");
+		sol = sols.branch(5, Collections.singleton(a), Collections.emptyMap(), true);
+		System.out.println(sol.instance());
+		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
+
+		System.out.println("Extending at 5.");
+		sol = sols.branch(5, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
 
 		// reduces but must then expand by 3
-		ext = b.eq(b.prime());
-		System.out.println("Extending with "+ext);
-//		sol = sols.branch(1,ext);
+		System.out.println("Extending with at 4.");
+		sol = sols.branch(5, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
-		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
+		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
 
 		// conflict with original formula
-		ext = a.eq(a.prime());
-		System.out.println("Extending with "+ext);
-//		sol = sols.branch(4,ext);
+		System.out.println("Extending with at 4.");
+		sol = sols.branch(10, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
 		assertFalse(sol.sat());
 
@@ -294,16 +301,20 @@ public class ExplorationTests {
 		// expand beyond prefix size, unrolls but must still expand
 		Formula ext = b.eq(b);
 		System.out.println("Extending with "+ext);
-//		sol = sols.branch(8,ext);
+		sol = sols.branch(8, Collections.emptySet(), Collections.emptyMap(), true);
 		System.out.println(sol.instance());
-		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
+		assertEquals(9, ((TemporalInstance) sol.instance()).prefixLength());
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(3).toString());
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(5).toString());
 		assertEquals(((TemporalInstance) sol.instance()).state(2).toString(), ((TemporalInstance) sol.instance()).state(7).toString());
 
 		sol = sols.branch(4,Collections.emptySet(), Collections.singletonMap(b, bs),true);
 		System.out.println(sol.instance());
-		assertEquals(8, ((TemporalInstance) sol.instance()).prefixLength());
+		assertEquals(5, ((TemporalInstance) sol.instance()).prefixLength());
+
+		sol = sols.branch(10, Collections.emptySet(), Collections.emptyMap(), true);
+		System.out.println(sol.instance());
+		assertFalse(sol.sat());
 
 		solver.free();
 	}

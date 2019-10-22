@@ -256,7 +256,7 @@ public class TemporalIterationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 //		opt.setReporter(new SLF4JReporter());
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -443,7 +443,7 @@ public class TemporalIterationTests {
 		Formula formula = v.in(a).forSome(v.oneOf(b)).always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 		opt.setRunUnbounded(true);
 		opt.setSkolemDepth(1);
 //		opt.setReporter(new ConsoleReporter());
@@ -539,7 +539,7 @@ public class TemporalIterationTests {
 		Formula formula = a.eq(b).always().eventually();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 		opt.setRunUnbounded(true);
 //		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
@@ -645,7 +645,7 @@ public class TemporalIterationTests {
 		Formula formula = b.in(a).always().eventually().and(an.totalOrder(a, af, al));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 		opt.setRunUnbounded(true);
 //		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);

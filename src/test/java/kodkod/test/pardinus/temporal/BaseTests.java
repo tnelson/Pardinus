@@ -50,6 +50,11 @@ import org.junit.Test;
  * @author Nuno Macedo // [HASLab] temporal model finding
  */
 public class BaseTests {
+	
+	static {
+	    System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
+	}
+	
 	private static PardinusSolver dsolver;
 	private static ExtendedOptions opt;
 
@@ -58,8 +63,8 @@ public class BaseTests {
 		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(false);
-//		Reporter rep = new SLF4JReporter();
-//		opt.setReporter(rep);
+		Reporter rep = new SLF4JReporter();
+		opt.setReporter(rep);
 	}
 
 	@Test
@@ -211,7 +216,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATU() {
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 		opt.setRunUnbounded(true);
 		opt.setRunTemporal(true);
 		dsolver = new PardinusSolver(opt);
@@ -247,7 +252,7 @@ public class BaseTests {
 	
 	@Test
 	public void testUNSATU() {
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 		opt.setRunUnbounded(true);
 		opt.setRunTemporal(true);
 		dsolver = new PardinusSolver(opt);
@@ -390,7 +395,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid2() {
 		try {
-			opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+			opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 			opt.setRunTemporal(false);
 			opt.setRunUnbounded(true);
 			dsolver = new PardinusSolver(opt);
@@ -401,7 +406,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid3() {
 		try {
-			opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+			opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
 			opt.setRunTemporal(true);
 			opt.setRunUnbounded(false);
 			dsolver = new PardinusSolver(opt);
