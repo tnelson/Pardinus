@@ -298,7 +298,7 @@ public class NNFUnitTesting {
 		Variable var3 = Variable.unary("p");
 		Formula initial = toSend.join(var3).eq(toSend.join(var3)).release(Process.join(toSend.prime()).lone())
 				.forAll(var3.oneOf(Process)).not();
-		String result = "(some p: one Process | (!((toSend . p) = (toSend . p)) release !lone (Process . toSend')))";
+		String result = "(some p: one Process | (!((toSend . p) = (toSend . p)) releases !lone (Process . toSend')))";
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
