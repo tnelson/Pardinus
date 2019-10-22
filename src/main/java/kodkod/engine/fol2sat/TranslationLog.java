@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Node;
 import kodkod.engine.config.Options;
 import kodkod.instance.Bounds;
 
@@ -132,8 +133,8 @@ public abstract class TranslationLog {
 	 * @return the original (possibly temporal) formula (or null if not logged).
 	 */
 	// [HASLab]
-	public Formula temporalTransLog(Formula form) {
-		if (tmpTransLog == null) return null;
+	public Node temporalTransLog(Node form) {
+		if (tmpTransLog == null || tmpTransLog.get(form) == null) return form;
 		return tmpTransLog.get(form);
 	}
 	
