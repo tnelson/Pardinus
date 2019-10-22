@@ -60,7 +60,7 @@ import kodkod.test.util.Solvers;
  * 
  * @author Emina Torlak
  */
-//[HASLab] no longer valid in the forbid overflows version
+// [HASLab] no longer valid in the forbid overflows version
 //@RunWith(Parameterized.class) 
 public final class IncrementalSolverTest {
 
