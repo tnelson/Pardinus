@@ -219,7 +219,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
 								| IllegalAccessException | IOException e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							// e.printStackTrace();
 						}
 					else
 						p.destroy();
