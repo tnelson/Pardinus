@@ -28,8 +28,6 @@ import kodkod.ast.Relation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
-import kodkod.engine.config.Reporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;

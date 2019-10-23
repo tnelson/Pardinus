@@ -42,7 +42,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.util.Collections;
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -78,7 +77,7 @@ public class ExplorationTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula formula = ((a.eq(a.prime()).not())).always().and(b.some().after()).and(b.no().always().eventually());
+		Formula formula = ((a.eq(a.prime()).not()).and(a.lone())).always().and(b.some().after()).and(b.no().always().eventually());
 
 		ExtendedOptions opt = new ExtendedOptions();
 
