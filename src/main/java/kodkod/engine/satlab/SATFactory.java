@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alloytools.nativecode.util.NativeCode;
 import org.sat4j.minisat.SolverFactory;
 
 /**
@@ -201,8 +202,7 @@ public abstract class SATFactory {
 		if (portfolio!=null && portfolio)
 			opts.add("-p");
 		
-		final String executable = findStaticLibrary("plingeling");
-		return externalFactory(executable==null ? "plingeling" : executable, 
+		return externalFactory("plingeling", 
 				null, false, false, opts.toArray(new String[opts.size()]));
 	
 	}
@@ -214,15 +214,13 @@ public abstract class SATFactory {
 	 */
 	// [HASLab]
 	public static final SATFactory syrup() {
-		final String executable = findStaticLibrary("glucose-syrup");
-		return externalFactory(executable==null ? "glucose-syrup" : executable, 
+		return externalFactory("glucose-syrup", 
 				null, false, false, "-verb=0");
 	}
 
 	// [HASLab]
 	public static final SATFactory electrod(String ...opts) {
-		final String executable = findStaticLibrary("electrod");
-		return externalFactory(executable==null ? "electrod" : executable, 
+		return externalFactory("electrod", 
 				null, true, true, opts);
 	}
 
@@ -274,6 +272,10 @@ public abstract class SATFactory {
 				return file.getAbsolutePath();
 		}
 		
+		final String file  = NativeCode.findexecutable(null, name);
+		if (file != null)
+			return file;
+		
 		return null;
 	}
 	
@@ -317,12 +319,16 @@ public abstract class SATFactory {
 
 			@Override
 			public SATSolver instance() {
+				String lexecutable = findStaticLibrary(executable);
+				if (lexecutable == null)
+					lexecutable = executable;
+				
 				if (cnf != null) {
-					return new ExternalSolver(executable, cnf, false, options);
+					return new ExternalSolver(lexecutable, cnf, false, options);
 				} else {
 					try {
-						return new ExternalSolver(executable, 
-								File.createTempFile("kodkod", String.valueOf(executable.hashCode())).getAbsolutePath(), 
+						return new ExternalSolver(lexecutable, 
+								File.createTempFile("kodkod", String.valueOf(lexecutable.hashCode())).getAbsolutePath(), 
 								true, options);
 					} catch (IOException e) {
 						throw new SATAbortedException("Could not create a temporary file.", e);
