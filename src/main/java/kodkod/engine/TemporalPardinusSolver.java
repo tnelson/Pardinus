@@ -351,7 +351,7 @@ public final class TemporalPardinusSolver
 			this.translTime = System.currentTimeMillis();
 
 			// if >0, maybe will not increase, but 0 always increases
-			current_trace = state <= 0 ? 1 : state;
+			current_trace = state <= 0 ? 1 : state+1;
 			incremented = true;
 
 			boolean isSat = false;
