@@ -23,13 +23,19 @@
 package kodkod.engine;
 
 import java.io.File;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TupleSet;
 
 /**
  * The main Pardinus solver. Depending on the define {@link options
@@ -187,12 +193,28 @@ public class PardinusSolver implements
 		assert options.maxTraceLength() - options.minTraceLength() >= 0;
 //		assert options.solver().incremental();
 		
-//		if (!(this.solver instanceof IterableSolver))
-//			throw new UnsupportedOperationException();
-
-		if (solver instanceof TemporalSolver)
-			return ((TemporalSolver) solver).solveAll(formula, bounds);	
-		else return  (Explorer<Solution>) ((ExtendedSolver) solver).solveAll(formula, bounds);	
+		Iterator<Solution> it = ((IterableSolver) solver).solveAll(formula, bounds);
+		if (it instanceof Explorer)
+			return (Explorer<Solution>) it;
+		else {
+			return new Explorer<Solution>() {
+				
+				@Override
+				public Solution next() {
+					return it.next();
+				}
+				
+				@Override
+				public boolean hasNext() {
+					return it.hasNext();
+				}
+				
+				@Override
+				public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
+					throw new UnsupportedOperationException("Branching not supported for this solver.");
+				}
+			};
+		}
 	}
 
 }
