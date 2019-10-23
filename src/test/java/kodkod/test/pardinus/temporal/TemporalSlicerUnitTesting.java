@@ -276,6 +276,75 @@ public class TemporalSlicerUnitTesting {
 		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
 	}
 
+
+	@Test
+	public final void test8() {
+		Formula var1 = succ1.some();
+		Formula var2 = succ2.some();
+		
+		Formula total = var1.and(var2);
+
+		String resultDynamic = Formula.and(new Formula[] { var1, var2 }).toString();
+		String resultStatic = Formula.and(new Formula[] { }).toString();
+
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
+	}
+	
+	@Test
+	public final void test9() {
+		Formula var1 = succ.some();
+		Formula var2 = succ.some();
+		
+		Formula total = var1.and(var2);
+
+		String resultDynamic = Formula.and(new Formula[] { }).toString();
+		String resultStatic = Formula.and(new Formula[] { var1, var2 }).toString();
+
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
+	}
+	
+	@Test
+	public final void test10() {
+		Formula var1 = succ1.some();
+		Formula var2 = succ2.some();
+		
+		Formula total = Formula.and(var1,var2);
+
+		String resultDynamic = Formula.and(new Formula[] { var1, var2 }).toString();
+		String resultStatic = Formula.and(new Formula[] { }).toString();
+
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
+	}
+	
+	@Test
+	public final void test11() {
+		Formula var1 = succ1.some();
+		Formula var2 = succ2.some();
+		
+		Formula total = Formula.and(var1,var2);
+
+		String resultDynamic = Formula.and(new Formula[] { var1, var2 }).toString();
+		String resultStatic = Formula.and(new Formula[] { }).toString();
+
+		Entry<Formula, Formula> entry = DecompFormulaSlicer.slice(total, bounds);
+		Formula dynamicRel = entry.getValue();
+		Formula staticRel = entry.getKey();
+		assertEquals("incorrect dynamic partition", resultDynamic, dynamicRel.toString());
+		assertEquals("incorrect static partition", resultStatic, staticRel.toString());
+	}
+	
 	public static void p(String s) {
 		System.out.println(s);
 	}
