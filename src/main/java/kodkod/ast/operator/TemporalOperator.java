@@ -31,13 +31,13 @@ package kodkod.ast.operator;
  */
 public enum TemporalOperator {
     /** Next unary temporal operator. */
-    AFTER 			{ public String toString() { return "after"; }},
+    AFTER 			{ public String toString() { return "next"; }},
     /** Always unary temporal operator. */
     ALWAYS  		{ public String toString() { return "always"; }},
     /** Eventually unary temporal operator. */
     EVENTUALLY 		{ public String toString() { return "eventually"; }},
     /** Previous unary temporal operator. */
-    BEFORE 		{ public String toString() { return "before"; }},
+    BEFORE			{ public String toString() { return "before"; }},
     /** Historically unary temporal operator. */
     HISTORICALLY  	{ public String toString() { return "historically"; }},
     /** Once unary temporal operator. */
