@@ -321,12 +321,12 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(a.prime(), i).toString(), e2.evaluate(a).toString());
 		}
 
-		assertFalse("formula should not hold", e1.evaluate(a.some().previously().once(),0));
-		assertFalse("formula should not hold", e1.evaluate(a.some().previously().once().after(),0));
-		assertFalse("formula should not hold", e1.evaluate(a.some().previously().once(),1));
-		assertTrue("formula should hold", e1.evaluate(a.some().previously().once().after(),1));
-		assertTrue("formula should hold", e1.evaluate(a.some().previously().once().after().after(),0));
-		assertTrue("formula should hold", e1.evaluate(a.some().previously().once().eventually(),0));
+		assertFalse("formula should not hold", e1.evaluate(a.some().before().once(),0));
+		assertFalse("formula should not hold", e1.evaluate(a.some().before().once().after(),0));
+		assertFalse("formula should not hold", e1.evaluate(a.some().before().once(),1));
+		assertTrue("formula should hold", e1.evaluate(a.some().before().once().after(),1));
+		assertTrue("formula should hold", e1.evaluate(a.some().before().once().after().after(),0));
+		assertTrue("formula should hold", e1.evaluate(a.some().before().once().eventually(),0));
 
 		solver.free();
 	}

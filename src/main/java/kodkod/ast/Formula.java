@@ -33,7 +33,7 @@ import static kodkod.ast.operator.TemporalOperator.EVENTUALLY;
 import static kodkod.ast.operator.TemporalOperator.HISTORICALLY;
 import static kodkod.ast.operator.TemporalOperator.AFTER;
 import static kodkod.ast.operator.TemporalOperator.ONCE;
-import static kodkod.ast.operator.TemporalOperator.PREVIOUSLY;
+import static kodkod.ast.operator.TemporalOperator.BEFORE;
 import static kodkod.ast.operator.TemporalOperator.RELEASES;
 import static kodkod.ast.operator.TemporalOperator.SINCE;
 import static kodkod.ast.operator.TemporalOperator.TRIGGERED;
@@ -325,7 +325,11 @@ public abstract class Formula extends Node {
     }
     
     /**
+<<<<<<< HEAD
      * Returns this quantified with after. The effect of this method is the same
+=======
+     * Returns this quantified with after.  The effect of this method is the same
+>>>>>>> dev
      * as calling this.apply(AFTER).
      * @return this.apply(AFTER)
      */
@@ -355,13 +359,13 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns this quantified with previously. The effect of this method is the same
-     * as calling this.apply(PREVIOUSLY).
-     * @return this.apply(PREVIOUSLY)
+     * Returns this quantified with before.  The effect of this method is the same
+     * as calling this.apply(BEFORE).
+     * @return this.apply(BEFORE)
      */
     // [HASLab]
-    public final Formula previously() {
-        return apply(PREVIOUSLY);
+    public final Formula before() {
+        return apply(BEFORE);
     }
     
     /**
@@ -395,7 +399,11 @@ public abstract class Formula extends Node {
     }
 
     /**
+<<<<<<< HEAD
      * Composes this and the specified formula with releases. The effect
+=======
+     * Composes this and the specified formula with releases.  The effect
+>>>>>>> dev
      * of this method is the same as calling this.compose(RELEASES, formula).
      * @return this.compose(RELEASES, formula)
      */
@@ -405,7 +413,11 @@ public abstract class Formula extends Node {
     }
 
     /**
+<<<<<<< HEAD
      * Composes this and the specified formula with triggered. The effect
+=======
+     * Composes this and the specified formula with triggered.  The effect
+>>>>>>> dev
      * of this method is the same as calling this.compose(TRIGGERED, formula).
      * @return this.compose(TRIGGERED, formula)
      */
