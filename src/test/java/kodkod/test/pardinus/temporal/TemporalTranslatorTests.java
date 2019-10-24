@@ -429,7 +429,7 @@ public class TemporalTranslatorTests {
 		Variable t2 = Variable.unary("t2");
 		Formula f2 = Process.join(toSend.getExpansion().join(t2)).some().forAll(t2.oneOf(upTo(t,t1,true,false)));
 		Formula f1 = ((Process.join(toSend.getExpansion().join(t1.join(TRACE))).lone()).and(f2)).forSome(t1.oneOf(t.join(TRACE.reflexiveClosure())));
-		Formula result = (toSend.getExpansion().join(FIRST).one().and(f1.forAll(t.oneOf(FIRST.join(TRACE.reflexiveClosure())))));
+		Formula result = ((f1.forAll(t.oneOf(FIRST.join(TRACE.reflexiveClosure())))).and(toSend.getExpansion().join(FIRST).one()));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false,new LinkedHashMap<Formula,Formula>())).child(1).toString());	
 	}
 
