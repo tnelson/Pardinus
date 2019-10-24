@@ -273,7 +273,7 @@ public class TemporalInstance extends Instance {
 			res = states.get(prefixLength() - 1).formulate(bounds,reif,formula);
 
 		for (int i = prefixLength() - 2; i >= 0; i--)
-			res = states.get(i).formulate(bounds,reif,formula).and(res.next());
+			res = states.get(i).formulate(bounds,reif,formula).and(res.after());
 
 		// create the looping constraint
 		// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
@@ -281,19 +281,19 @@ public class TemporalInstance extends Instance {
 		Formula rei = states.get(loop).formulate(bounds,reif,formula);
 		Formula rei2 = rei;
 		for (int j = loop; j < prefixLength(); j++)
-			rei2 = rei2.next();
+			rei2 = rei2.after();
 
 		Formula looping = rei.implies(rei2);
 		for (int i = loop + 1; i < prefixLength(); i++) {
 			rei = states.get(i).formulate(bounds,reif,formula);
 			rei2 = rei;
 			for (int j = loop; j < prefixLength(); j++)
-				rei2 = rei2.next();
+				rei2 = rei2.after();
 			looping = looping.and(rei.implies(rei2));
 		}
 		looping = looping.always();
 		for (int i = 0; i < loop; i++)
-			looping = looping.next();
+			looping = looping.after();
 
 		res = res.and(looping);
 

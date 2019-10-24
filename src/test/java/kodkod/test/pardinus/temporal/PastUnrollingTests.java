@@ -67,11 +67,11 @@ public class PastUnrollingTests {
 
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = ((Af.join(An).in(S))).next().next().next().next();
-		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = ((Af.join(An).in(S))).after().after().after().after();
+		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).before())).eventually();
 		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -100,10 +100,10 @@ public class PastUnrollingTests {
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
 		Formula f1 = ((Af.join(An).in(S.prime())));
-		Formula f2 = (S.prime().eq(Af.join(An).join(An))).next();
-		Formula f3 = (S.prime().eq(Af.join(An).join(An).join(An))).next().next();
-		Formula f4 = ((Af.join(An).in(S.prime()))).next().next().next();
-		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
+		Formula f2 = (S.prime().eq(Af.join(An).join(An))).after();
+		Formula f3 = (S.prime().eq(Af.join(An).join(An).join(An))).after().after();
+		Formula f4 = ((Af.join(An).in(S.prime()))).after().after().after();
+		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).before())).eventually();
 		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -133,11 +133,11 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = ((Af.join(An).in(S))).next().next().next().next();
-		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).previous())).eventually();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = ((Af.join(An).in(S))).after().after().after().after();
+		Formula go = (((Af.join(An).in(S))).and((S.eq(Af.join(An).join(An).join(An))).before())).eventually();
 		Formula tt = f.and(f0).and(f1).and(f2).and(f3).and(f4).and(go);
 
 		// force wrong unrolls
@@ -162,12 +162,12 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = ((S.eq(Af.join(An).join(An).join(An))).and((S.eq(Af.join(An).join(An).join(An).join(An))
 				.and(S.eq(Af.join(An).join(An).join(An).join(An).join(An)).once())).once())).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
@@ -196,12 +196,12 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = ((S.eq(Af.join(An).join(An).join(An))).and((S.eq(Af.join(An).join(An).join(An).join(An))
 				.and(S.eq(Af.join(An).join(An).join(An).join(An).join(An)).once())).once())).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
@@ -229,8 +229,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next().always();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
+		Formula f1 = ((Af.join(An).eq(S))).after().always();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -257,8 +257,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next().always();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
+		Formula f1 = ((Af.join(An).eq(S))).after().always();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).after().after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -284,8 +284,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next().always();
-		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
+		Formula f1 = ((Af.join(An).eq(S))).after().always();
+		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).before())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -311,8 +311,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).always().next();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
+		Formula f1 = ((Af.join(An).eq(S))).always().after();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -339,8 +339,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next().always();
-		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next();
+		Formula f1 = ((Af.join(An).eq(S))).after().always();
+		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).before())).always().after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -366,8 +366,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next().always();
-		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next().next();
+		Formula f1 = ((Af.join(An).eq(S))).after().always();
+		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).before())).always().after().after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -393,8 +393,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).always().next();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).always().after();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -421,8 +421,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).after().after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -449,8 +449,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).before())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -477,8 +477,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -505,8 +505,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).always().next();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).always().after();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -532,8 +532,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).next().next();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).after().after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -560,8 +560,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).before())).always();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -587,8 +587,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).previous())).eventually();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).and((Af.in(S)).before())).eventually();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -615,8 +615,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).before())).always().after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -642,8 +642,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Expression.NONE);
-		Formula f1 = (S.eq(Af.join(An).union(Af))).next().always();
-		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).previous())).always().next().next();
+		Formula f1 = (S.eq(Af.join(An).union(Af))).after().always();
+		Formula go = (((Af.join(An).in(S))).implies((Af.in(S)).before())).always().after().after();
 		Formula tt = f.and(f0).and(f1).and(go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -670,8 +670,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula go = ((S.eq(Af.join(An))).and((S.eq(Af.join(An))).eventually().next())).eventually();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula go = ((S.eq(Af.join(An))).and((S.eq(Af.join(An))).eventually().after())).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -698,7 +698,7 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next();
+		Formula f1 = ((Af.join(An).eq(S))).after();
 		Formula go = ((S.eq(Af).not().since(S.eq(Af)))).always();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
@@ -726,8 +726,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).always().next();
-		Formula go = (((S.eq(Af.join(An)).implies(S.eq(Af.join(An)).previous())).since(S.eq(Af)))).always();
+		Formula f1 = ((Af.join(An).eq(S))).always().after();
+		Formula go = (((S.eq(Af.join(An)).implies(S.eq(Af.join(An)).before())).since(S.eq(Af)))).always();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -754,8 +754,8 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).always().next();
-		Formula go = (((S.eq(Af.join(An)).implies(S.eq(Af.join(An)).previous())).since(S.eq(Af)))).eventually();
+		Formula f1 = ((Af.join(An).eq(S))).always().after();
+		Formula go = (((S.eq(Af.join(An)).implies(S.eq(Af.join(An)).before())).since(S.eq(Af)))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -782,15 +782,15 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).eq(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = (S.eq(Af.join(An).join(An)).not()
 				.and(((S.eq(Af.join(An).join(An).join(An))
-						.and((Af.join(An).join(An).join(An).join(An).join(An).eq(S).previous().previous()))).once())
+						.and((Af.join(An).join(An).join(An).join(An).join(An).eq(S).before().before()))).once())
 								.since(S.eq(Af.join(An).join(An))))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
@@ -817,15 +817,15 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).eq(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = (S.eq(Af.join(An).join(An)).not()
 				.and(((S.eq(Af.join(An).join(An).join(An))
-						.and((Af.join(An).join(An).join(An).join(An).eq(S).previous().previous()))).once())
+						.and((Af.join(An).join(An).join(An).join(An).eq(S).before().before()))).once())
 								.since(S.eq(Af.join(An).join(An))))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
@@ -852,13 +852,13 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
-		Formula go = (((S.eq(Af.join(An))).not().previous()).since(S.eq(Af.join(An)).previous())).eventually();
+		Formula f1 = ((Af.join(An).eq(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
+		Formula go = (((S.eq(Af.join(An))).not().before()).since(S.eq(Af.join(An)).before())).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
 		ExtendedOptions options = new ExtendedOptions();
@@ -885,11 +885,11 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).eq(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).eq(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = (((S.eq(Af.join(An).join(An))))
 				.and((S.eq(Af.join(An).join(An)).or(S.eq(Af.join(An).join(An).join(An).join(An)))).since(
 						S.eq(Af.join(An).join(An).join(An)).and(S.eq(Af.join(An).join(An).join(An).join(An)).once()))))
@@ -920,12 +920,12 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = ((S.eq(Af.join(An).join(An).join(An)))
 				.and(Formula.TRUE.since(S.eq(Af.join(An).join(An).join(An).join(An))
 						.and(Formula.TRUE.since(S.eq(Af.join(An).join(An).join(An).join(An).join(An))))))).eventually();
@@ -955,12 +955,12 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = ((S.eq(Af.join(An).join(An).join(An))).until(S.eq(Af.join(An).join(An).join(An).join(An)))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);
 
@@ -988,12 +988,12 @@ public class PastUnrollingTests {
 		doBounds();
 		Formula f = An.totalOrder(A, Af, Al);
 		Formula f0 = S.eq(Af);
-		Formula f1 = ((Af.join(An).in(S))).next();
-		Formula f2 = (S.eq(Af.join(An).join(An))).next().next();
-		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).next().next().next();
-		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).next().next().next().next();
-		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).next().next().next().next().next();
-		Formula f6 = (S.eq(Af.join(An).join(An))).next().next().next().next().next().next();
+		Formula f1 = ((Af.join(An).in(S))).after();
+		Formula f2 = (S.eq(Af.join(An).join(An))).after().after();
+		Formula f3 = (S.eq(Af.join(An).join(An).join(An))).after().after().after();
+		Formula f4 = (S.eq(Af.join(An).join(An).join(An).join(An))).after().after().after().after();
+		Formula f5 = (S.eq(Af.join(An).join(An).join(An).join(An).join(An))).after().after().after().after().after();
+		Formula f6 = (S.eq(Af.join(An).join(An))).after().after().after().after().after().after();
 		Formula go = (((S.eq(Af.join(An).join(An).join(An))).eventually())
 				.and(S.eq(Af.join(An).join(An).join(An).join(An)))).eventually();
 		Formula tt = Formula.compose(FormulaOperator.AND, f, f0, f1, f2, f3, f4, f5, f6, go);

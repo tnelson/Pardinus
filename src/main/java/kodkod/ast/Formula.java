@@ -31,12 +31,12 @@ import static kodkod.ast.operator.Quantifier.SOME;
 import static kodkod.ast.operator.TemporalOperator.ALWAYS;
 import static kodkod.ast.operator.TemporalOperator.EVENTUALLY;
 import static kodkod.ast.operator.TemporalOperator.HISTORICALLY;
-import static kodkod.ast.operator.TemporalOperator.NEXT;
+import static kodkod.ast.operator.TemporalOperator.AFTER;
 import static kodkod.ast.operator.TemporalOperator.ONCE;
-import static kodkod.ast.operator.TemporalOperator.PREVIOUS;
-import static kodkod.ast.operator.TemporalOperator.RELEASE;
+import static kodkod.ast.operator.TemporalOperator.BEFORE;
+import static kodkod.ast.operator.TemporalOperator.RELEASES;
 import static kodkod.ast.operator.TemporalOperator.SINCE;
-import static kodkod.ast.operator.TemporalOperator.TRIGGER;
+import static kodkod.ast.operator.TemporalOperator.TRIGGERED;
 import static kodkod.ast.operator.TemporalOperator.UNTIL;
 
 import java.util.Arrays;
@@ -325,13 +325,13 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns this quantified with next.  The effect of this method is the same
-     * as calling this.apply(NEXT).
-     * @return this.apply(NEXT)
+     * Returns this quantified with after.  The effect of this method is the same
+     * as calling this.apply(AFTER).
+     * @return this.apply(AFTER)
      */
     // [HASLab]
-    public final Formula next() {
-        return apply(NEXT);
+    public final Formula after() {
+        return apply(AFTER);
     }
     
     /**
@@ -355,13 +355,13 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns this quantified with previous.  The effect of this method is the same
-     * as calling this.apply(PREVIOUS).
-     * @return this.apply(PREVIOUS)
+     * Returns this quantified with before.  The effect of this method is the same
+     * as calling this.apply(BEFORE).
+     * @return this.apply(BEFORE)
      */
     // [HASLab]
-    public final Formula previous() {
-        return apply(PREVIOUS);
+    public final Formula before() {
+        return apply(BEFORE);
     }
     
     /**
@@ -395,23 +395,23 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Composes this and the specified formula with release.  The effect
-     * of this method is the same as calling this.compose(RELEASE, formula).
-     * @return this.compose(RELEASE, formula)
+     * Composes this and the specified formula with releases.  The effect
+     * of this method is the same as calling this.compose(RELEASES, formula).
+     * @return this.compose(RELEASES, formula)
      */
     // [HASLab]
-    public final Formula release(Formula formula) {
-        return compose(RELEASE, formula);
+    public final Formula releases(Formula formula) {
+        return compose(RELEASES, formula);
     }
 
     /**
-     * Composes this and the specified formula with trigger.  The effect
-     * of this method is the same as calling this.compose(TRIGGER, formula).
-     * @return this.compose(TRIGGER, formula)
+     * Composes this and the specified formula with triggered.  The effect
+     * of this method is the same as calling this.compose(TRIGGERED, formula).
+     * @return this.compose(TRIGGERED, formula)
      */
     // [HASLab]
-    public final Formula trigger(Formula formula) {
-        return compose(TRIGGER, formula);
+    public final Formula triggered(Formula formula) {
+        return compose(TRIGGERED, formula);
     }
 
     /**

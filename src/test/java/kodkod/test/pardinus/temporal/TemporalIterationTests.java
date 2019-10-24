@@ -71,11 +71,11 @@ public class TemporalIterationTests {
 				assertFalse(eval.evaluate(a.no(), 1));
 				assertTrue(eval.evaluate(a.no(), 2));
 				assertFalse(eval.evaluate(a.no(), 3));
-				assertFalse(eval.evaluate(a.no().next(), 0));
-				assertTrue(eval.evaluate(a.no().next(), 1));
-				assertFalse(eval.evaluate(a.no().next(), 2));
-				assertTrue(eval.evaluate(a.no().next(), 3));
-				assertTrue(eval.evaluate(a.no().next(), 1));
+				assertFalse(eval.evaluate(a.no().after(), 0));
+				assertTrue(eval.evaluate(a.no().after(), 1));
+				assertFalse(eval.evaluate(a.no().after(), 2));
+				assertTrue(eval.evaluate(a.no().after(), 3));
+				assertTrue(eval.evaluate(a.no().after(), 1));
 				assertTrue(eval.evaluate(a, 0).isEmpty());
 				assertFalse(eval.evaluate(a, 1).isEmpty());
 				assertTrue(eval.evaluate(a, 2).isEmpty());
@@ -201,7 +201,7 @@ public class TemporalIterationTests {
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
-		Formula formula = a.some().previous().once().eventually().and(a.no());
+		Formula formula = a.some().before().once().eventually().and(a.no());
 
 		ExtendedOptions opt = new ExtendedOptions();
 //		opt.setReporter(new SLF4JReporter());
@@ -222,8 +222,8 @@ public class TemporalIterationTests {
 			if (sol.sat()) {
 				Evaluator eval = new Evaluator(sol.instance());
 				assertTrue(eval.evaluate(a.no(), 0));
-				assertFalse(eval.evaluate(Expression.NONE.no().previous(), 0));
-				assertTrue(eval.evaluate(a.no().previous(), 1));
+				assertFalse(eval.evaluate(Expression.NONE.no().before(), 0));
+				assertTrue(eval.evaluate(a.no().before(), 1));
 //				System.out.println(sol.instance().toString());
 			}
 		}
@@ -346,7 +346,7 @@ public class TemporalIterationTests {
 		bounds.boundExactly(a, as);
 		bounds.bound(b, as);
 		Variable v = Variable.unary("x");
-		Formula formula = v.in(a).forSome(v.oneOf(b)).always().and(b.one().next());
+		Formula formula = v.in(a).forSome(v.oneOf(b)).always().and(b.one().after());
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSkolemDepth(1);
@@ -975,7 +975,7 @@ public class TemporalIterationTests {
 		Formula f6a = outbox.prime().eq((e6a).union(e6b));
 		Formula f6 = f6a.forSome(p6.oneOf(process).and(i6.oneOf(p6.join(outbox)))).always();
 		Variable p7 = Variable.unary("p");
-		Formula f7a = (p7.join(idf).in(p7.join(outbox)).and(p7.join(idf).in(p7.join(outbox)).not().previous())).once();
+		Formula f7a = (p7.join(idf).in(p7.join(outbox)).and(p7.join(idf).in(p7.join(outbox)).not().before())).once();
 		Formula f7 = elected.eq(f7a.comprehension(p7.oneOf(process))).always();
 
 		Variable p8 = Variable.unary("p");

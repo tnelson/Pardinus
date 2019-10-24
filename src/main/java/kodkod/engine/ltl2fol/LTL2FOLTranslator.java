@@ -282,7 +282,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			rt = getQuantifierSince(left, right);
 			popVariable();
 			break;
-		case RELEASE:
+		case RELEASES:
 			Formula rightAlways = binaryTempFormula.right().accept(this);
 			pushVariable();
 			left = binaryTempFormula.left().accept(this);
@@ -294,7 +294,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			popLevel();
 			popVariable();
 			break;
-		case TRIGGER:
+		case TRIGGERED:
 			rightAlways = binaryTempFormula.right().accept(this);
 			pushVariable();
 			left = binaryTempFormula.left().accept(this);
@@ -343,7 +343,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			case ONCE:
 				s1 = (Variable) getVariable();
 				return e.forSome(s1.oneOf(s0.join(PREFIX.transpose().reflexiveClosure())));
-			case PREVIOUS:
+			case BEFORE:
 				Expression v2 = getVariable();
 				e = v2.some().and(e);
 				return e;
@@ -391,7 +391,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 				rng = rng.intersection(l1.join(START).join(PREFIX.reflexiveClosure()));
 				// some l1 : l0.*prev, s1 : l1.start.*prev & (l1 = l0 => s0.*prev else State) | e
 				return e.forSome(s1.oneOf(rng)).forSome(l1.oneOf(l0.join(L_PREFIX.transpose().reflexiveClosure())));
-			case PREVIOUS:
+			case BEFORE:
 				// (s0 = loop && l0 != first) => last else s0.prev
 				Expression s0n = getVariable();
 				// (s0 = loop && l0 != first) => l0.prev else l0
@@ -566,7 +566,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		}
 
 		switch (getOperator()) {
-		case NEXT:
+		case AFTER:
 		case PRIME:
 			if (TemporalTranslator.ExplicitUnrolls)
 				variables.add(getVariable().join(TRACE));
@@ -574,7 +574,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 				// s0.trace
 				variables.add(getVariable().join(TRACE));
 			break;
-		case PREVIOUS:
+		case BEFORE:
 			if (TemporalTranslator.ExplicitUnrolls)
 				variables.add(getVariable().join(PREFIX.transpose()));
 			else 
@@ -595,12 +595,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		}
 
 		switch (getOperator()) {
-		case NEXT:
+		case AFTER:
 		case PRIME:
 			// (s0 = last && l0 != last) => l0.next else l0
 			variables_lvl.add((getVariable().eq(LAST).and(getLevel().eq(L_LAST).not())).thenElse(getLevel().join(L_PREFIX),getLevel()));
 			break;
-		case PREVIOUS:
+		case BEFORE:
 			// (s0 = loop && l0 != first) => l0.prev else l0
 			variables_lvl.add((getVariable().eq(LOOP).and(getLevel().eq(L_FIRST).not())).thenElse(getLevel().join(L_PREFIX.transpose()),getLevel()));
 			break;

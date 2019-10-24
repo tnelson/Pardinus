@@ -31,13 +31,13 @@ package kodkod.ast.operator;
  */
 public enum TemporalOperator {
     /** Next unary temporal operator. */
-    NEXT 			{ public String toString() { return "after"; }},
+    AFTER 			{ public String toString() { return "after"; }},
     /** Always unary temporal operator. */
     ALWAYS  		{ public String toString() { return "always"; }},
     /** Eventually unary temporal operator. */
     EVENTUALLY 		{ public String toString() { return "eventually"; }},
     /** Previous unary temporal operator. */
-    PREVIOUS 		{ public String toString() { return "before"; }},
+    BEFORE 		{ public String toString() { return "before"; }},
     /** Historically unary temporal operator. */
     HISTORICALLY  	{ public String toString() { return "historically"; }},
     /** Once unary temporal operator. */
@@ -45,15 +45,15 @@ public enum TemporalOperator {
     /** Until binary temporal operator. */
     UNTIL 			{ public String toString() { return "until"; }},
     /** Release binary temporal operator. */
-    RELEASE 		{ public String toString() { return "releases"; }},
+    RELEASES 		{ public String toString() { return "releases"; }},
     /** Since binary temporal operator. */
     SINCE 			{ public String toString() { return "since"; }},
     /** Trigger binary temporal operator. */
-    TRIGGER 		{ public String toString() { return "triggered"; }},
+    TRIGGERED 		{ public String toString() { return "triggered"; }},
     /** Priming temporal operator. */
     PRIME 			{ public String toString() { return "'";} };
   	
-    static final int binary = UNTIL.index() | RELEASE.index() | SINCE.index() | TRIGGER.index();
+    static final int binary = UNTIL.index() | RELEASES.index() | SINCE.index() | TRIGGERED.index();
 
     static final int unary = ~binary;
 
