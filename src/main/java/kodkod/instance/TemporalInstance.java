@@ -42,7 +42,6 @@ import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.util.ints.IndexedEntry;
-import kodkod.util.ints.Ints;
 
 /**
  * Represents a temporal instance of a temporal relational problem containing

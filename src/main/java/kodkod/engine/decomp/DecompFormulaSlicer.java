@@ -89,7 +89,7 @@ public class DecompFormulaSlicer {
 		}
 		return slice(formula,partials);
 	}
-	
+
 	public static Entry<Formula, Formula> slice(Formula formula, Set<Relation> partials) {
 		// converts to NNF and flattens the formula
 		AnnotatedNode<Formula> flat = FormulaFlattener.flatten(
