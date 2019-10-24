@@ -277,8 +277,8 @@ public class NNFUnitTesting {
 	@Test
 	public final void test32() {
 		Variable v = Variable.unary("v");
-		Formula initial = C.join(v).some().or(B.lone()).always().previously().not();
-		Formula result = C.join(v).some().not().and(B.lone().not()).eventually().previously();
+		Formula initial = C.join(v).some().or(B.lone()).always().before().not();
+		Formula result = C.join(v).some().not().and(B.lone().not()).eventually().before();
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}
 
@@ -286,9 +286,9 @@ public class NNFUnitTesting {
 	public final void test33() {
 		Variable v = Variable.unary("v");
 		Formula initial = Formula.and(
-				new Formula[] { C.join(v).some().or(B.lone()).previously(), A.lone().implies(B.some()), B.lone().not() })
+				new Formula[] { C.join(v).some().or(B.lone()).before(), A.lone().implies(B.some()), B.lone().not() })
 				.not();
-		Formula result = Formula.or(new Formula[] { C.join(v).some().not().and(B.lone().not()).previously(),
+		Formula result = Formula.or(new Formula[] { C.join(v).some().not().and(B.lone().not()).before(),
 				A.lone().and(B.some().not()), B.lone() });
 		assertEquals(NNFReplacer.nnf(initial).toString(), result.toString());
 	}

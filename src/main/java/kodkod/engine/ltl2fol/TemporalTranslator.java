@@ -284,7 +284,7 @@ public class TemporalTranslator {
 			public Integer visit(UnaryTempFormula x) {
 				int n = 0;
 				if (x.op().equals(TemporalOperator.ONCE) || x.op().equals(TemporalOperator.HISTORICALLY)
-						|| x.op().equals(TemporalOperator.PREVIOUSLY))
+						|| x.op().equals(TemporalOperator.BEFORE))
 					n = 1;
 				int l = x.formula().accept(this);
 				return n + l;
