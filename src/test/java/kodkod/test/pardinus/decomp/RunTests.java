@@ -13,8 +13,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.management.RuntimeErrorException;
+
+import com.sun.xml.internal.bind.v2.model.util.ArrayInfoUtil;
 
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.Solution;
@@ -25,13 +32,13 @@ import kodkod.examples.pardinus.decomp.DijkstraP;
 import kodkod.examples.pardinus.decomp.DiningP;
 import kodkod.examples.pardinus.decomp.FilesystemP;
 import kodkod.examples.pardinus.decomp.HandshakeP;
-import kodkod.examples.pardinus.decomp.HotelP;
 import kodkod.examples.pardinus.decomp.LiftP;
 import kodkod.examples.pardinus.decomp.NetconfigP;
 import kodkod.examples.pardinus.decomp.PeaceableP;
 import kodkod.examples.pardinus.decomp.RedBlackTreeP;
 import kodkod.examples.pardinus.decomp.RingP;
 import kodkod.examples.pardinus.decomp.SpanP;
+import kodkod.examples.pardinus.temporal.HotelT;
 
 public final class RunTests {
 
@@ -68,7 +75,12 @@ public final class RunTests {
 		if(opts.contains("-gl")) solvers.add(Solvers.GLUCOSE);
 		if(opts.contains("-sy")) solvers.add(Solvers.SYRUP);
 		if(opts.contains("-pl")) solvers.add(Solvers.PLINGELING);
+		if(opts.contains("-xb")) solvers.add(Solvers.NUXMVB);
+		if(opts.contains("-xc")) solvers.add(Solvers.NUXMVC);
+		if(opts.contains("-sb")) solvers.add(Solvers.NUSMVB);
+		if(opts.contains("-sc")) solvers.add(Solvers.NUSMVC);
 
+		
 		if(opts.contains("-t")) modes.add(DMode.EXHAUSTIVE);
 		if(opts.contains("-b")) batch = true;
 		if(opts.contains("-s")) { modes.add(DMode.PARALLEL); threads = 1;}
@@ -185,7 +197,9 @@ public final class RunTests {
 		log.append("\n");
 
 		log.append("Modes: ");
-		log.append(modes);
+		List<String> aux = modes.stream().map(x->x.toString()).collect(Collectors.toList());
+		if (batch) aux.add("BATCH");
+		log.append(aux);
 		log.append("\n");
 
 		log.append("Tries: ");
@@ -238,6 +252,68 @@ public final class RunTests {
 				for (int i = 0; i < tries; i++)
 					header.append("P.B\tSat\t");
 		}
+		
+
+		if (solvers.contains(Solvers.NUXMVB)) {
+			if (batch)
+				for (int i = 0; i < tries; i++)
+					header.append("XB.B\tSat\t");
+			if (modes.contains(DMode.PARALLEL))
+				for (int i = 0; i < tries; i++)
+					header.append("XB.P\tSat\tC.#\tC.t\t");
+			if (modes.contains(DMode.HYBRID))
+				for (int i = 0; i < tries; i++)
+					header.append("XB.H\tSat\tC.#\tC.t\t");
+			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
+				for (int i = 0; i < tries; i++)
+					header.append("XB.I\tSat\t");
+		}
+		
+		if (solvers.contains(Solvers.NUSMVB)) {
+			if (batch)
+				for (int i = 0; i < tries; i++)
+					header.append("SB.B\tSat\t");
+			if (modes.contains(DMode.PARALLEL))
+				for (int i = 0; i < tries; i++)
+					header.append("SB.P\tSat\tC.#\tC.t\t");
+			if (modes.contains(DMode.HYBRID))
+				for (int i = 0; i < tries; i++)
+					header.append("SB.H\tSat\tC.#\tC.t\t");
+			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
+				for (int i = 0; i < tries; i++)
+					header.append("SB.I\tSat\t");
+		}
+		
+		if (solvers.contains(Solvers.NUXMVC)) {
+			if (batch)
+				for (int i = 0; i < tries; i++)
+					header.append("XC.B\tSat\t");
+			if (modes.contains(DMode.PARALLEL))
+				for (int i = 0; i < tries; i++)
+					header.append("XC.P\tSat\tC.#\tC.t\t");
+			if (modes.contains(DMode.HYBRID))
+				for (int i = 0; i < tries; i++)
+					header.append("XC.H\tSat\tC.#\tC.t\t");
+			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
+				for (int i = 0; i < tries; i++)
+					header.append("XC.I\tSat\t");
+		}
+		
+		if (solvers.contains(Solvers.NUSMVC)) {
+			if (batch)
+				for (int i = 0; i < tries; i++)
+					header.append("SC.B\tSat\t");
+			if (modes.contains(DMode.PARALLEL))
+				for (int i = 0; i < tries; i++)
+					header.append("SC.P\tSat\tC.#\tC.t\t");
+			if (modes.contains(DMode.HYBRID))
+				for (int i = 0; i < tries; i++)
+					header.append("SC.H\tSat\tC.#\tC.t\t");
+			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
+				for (int i = 0; i < tries; i++)
+					header.append("SC.I\tSat\t");
+		}
+		
 
 		header.append("\n");
 	}
@@ -248,6 +324,8 @@ public final class RunTests {
 		writer.flush();
 		log = new StringBuilder();
 	}
+	
+	static Set<List<String>> cached_timeouts = new HashSet<List<String>>();
 
 	/**
 	 * Runs a model instance instance for the specified number of times.
@@ -261,24 +339,48 @@ public final class RunTests {
 		String className = RunTestModel.class.getCanonicalName();
 		String librarypath = System.getProperty("java.library.path");
 
-		String[] cmd_args = new String[]{javaBin, "-Djava.library.path="+librarypath, "-cp", classpath, className, model};
+		String[] cmd_args = new String[]{"gtimeout", "2m", javaBin, "-Djava.library.path="+librarypath, "-Ddebug=yes", "-cp", classpath, className, model};
 
 		String[] args = Arrays.copyOf(cmd_args, cmd_args.length + model_args.length);
 		System.arraycopy(model_args, 0, args, cmd_args.length, model_args.length);
 
 		int exitVal = -1;
-
+		
+		List<String> cache = new ArrayList<String>(Arrays.asList(model_args));
+		cache.remove(3);
+		
 		for (int k = 0; k < tries; k++) {
-			Process p = Runtime.getRuntime().exec(args);
-
-			InputStream stderr = p.getErrorStream();
-			InputStreamReader isr = new InputStreamReader(stderr);
-			BufferedReader br = new BufferedReader(isr);
-			String line = null;
-			while ( (line = br.readLine()) != null)
-				System.out.println(line);
-			exitVal = p.waitFor();
-			System.out.print("OK\t\t");
+			if (cached_timeouts.contains(cache)) {
+				log.append("TO\t\t");
+				if (!cache.contains("BATCH")) {
+					log.append("\t\t");
+				}
+			} else {
+				Process p = Runtime.getRuntime().exec(args);
+	
+				InputStream stderr = p.getInputStream();
+				InputStreamReader isr = new InputStreamReader(stderr);
+				BufferedReader br = new BufferedReader(isr);
+				String line = null;
+				while ( (line = br.readLine()) != null)
+					System.out.println(line);
+				exitVal = p.waitFor();
+				if (exitVal == 0) {
+					System.out.print("OK\t\t");
+					if (!cache.contains("BATCH")) {
+						System.out.print("\t\t");
+					}
+				}
+				else {
+	//				System.out.print("TO\t\t");
+					log.append("TO\t\t");
+					if (!cache.contains("BATCH")) {
+						log.append("\t\t");
+					}
+					cached_timeouts.add(cache);
+				}
+			}
+			flush();
 		}
 
 		return exitVal;
@@ -304,6 +406,10 @@ public final class RunTests {
 		
 		if (solvers.contains(Solvers.MINISAT)) {
 			args[1] = Solvers.MINISAT.name();
+			if (batch) {
+				args[0] = "BATCH";
+				runModelInstance(model,args,tries);
+			}
 			for (DMode m : modes) {
 				args[0] = m.name();
 				runModelInstance(model,args,tries);
@@ -312,6 +418,10 @@ public final class RunTests {
 
 		if (solvers.contains(Solvers.GLUCOSE)) {
 			args[1] = Solvers.GLUCOSE.name();
+			if (batch) {
+				args[0] = "BATCH";
+				runModelInstance(model,args,tries);
+			}
 			for (DMode m : modes) {
 				args[0] = m.name();
 				runModelInstance(model,args,tries);
@@ -330,6 +440,54 @@ public final class RunTests {
 			if (batch) {
 				args[0] = "BATCH";
 				args[1] = Solvers.PLINGELING.name();
+				runModelInstance(model,args,tries);
+			}
+		}
+		
+		if (solvers.contains(Solvers.NUXMVB)) {
+			args[1] = Solvers.NUXMVB.name();
+			if (batch) {
+				args[0] = "BATCH";
+				runModelInstance(model,args,tries);
+			}
+			for (DMode m : modes) {
+				args[0] = m.name();
+				runModelInstance(model,args,tries);
+			}
+		}
+		
+		if (solvers.contains(Solvers.NUSMVB)) {
+			args[1] = Solvers.NUSMVB.name();
+			if (batch) {
+				args[0] = "BATCH";
+				runModelInstance(model,args,tries);
+			}
+			for (DMode m : modes) {
+				args[0] = m.name();
+				runModelInstance(model,args,tries);
+			}
+		}
+		
+		if (solvers.contains(Solvers.NUXMVC)) {
+			args[1] = Solvers.NUXMVC.name();
+			if (batch) {
+				args[0] = "BATCH";
+				runModelInstance(model,args,tries);
+			}
+			for (DMode m : modes) {
+				args[0] = m.name();
+				runModelInstance(model,args,tries);
+			}
+		}
+		
+		if (solvers.contains(Solvers.NUSMVC)) {
+			args[1] = Solvers.NUSMVC.name();
+			if (batch) {
+				args[0] = "BATCH";
+				runModelInstance(model,args,tries);
+			}
+			for (DMode m : modes) {
+				args[0] = m.name();
 				runModelInstance(model,args,tries);
 			}
 		}
@@ -554,11 +712,11 @@ public final class RunTests {
 	 * Tests the performance of all variants of the Hotel example.
 	 */
 	private static void runHotel() throws IOException, InterruptedException {
-		String model = HotelP.class.getCanonicalName();
+		String model = HotelT.class.getCanonicalName();
 
 //		int t = 10;
 //
-//		for (HotelP.Variant v : HotelP.Variant.values()) {
+//		for (HotelT.Variant v : HotelT.Variant.values()) {
 //			log.append(v.name()+" "+t+"\n"); 
 //			log.append(header);
 //			flush();
@@ -570,27 +728,25 @@ public final class RunTests {
 //			log.append("\n");
 //		}
 
-		int t = 20;
-
-//		for (HotelP.Variant v : HotelP.Variant.values()) {
-			HotelP.Variant v = HotelP.Variant.INTERVENES;
-			log.append(v.name()+" "+t+"\n"); 
+//		for (HotelT.Variant v : HotelT.Variant.values()) {
+			HotelT.Variant v = HotelT.Variant.INTERVENES;
+			log.append(v.name()+"\n"); 
 			log.append(header);
 			flush();
 			for (int i = 1; i <= 10; i ++)  {
 				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", t+"", v.name()});
+				runModes(model, new String[]{i+"", v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
 //		}
-			v = HotelP.Variant.NOINTERVENES;
-			log.append(v.name()+" "+t+"\n"); 
+			v = HotelT.Variant.NOINTERVENES;
+			log.append(v.name()+"\n"); 
 			log.append(header);
 			flush();
 			for (int i = 1; i <= 7; i ++)  {
 				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", t+"", v.name()});
+				runModes(model, new String[]{i+"", v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
@@ -618,7 +774,11 @@ public final class RunTests {
 		GLUCOSE,
 		MINISAT,
 		SYRUP,
-		PLINGELING;
+		PLINGELING,
+		NUSMVC,
+		NUXMVC,
+		NUSMVB,
+		NUXMVB,
 	}
 	
 
