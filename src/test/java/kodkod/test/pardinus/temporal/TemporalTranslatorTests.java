@@ -239,7 +239,7 @@ public class TemporalTranslatorTests {
 		Formula initial = Process.join(toSend).some().until(Process.join(toSend).lone());
 		Variable t = Variable.unary("t0");
 		Variable t1 = Variable.unary("t1");
-		Formula f2 = Process.join(toSend.getExpansion().join(t1)).some().forAll(t1.oneOf(upTo(FIRST,t,true,false)));
+		Formula f2 = Process.join(toSend.getExpansion().join(t1)).some().forAll(t1.oneOf(upTo(FIRST,t,false)));
 		Formula f1 = Process.join(toSend.getExpansion().join(t)).lone().and(f2).forSome(t.oneOf(FIRST.join(TRACE.reflexiveClosure())));
 		Formula result = f1;
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false,new LinkedHashMap<Formula,Formula>())).child(1).toString());
@@ -250,23 +250,34 @@ public class TemporalTranslatorTests {
 		Formula initial = Process.join(toSend).some().since(Process.join(toSend).lone());
 		Variable t = Variable.unary("t0");
 		Variable t1 = Variable.unary("t1");
-		Formula f2 = Process.join(toSend.getExpansion().join(t1)).some().forAll(t1.oneOf(upTo(t,FIRST,false,true)));
+		Formula f2 = Process.join(toSend.getExpansion().join(t1)).some().forAll(t1.oneOf(downTo(FIRST,t,false)));
 		Formula f1 = Process.join(toSend.getExpansion().join(t)).lone().and(f2).forSome(t.oneOf(FIRST.join(PREFIX.transpose().reflexiveClosure())));
 		Formula result = f1;
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false,new LinkedHashMap<Formula,Formula>())).child(1).toString());
 	}
 
-	private Expression upTo(Expression t1, Expression t2, boolean inc1, boolean inc2) {
+	private Expression upTo(Expression t1, Expression t2, boolean inc2) {
 		Formula c = t2.in(t1.join(PREFIX.reflexiveClosure()));
-		Expression exp1 = inc1?PREFIX.reflexiveClosure():PREFIX.closure();
-		Expression exp2 = inc2?PREFIX.reflexiveClosure():PREFIX.closure();
-		Expression exp11 = inc1?TRACE.reflexiveClosure():TRACE.closure();
-		Expression exp12 = inc2?TRACE.reflexiveClosure():TRACE.closure();
+		Expression exp1 = PREFIX.reflexiveClosure();
+		Expression exp2 = PREFIX.closure();
+		Expression exp11 = TRACE.reflexiveClosure();
+		Expression exp12 = TRACE.closure();
 		Expression e1 = (t1.join(exp1)).intersection(t2.join(exp2.transpose()));
 		Expression e21 = (t1.join(exp11)).intersection(t2.join(exp12.transpose()));
 		Expression e22 = (t2.join(exp1)).intersection(t1.join(exp2.transpose()));
 		Expression e2 = e21.difference(e22);
-		return c.thenElse(e1, e2);
+		Expression e = c.thenElse(e1, e2);
+		if (inc2) e = e.union(t2); 
+		return e;
+	}
+	
+	private Expression downTo(Expression t1, Expression t2, boolean inc2) {
+		Expression exp1 = PREFIX.reflexiveClosure();
+		Expression exp2 = PREFIX.closure();
+		Expression e1 = (t1.join(exp1.transpose())).intersection(t2.join(exp2));
+		Expression e = e1;
+		if (inc2) e = e.union(t2); 
+		return e;
 	}
 
 	@Test
@@ -275,7 +286,7 @@ public class TemporalTranslatorTests {
 		Variable t = Variable.unary("t1");
 		Variable t1 = Variable.unary("t2");
 		Variable t2 = Variable.unary("t0");
-		Formula f2 = Process.join(toSend.getExpansion().join(t1)).lone().forAll(t1.oneOf(upTo(FIRST,t,true,true)));
+		Formula f2 = Process.join(toSend.getExpansion().join(t1)).lone().forAll(t1.oneOf(upTo(FIRST,t,true)));
 		Formula f1 = Process.join(toSend.getExpansion().join(t)).some().and(f2).forSome(t.oneOf(FIRST.join(TRACE.reflexiveClosure())));
 		Formula f3 = Process.join(toSend.getExpansion().join(t2)).lone().forAll(t2.oneOf(FIRST.join(TRACE.reflexiveClosure())));
 		Formula result = ((f3)).or(f1);
@@ -289,7 +300,7 @@ public class TemporalTranslatorTests {
 		Variable t = Variable.unary("t1");
 		Variable t1 = Variable.unary("t2");
 		Variable t2 = Variable.unary("t0");
-		Formula f2 = (Process.join(toSend.getExpansion().join(t1.join(TRACE))).lone()).forAll(t1.oneOf(upTo(FIRST,t,true,true)));
+		Formula f2 = (Process.join(toSend.getExpansion().join(t1.join(TRACE))).lone()).forAll(t1.oneOf(upTo(FIRST,t,true)));
 		Formula f1 = toSend.getExpansion().join(t).join(v).eq(toSend.getExpansion().join(t).join(v)).and(f2).forSome(t.oneOf(FIRST.join(TRACE.reflexiveClosure())));
 		Formula f3 = Process.join(toSend.getExpansion().join(t2.join(TRACE))).lone().forAll(t2.oneOf(FIRST.join(TRACE.reflexiveClosure())));
 		Formula result = ((f3)).or(f1).forAll(v.oneOf(Process));
@@ -387,7 +398,7 @@ public class TemporalTranslatorTests {
 		Variable t = Variable.unary("t0");
 		Variable t1 = Variable.unary("t1");
 		Variable t2 = Variable.unary("t2");
-		Formula f2 = Process.join(toSend.getExpansion().join(t2)).some().forAll(t2.oneOf(upTo(t,t1,true,false)));
+		Formula f2 = Process.join(toSend.getExpansion().join(t2)).some().forAll(t2.oneOf(upTo(t,t1,false)));
 		Formula f1 = Process.join(toSend.getExpansion().join(t1)).lone().and(f2).forSome(t1.oneOf(t.join(TRACE.reflexiveClosure())));
 		Formula result = (f1.forAll(t.oneOf(FIRST.join(TRACE.reflexiveClosure()))));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false,new LinkedHashMap<Formula,Formula>())).child(1).toString());
@@ -401,7 +412,7 @@ public class TemporalTranslatorTests {
 		Variable t1 = Variable.unary("t1");
 		Variable t2 = Variable.unary("t2");
 		Variable t3 = Variable.unary("t3");
-		Formula f2 = ((Process.join(toSend.getExpansion().join(t3)).some().forAll(t3.oneOf(t2.join(TRACE.reflexiveClosure()))))).forAll(t2.oneOf(upTo(t,t1,true,false)));
+		Formula f2 = ((Process.join(toSend.getExpansion().join(t3)).some().forAll(t3.oneOf(t2.join(TRACE.reflexiveClosure()))))).forAll(t2.oneOf(upTo(t,t1,false)));
 		Formula f1 = Process.join(toSend.getExpansion().join(t1)).lone().and(f2).forSome(t1.oneOf(t.join(TRACE.reflexiveClosure())));
 		Formula result = f1.forSome(t.oneOf(FIRST.join(TRACE.reflexiveClosure())));
 		
@@ -415,7 +426,7 @@ public class TemporalTranslatorTests {
 		Variable t1 = Variable.unary("t3");
 		Variable t2 = Variable.unary("t1");
 		Variable t3 = Variable.unary("t0");
-		Formula f2 = Process.join(toSend.getExpansion().join(t1)).lone().forAll(t1.oneOf(upTo(t3,t,true,true)));
+		Formula f2 = Process.join(toSend.getExpansion().join(t1)).lone().forAll(t1.oneOf(upTo(t3,t,true)));
 		Formula f1 = Process.join(toSend.getExpansion().join(t)).some().and(f2).forSome(t.oneOf(t3.join(TRACE.reflexiveClosure())));
 		Formula f3 = Process.join(toSend.getExpansion().join(t2)).lone().forAll(t2.oneOf(t3.join(TRACE.reflexiveClosure())));
 		Formula result = (((f3)).or(f1).forAll(t3.oneOf(FIRST.join(TRACE.reflexiveClosure()))));
@@ -427,7 +438,7 @@ public class TemporalTranslatorTests {
 		Variable t = Variable.unary("t0");
 		Variable t1 = Variable.unary("t1");
 		Variable t2 = Variable.unary("t2");
-		Formula f2 = Process.join(toSend.getExpansion().join(t2)).some().forAll(t2.oneOf(upTo(t,t1,true,false)));
+		Formula f2 = Process.join(toSend.getExpansion().join(t2)).some().forAll(t2.oneOf(upTo(t,t1,false)));
 		Formula f1 = ((Process.join(toSend.getExpansion().join(t1.join(TRACE))).lone()).and(f2)).forSome(t1.oneOf(t.join(TRACE.reflexiveClosure())));
 		Formula result = ((f1.forAll(t.oneOf(FIRST.join(TRACE.reflexiveClosure())))).and(toSend.getExpansion().join(FIRST).one()));
 		assertEquals(result.toString(), ((NaryFormula)LTL2FOLTranslator.translate(initial,0,false,new LinkedHashMap<Formula,Formula>())).child(1).toString());	
