@@ -14,12 +14,12 @@ import kodkod.engine.ExtendedSolver;
 import kodkod.engine.IncrementalSolver;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.Solver;
+import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.FileReporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
+import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
@@ -100,9 +100,12 @@ public final class RunTestModel {
 
 		ExtendedOptions opt = new ExtendedOptions();
 		
-		opt.setReporter(new FileReporter());
+		opt.setReporter(new ConsoleReporter());
 		opt.setBitwidth(model.getBitwidth());
 		opt.setSymmetryBreaking(sym);
+		opt.setMaxTraceLength(10);
+		if (TemporalTranslator.isTemporal(f1.and(f2)))
+			opt.setRunTemporal(true);
 
 		switch (selected_solver) {
 		case GLUCOSE:
@@ -117,6 +120,20 @@ public final class RunTestModel {
 		case SYRUP:
 			opt.setSolver(SATFactory.syrup());
 			break;
+		case NUSMVB:
+			opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+			break;
+		case NUXMVB:
+			opt.setSolver(SATFactory.electrod("-t","nuXmv"));
+			break;
+		case NUSMVC:
+			opt.setRunUnbounded(true);
+			opt.setSolver(SATFactory.electrod("-t","NuSMV"));
+			break;
+		case NUXMVC:
+			opt.setRunUnbounded(true);
+			opt.setSolver(SATFactory.electrod("-t","nuXmv"));
+			break;
 		default:
 			break;
 		}
@@ -128,28 +145,35 @@ public final class RunTestModel {
 		long t1 = System.currentTimeMillis();
 
 		opt.setDecomposedMode(selected_mode);
-		psolver = new PardinusSolver(opt);
-		if (batch)
+		if (batch) {
+			opt.setRunDecomposed(false);
+			psolver = new PardinusSolver(opt);
 			solution = go_batch(b1, b2, f1, f2);
-		else
-		switch (selected_mode) {
-		case PARALLEL:
-			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-			break;
-		case HYBRID:
-			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-			break;
-		case INCREMENTAL:
-			solution = go_incremental(b1, b2, f1, f2);
-			break;
-		case EXHAUSTIVE:
-			psolver.options().setThreads(threads);
-			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-			break;
-		default:
-			break;
+		}
+		else {
+			opt.setRunDecomposed(true);
+			opt.configOptions().setSolver(SATFactory.MiniSat);
+			opt.configOptions().setRunTemporal(false);			
+			psolver = new PardinusSolver(opt);
+			switch (selected_mode) {
+			case PARALLEL:
+				psolver.options().setThreads(threads);
+				solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+				break;
+			case HYBRID:
+				psolver.options().setThreads(threads);
+				solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+				break;
+			case INCREMENTAL:
+				solution = go_incremental(b1, b2, f1, f2);
+				break;
+			case EXHAUSTIVE:
+				psolver.options().setThreads(threads);
+				solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+				break;
+			default:
+				break;
+			}
 		}
 
 		long t2 = System.currentTimeMillis();
@@ -217,7 +241,7 @@ public final class RunTestModel {
 	}
 
 	private static void flush() {
-		System.out.print(log.toString());
+//		System.out.print(log.toString());
 		writer.print(log.toString());
 		writer.flush();
 		log = new StringBuilder();
@@ -245,7 +269,7 @@ public final class RunTestModel {
 		PardinusBounds x = new PardinusBounds(b1, b2);
 		PardinusBounds y = x.amalgamated();
 
-		Solver solver = new Solver(psolver.options());
+		PardinusSolver solver = new PardinusSolver(psolver.options());
 		return solver.solve(f1.and(f2), y);
 	}
 
