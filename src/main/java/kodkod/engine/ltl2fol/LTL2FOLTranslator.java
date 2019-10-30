@@ -411,7 +411,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable l = getVariableUntil(false);
 		Expression prev_l = getVariablePrevQuantUntil(false);
 		if (TemporalTranslator.ExplicitUnrolls) {
-			Formula nfleft = left.forAll(l.oneOf(upTo(prev_l, r, true, false)));
+			Formula nfleft = left.forAll(l.oneOf(upTo(prev_l, r, false)));
 			
 			nfleft = right.and(nfleft);
 			
@@ -422,7 +422,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			Expression prev_vl = getLevelPrevQuantUntil();
 
 			Expression rng1 = (vl.eq(prev_vl.join(L_PREFIX))).thenElse(r.join(PREFIX.transpose().closure()), STATE);
-			Expression rng0 = (vl.eq(prev_vl)).thenElse(upTo(prev_l, r, true, false),prev_l.join(PREFIX.reflexiveClosure()).union((vl.join(START).join(PREFIX.reflexiveClosure()).intersection(rng1))));
+			Expression rng0 = (vl.eq(prev_vl)).thenElse(upTo(prev_l, r, false),prev_l.join(PREFIX.reflexiveClosure()).union((vl.join(START).join(PREFIX.reflexiveClosure()).intersection(rng1))));
 			
 			Formula nfleft = left.forAll(l.oneOf(rng0));
 			
@@ -441,7 +441,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		
 		if (TemporalTranslator.ExplicitUnrolls) {
 
-			Formula nfleft = left.forAll(l.oneOf(upTo(r, prev_l, false, true)));
+			Formula nfleft = left.forAll(l.oneOf(downTo(prev_l, r, false)));
 	
 			nfleft = right.and(nfleft);
 	
@@ -454,7 +454,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 			
 			Expression rng1 = (prev_vl.eq(vl.join(L_PREFIX))).thenElse(prev_l.join(PREFIX.transpose().reflexiveClosure()), STATE);
-			Expression rng0 = (vl.eq(prev_vl)).thenElse(upTo(r, prev_l, false, true),r.join(PREFIX.closure()).union((prev_vl.join(START).join(PREFIX.reflexiveClosure()).intersection(rng1))));
+			Expression rng0 = (vl.eq(prev_vl)).thenElse(downTo(prev_l, r, false),r.join(PREFIX.closure()).union((prev_vl.join(START).join(PREFIX.reflexiveClosure()).intersection(rng1))));
 			
 			Formula nfleft = left.forAll(l.oneOf(rng0));
 			
@@ -477,7 +477,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		if (TemporalTranslator.ExplicitUnrolls) {
 			alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
 		
-			nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true, true)));
+			nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true)));
 		
 			nfright = left.and(nfleft);
 		
@@ -498,14 +498,14 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfright;
 	
 		if (TemporalTranslator.ExplicitUnrolls) {
-			alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().closure())));
+			alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().reflexiveClosure())));
 		
-			nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true, true)));
+			nfleft = right.forAll(l.oneOf(downTo(getVariablePrevQuantRelease(false, true), r, true)));
 		
 			nfright = left.and(nfleft);
 		
 			nfright = nfright
-					.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().closure())));
+					.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().reflexiveClosure())));
 		
 			return alw.or(nfright);
 		}
@@ -526,17 +526,28 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 *            whether upper inclusive
 	 * @return the expression representing the range states
 	 */
-	private Expression upTo(Expression t1, Expression t2, boolean inc1, boolean inc2) {
+	private Expression upTo(Expression t1, Expression t2, boolean inc2) {
 		Formula c = t2.in(t1.join(PREFIX.reflexiveClosure()));
-		Expression exp1 = inc1 ? PREFIX.reflexiveClosure() : PREFIX.closure();
-		Expression exp2 = inc2 ? PREFIX.reflexiveClosure() : PREFIX.closure();
-		Expression exp11 = inc1 ? TRACE.reflexiveClosure() : TRACE.closure();
-		Expression exp12 = inc2 ? TRACE.reflexiveClosure() : TRACE.closure();
+		Expression exp1 = PREFIX.reflexiveClosure();
+		Expression exp2 = PREFIX.closure();
+		Expression exp11 = TRACE.reflexiveClosure();
+		Expression exp12 = TRACE.closure();
 		Expression e1 = (t1.join(exp1)).intersection(t2.join(exp2.transpose()));
 		Expression e21 = (t1.join(exp11)).intersection(t2.join(exp12.transpose()));
 		Expression e22 = (t2.join(exp1)).intersection(t1.join(exp2.transpose()));
 		Expression e2 = e21.difference(e22);
-		return c.thenElse(e1, e2);
+		Expression e = c.thenElse(e1, e2);
+		if (inc2) e = e.union(t2); 
+		return e;
+	}
+	
+	private Expression downTo(Expression t1, Expression t2, boolean inc2) {
+		Expression exp1 = PREFIX.reflexiveClosure();
+		Expression exp2 = PREFIX.closure();
+		Expression e1 = (t1.join(exp1.transpose())).intersection(t2.join(exp2));
+		Expression e = e1;
+		if (inc2) e = e.union(t2); 
+		return e;
 	}
 
 	/* Operators Context */
