@@ -23,17 +23,9 @@ import kodkod.engine.ExtendedSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DProblem;
-import kodkod.examples.pardinus.decomp.DiffEgP;
-import kodkod.examples.pardinus.decomp.DijkstraP;
-import kodkod.examples.pardinus.decomp.DiningP;
-import kodkod.examples.pardinus.decomp.FilesystemP;
-import kodkod.examples.pardinus.decomp.HandshakeP;
-import kodkod.examples.pardinus.decomp.LiftP;
-import kodkod.examples.pardinus.decomp.NetconfigP;
-import kodkod.examples.pardinus.decomp.PeaceableP;
-import kodkod.examples.pardinus.decomp.RedBlackTreeP;
-import kodkod.examples.pardinus.decomp.RingP;
-import kodkod.examples.pardinus.decomp.SpanP;
+import kodkod.examples.pardinus.temporal.DijkstraT;
+import kodkod.examples.pardinus.temporal.RingT;
+import kodkod.examples.pardinus.temporal.SpanT;
 import kodkod.examples.pardinus.temporal.HotelT;
 
 public final class RunTests {
@@ -43,15 +35,18 @@ public final class RunTests {
 	static DProblem<ExtendedSolver> psolution = null;
 	static Solution solution = null;
 
-	static int tries, threads = 4;
+	static int tries, threads = 4, max_trace;
+	static String timeout = "10m";
 
 	static private boolean batch = false;
+	
+	static private boolean reif = false, satit = false;
 	
 	static private StringBuilder log = new StringBuilder();
 	static private StringBuilder header = new StringBuilder();
 
 	static private PrintWriter writer;
-	private static boolean ring, hotel, file, handshake, span, dijkstra, diffeg, netconfig, redblack, dining, peaceable, jobs, lift, avl;
+	private static boolean ring, hotel, span, dijkstra;
 
 	private static List<DMode> modes = new ArrayList<DMode>();
 	private static List<Solvers> solvers = new ArrayList<Solvers>();
@@ -66,6 +61,7 @@ public final class RunTests {
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
 		tries = Integer.valueOf(args[0]);
+		max_trace = Integer.valueOf(args[1]);
 
 		if(opts.contains("-ms")) solvers.add(Solvers.MINISAT);
 		if(opts.contains("-gl")) solvers.add(Solvers.GLUCOSE);
@@ -75,7 +71,6 @@ public final class RunTests {
 		if(opts.contains("-xc")) solvers.add(Solvers.NUXMVC);
 		if(opts.contains("-sb")) solvers.add(Solvers.NUSMVB);
 		if(opts.contains("-sc")) solvers.add(Solvers.NUSMVC);
-
 		
 		if(opts.contains("-t")) modes.add(DMode.EXHAUSTIVE);
 		if(opts.contains("-b")) batch = true;
@@ -84,35 +79,17 @@ public final class RunTests {
 		if(opts.contains("-h")) modes.add(DMode.HYBRID);
 		if(opts.contains("-i")) modes.add(DMode.INCREMENTAL);
 
+		if(opts.contains("-satit")) satit = true;
+		if(opts.contains("-reif")) reif = true;
 
 		if (opts.contains("--all")) {
-			diffeg = true;
 			dijkstra = true;
-			dining = true;
-			file = true;
-			handshake = true;
 			hotel = true;
-			jobs = true;
-			lift = true;
-			peaceable = true;
-			redblack = true;
-			avl = true;
-			netconfig = true;
 			ring = true;
 			span = true;
 		} else {
-			diffeg = opts.contains("--diffeg");
 			dijkstra = opts.contains("--dijkstra");
-			dining = opts.contains("--dining");
-			file = opts.contains("--file");
-			handshake = opts.contains("--handshake");
 			hotel = opts.contains("--hotel");
-			jobs = opts.contains("--jobs");
-			lift = opts.contains("--lift");
-			peaceable = opts.contains("--peaceable");
-			redblack = opts.contains("--redblack");
-			avl = opts.contains("--avl");
-			netconfig = opts.contains("--netconfig");
 			ring = opts.contains("--ring");
 			span = opts.contains("--span");
 		}
@@ -120,56 +97,11 @@ public final class RunTests {
 		printHeader();
 		flush();
 
-		if (diffeg) runDiffEg();
 		if (dijkstra) runDijkstra();
-		if (dining) runDining();
-		if (file) runFileSystem();
-		if (handshake) runHandshake();
 		if (hotel) runHotel();
-        if (jobs) runJobs();
-        if (lift) runLift();
-        if (peaceable) runPeaceable();
-        if (redblack) runRedBlack();
-        if (avl) runAVL();
-        if (netconfig) runNetconfig();
 		if (ring) runRing();
 		if (span) runSpanTree();
 
-	}
-
-	private static void runPeaceable() throws IOException, InterruptedException {
-		String model = PeaceableP.class.getCanonicalName();
-		log.append("Peaceable Queens\n"); 
-		log.append(header);
-		flush();
-		for (int i = 6; i <= 10; i ++)  {
-			for (int j = 6; j <= 10; j ++)  {
-				log.append(i+" "+j+"\t"); flush();
-				runModes(model, new String[]{i+"",j+""});
-				log.append("\n"); flush();
-			}		
-		}
-		log.append("\n");		
-	}
-
-	private static void runLift() throws IOException, InterruptedException {
-		String model = LiftP.class.getCanonicalName();
-		log.append("LiftSPL\n"); 
-		log.append(header);
-		flush();
-		for (int i = 2; i <= 8; i ++)  {
-			for (int j = 8; j <= 20; j ++)  {
-				log.append(i+" "+j+"\t"); flush();
-				runModes(model, new String[]{i+"",j+""});
-				log.append("\n"); flush();
-			}		
-		}
-		log.append("\n");				
-	}
-
-	private static void runJobs() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	private static void printHeader() {
@@ -180,11 +112,7 @@ public final class RunTests {
 		log.append("Examples: ");
 		if (hotel) log.append("Hotel ");
 		if (ring) log.append("RingLeader ");
-		if (handshake) log.append("Handshake ");
-		if (file) log.append("FileSystem ");
 		if (span) log.append("SpanTree ");
-		if (redblack) log.append("RedBlackTree ");
-		if (avl) log.append("AVLTree ");
 		if (dijkstra) log.append("Dijkstra ");
 		log.append("\n");
 
@@ -196,6 +124,10 @@ public final class RunTests {
 		List<String> aux = modes.stream().map(x->x.toString()).collect(Collectors.toList());
 		if (batch) aux.add("BATCH");
 		log.append(aux);
+		log.append("\n");
+
+		log.append("Max trace: ");
+		log.append(max_trace);
 		log.append("\n");
 
 		log.append("Tries: ");
@@ -332,10 +264,10 @@ public final class RunTests {
 		String javaHome = System.getProperty("java.home");
 		String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
 		String classpath = System.getProperty("java.class.path");
-		String className = RunTestModel.class.getCanonicalName();
+		String className = kodkod.test.pardinus.temporal.RunSolveModel.class.getCanonicalName();
 		String librarypath = System.getProperty("java.library.path");
 
-		String[] cmd_args = new String[]{"gtimeout", "2m", javaBin, "-Djava.library.path="+librarypath, "-Ddebug=yes", "-cp", classpath, className, model};
+		String[] cmd_args = new String[]{"gtimeout", timeout, javaBin, "-Djava.library.path="+librarypath,"-cp", classpath, className, model};
 
 		String[] args = Arrays.copyOf(cmd_args, cmd_args.length + model_args.length);
 		System.arraycopy(model_args, 0, args, cmd_args.length, model_args.length);
@@ -343,7 +275,7 @@ public final class RunTests {
 		int exitVal = -1;
 		
 		List<String> cache = new ArrayList<String>(Arrays.asList(model_args));
-		cache.remove(3);
+		cache.remove(6);
 		
 		for (int k = 0; k < tries; k++) {
 			if (cached_timeouts.contains(cache)) {
@@ -354,7 +286,7 @@ public final class RunTests {
 			} else {
 				Process p = Runtime.getRuntime().exec(args);
 	
-				InputStream stderr = p.getInputStream();
+				InputStream stderr = p.getErrorStream();
 				InputStreamReader isr = new InputStreamReader(stderr);
 				BufferedReader br = new BufferedReader(isr);
 				String line = null;
@@ -388,14 +320,17 @@ public final class RunTests {
 	 * @throws InterruptedException 
 	 */
 	private static void runModes(String model, String[] model_args) throws IOException, InterruptedException {
-		String[] args = new String[model_args.length+3];
-		System.arraycopy(model_args, 0, args, 3, model_args.length);
-		args[2] = threads+"";
+		String[] args = new String[model_args.length+6];
+		System.arraycopy(model_args, 0, args, 6, model_args.length);
+		args[2] = max_trace+"";
+		args[3] = threads+"";
+		args[4] = satit+"";
+		args[5] = reif+"";
 
 		if (modes.contains(DMode.EXHAUSTIVE)) {
 			args[0] = DMode.EXHAUSTIVE.name();
 			args[1] = Solvers.GLUCOSE.name();
-			args[2] = "1";
+			args[3] = "1";
 			runModelInstance(model,args,1);
 			return ;
 		}
@@ -496,7 +431,7 @@ public final class RunTests {
 	 * @throws InterruptedException 
 	 */
 	private static void runRing() throws IOException, InterruptedException {
-		String model = RingP.class.getCanonicalName();
+		String model = RingT.class.getCanonicalName();
 
 //		int t = 10;
 //
@@ -513,40 +448,40 @@ public final class RunTests {
 //				log.append("\n");
 //			}
 
-		int t = 20;
+//		int t = 20;
 
-		RingP.Variant2 s = RingP.Variant2.VARIABLE;
+		RingT.Variant2 s = RingT.Variant2.VARIABLE;
 //		for (RingP.Variant2 s : RingP.Variant2.values())
 //			for (RingP.Variant1 v : RingP.Variant1.values()) {
-				RingP.Variant1 v = RingP.Variant1.BADLIVENESS;
-				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
-				log.append(header);
-				flush();
-				for (int i = 1; i <= 12; i ++)  {
-					log.append(i+"\t"); flush();
-					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
-					log.append("\n"); flush();
-				}
-				log.append("\n");
+				RingT.Variant1 v = RingT.Variant1.BADLIVENESS;
+//				log.append(v.name()+" "+s.name()+"\n"); 
+//				log.append(header);
+//				flush();
+//				for (int i = 1; i <= 12; i ++)  {
+//					log.append(i+"\t"); flush();
+//					runModes(model, new String[]{i+"", v.name(), s.name()});
+//					log.append("\n"); flush();
+//				}
+//				log.append("\n");
+//				
+//				v = RingT.Variant1.GOODLIVENESS;
+//				log.append(v.name()+" "+s.name()+"\n"); 
+//				log.append(header);
+//				flush();
+//				for (int i = 1; i <= 4; i ++)  {
+//					log.append(i+"\t"); flush();
+//					runModes(model, new String[]{i+"", v.name(), s.name()});
+//					log.append("\n"); flush();
+//				}
+//				log.append("\n");
 				
-				v = RingP.Variant1.GOODLIVENESS;
-				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
+				v = RingT.Variant1.GOODSAFETY;
+				log.append(v.name()+" "+s.name()+"\n"); 
 				log.append(header);
 				flush();
-				for (int i = 1; i <= 4; i ++)  {
+				for (int i = 5; i <= 8; i ++)  {
 					log.append(i+"\t"); flush();
-					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
-					log.append("\n"); flush();
-				}
-				log.append("\n");
-				
-				v = RingP.Variant1.GOODSAFETY;
-				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
-				log.append(header);
-				flush();
-				for (int i = 1; i <= 8; i ++)  {
-					log.append(i+"\t"); flush();
-					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
+					runModes(model, new String[]{i+"", v.name(), s.name()});
 					log.append("\n"); flush();
 				}
 				log.append("\n");
@@ -554,77 +489,29 @@ public final class RunTests {
 
 	}
 
-	/**
-	 * Tests the performance of all variants of the Handshake example.
-	 * @throws IOException 
-	 * @throws InterruptedException 
-	 */
-	private static void runHandshake() throws IOException, InterruptedException {
-		String model = HandshakeP.class.getCanonicalName();
-
-		HandshakeP.Variant2 s = HandshakeP.Variant2.STATIC;
-//		for (HandshakeP.Variant2 s : HandshakeP.Variant2.values())
-			for (HandshakeP.Variant1 v : HandshakeP.Variant1.values()) {
-//				HandshakeP.Variant1 v = HandshakeP.Variant1.COUNTER;
-				log.append(v.name()+" "+s.name()+"\n"); 
-				log.append(header);
-				flush();
-				for (int i = 3; i <= 16; i ++)  {
-					log.append(i+"\t"); flush();
-					runModes(model, new String[]{i+"", v.name(), s.name()});
-					log.append("\n"); flush();
-				}
-				log.append("\n");
-			}
-	}
-
-	private static void runRedBlack() throws IOException, InterruptedException {
-
-		String model = RedBlackTreeP.class.getCanonicalName();
-
-		RedBlackTreeP.Variant2 s = RedBlackTreeP.Variant2.V1;
-//		for (RedBlackTreeP.Variant1 v : RedBlackTreeP.Variant1.values()) {
-		RedBlackTreeP.Variant1 v = RedBlackTreeP.Variant1.THEOREM;
-			log.append("Red Black Tree "+v.name()+" "+s.name()+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 9; i <= 9; i ++)  {
-				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", v.name(), s.name()});
-				log.append("\n"); flush();
-			}
-			log.append("\n");
-//		}
-	}
-	
-
-	private static void runAVL() throws IOException, InterruptedException {
-
-	}
-
 	private static void runSpanTree() throws IOException, InterruptedException {
 
-		String model = SpanP.class.getCanonicalName();
-		int t = 9;
+		String model = SpanT.class.getCanonicalName();
+//		int t = 9;
 //		for (SpanP.Variant v : SpanP.Variant.values()) {
-			SpanP.Variant v = SpanP.Variant.V1;
-			log.append("Span"+t+" "+v.name()+"\n"); 
+			SpanT.Variant v = SpanT.Variant.V1;
+			log.append("Span "+v.name()+"\n"); 
 			log.append(header);
 			flush();
 			for (int i = 2; i <= 16; i ++)  {
 				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", t+"",v.name()});
+				runModes(model, new String[]{i+"",v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
 			
-			v = SpanP.Variant.V2;
-			log.append("Span"+t+" "+v.name()+"\n"); 
+			v = SpanT.Variant.V2;
+			log.append("Span "+v.name()+"\n"); 
 			log.append(header);
 			flush();
 			for (int i = 2; i <= 16; i ++)  {
 				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", t+"",v.name()});
+				runModes(model, new String[]{i+"",v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
@@ -646,64 +533,21 @@ public final class RunTests {
 
 	private static void runDijkstra() throws IOException, InterruptedException {
 
-		String model = DijkstraP.class.getCanonicalName();
-		int t = 15;
-		for (DijkstraP.Variant v : DijkstraP.Variant.values()) {
-			log.append("Dijkstra"+t+" "+v.name()+"\n"); 
+		String model = DijkstraT.class.getCanonicalName();
+//		int t = 15;
+		for (DijkstraT.Variant v : DijkstraT.Variant.values()) {
+			log.append("Dijkstra "+v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 30; i ++)  {
+			for (int i = 1; i <= 15; i ++)  {
 				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", i+"", t+"",v.name()});
+				runModes(model, new String[]{i+"",v.name()});
 				log.append("\n"); flush();
 			}
 			log.append("\n");
 		}
 	}
 	
-	private static void runDining() throws IOException, InterruptedException {
-		String model = DiningP.class.getCanonicalName();
-		log.append("Dining"+"\n"); 
-		log.append(header);
-		flush();
-		for (int i = 2; i <= 20; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+"",20+""});
-			log.append("\n"); flush();
-		}
-		log.append("\n");		
-	}
-
-
-	private static void runDiffEg() throws IOException, InterruptedException {
-
-		String model = DiffEgP.class.getCanonicalName();
-		log.append("DiffEg"+"\n"); 
-		log.append(header);
-		flush();
-		for (int i = 30; i <= 40; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+""});
-			log.append("\n"); flush();
-		}
-		log.append("\n");
-	}
-
-	private static void runNetconfig() throws IOException, InterruptedException {
-
-		String model = NetconfigP.class.getCanonicalName();
-		log.append("Netconfig"+"\n"); 
-		log.append(header);
-		flush();
-		for (int i = 3; i <= 20; i ++)  {
-			log.append(i+"\t"); flush();
-			runModes(model, new String[]{i+"",1+"",i+"",20+""});
-			log.append("\n"); flush();
-		}
-		log.append("\n");
-	}
-
-
 	/**
 	 * Tests the performance of all variants of the Hotel example.
 	 */
@@ -729,7 +573,7 @@ public final class RunTests {
 			log.append(v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 10; i ++)  {
+			for (int i = 5; i <= 10 ; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name()});
 				log.append("\n"); flush();
@@ -740,7 +584,7 @@ public final class RunTests {
 			log.append(v.name()+"\n"); 
 			log.append(header);
 			flush();
-			for (int i = 1; i <= 7; i ++)  {
+			for (int i = 4; i <= 4; i ++)  {
 				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"", v.name()});
 				log.append("\n"); flush();
@@ -748,24 +592,6 @@ public final class RunTests {
 			log.append("\n");
 	}
 
-
-	private static void runFileSystem() throws IOException, InterruptedException {
-		String model = FilesystemP.class.getCanonicalName();
-
-		for (FilesystemP.Variant v : FilesystemP.Variant.values()) {
-			log.append(v.name()+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 3; i <= 14; i ++)  {
-				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", v.name()});
-				log.append("\n"); flush();
-			}
-			log.append("\n");
-		}
-	}
-	
-	
 	public enum Solvers {
 		GLUCOSE,
 		MINISAT,

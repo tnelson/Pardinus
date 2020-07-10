@@ -27,10 +27,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -53,13 +55,11 @@ import kodkod.engine.satlab.SATSolver;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.satlab.WTargetSATSolver;
 import kodkod.instance.Bounds;
-import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
-import kodkod.util.ints.IntTreeSet;
 import kodkod.util.nodes.PrettyPrinter;
 
 /**
@@ -74,7 +74,10 @@ import kodkod.util.nodes.PrettyPrinter;
 public final class TemporalPardinusSolver
 		implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<ExtendedOptions> {
 
-	public static boolean SATOPTITERATION = false;
+	// alternative encodings, instance formula or sat
+	public static boolean SATOPTITERATION = true;
+	// alternative encodings, atom reification vs some disj pattern
+	public static boolean SomeDisjPattern = false;
 
 	private final ExtendedOptions options;
 
@@ -122,8 +125,8 @@ public final class TemporalPardinusSolver
 			throws HigherOrderDeclException, UnboundLeafException, AbortedException {
 		assert !options.unbounded();
 		try {
-			long startTransl = System.currentTimeMillis();
 
+			long startTransl = System.currentTimeMillis();
 			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
 			Formula extformula = tmptrans.translate();
 			long endTransl = System.currentTimeMillis();
@@ -133,19 +136,20 @@ public final class TemporalPardinusSolver
 			Translation.Whole translation = null;
 			int traceLength = options.minTraceLength() - 1;
 			PardinusBounds extbounds = null;
-			while (!isSat && traceLength <= options.maxTraceLength()) {
-				startTransl = System.currentTimeMillis();
-				// increase while UNSAT and below max
-				do {
-					traceLength++;
-					extbounds = tmptrans.expand(traceLength);
-					translation = Translator.translate(extformula, extbounds, options);
-					if (options.logTranslation() > 0)
-						translation.log().logTempTranslation(tmptrans.tempTransLog);
-				} while (translation.trivial() && traceLength <= options.maxTraceLength());
+			startTransl = System.currentTimeMillis();
+			// increase while UNSAT and below max
+			do {
+				traceLength++;
+				extbounds = tmptrans.expand(traceLength);
+				translation = Translator.translate(extformula, extbounds, options);
+				if (options.logTranslation() > 0)
+					translation.log().logTempTranslation(tmptrans.tempTransLog);
+			} while (translation.trivial() && traceLength <= options.maxTraceLength());
 
-				endTransl = System.currentTimeMillis();
-				transTime += endTransl - startTransl;
+			endTransl = System.currentTimeMillis();
+			transTime += endTransl - startTransl;
+
+			while (!isSat && traceLength <= options.maxTraceLength()) {
 
 				if (translation.trivial() && traceLength == options.maxTraceLength())
 					return trivial(translation, endTransl - startTransl, extbounds);
@@ -158,7 +162,21 @@ public final class TemporalPardinusSolver
 				isSat = cnf.solve();
 				final long endSolve = System.currentTimeMillis();
 				solveTime += endSolve - startSolve;
-				traceLength++;
+
+				if (!isSat) {
+					traceLength++;
+					// the translation of the original formula could in principle be re-used but
+					// the original past depth level is needed
+					tmptrans = new TemporalTranslator(formula, bounds, options);
+					extbounds = tmptrans.expand(traceLength);
+					Formula exp_reforms = tmptrans.translate();
+					startTransl = System.currentTimeMillis();
+					translation = Translator.translate(exp_reforms, extbounds, options);
+					if (options.logTranslation() > 0)
+						translation.log().logTempTranslation(tmptrans.tempTransLog);
+					endTransl = System.currentTimeMillis();
+					transTime += endTransl - startTransl;
+				}
 			}
 			final Statistics stats = new Statistics(translation, transTime, solveTime);
 			return isSat ? sat(translation, stats, bounds) : unsat(translation, stats);
@@ -261,13 +279,14 @@ public final class TemporalPardinusSolver
 		private int trivial;
 		private final ExtendedOptions opt; // [HASLab] temporal
 		private int current_trace;
-		private boolean incremented = false;
 		private PardinusBounds extbounds;
 		private final PardinusBounds originalBounds;
 		private final Formula originalFormula;
+		private TemporalTranslator tmptrans;
 
 		// [HASLab] structures for reformulated iteration
-		private final List<TemporalInstance> previousSols = new ArrayList<TemporalInstance>();
+		private TemporalInstance previousSol = null;
+		private final List<IterationStep> previousSols = new ArrayList<IterationStep>();
 		private final Map<Object, Expression> reifs = new HashMap<Object, Expression>();
 
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
@@ -278,7 +297,7 @@ public final class TemporalPardinusSolver
 			this.originalFormula = formula;
 			this.reifs.putAll(originalBounds.reifs());
 
-			TemporalTranslator tmptrans = new TemporalTranslator(originalFormula, bounds, options);
+			tmptrans = new TemporalTranslator(originalFormula, bounds, options);
 			Formula extformula = tmptrans.translate();
 			do {
 				current_trace++;
@@ -298,36 +317,35 @@ public final class TemporalPardinusSolver
 		/**
 		 * {@inheritDoc}
 		 */
-		// [HASLab] explorer
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
+		// [HASLab] explorer
+		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> upper, boolean exclude) {
 
 			Formula f = Formula.TRUE;
 			if (exclude) {
-				TemporalInstance prev = previousSols.get(previousSols.size() - 1);
-				
+				TemporalInstance prev = previousSols.get(previousSols.size() - 1).prev;
+
 				Formula relevants = Formula.TRUE;
-				for (Relation r : prev.state(state<0?0:state).relations())
+				for (Relation r : prev.state(state < 0 ? 0 : state).relations())
 					if (!ignore.contains(r))
 						relevants = relevants.and(r.eq(r));
-				Formula curr = prev.state(state<0?0:state).formulate(originalBounds, reifs, relevants).not();
-				
+				Formula curr = prev.state(state < 0 ? 0 : state).formulate(originalBounds, reifs, relevants).not();
+
 				for (int i = 0; i < state; i++)
 					curr = curr.after();
-				
+
 				f = explorations.get(state) == null ? Formula.TRUE : explorations.get(state);
 
 				explorations.put(state, f.and(curr));
-				
+
 				f = f.and(curr); // this differs from #branch(int,Map,exclude)
 			}
 
 			Solution sol = branchCore(state, f, upper);
 			// store the reformulated instance
 			if (sol.sat()) {
-				previousSols.add((TemporalInstance) sol.instance());
+				previousSols.add(new IterationStep((TemporalInstance) sol.instance(), -1, -1, null, null));
 				explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
-			}
-			else
+			} else
 				translation = null; // unsat, no more solutions
 
 			return sol;
@@ -343,16 +361,15 @@ public final class TemporalPardinusSolver
 		 *              {@code state}.
 		 * @return
 		 */
-		// [HASLab] explorer
+		// [HASLab] explorer
 		private Solution branchCore(int state, Formula form, Map<Relation, TupleSet> upper) {
 			if (previousSols.isEmpty())
 				throw new IllegalArgumentException();
-			TemporalInstance prev = previousSols.get(previousSols.size() - 1);
+			TemporalInstance prev = previousSols.get(previousSols.size() - 1).prev;
 			this.translTime = System.currentTimeMillis();
 
 			// if >0, maybe will not increase, but 0 always increases
-			current_trace = state <= 0 ? 1 : state+1;
-			incremented = true;
+			current_trace = state <= 0 ? 1 : state + 1;
 
 			boolean isSat = false;
 			long solveTime = 0;
@@ -367,7 +384,8 @@ public final class TemporalPardinusSolver
 				// (possible in the action scenario)
 				TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(form), originalBounds, opt);
 				extbounds = tmptrans.expand(current_trace);
-				TemporalBoundsExpander.extend(originalBounds, extbounds, state<0?0:state, current_trace, prev, upper);
+				TemporalBoundsExpander.extend(originalBounds, extbounds, state < 0 ? 0 : state, current_trace, prev,
+						upper);
 				Formula exp_reforms = tmptrans.translate();
 				long translStart = System.currentTimeMillis();
 				translation = Translator.translate(exp_reforms, extbounds, opt);
@@ -395,7 +413,7 @@ public final class TemporalPardinusSolver
 				TemporalTranslator tmptrans = new TemporalTranslator(Formula.FALSE, originalBounds, opt);
 				transl = Translator.translate(Formula.FALSE, tmptrans.expand(1), opt);
 			}
-			
+
 			final Statistics stats = new Statistics(transl, translTime, solveTime);
 
 			final Solution sol;
@@ -425,7 +443,10 @@ public final class TemporalPardinusSolver
 		 * 
 		 * @see java.util.Iterator#next()
 		 */
-		public Solution next() {
+		public Solution nextS(int state, int delta, Set<Relation> change) {
+			if (delta < 1)
+				throw new IllegalArgumentException("Cannot iterate boundless with s != 0, breaks completeness.");
+
 			if (!explorations.isEmpty()) { // [HASLab]
 				this.current_trace = opt.minTraceLength();
 				explorations.clear();
@@ -433,16 +454,207 @@ public final class TemporalPardinusSolver
 			if (!hasNext())
 				throw new NoSuchElementException();
 			try {
-				return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution();
+				Set<Relation> fix = new HashSet<Relation>();
+				if (iteration_stage == 0) // only fix config once
+					fix.addAll(tmptrans.bounds.relations().stream().filter(r -> !r.isVariable())
+							.collect(Collectors.toSet()));
+
+				if (previousSol != null)
+					iteration_stage = 2;
+
+				return nextNonTrivialSolution(state, delta, fix, change);
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
 			}
 		}
 
+		public Solution nextP() {
+			if (iteration_stage == 2)
+				throw new IllegalArgumentException(
+						"Cannot iterate boundless after segment iteration, breaks completeness.");
+
+			if (!explorations.isEmpty()) { // [HASLab]
+				this.current_trace = opt.minTraceLength();
+				explorations.clear();
+			}
+			if (!hasNext())
+				throw new NoSuchElementException();
+			try {
+				Set<Relation> fix = new HashSet<Relation>();
+				if (iteration_stage == 0) // only fix config once
+					fix.addAll(tmptrans.bounds.relations().stream().filter(r -> !r.isVariable())
+							.collect(Collectors.toSet()));
+
+				Set<Relation> change = tmptrans.bounds.relations().stream().filter(r -> r.isVariable())
+						.collect(Collectors.toSet());
+
+				if (previousSol != null)
+					iteration_stage = 1;
+
+				return nextNonTrivialSolution(0, -1, fix, change);
+			} catch (SATAbortedException sae) {
+				translation.cnf().free();
+				throw new AbortedException(sae);
+			}
+		}
+
+		public Solution nextC() {
+			if (!explorations.isEmpty()) { // [HASLab]
+				this.current_trace = opt.minTraceLength();
+				explorations.clear();
+			}
+			// if unsat on other mode, can still try new config
+			if (iteration_stage == 0 && !hasNext())
+				throw new NoSuchElementException();
+			try {
+				Set<Relation> fix = new HashSet<Relation>();
+				Set<Relation> change = originalBounds.relations().stream().filter(r -> !r.isVariable())
+						.collect(Collectors.toSet());
+
+				// if coming back from other mode, restart the process
+				// this will force the re-generation of the solver at minimal length
+				if (iteration_stage != 0) {
+					previousSols.removeIf(s -> s.start >= 0);
+					current_trace = opt.minTraceLength();
+					translation = null;
+				}
+
+				iteration_stage = 0;
+
+				return nextNonTrivialSolution(-1, 0, fix, change);
+			} catch (SATAbortedException sae) {
+				translation.cnf().free();
+				throw new AbortedException(sae);
+			}
+		}
+
+		/**
+		 * Returns the next solution if any.
+		 * 
+		 * @see java.util.Iterator#next()
+		 */
+		public Solution next() {
+			return nextP();
+		}
+
 		/** @throws UnsupportedOperationException */
 		public void remove() {
 			throw new UnsupportedOperationException();
+		}
+
+		/**
+		 * Converts an iteration step into its SAT negation for the current prefix
+		 * length. Takes into consideration all equivalent loops for an unrolled
+		 * instance.
+		 */
+		private List<int[]> instanceToSat(IterationStep inst) {
+			List<int[]> res = new ArrayList<>();
+			// if the current prefix length cannot accommodate the iteration, return unsat
+			if ((!inst.infinite && inst.end + 1 > current_trace) || inst.start > current_trace)
+				return Collections.singletonList(new int[] {});
+			// the end of the change/fix segment depends on whether infinite or not
+			int segment_end = inst.infinite ? current_trace : inst.end;
+			// unroll the temporal instance given the current prefix length and past op
+			// depth
+			Set<TemporalInstance> alt_loops = inst.prev.unrollStep(current_trace, tmptrans.past_depth);
+			opt.reporter().debug("Iteration at " + current_trace + " between " + inst.start + " and " + segment_end);
+			opt.reporter().debug("Expanding and negating previous instance, " + alt_loops.size()
+					+ " possible unroll(s):\n" + inst.prev);
+			// only the looping state changes, so any instance can be used for encoding
+			// states
+			TemporalInstance instance = alt_loops.iterator().next();
+			List<Integer> notModel = new ArrayList<Integer>();
+			// identify and negate the variables denoting the states
+			for (Relation r : translation.bounds().relations()) {
+				// check whether any changing/fixing restriction on r
+				Boolean pos = null;
+				if (inst.change.stream().map(x -> x.isVariable() ? x.getExpansion() : x).anyMatch(x -> x == r))
+					pos = false;
+				if (inst.fix.stream().map(x -> x.isVariable() ? x.getExpansion() : x).anyMatch(x -> x == r))
+					if (pos != null)
+						throw new IllegalArgumentException("Cannot fix and change " + r);
+					else
+						pos = true;
+				TupleSet lower = translation.bounds().lowerBound(r);
+				IntSet vars = translation.primaryVariables(r);
+				opt.reporter().debug("Vars per state for " + r + ": " + vars.size() / current_trace);
+				opt.reporter().debug(
+						r + " has vars " + vars + " and upper " + translation.bounds().upperBound(r).indexView());
+				if (!vars.isEmpty() && !r.equals(TemporalTranslator.LOOP) && !r.equals(TemporalTranslator.STATE)
+						&& !r.equals(TemporalTranslator.PREFIX) && instance.tuples(r) != null) {
+					opt.reporter().debug(translation.bounds().upperBound(r).indexView() + " vs "
+							+ instance.tuples(r).indexView() + "");
+					int lit = vars.min();
+					for (IntIterator iter = translation.bounds().upperBound(r).indexView().iterator(); iter
+							.hasNext();) {
+						final int index = iter.next();
+						if (!lower.indexView().contains(index)) {
+							// this infers the state of a variable assuming that they are created state-wise
+							// and that each state has the same number of variables (since the bounds are
+							// the same of all trace, should be true)
+							if (!originalBounds.relations().contains(r)) {
+								int idx = (lit - vars.min()) % current_trace;
+								if (pos != null && idx >= inst.start && idx <= segment_end) {
+									if (!pos)
+										notModel.add(instance.tuples(r).indexView().contains(index) ? -lit : lit);
+									else
+										res.add(new int[] {
+												instance.tuples(r).indexView().contains(index) ? lit : -lit });
+								} else if (idx < inst.start)
+									// if before change segment, fix variable
+									res.add(new int[] { instance.tuples(r).indexView().contains(index) ? lit : -lit });
+							} else {
+								if (inst.start > 0 || (pos != null && pos))
+									res.add(new int[] { instance.tuples(r).indexView().contains(index) ? lit : -lit });
+								if (pos != null && !pos)
+									notModel.add(instance.tuples(r).indexView().contains(index) ? -lit : lit);
+							}
+							lit++;
+						}
+					}
+					opt.reporter().debug(notModel + "");
+				}
+			}
+			opt.reporter().debug("New clause without loops");
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < notModel.size(); i++)
+				sb.append(notModel.get(i) + " ");
+			opt.reporter().debug(sb.toString());
+			// loops only relevant when infinite iteration
+			if (inst.infinite) {
+				// identify and negate the relevant loop variables
+				Set<Integer> loops = new HashSet<Integer>();
+				IntSet vars = translation.primaryVariables(TemporalTranslator.LOOP);
+				opt.reporter().debug(vars.toString());
+				// for each of the possible loops, identify the primary variable
+				for (TemporalInstance i : alt_loops) {
+					int lit = vars.min();
+					for (int j = 0; j < i.loop; j++)
+						lit++;
+					loops.add(lit);
+				}
+				opt.reporter().debug("Bad loops were " + loops);
+				for (IntIterator iter = vars.iterator(); iter.hasNext();) {
+					final int lit = iter.next();
+					if (!loops.contains(lit))
+						notModel.add(lit);
+				}
+			}
+			opt.reporter().debug("New final clause");
+			sb = new StringBuilder();
+			for (int k = 0; k < notModel.size(); k++)
+				sb.append(notModel.get(k));
+			opt.reporter().debug(sb.toString());
+			for (int[] x : res)
+				opt.reporter().debug(x[0] + "");
+
+			// empty notModel in finite just means no changed forced; however, if empty in
+			// infinite not possible loop, so unsat
+			if (!notModel.isEmpty() || inst.infinite)
+				res.add(notModel.stream().mapToInt(ii -> ii).toArray());
+
+			return res;
 		}
 
 		/**
@@ -457,28 +669,64 @@ public final class TemporalPardinusSolver
 		 *          from the set of possible solutions
 		 * @return current solution
 		 */
-		private Solution nextNonTrivialSolution() {
+		private Solution nextNonTrivialSolution(int state, int steps, Set<Relation> fix, Set<Relation> change) {
+			if (SATOPTITERATION)
+				return nextNonTrivialSolutionSAT(state, steps, fix, change);
+			else
+				return nextNonTrivialSolutionFormula(state, steps, fix, change);
+		}
+
+		private int iteration_stage = 0;
+
+		private Solution nextNonTrivialSolutionSAT(int state, int steps, Set<Relation> fix, Set<Relation> change) {
+
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole transl = null;
 			int primaryVars = -1;
 			SATSolver cnf = null;
 
+			// this may be coming from an unsat path iteration and must be restarted before
+			// the previous solution is converted into sat
+			if (translation == null) {
+
+				// the translation of the original formula could in principle be re-used but
+				// the original past depth level is needed
+				tmptrans = new TemporalTranslator(originalFormula, originalBounds, opt);
+				extbounds = tmptrans.expand(current_trace);
+				Formula exp_reforms = tmptrans.translate();
+				long translStart = System.currentTimeMillis();
+				translation = Translator.translate(exp_reforms, extbounds, opt);
+				if (opt.logTranslation() > 0)
+					translation.log().logTempTranslation(tmptrans.tempTransLog);
+				long translEnd = System.currentTimeMillis();
+				translTime += translEnd - translStart;
+
+				for (IterationStep inst : previousSols) {
+					final List<int[]> notModel = instanceToSat(inst);
+					for (int[] cnfs : notModel)
+						translation.cnf().addClause(cnfs);
+				}
+				
+			}
+
+			// instance negation must now occur on the next step since the operation is not
+			// known a priori
+			if (previousSol != null) {
+				IterationStep newstep = new IterationStep(previousSol, state, (steps == -1) ? -1 : (state + steps - 1),
+						new HashSet<Relation>(fix), new HashSet<Relation>(change));
+				previousSols.add(newstep);
+				final List<int[]> notModel = instanceToSat(newstep);
+				for (int[] cnfs : notModel)
+					translation.cnf().addClause(cnfs);
+			}
+
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
-				if (incremented) {
-					Formula reforms = Formula.TRUE;
-					if (!SATOPTITERATION) {
-						// this must not be done before incrementing because the new bounds
-						// would be inconsistent with the then extended formula
-						// NOTE: this comment seems deprecated, push to outside loop and test	
-						for (Instance i : previousSols)
-							reforms = reforms.and(i.formulate(originalBounds, reifs, originalFormula).not());
-						opt.reporter().debug(reforms + "");
-					}
+				if (translation == null) {
+
 					// the translation of the original formula could in principle be re-used but
 					// the original past depth level is needed
-					TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(reforms), originalBounds,
-							opt);
+					tmptrans = new TemporalTranslator(originalFormula, originalBounds, opt);
 					extbounds = tmptrans.expand(current_trace);
 					Formula exp_reforms = tmptrans.translate();
 					long translStart = System.currentTimeMillis();
@@ -487,71 +735,11 @@ public final class TemporalPardinusSolver
 						translation.log().logTempTranslation(tmptrans.tempTransLog);
 					long translEnd = System.currentTimeMillis();
 					translTime += translEnd - translStart;
-					incremented = false;
-					if (SATOPTITERATION) {
-						for (TemporalInstance inst : previousSols) {
-							Set<TemporalInstance> insts = inst.unrollStep(current_trace, tmptrans.past_depth);
-							opt.reporter().debug("Expanding and negating previous instance, " + insts.size()
-									+ " possible unrolls:\n" + inst + "\n");
-							TemporalInstance inste = insts.iterator().next();
-							List<Integer> notModel = new ArrayList<Integer>();
-							for (Relation r : translation.bounds().relations()) {
-								TupleSet lower = translation.bounds().lowerBound(r);
-								IntSet vars = translation.primaryVariables(r);
-								opt.reporter().debug(r + " has vars " + vars + " and upper "
-										+ translation.bounds().upperBound(r).indexView());
-								if (!vars.isEmpty() && !r.equals(TemporalTranslator.LOOP)
-										&& !r.equals(TemporalTranslator.STATE) && !r.equals(TemporalTranslator.PREFIX)
-										&& inste.tuples(r) != null) {
-									int lit = vars.min();
-									for (IntIterator iter = translation.bounds().upperBound(r).indexView()
-											.iterator(); iter.hasNext();) {
-										final int index = iter.next();
-										opt.reporter().debug(translation.bounds().upperBound(r).indexView() + " vs "
-												+ inste.tuples(r).indexView() + "");
-										if (!lower.indexView().contains(index)) {
-											notModel.add(inste.tuples(r).indexView().contains(index) ? -lit : lit);
-											lit++;
-										}
-									}
-									opt.reporter().debug(notModel + "\n\n");
-								}
-							}
-							opt.reporter().debug("New clause without loops\n");
-							StringBuilder sb = new StringBuilder();
-							for (int i = 0; i < notModel.size(); i++)
-								sb.append(notModel.get(i) + " ");
-							opt.reporter().debug(sb + "\n");
-							Set<Integer> loops = new HashSet<Integer>();
-							IntSet vars = translation.primaryVariables(TemporalTranslator.LOOP);
-							for (TemporalInstance i : insts) {
-								int lit = vars.min();
-								opt.reporter().debug(
-										translation.bounds().upperBound(TemporalTranslator.LOOP).indexView() + "");
-								for (IntIterator iter = translation.bounds().upperBound(TemporalTranslator.LOOP)
-										.indexView().iterator(); iter.hasNext();) {
-									final int index = iter.next();
-									if (i.tuples(TemporalTranslator.LOOP).indexView()
-											.contains(index - ((tmptrans.past_depth - 1) * current_trace)))
-										loops.add(lit);
-									lit++;
-								}
-								opt.reporter().debug("\n");
-							}
-							opt.reporter().debug("Bad loops were " + loops + "\n");
-							for (IntIterator iter = vars.iterator(); iter.hasNext();) {
-								final int lit = iter.next();
-								if (!loops.contains(lit))
-									notModel.add(lit);
-							}
-							opt.reporter().debug("New final clause" + "\n");
-							sb = new StringBuilder();
-							for (int k = 0; k < notModel.size(); k++)
-								sb.append(notModel.get(k));
-							opt.reporter().debug(sb + "\n");
 
-							translation.cnf().addClause(notModel.stream().mapToInt(ii -> ii).toArray());
-						}
+					for (IterationStep inst : previousSols) {
+						final List<int[]> notModel = instanceToSat(inst);
+						for (int[] cnfs : notModel)
+							translation.cnf().addClause(cnfs);
 					}
 				}
 
@@ -569,7 +757,7 @@ public final class TemporalPardinusSolver
 
 				if (!isSat) {
 					current_trace++;
-					incremented = true;
+					translation = null;
 				}
 			}
 
@@ -582,22 +770,102 @@ public final class TemporalPardinusSolver
 				// because it frees the sat solver
 				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), originalBounds));
 
-				// [HASLab] skolems are not used in temporal iteration
-				IntSet tempskolemvars = new IntTreeSet();
-				for (Relation r : transl.bounds().relations())
-					if (r.isSkolem() && opt.temporal())
-						tempskolemvars.addAll(transl.primaryVariables(r));
-
-				// add the negation of the current model to the solver
-				final int[] notModel = new int[primaryVars - tempskolemvars.size()];
-				for (int i = 1; i <= primaryVars; i++) {
-					if (!tempskolemvars.contains(i))
-						notModel[i - 1] = cnf.valueOf(i) ? -i : i;
-				}
-				cnf.addClause(notModel);
+//				// [HASLab] skolems are not used in temporal iteration
+//				IntSet tempskolemvars = new IntTreeSet();
+//				for (Relation r : transl.bounds().relations())
+//					if (r.isSkolem() && opt.temporal())
+//						tempskolemvars.addAll(transl.primaryVariables(r));
+//
+//				// add the negation of the current model to the solver
+//				final int[] notModel = new int[primaryVars - tempskolemvars.size()];
+//				for (int i = 1; i <= primaryVars; i++) {
+//					if (!tempskolemvars.contains(i))
+//						notModel[i - 1] = cnf.valueOf(i) ? -i : i;
+//				}
 				// [HASLab] store the reformulated instance
 				// NOTE: should be on next to also get trivials?
-				previousSols.add((TemporalInstance) sol.instance());
+				previousSol = (TemporalInstance) sol.instance();
+
+			} else {
+				sol = unsat(transl, stats); // this also frees up solver resources, if any
+				translation = null; // unsat, no more solutions
+			}
+
+			return sol;
+		}
+
+		private Solution nextNonTrivialSolutionFormula(int state, int steps, Set<Relation> fix, Set<Relation> change) {
+
+			boolean isSat = false;
+			long solveTime = 0;
+			Translation.Whole transl = null;
+			int primaryVars = -1;
+			SATSolver cnf = null;
+
+			if (previousSol != null)
+				previousSols.add(new IterationStep(previousSol, state, state + steps - 1, fix, change));
+
+			Formula reforms = Formula.TRUE;
+			for (IterationStep i : previousSols) {
+				Formula reform = i.prev.formulate(originalBounds, reifs, originalFormula, i.start,
+						i.end == -1 ? null : i.start + i.end - 1);
+				opt.reporter().debug("Negated instance: " + reform);
+				reforms = reforms.and(reform.not());
+			}
+
+			// length of trace is state identifier + 1
+			current_trace = Integer.max(state + 1, 1);
+
+			while (!isSat && current_trace <= opt.maxTraceLength()) {
+				// this operation must restart the process since the branching formula is
+				// ephemeral
+
+				TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(reforms), originalBounds, opt);
+				extbounds = tmptrans.expand(current_trace);
+				// this freezes the prefix at the bound level
+				TemporalBoundsExpander.extend(tmptrans.bounds, extbounds, state < 0 ? 0 : state, current_trace,
+						previousSol);
+				Formula exp_reforms = tmptrans.translate();
+				long translStart = System.currentTimeMillis();
+				translation = Translator.translate(exp_reforms, extbounds, opt);
+				if (opt.logTranslation() > 0)
+					translation.log().logTempTranslation(tmptrans.tempTransLog);
+				long translEnd = System.currentTimeMillis();
+				translTime += translEnd - translStart;
+
+				transl = translation;
+
+				cnf = transl.cnf();
+				primaryVars = transl.numPrimaryVariables();
+
+				transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+
+				final long startSolve = System.currentTimeMillis();
+				isSat = cnf.solve();
+				final long endSolve = System.currentTimeMillis();
+				solveTime += endSolve - startSolve;
+
+				if (!isSat)
+					current_trace++;
+			}
+
+			if (transl == null) { // init scope beyond max trace length
+				TemporalTranslator tmptrans = new TemporalTranslator(Formula.FALSE, originalBounds, opt);
+				transl = Translator.translate(Formula.FALSE, tmptrans.expand(1), opt);
+			}
+
+			final Statistics stats = new Statistics(transl, translTime, solveTime);
+
+			final Solution sol;
+
+			if (isSat) {
+				// extract the current solution; can't use the sat(..) method
+				// because it frees the sat solver
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), originalBounds));
+
+				// store the reformulated instance
+				// NOTE: should be on next to also get trivials?
+				previousSol = (TemporalInstance) sol.instance();
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
 				translation = null; // unsat, no more solutions
@@ -795,7 +1063,7 @@ public final class TemporalPardinusSolver
 										// to the solver
 										notModel[i - 1] = cnf.valueOf(i) ? -i : i;
 										// [HASLab] add current model
-										// as weighted target
+										// as weighted targe)t
 										if (mode == TMode.CLOSE)
 											wcnf.addWeight(cnf.valueOf(i) ? i : -i, w);
 										if (mode == TMode.FAR)
@@ -895,10 +1163,42 @@ public final class TemporalPardinusSolver
 		}
 
 		@Override
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> upper, boolean exclude) {
+		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
 			throw new UnsupportedOperationException("Branching solutions not currently supported.");
 		}
 
+		@Override
+		public Solution nextS(int state, int delta, Set<Relation> force) {
+			throw new UnsupportedOperationException("Branching solutions not currently supported.");
+		}
+
+		@Override
+		public Solution nextC() {
+			throw new UnsupportedOperationException("Branching solutions not currently supported.");
+		}
+
+		@Override
+		public Solution nextP() {
+			throw new UnsupportedOperationException("Branching solutions not currently supported.");
+		}
+
+	}
+
+	private static class IterationStep {
+		final TemporalInstance prev;
+		final int start, end;
+		final Set<Relation> fix, change;
+		final boolean infinite;
+
+		private IterationStep(TemporalInstance prev, int start, int end, Set<Relation> fix, Set<Relation> change) {
+			super();
+			this.prev = prev;
+			this.start = start;
+			this.end = end;
+			this.fix = fix;
+			this.change = change;
+			this.infinite = end == -1;
+		}
 	}
 
 }

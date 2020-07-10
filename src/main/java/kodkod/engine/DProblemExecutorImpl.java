@@ -23,12 +23,14 @@
 package kodkod.engine;
 
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
@@ -203,7 +205,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
 	
 	void launchBatch(boolean first) {
-		int size = 50;
+		int size = 20;
 		
 		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(size);
 
@@ -247,7 +249,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Solution next() throws InterruptedException {
+	public Solution nextP() throws InterruptedException {
 		Solution sol;
 		if (buffer != null) {
 			sol = buffer;
@@ -280,5 +282,17 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		// emptyness must wait for the next output
 		buffer = solution_queue.take();
 		return true;
+	}
+
+	@Override
+	public Solution nextC() throws InterruptedException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Solution nextS(int state, int delta, Set<Relation> changes) throws InterruptedException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

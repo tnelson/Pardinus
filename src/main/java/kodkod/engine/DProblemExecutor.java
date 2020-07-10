@@ -22,11 +22,13 @@
  */
 package kodkod.engine;
 
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.decomp.DProblem;
@@ -131,7 +133,11 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 	 * @throws InterruptedException
 	 *             if interrupted while waiting.
 	 */
-	public abstract Solution next() throws InterruptedException;
+	public abstract Solution nextC() throws InterruptedException;
+
+	public abstract Solution nextP() throws InterruptedException;
+
+	public abstract Solution nextS(int state, int delta, Set<Relation> changes) throws InterruptedException;
 
 	/**
 	 * Tests whether there are further solutions. May block if there is no

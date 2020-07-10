@@ -52,6 +52,8 @@ public class DijkstraT extends DModel {
 
 	private int processes, mutexes;
 	private Variant var;
+	
+	private final Universe u;
 
 	public enum Variant {
 		SAT, UNSAT;
@@ -71,9 +73,19 @@ public class DijkstraT extends DModel {
 		waits = Relation.binary_variable("waits");
 
 		this.processes = Integer.valueOf(args[0]);
-		this.mutexes = Integer.valueOf(args[1]);
-		this.var = Variant.valueOf(args[2]);
+		this.mutexes = Integer.valueOf(args[0]);
+		this.var = Variant.valueOf(args[1]);
 
+
+		final List<String> atoms = new ArrayList<String>(processes + mutexes);
+		for (int i = 0; i < processes; i++) {
+			atoms.add("Process" + i);
+		}
+		for (int i = 0; i < mutexes; i++) {
+			atoms.add("Mutex" + i);
+		}
+
+		u = new Universe(atoms);
 	}
 
 	/**
@@ -346,15 +358,6 @@ public class DijkstraT extends DModel {
 
 	public PardinusBounds bounds1() {
 
-		final List<String> atoms = new ArrayList<String>(processes + mutexes);
-		for (int i = 0; i < processes; i++) {
-			atoms.add("Process" + i);
-		}
-		for (int i = 0; i < mutexes; i++) {
-			atoms.add("Mutex" + i);
-		}
-
-		Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
@@ -373,15 +376,6 @@ public class DijkstraT extends DModel {
 	
 	public Bounds bounds2() {
 
-		final List<String> atoms = new ArrayList<String>(processes + mutexes);
-		for (int i = 0; i < processes; i++) {
-			atoms.add("Process" + i);
-		}
-		for (int i = 0; i < mutexes; i++) {
-			atoms.add("Mutex" + i);
-		}
-
-		Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 		final Bounds b = new Bounds(u);
 

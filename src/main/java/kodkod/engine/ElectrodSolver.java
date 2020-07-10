@@ -48,6 +48,7 @@ import kodkod.engine.unbounded.ElectrodPrinter;
 import kodkod.engine.unbounded.ElectrodReader;
 import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.engine.unbounded.InvalidUnboundedSolution;
+import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.TupleSet;
@@ -143,24 +144,68 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 */
 		@Override
 		public Solution next() {
-				
-			Solution s = go(formula,bounds,options);
-	
-			if (s.sat()) {
-				Formula trns = s.instance().formulate(bounds,reifs,formula).not();
+			if (prev != null) {
+				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
+				Formula trns = prev.formulate(bounds,reifs,formula).not();
 				options.reporter().debug("Reified instance: "+trns);
-				formula = formula.and(trns);
+				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
 			}
-			else 
+				
+			Solution s = go(formula.and(explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE),bounds,options);
+			if (s.sat())
+				prev = (TemporalInstance) s.instance();
+			else {
+				prev = null;
 				formula = null;
+			}
 	
 			return s;
 		}
 
+		TemporalInstance prev;
+		Map<Integer,Formula> explorations = new HashMap<Integer,Formula>();
+		
 		/**
 		 * {@inheritDoc}
 		 */
 		@Override
+		public Solution nextS(int state, int steps, Set<Relation> force) {
+			if (steps != 1 && steps != -1)
+				throw new IllegalArgumentException("Electrod only supports step or infinite iteration.");
+			if (prev == null)
+				throw new IllegalStateException("Cannot iterate without previous solution.");
+			
+			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
+			
+
+			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1).not();
+			options.reporter().debug("Force change: "+change);
+			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
+
+			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1);
+			options.reporter().debug("Preserve prefix: "+fix);
+
+			explorations.put(state, explorations.get(state).and(change));
+
+			Solution s = go(formula.and(explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(fix),bounds,options);
+			
+			if (s.sat())
+				prev = (TemporalInstance) s.instance();
+	
+			System.out.println(s);
+			
+			return s;
+		}
+		
+		@Override
+		public Solution nextC() {
+			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");	
+		}
+		@Override
+		public Solution nextP() {
+			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");	
+		}
+		
 		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
 			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");
 		}
@@ -191,14 +236,16 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		String file = dir.toString()+File.separatorChar+String.format("%05d", bounds.integration);
 		PrintWriter writer;
 		try {
-			if (!Options.isDebug())
+			if (!Options.isDebug()) {
 				new File(file+".elo").deleteOnExit();
+			}
 			writer = new PrintWriter(file+".elo");
 			String electrod = ElectrodPrinter.print(formula, bounds, rep);
 			writer.println(electrod);
 			writer.close();
 			rep.debug("New Electrod problem at "+dir+".");
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
+			rep.debug(e.getMessage());
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
 		ProcessBuilder builder;
@@ -213,7 +260,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		args.add(file+".elo");
 				
 		builder = new ProcessBuilder(args);
-		
 		builder.environment().put("PATH", builder.environment().get("PATH"));
 		builder.redirectErrorStream(true);
 		int ret = -1;
@@ -228,13 +274,18 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				public void run() {
 					if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
 						try {
-							Field f = p.getClass().getDeclaredField("pid");
-							f.setAccessible(true);
-							Runtime.getRuntime().exec("kill -SIGTERM " + f.get(p));
-						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-								| IllegalAccessException | IOException e) {
+							if (p.isAlive()) {
+								Field f = p.getClass().getDeclaredField("pid");
+								f.setAccessible(true);
+	//							p.destroy();
+	//							System.out.println(f.get(p));
+	//							new ProcessBuilder("kill",f.get(p).toString()).start();
+								Process x = Runtime.getRuntime().exec("kill " + f.get(p));
+							}
+						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException
+								 e) {
 							// TODO Auto-generated catch block
-							// e.printStackTrace();
+							 e.printStackTrace();
 						}
 					else
 						p.destroy();

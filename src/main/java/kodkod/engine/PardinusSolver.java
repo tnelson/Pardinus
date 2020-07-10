@@ -208,12 +208,28 @@ public class PardinusSolver implements
 				public boolean hasNext() {
 					return it.hasNext();
 				}
-				
+
 				@Override
-				public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
+				public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force,
+						boolean exclude) {
 					throw new UnsupportedOperationException("Branching not supported for this solver.");
 				}
-			};
+
+				@Override
+				public Solution nextP() {
+					throw new UnsupportedOperationException("Branching not supported for this solver.");
+				}
+
+				@Override
+				public Solution nextC() {
+					throw new UnsupportedOperationException("Branching not supported for this solver.");
+				}
+
+				@Override
+				public Solution nextS(int state, int delta, Set<Relation> force) {
+					throw new UnsupportedOperationException("Branching not supported for this solver.");
+				}
+};
 		}
 	}
 

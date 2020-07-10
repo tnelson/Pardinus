@@ -264,8 +264,6 @@ public class TemporalBoundsExpander {
 			throw new UnsupportedOperationException();
 		Universe u = extBounds.universe();
 		for (Relation r : tmpBounds.relations()) {
-			TupleSet tupleSetL = convertToUniv(tmpBounds.lowerBound(r), u);
-			TupleSet tupleSetU = convertToUniv(tmpBounds.upperBound(r), u);
 			if (r.isVariable()) {
 				int i;
 				TupleSet upp = u.factory().noneOf(r.arity()+1);
@@ -278,6 +276,9 @@ public class TemporalBoundsExpander {
 					upp.addAll(convertToUniv(ts,u).product(time));
 				}
 				for (; i < traceLen; i++) {
+					TupleSet tupleSetL = convertToUniv(tmpBounds.lowerBound(r), u);
+					TupleSet tupleSetU = convertToUniv(tmpBounds.upperBound(r), u);
+
 					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
 
 					low.addAll(tupleSetL.product(time));
@@ -285,11 +286,12 @@ public class TemporalBoundsExpander {
 				}
 				extBounds.bound(r.getExpansion(), low, upp);
 			} else {
-				if (inst.contains(r)) { // due to reified atoms
-					Evaluator eval = new Evaluator(inst);
-					TupleSet ts = eval.evaluate(r);
-					extBounds.boundExactly(r, convertToUniv(ts,u));			
-				}
+				if (prefxLen > 0)
+					if (inst.contains(r)) { // due to reified atoms
+						Evaluator eval = new Evaluator(inst);
+						TupleSet ts = eval.evaluate(r);
+						extBounds.boundExactly(r, convertToUniv(ts,u));			
+					}
 			}
 		}
 
