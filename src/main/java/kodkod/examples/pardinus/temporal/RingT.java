@@ -76,7 +76,7 @@ public class RingT extends DModel {
 		plast = Relation.unary("plast");
 		pord = Relation.binary("pord");
 
-		id = Relation.binary("id");
+		id = Relation.binary("id_");
 		Id = Relation.unary("Id");
 
 		toSend = Relation.binary_variable("toSend");

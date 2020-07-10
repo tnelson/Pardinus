@@ -38,6 +38,7 @@ import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.Evaluator;
+import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
@@ -77,25 +78,21 @@ public class TemporalInstance extends Instance {
 	 * @assumes 0 >= loop >= instances.length
 	 * @assumes all s,s': instance | s.universe = s'.universe && s.intTuples =
 	 *          s'.intTuples
-	 * @param instances
-	 *            the states of the temporal instance.
-	 * @param loop
-	 *            the looping state.
+	 * @param instances the states of the temporal instance.
+	 * @param loop      the looping state.
 	 * @ensures this.states = instances && this.loop = loop
-	 * @throws NullPointerException
-	 *             instances = null
-	 * @throws IllegalArgumentException
-	 *             !(0 >= loop >= instances.length)
+	 * @throws NullPointerException     instances = null
+	 * @throws IllegalArgumentException !(0 >= loop >= instances.length)
 	 */
 	public TemporalInstance(List<Instance> instances, int loop, int unrolls) {
 		super(TemporalBoundsExpander.expandUniverse(instances.get(0).universe(), instances.size(), unrolls));
 		if (loop < 0 || loop >= instances.size())
 			throw new IllegalArgumentException("Looping state must be between 0 and instances.length.");
-		
+
 		Map<Relation, TupleSet> expRels = stateIdomify(this.universe(), instances, loop, unrolls);
 		for (Relation r : expRels.keySet())
 			super.add(r, expRels.get(r));
-		for(IndexedEntry<TupleSet> entry : instances.get(0).intTuples())
+		for (IndexedEntry<TupleSet> entry : instances.get(0).intTuples())
 			super.add(entry.index(), universe().factory().setOf(entry.value().iterator().next().atom(0)));
 
 		this.static_universe = instances.get(0).universe();
@@ -108,18 +105,17 @@ public class TemporalInstance extends Instance {
 	 * Converts a sequence of instances into a state idiom representation by
 	 * appending the corresponding state atom to variable relations.
 	 * 
-	 * @param instances
-	 *            the sequence of instances representing a trace
+	 * @param instances the sequence of instances representing a trace
 	 * @return the trace represented in a state idiom
 	 */
 	private static Map<Relation, TupleSet> stateIdomify(Universe u, List<Instance> instances, int loop, int unrolls) {
-		assert(loop >= 0 && loop < instances.size());
+		assert (loop >= 0 && loop < instances.size());
 		// first instances.size() atoms will be the state atoms
 		Map<Relation, TupleSet> instance = new HashMap<Relation, TupleSet>();
 		for (Relation r : instances.get(0).relations())
 			if (r.isVariable()) {
 				if (instance.get(r.getExpansion()) == null)
-					instance.put(r.getExpansion(), u.factory().noneOf(r.arity()+1));
+					instance.put(r.getExpansion(), u.factory().noneOf(r.arity() + 1));
 				for (int i = 0; i < instances.size(); i++) {
 					TupleSet ts = TemporalBoundsExpander.convertToUniv(instances.get(i).tuples(r), u);
 					instance.get(r.getExpansion()).addAll(ts.product(u.factory().setOf(u.atom(i))));
@@ -134,19 +130,20 @@ public class TemporalInstance extends Instance {
 				}
 				instance.put(r, ts);
 			}
-		instance.put(TemporalTranslator.LAST, u.factory().setOf(u.atom(instances.size()*unrolls - 1)));
+		instance.put(TemporalTranslator.LAST, u.factory().setOf(u.atom(instances.size() * unrolls - 1)));
 		instance.put(TemporalTranslator.FIRST, u.factory().setOf(u.atom(0)));
-		instance.put(TemporalTranslator.LOOP, u.factory().setOf(u.atom(instances.size()*(unrolls-1)+loop)));
+		instance.put(TemporalTranslator.LOOP, u.factory().setOf(u.atom(instances.size() * (unrolls - 1) + loop)));
 		TupleSet x = u.factory().range(u.factory().tuple(u.atom(0)), u.factory().tuple(u.atom(instances.size() - 1)));
 		for (int i = 1; i < unrolls; i++) {
-			x.addAll(u.factory().range(u.factory().tuple(u.atom(i*instances.size()+loop)), u.factory().tuple(u.atom((i+1)*instances.size()-1))));
+			x.addAll(u.factory().range(u.factory().tuple(u.atom(i * instances.size() + loop)),
+					u.factory().tuple(u.atom((i + 1) * instances.size() - 1))));
 		}
-		instance.put(TemporalTranslator.STATE,x);
+		instance.put(TemporalTranslator.STATE, x);
 		if (unrolls > 1) { // otherwise no need for unrolls
 			TupleSet unrollMap = u.factory().noneOf(2);
 			for (int i = 0; i < instances.size(); i++) {
 				for (int j = 0; j < unrolls; j++)
-					unrollMap.add(u.factory().tuple(u.atom(i+j*instances.size()),u.atom(i)));
+					unrollMap.add(u.factory().tuple(u.atom(i + j * instances.size()), u.atom(i)));
 			}
 			instance.put(TemporalTranslator.UNROLL_MAP, unrollMap);
 			instance.put(TemporalTranslator.LAST_, u.factory().setOf(u.atom(instances.size() - 1)));
@@ -156,9 +153,9 @@ public class TemporalInstance extends Instance {
 		for (int i = 0; i < instances.size() - 1; i++)
 			nxt.add(u.factory().tuple(u.atom(i), u.atom(i + 1)));
 		for (int j = 1; j < unrolls; j++) {
-			nxt.add(u.factory().tuple(u.atom(j*instances.size()-1),u.atom(j*instances.size()+loop)));
-			for (int i = loop; i < instances.size()-1; i++)
-				nxt.add(u.factory().tuple(u.atom(j*instances.size()+i),u.atom(j*instances.size()+i+1)));
+			nxt.add(u.factory().tuple(u.atom(j * instances.size() - 1), u.atom(j * instances.size() + loop)));
+			for (int i = loop; i < instances.size() - 1; i++)
+				nxt.add(u.factory().tuple(u.atom(j * instances.size() + i), u.atom(j * instances.size() + i + 1)));
 		}
 		instance.put(TemporalTranslator.PREFIX, nxt);
 		return instance;
@@ -172,13 +169,10 @@ public class TemporalInstance extends Instance {
 	 * they contain information regarding their temporal properties.
 	 * 
 	 * @assumes some instance.loop
-	 * @param instance
-	 *            the expanded static solution to the problem
-	 * @param tmptrans
-	 *            temporal translation information, including original variable
-	 *            relations
-	 * @throws IllegalArgumentException
-	 *             no instance.loop
+	 * @param instance the expanded static solution to the problem
+	 * @param tmptrans temporal translation information, including original variable
+	 *                 relations
+	 * @throws IllegalArgumentException no instance.loop
 	 */
 	public TemporalInstance(Instance instance, PardinusBounds extbounds) {
 		super(instance.universe(), new HashMap<Relation, TupleSet>(instance.relationTuples()), instance.intTuples());
@@ -194,7 +188,7 @@ public class TemporalInstance extends Instance {
 		loop = TemporalTranslator.interpretState(tuple_loop);
 		unrolls = TemporalTranslator.interpretUnroll(tuple_loop);
 		states = new ArrayList<Instance>();
-		
+
 		Iterator<Tuple> tupleset_times = eval.evaluate(TemporalTranslator.STATE).iterator();
 		Set<Object> atom_times = new HashSet<Object>();
 		while (tupleset_times.hasNext())
@@ -220,18 +214,15 @@ public class TemporalInstance extends Instance {
 				}
 				inst.add(r, ts);
 			}
-			
-			for(IndexedEntry<TupleSet> entry : extbounds.intBounds()) {
+
+			for (IndexedEntry<TupleSet> entry : extbounds.intBounds()) {
 				Tuple t = static_universe.factory().tuple(entry.value().iterator().next().atom(0));
 				inst.add(entry.index(), static_universe.factory().setOf(t));
-			}	
-			
+			}
+
 			states.add(inst);
 		}
 	}
-
-	// alternative encodings, atom reification vs some disj pattern
-	private static final boolean SomeDisjPattern = false;
 
 	/**
 	 * Converts a temporal instance into a formula that exactly identifies it,
@@ -239,74 +230,138 @@ public class TemporalInstance extends Instance {
 	 * every relevant atom be reified into a singleton relation, which may be
 	 * re-used between calls. Will be used between the various states of the trace.
 	 * 
+	 * Not all relations are converted into the resulting formula, <formula> is used
+	 * to identify which are relevant.
+	 * 
+	 * Will change <bounds> if not all atoms of the universe are present at <reif>.
+	 * 
 	 * @assumes reif != null
-	 * @param reif
-	 *            the previously reified atoms
-	 * @throws NullPointerException
-	 *             reif = null
+	 * @param bounds  the declaration of the relations
+	 * @param reif    the previously reified atoms
+	 * @param formula formula used to identify the relevant relations
+	 * @throws NullPointerException reif = null
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
 	@Override
 	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
+		return formulate(bounds, reif, formula, -1, null);
+	}
+
+	/**
+	 * Converts a segment of a temporal instance into a formula that exactly
+	 * identifies it, encoding each state of the trace and the looping behavior.
+	 * Requires that every relevant atom be reified into a singleton relation, which
+	 * may be re-used between calls. Will be used between the various states of the
+	 * trace.
+	 * 
+	 * If the end is left null, it represents the complete looping suffix; the start
+	 * can be -1 to denote only the static portion of the trace.
+	 * 
+	 * Not all relations are converted into the resulting formula, <formula> is used
+	 * to identify which are relevant.
+	 * 
+	 * Will change <bounds> if not all atoms of the universe are present at <reif>.
+	 * 
+	 * @assumes reif != null
+	 * @assumes start >= -1
+	 * @assumes end >= start or end == null
+	 * @param bounds  the declaration of the relations
+	 * @param reif    the previously reified atoms
+	 * @param formula formula used to identify the relevant relations
+	 * @param start   the beginning of the segment
+	 * @param end     the end of the segment (or null if infinite)
+	 * @throws NullPointerException reif = null
+	 * @return the formula representing <this>
+	 */
+	// [HASLab]
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, int start, Integer end) {
+		if (start < -1)
+			throw new IllegalArgumentException("Segment start must be > -1.");
+		if (end != null && end < start)
+			throw new IllegalArgumentException("Segment end must be after its start (or null if infinite).");
 
 		// reify atoms not yet reified
 		Universe sta_uni = states.get(0).universe();
 		for (int i = 0; i < sta_uni.size(); i++) {
+			Expression r;
 			if (!reif.keySet().contains(sta_uni.atom(i))) {
-				Expression r;
-				if (SomeDisjPattern) {
+				if (TemporalPardinusSolver.SomeDisjPattern) {
 					r = Variable.unary(sta_uni.atom(i).toString());
 				} else {
 					r = Relation.atom(sta_uni.atom(i).toString());
-					bounds.boundExactly((Relation ) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 				}
 				reif.put(sta_uni.atom(i), r);
+			} else {
+				r = reif.get(sta_uni.atom(i));
 			}
+			if (!TemporalPardinusSolver.SomeDisjPattern && !bounds.relations.contains((Relation) r))
+				bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 		}
 
-		Set<Relation> stats = new HashSet<Relation>();
+
+		Set<Relation> staticss = new HashSet<Relation>();
 		for (Relation r : states.get(0).relations())
 			if (!r.isVariable())
-				stats.add(r);
-		Entry<Formula, Formula> slcs = DecompFormulaSlicer.slice(formula,stats);
-		
-		// create the constraint for each state
-		// S0 and after (S1 and after ...)
+				staticss.add(r);
+		// split between static and variable formula for relevancy formula
+		Entry<Formula, Formula> slcs = DecompFormulaSlicer.slice(formula, staticss);
+
+		// create the constraint for each state within the given segment
+		// (S0 and after (S1 and after ...)) and (loop formula)
 		Formula res;
 		if (states.isEmpty())
 			res = Formula.TRUE;
 		else {
-			res = states.get(prefixLength() - 1).formulate(bounds,reif,slcs.getValue());
+			Integer j = end;
+			// if null then end at the last state of the prefix, unless the start is beyond
+			// it
+			// TODO: the looping formula should also be offset in this case!
+			if (j == null) // TODO: changing this is not caught by the unit tests
+				j = Integer.max(start + (prefixLength() - 1) - loop, prefixLength() - 1);
+			if (j >= 0) {
+				// the state formulas, start from the end and accumulate afters
+				res = state(j--).formulate(bounds, reif, slcs.getValue());
+				for (; j >= Integer.max(0, start); j--)
+					res = state(j).formulate(bounds, reif, slcs.getValue()).and(res.after());
+				// after offset when start > 0
+				for (; j >= 0; j--)
+					res = res.after();
+			} else
+				res = Formula.TRUE;
 
-			for (int i = prefixLength() - 2; i >= 0; i--)
-				res = states.get(i).formulate(bounds,reif,slcs.getValue()).and(res.after());
-	
-			res = states.get(prefixLength() - 1).formulate(bounds,reif,slcs.getKey()).and(res);
-			
-			// create the looping constraint
-			// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
-			// after^(end-loop) Sloop+1 && ...)
-			Formula rei = states.get(loop).formulate(bounds,reif,slcs.getValue());
-			Formula rei2 = rei;
-			for (int j = loop; j < prefixLength(); j++)
-				rei2 = rei2.after();
-	
-			Formula looping = rei.implies(rei2);
-			for (int i = loop + 1; i < prefixLength(); i++) {
-				rei = states.get(i).formulate(bounds,reif,slcs.getValue());
-				rei2 = rei;
-				for (int j = loop; j < prefixLength(); j++)
-					rei2 = rei2.after();
-				looping = looping.and(rei.implies(rei2));
+			// the configuration formula, if start = -1
+			if (start < 0 && !slcs.getKey().equals(Formula.TRUE)) {
+				Formula sres = states.get(prefixLength() - 1).formulate(bounds, reif, slcs.getKey());
+				res = res.equals(Formula.TRUE) ? sres : sres.and(res);
 			}
-			looping = looping.always();
-			for (int i = 0; i < loop; i++)
-				looping = looping.after();
-	
-			res = res.and(looping);
-	
-			if (SomeDisjPattern) {
+
+			// only create null formula if no end to segment, end = nukk
+			if (end == null) {
+				// create the looping constraint
+				// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
+				// after^(end-loop) Sloop+1 && ...)
+				Formula rei = states.get(loop).formulate(bounds, reif, slcs.getValue());
+				Formula rei2 = rei;
+				for (int i = loop; i < prefixLength(); i++)
+					rei2 = rei2.after();
+
+				Formula looping = rei.implies(rei2);
+				for (int i = loop + 1; i < prefixLength(); i++) {
+					rei = states.get(i).formulate(bounds, reif, slcs.getValue());
+					rei2 = rei;
+					for (int k = loop; k < prefixLength(); k++)
+						rei2 = rei2.after();
+					looping = looping.and(rei.implies(rei2));
+				}
+				looping = looping.always();
+				for (int i = 0; i < loop; i++)
+					looping = looping.after();
+
+				res = res.and(looping);
+			}
+
+			if (TemporalPardinusSolver.SomeDisjPattern) {
 				Decls decls = null;
 				Expression al = null;
 				for (Expression e : reif.values()) {
@@ -326,8 +381,7 @@ public class TemporalInstance extends Instance {
 		return res;
 	}
 
-	
-	/** 
+	/**
 	 * {@inheritDoc}
 	 */
 	public boolean contains(Relation relation) {
@@ -342,27 +396,35 @@ public class TemporalInstance extends Instance {
 	 * @param past_depth the past depth, needed to preserve the size of the universe
 	 */
 	public Set<TemporalInstance> unrollStep(int size, int past_depth) {
-		if (size < prefixLength())
-			throw new IllegalArgumentException("Expected size smaller than this.size().");
 		// the number of needed extra steps
-		size -= prefixLength();
 		Set<TemporalInstance> instances = new HashSet<TemporalInstance>();
 		// always initialize with the prefix
-		ArrayList<Instance> newstates = new ArrayList<Instance>(this.states);
+		ArrayList<Instance> newstates = new ArrayList<Instance>();
+		for (int i = 0; i < Math.min(size, prefixLength()); i++)
+			newstates.add(this.states.get(i));
+		size -= prefixLength();
 		int loopsize = prefixLength() - loop;
 		// add the corresponding unrolled states
 		for (int i = 0; i < size; i++)
 			newstates.add(this.states.get((i % loopsize) + loop));
 
-		// creates a new instance for every isomorphic loop (multiples of loop size after the prefix)
+		// creates a new instance for every isomorphic loop (multiples of loop size
+		// after the prefix)
 		int newloop = loop + size;
 		while (newloop >= loop) {
 			instances.add(new TemporalInstance(newstates, newloop, past_depth));
 			newloop -= loopsize;
 		}
+		// sometimes there is the need to trim down the instance to smaller prefixes so
+		// that the appropriate vars are created; however, a loop is also required when
+		// creating a trace, so 0 is a default, it does not represent the actual
+		// instance
+		if (size < 0)
+			instances.add(new TemporalInstance(newstates, 0, past_depth));
+
 		return instances;
 	}
-	
+
 	/**
 	 * The length of the prefix of this temporal instance, i.e., the number of
 	 * unique states prior to looping.
@@ -383,7 +445,7 @@ public class TemporalInstance extends Instance {
 	public Instance state(int i) {
 		return states.get(normalizedIndex(i));
 	}
-	
+
 	/**
 	 * Calculates the normalized index for this instance considering the looping
 	 * states.
@@ -393,9 +455,9 @@ public class TemporalInstance extends Instance {
 	 */
 	public int normalizedIndex(int i) {
 		int loopsize = prefixLength() - loop;
-		return i < prefixLength() ? i : (((i-prefixLength()) % loopsize) + loop);
+		return i < prefixLength() ? i : (((i - prefixLength()) % loopsize) + loop);
 	}
-	
+
 	/**
 	 * Returns the static universe from which the tuples in the temporal instance
 	 * are drawn. Contrasts with {@link #universe()} that represents the expanded
@@ -406,35 +468,35 @@ public class TemporalInstance extends Instance {
 	public Universe staticUniverse() {
 		return static_universe;
 	}
-	
+
 	/**
-	 * Maps the given relation to the given tuple set.  
+	 * Maps the given relation to the given tuple set.
+	 * 
 	 * @ensures this.tuples' = this.tuples ++ relation->s
-	 * @throws NullPointerException  relation = null || s = null
-	 * @throws IllegalArgumentException  relation.arity != s.arity
-	 * @throws IllegalArgumentException  s.universe != this.universe
-	 * @throws UnsupportedOperationException  this is an unmodifiable instance
+	 * @throws NullPointerException          relation = null || s = null
+	 * @throws IllegalArgumentException      relation.arity != s.arity
+	 * @throws IllegalArgumentException      s.universe != this.universe
+	 * @throws UnsupportedOperationException this is an unmodifiable instance
 	 */
 	public void add(final Relation relation, TupleSet s) {
 		if (!s.universe().equals(universe()) && !s.universe().equals(staticUniverse()))
 			throw new IllegalArgumentException("s.universe!=this.universe");
-		if (relation.arity()!=s.arity())
+		if (relation.arity() != s.arity())
 			throw new IllegalArgumentException("relation.arity!=s.arity");
-		
+
 		if (s.universe().equals(universe())) {
-			super.add(relation,s);
+			super.add(relation, s);
 			for (int i = 0; i < states.size(); i++) {
 				states.get(i).add(relation, TemporalBoundsExpander.convertToUniv(s, static_universe));
 			}
 		} else {
-			super.add(relation,TemporalBoundsExpander.convertToUniv(s, universe()));
+			super.add(relation, TemporalBoundsExpander.convertToUniv(s, universe()));
 			for (int i = 0; i < states.size(); i++) {
 				states.get(i).add(relation, s);
 			}
 		}
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * 
@@ -455,9 +517,9 @@ public class TemporalInstance extends Instance {
 		return sb.toString();
 	}
 
-	
 	/**
 	 * Returns an unmodifiable view of this instance.
+	 * 
 	 * @return an unmodifiable view of this instance.
 	 */
 	public TemporalInstance unmodifiableView() {

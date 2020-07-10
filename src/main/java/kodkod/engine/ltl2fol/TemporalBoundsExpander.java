@@ -25,10 +25,13 @@ package kodkod.engine.ltl2fol;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import kodkod.ast.Relation;
+import kodkod.engine.Evaluator;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
@@ -239,6 +242,130 @@ public class TemporalBoundsExpander {
 		}
 
 		return newBounds;
+	}
+	
+	/**
+	 * Exactly binds relations up to a certain trace length to the values of a
+	 * provided instance.
+	 * 
+	 * NOTE: this is re-doing part of the job already doen previously by
+	 * {@link #expand(PardinusBounds, int, int)} to extBounds, refactor.
+	 * 
+	 * @param tmpBounds the original, non expanded bounds
+	 * @param extBounds the extended state idiom bounds
+	 * @param prefxLen  the length of the prefix to bind exactly
+	 * @param traceLen  the total trace length
+	 * @param inst      the instance from which to bind
+	 * @return
+	 */
+	// [HASLab] explorer
+	public static Bounds extend(PardinusBounds tmpBounds, Bounds extBounds, int prefxLen, int traceLen, TemporalInstance inst) {
+		if (!TemporalTranslator.ExplicitUnrolls)
+			throw new UnsupportedOperationException();
+		Universe u = extBounds.universe();
+		for (Relation r : tmpBounds.relations()) {
+			if (r.isVariable()) {
+				int i;
+				TupleSet upp = u.factory().noneOf(r.arity()+1);
+				TupleSet low = u.factory().noneOf(r.arity()+1);
+				for (i = 0; i < traceLen && i < prefxLen; i++) {
+					Evaluator eval = new Evaluator(inst);
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+					TupleSet ts = eval.evaluate(r,i);
+					low.addAll(convertToUniv(ts,u).product(time));
+					upp.addAll(convertToUniv(ts,u).product(time));
+				}
+				for (; i < traceLen; i++) {
+					TupleSet tupleSetL = convertToUniv(tmpBounds.lowerBound(r), u);
+					TupleSet tupleSetU = convertToUniv(tmpBounds.upperBound(r), u);
+
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+
+					low.addAll(tupleSetL.product(time));
+					upp.addAll(tupleSetU.product(time));
+				}
+				extBounds.bound(r.getExpansion(), low, upp);
+			} else {
+				if (prefxLen > 0)
+					if (inst.contains(r)) { // due to reified atoms
+						Evaluator eval = new Evaluator(inst);
+						TupleSet ts = eval.evaluate(r);
+						extBounds.boundExactly(r, convertToUniv(ts,u));			
+					}
+			}
+		}
+
+		return extBounds;
+	}
+	
+	/**
+	 * TODO
+	 * 
+	 * @param tmpBounds
+	 * @param extBounds
+	 * @param prefxLen
+	 * @param traceLen
+	 * @param inst
+	 * @param excepts relations that will be bound exactly to this tuple set.
+	 * @return
+	 */
+	public static Bounds extend(PardinusBounds tmpBounds, Bounds extBounds, int prefxLen, int traceLen, TemporalInstance inst, Map<Relation,TupleSet> excepts) {
+		if (!TemporalTranslator.ExplicitUnrolls)
+			throw new UnsupportedOperationException();
+		Universe u = extBounds.universe();
+		Evaluator eval = new Evaluator(inst);
+		for (Relation r : tmpBounds.relations()) {
+			TupleSet tupleSetL = convertToUniv(tmpBounds.lowerBound(r), u);
+			TupleSet tupleSetU = convertToUniv(tmpBounds.upperBound(r), u);
+			if (r.isVariable()) {
+				int i;
+				TupleSet upp = u.factory().noneOf(r.arity()+1);
+				TupleSet low = u.factory().noneOf(r.arity()+1);
+				for (i = 0; i < traceLen-1 && i < prefxLen-1; i++) {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+					TupleSet ts = eval.evaluate(r,i);
+					low.addAll(convertToUniv(ts,u).product(time));
+					upp.addAll(convertToUniv(ts,u).product(time));
+				}
+				
+				if (i < traceLen && i < prefxLen) {
+					if (excepts.containsKey(r)) {
+						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+						low.addAll(convertToUniv(excepts.get(r),u).product(time));
+						upp.addAll(convertToUniv(excepts.get(r),u).product(time));
+					} else {
+						TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+						TupleSet ts = eval.evaluate(r,i);
+						low.addAll(convertToUniv(ts,u).product(time));
+						upp.addAll(convertToUniv(ts,u).product(time));
+					}
+					i++;
+				}
+				for (; i < traceLen; i++) {
+					TupleSet time = u.factory().setOf(TemporalTranslator.STATEATOM + i + TemporalTranslator.STATE_SEP + 0);
+
+					low.addAll(tupleSetL.product(time));
+					upp.addAll(tupleSetU.product(time));
+				}
+				extBounds.bound(r.getExpansion(), low, upp);
+			} else {
+				if (inst.contains(r)) { // due to reified atoms
+					if (prefxLen == 0) { // only way to have these changed
+						if (excepts.containsKey(r)) {
+							extBounds.bound(r, convertToUniv(excepts.get(r),u), convertToUniv(excepts.get(r),u));
+						} else {
+							extBounds.bound(r, tupleSetL, tupleSetU);
+						}
+					}
+					else {
+						TupleSet ts = eval.evaluate(r);
+						extBounds.boundExactly(r, convertToUniv(ts,u));			
+					}
+				}
+			}
+		}
+
+		return extBounds;
 	}
 
 	/**

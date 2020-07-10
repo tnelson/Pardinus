@@ -50,6 +50,7 @@ public class SpanT extends DModel {
 
 	private int n_ps;
 	private Variant var;
+	private final Universe u;
 
 	final private Relation level, parent, runs;
 
@@ -60,7 +61,7 @@ public class SpanT extends DModel {
 	public SpanT(String args[]) {
 
 		Root = Relation.unary("this/Root");
-		Process_rem = Relation.unary("this/Process remainder");
+		Process_rem = Relation.unary("this/Process_rem");
 		Level = Relation.unary("this/Lvl");
 		adjacent = Relation.nary("this/Process.adj", 2);
 		level_first = Relation.unary("lo/Ord.First");
@@ -73,7 +74,17 @@ public class SpanT extends DModel {
 
 		n_ps = Integer.valueOf(args[0]);
 		var = Variant.valueOf(args[1]);
+		
+		final List<Object> atoms = new ArrayList<Object>(2 * n_ps);
 
+		atoms.add("Root");
+		for (int i = 1; i < n_ps; i++)
+			atoms.add("Process" + i);
+
+		for (int i = 0; i < n_ps; i++)
+			atoms.add("Lvl" + i);
+
+		u = new Universe(atoms);
 	}
 
 	public Formula staticPart() {
@@ -286,16 +297,6 @@ public class SpanT extends DModel {
 	 * @return a bounds for the given number of persons.
 	 */
 	public PardinusBounds bounds1() {
-		final List<Object> atoms = new ArrayList<Object>(2 * n_ps);
-
-		atoms.add("Root");
-		for (int i = 1; i < n_ps; i++)
-			atoms.add("Process" + i);
-
-		for (int i = 0; i < n_ps; i++)
-			atoms.add("Lvl" + i);
-
-		Universe u = new Universe(atoms);
 
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
@@ -317,16 +318,6 @@ public class SpanT extends DModel {
 	}
 	
 	public PardinusBounds bounds2() {
-		final List<Object> atoms = new ArrayList<Object>(2 * n_ps);
-
-		atoms.add("Root");
-		for (int i = 1; i < n_ps; i++)
-			atoms.add("Process" + i);
-
-		for (int i = 0; i < n_ps; i++)
-			atoms.add("Lvl" + i);
-
-		Universe u = new Universe(atoms);
 
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);

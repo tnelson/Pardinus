@@ -76,14 +76,14 @@ public class HotelT extends DModel {
 		occupant = Relation.binary_variable("FrontDesk.occupant");
 		gkeys = Relation.binary_variable("Guest.gkeys");
 		
-		List<String> atoms = new ArrayList<String>(n*6);
-		for (int i = 0; i < n+2; i++) {
+		List<String> atoms = new ArrayList<String>(n*4);
+		for (int i = 0; i < n+1; i++) {
 			atoms.add("Key" + i);
 		}
 		for (int i = 0; i < n; i++) {
 			atoms.add("Room" + i);
 		}
-		for (int i = 0; i < n+1; i++) {
+		for (int i = 0; i < n; i++) {
 			atoms.add("Guest" + i);
 		}
 		u = new Universe(atoms);
@@ -320,8 +320,8 @@ public class HotelT extends DModel {
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+2 - 1)));
-		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n+1 - 1)));
+		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+1 - 1)));
+		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
 		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room" + (n - 1)));
 
 		b.boundExactly(key, kb);
@@ -340,8 +340,8 @@ public class HotelT extends DModel {
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+2 - 1)));
-		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n+1 - 1)));
+		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+1 - 1)));
+		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
 		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room" + (n - 1)));
 
 		b.bound(lastkey, rb.product(kb));

@@ -14,15 +14,18 @@ import kodkod.engine.ExtendedSolver;
 import kodkod.engine.IncrementalSolver;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
+import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TemporalInstance;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 public final class RunTestModel {
@@ -32,7 +35,7 @@ public final class RunTestModel {
 	static Solution solution = null;
 	static Iterator<Solution> solutions = null;
 
-	static int threads, sym = 20;
+	static int threads, sym = 20, max_trace;
 	static Solvers selected_solver;
 	static DMode selected_mode;
 	static private boolean batch = false;
@@ -60,7 +63,7 @@ public final class RunTestModel {
 	ClassNotFoundException, InterruptedException {
 
 		// the arguments for the partition model
-		String[] model_args = Arrays.copyOfRange(args, 4, args.length);
+		String[] model_args = Arrays.copyOfRange(args, 7, args.length);
 
 		// dynamically create a partition model from the specified class
 		model = (DModel) Class.forName(args[0]).getConstructor(String[].class)
@@ -74,7 +77,11 @@ public final class RunTestModel {
 		// the chosen solver
 		selected_solver = Solvers.valueOf(args[2]);
 
-		threads = Integer.valueOf(args[3]);
+		max_trace = Integer.valueOf(args[3]);
+		threads = Integer.valueOf(args[4]);
+		
+		TemporalPardinusSolver.SATOPTITERATION = Boolean.valueOf(args[5]);
+		TemporalPardinusSolver.SomeDisjPattern = Boolean.valueOf(args[6]);
 		
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
@@ -93,17 +100,17 @@ public final class RunTestModel {
 	 * @throws InterruptedException 
 	 */
 	private static void run_tests() throws InterruptedException {
+
 		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setBitwidth(model.getBitwidth());
 		opt.setSymmetryBreaking(sym);
-		opt.setMaxTraceLength(10);
+		opt.setMaxTraceLength(max_trace);
 		if (TemporalTranslator.isTemporal(f1.and(f2)))
 			opt.setRunTemporal(true);
 
