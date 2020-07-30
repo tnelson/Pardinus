@@ -828,8 +828,10 @@ public class PardinusBounds extends Bounds {
 			TupleSet pre1 = PardinusBounds.super.lowerBound(rel);
 			TupleSet pre2 = PardinusBounds.super.upperBound(rel);
 			// if already resolved 
-			if (PardinusBounds.super.relations().contains(rel) && pre1.size() == pre2.size())
+			if (PardinusBounds.super.relations().contains(rel) && pre1.size() == pre2.size()) {
+				relations_symb.remove(rel);
 				return constrs;
+			}
 			
 			TupleSet low_low = resolveLower(lowerSymbBound(rel));
 			TupleSet upp_upp = resolveUpper(upperSymbBound(rel));
