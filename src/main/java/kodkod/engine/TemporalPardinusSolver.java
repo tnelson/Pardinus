@@ -687,7 +687,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole transl = null;
-			int primaryVars = -1;
+			int primaryVars = -1, clauses = 0, vars = 0;
 			SATSolver cnf = null;
 			
 
@@ -725,6 +725,8 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				for (int[] cnfs : notModel)
 					translation.cnf().addClause(cnfs);
 			}
+			
+			final Statistics stats = new Statistics(0, 0, 0, 0, 0);
 
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (translation == null) {
@@ -739,7 +741,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 					if (opt.logTranslation() > 0)
 						translation.log().logTempTranslation(tmptrans.tempTransLog);
 					long translEnd = System.currentTimeMillis();
-					translTime += translEnd - translStart;
+					translTime = translEnd - translStart;
 
 					for (IterationStep inst : previousSols) {
 						final List<int[]> notModel = instanceToSat(inst);
@@ -751,14 +753,18 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				transl = translation;
 
 				cnf = transl.cnf();
-				primaryVars = transl.numPrimaryVariables();
+				primaryVars += transl.numPrimaryVariables();
+				vars += cnf.numberOfVariables();
+				clauses += cnf.numberOfClauses();
 
-				transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+				transl.options().reporter().solvingCNF(primaryVars, vars, clauses);
 
 				final long startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
 				final long endSolve = System.currentTimeMillis();
-				solveTime += endSolve - startSolve;
+				solveTime = endSolve - startSolve;
+				
+				stats.update(transl, translTime, solveTime);
 				
 				if (!isSat) {
 					current_trace++;
@@ -766,7 +772,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				}
 			}
 
-			final Statistics stats = new Statistics(transl, translTime, solveTime);
 			final Solution sol;
 
 			if (isSat) {
