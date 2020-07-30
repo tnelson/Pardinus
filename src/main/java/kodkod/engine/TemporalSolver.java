@@ -32,18 +32,20 @@ import kodkod.instance.PardinusBounds;
  * {@link kodkod.ast.operator.TemporalOperator temporal operators} and bounds
  * over {@link kodkod.ast.VarRelation variable relations}.
  * 
- * @author Nuno Macedo // [HASLab] model finding hierarchy, temporal scenario exploration
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
- * @param <O> the options containing {@link kodkod.engine.config.TemporalOptions
- *        temporal options}.
+ * @param <O>
+ *            the options containing
+ *            {@link kodkod.engine.config.TemporalOptions temporal options}.
  */
-public interface TemporalSolver<O extends TemporalOptions> extends AbstractSolver<PardinusBounds, O> {
+public interface TemporalSolver<O extends TemporalOptions> extends
+		AbstractSolver<PardinusBounds, O> {
 
 	/**
 	 * {@inheritDoc}
 	 * 
-	 * Temporal problems require {@link PardinusBounds Pardinus bounds} to bound
-	 * relations over traces.
+	 * Temporal problems require {@link PardinusBounds Pardinus bounds} to
+	 * bound relations over traces.
 	 */
 	@Override
 	public Solution solve(Formula formula, PardinusBounds bounds);

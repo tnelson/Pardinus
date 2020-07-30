@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,14 +67,13 @@ import kodkod.util.nodes.PrettyPrinter;
  * A temporal solver relying on Kodkod.
  * 
  * The solver is responsible by iteratively increasing the bounded trace length
- * up to the maximum defined in the options. Adapted from
- * {@link kodkod.engine.Solver}.
+ * up to the maximum defined in the options. Adapted from {@link kodkod.engine.Solver}.
  * 
  * @author Nuno Macedo // [HASLab] target-oriented and temporal model finding
  */
 public final class TemporalPardinusSolver
-		implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<ExtendedOptions> {
-
+implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<ExtendedOptions> {
+	
 	// alternative encodings, instance formula or sat
 	public static boolean SATOPTITERATION = true;
 	// alternative encodings, atom reification vs some disj pattern
@@ -94,11 +94,13 @@ public final class TemporalPardinusSolver
 	 * Constructs a new Solver with the given options.
 	 * 
 	 * @ensures this.options' = options
-	 * @throws NullPointerException options = null
+	 * @throws NullPointerException
+	 *             options = null
 	 */
 	public TemporalPardinusSolver(ExtendedOptions options) {
 		if (options == null)
 			throw new NullPointerException();
+		
 		this.options = options;
 	}
 
@@ -121,11 +123,10 @@ public final class TemporalPardinusSolver
 	}
 
 	// [HASLab]
-	public Solution solve(Formula formula, PardinusBounds bounds)
-			throws HigherOrderDeclException, UnboundLeafException, AbortedException {
+	public Solution solve(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
+			UnboundLeafException, AbortedException {
 		assert !options.unbounded();
 		try {
-
 			long startTransl = System.currentTimeMillis();
 			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
 			Formula extformula = tmptrans.translate();
@@ -134,7 +135,7 @@ public final class TemporalPardinusSolver
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole translation = null;
-			int traceLength = options.minTraceLength() - 1;
+			int traceLength = options.minTraceLength()-1;
 			PardinusBounds extbounds = null;
 			startTransl = System.currentTimeMillis();
 			// increase while UNSAT and below max
@@ -189,8 +190,8 @@ public final class TemporalPardinusSolver
 		}
 	}
 
-	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds)
-			throws HigherOrderDeclException, UnboundLeafException, AbortedException {
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
+			UnboundLeafException, AbortedException {
 		if (Options.isDebug())
 			flushFormula(formula, bounds); // [AM]
 
@@ -229,7 +230,7 @@ public final class TemporalPardinusSolver
 
 	// [HASLab]
 	private static Solution sat(Translation.Whole translation, Statistics stats, PardinusBounds originalBounds) {
-		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(), originalBounds));
+		final Solution sol = Solution.satisfiable(stats, new TemporalInstance(translation.interpret(),originalBounds));
 		translation.cnf().free();
 		return sol;
 	}
@@ -252,7 +253,7 @@ public final class TemporalPardinusSolver
 		final Statistics stats = new Statistics(0, 0, 0, translTime, 0);
 		final Solution sol;
 		if (translation.cnf().solve()) {
-			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret(), originalBounds));
+			sol = Solution.triviallySatisfiable(stats, new TemporalInstance(translation.interpret(),originalBounds));
 		} else {
 			sol = Solution.triviallyUnsatisfiable(stats, trivialProof(translation.log()));
 		}
@@ -261,12 +262,12 @@ public final class TemporalPardinusSolver
 	}
 
 	/**
-	 * Returns a proof for the trivially unsatisfiable log.formula, provided that
-	 * log is non-null. Otherwise returns null.
+	 * Returns a proof for the trivially unsatisfiable log.formula, provided
+	 * that log is non-null. Otherwise returns null.
 	 * 
 	 * @requires log != null => log.formula is trivially unsatisfiable
-	 * @return a proof for the trivially unsatisfiable log.formula, provided that
-	 *         log is non-null. Otherwise returns null.
+	 * @return a proof for the trivially unsatisfiable log.formula, provided
+	 *         that log is non-null. Otherwise returns null.
 	 */
 	private static Proof trivialProof(TranslationLog log) {
 		return log == null ? null : new TrivialProof(log);
@@ -296,10 +297,9 @@ public final class TemporalPardinusSolver
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			assert !options.unbounded();
 			this.translTime = System.currentTimeMillis();
-			this.current_trace = options.minTraceLength() - 1;
+			this.current_trace = options.minTraceLength()-1;
 			this.originalBounds = bounds;
 			this.originalFormula = formula;
-			this.reifs.putAll(originalBounds.reifs());
 
 			tmptrans = new TemporalTranslator(originalFormula, bounds, options);
 			Formula extformula = tmptrans.translate();
@@ -669,8 +669,8 @@ public final class TemporalPardinusSolver
 		 * to null.
 		 * 
 		 * @requires this.translation != null
-		 * @ensures this.translation.cnf is modified to eliminate the current solution
-		 *          from the set of possible solutions
+		 * @ensures this.translation.cnf is modified to eliminate the current
+		 *          solution from the set of possible solutions
 		 * @return current solution
 		 */
 		private Solution nextNonTrivialSolution(int state, int steps, Set<Relation> fix, Set<Relation> change) {
@@ -689,6 +689,7 @@ public final class TemporalPardinusSolver
 			Translation.Whole transl = null;
 			int primaryVars = -1;
 			SATSolver cnf = null;
+			
 
 			// this may be coming from an unsat path iteration and must be restarted before
 			// the previous solution is converted into sat
@@ -746,7 +747,7 @@ public final class TemporalPardinusSolver
 							translation.cnf().addClause(cnfs);
 					}
 				}
-
+				
 				transl = translation;
 
 				cnf = transl.cnf();
@@ -758,7 +759,7 @@ public final class TemporalPardinusSolver
 				isSat = cnf.solve();
 				final long endSolve = System.currentTimeMillis();
 				solveTime += endSolve - startSolve;
-
+				
 				if (!isSat) {
 					current_trace++;
 					translation = null;
@@ -766,7 +767,6 @@ public final class TemporalPardinusSolver
 			}
 
 			final Statistics stats = new Statistics(transl, translTime, solveTime);
-
 			final Solution sol;
 
 			if (isSat) {
@@ -874,29 +874,29 @@ public final class TemporalPardinusSolver
 				sol = unsat(transl, stats); // this also frees up solver resources, if any
 				translation = null; // unsat, no more solutions
 			}
-
 			return sol;
 		}
 
 		/**
-		 * Returns the trivial solution corresponding to the trivial translation stored
-		 * in {@code this.translation}, and if {@code this.translation.cnf.solve()} is
-		 * true, sets {@code this.translation} to a new translation that eliminates the
-		 * current trivial solution from the set of possible solutions. The latter has
-		 * the effect of forcing either the translator or the solver to come up with the
-		 * next solution or return UNSAT. If {@code this.translation.cnf.solve()} is
-		 * false, sets {@code this.translation} to null.
+		 * Returns the trivial solution corresponding to the trivial translation
+		 * stored in {@code this.translation}, and if
+		 * {@code this.translation.cnf.solve()} is true, sets
+		 * {@code this.translation} to a new translation that eliminates the
+		 * current trivial solution from the set of possible solutions. The
+		 * latter has the effect of forcing either the translator or the solver
+		 * to come up with the next solution or return UNSAT. If
+		 * {@code this.translation.cnf.solve()} is false, sets
+		 * {@code this.translation} to null.
 		 * 
 		 * @requires this.translation != null
-		 * @ensures this.translation is modified to eliminate the current trivial
-		 *          solution from the set of possible solutions
+		 * @ensures this.translation is modified to eliminate the current
+		 *          trivial solution from the set of possible solutions
 		 * @return current solution
 		 */
 		private Solution nextTrivialSolution() {
 			final Translation.Whole transl = this.translation;
 
-			final Solution sol = trivial(transl, translTime, extbounds); // this also frees up solver resources, if
-																			// unsat
+			final Solution sol = trivial(transl, translTime, extbounds); // this also frees up solver resources, if unsat
 
 			if (sol.instance() == null) {
 				translation = null; // unsat, no more solutions
@@ -943,11 +943,8 @@ public final class TemporalPardinusSolver
 	}
 
 	/**
-	 * A target-oriented iterator over all solutions of a model, adapted from
-	 * {@link SolutionIterator}.
-	 * 
-	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented, temporal
-	 *         model finding
+	 * A target-oriented iterator over all solutions of a model, adapted from {@link SolutionIterator}.
+	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented, temporal model finding
 	 */
 	public static class TSolutionIterator implements Explorer<Solution> {
 		private Translation.Whole translation;
@@ -1008,15 +1005,15 @@ public final class TemporalPardinusSolver
 		}
 
 		/**
-		 * Solves {@code translation.cnf} and adds the negation of the found model to
-		 * the set of clauses. The latter has the effect of forcing the solver to come
-		 * up with the next solution or return UNSAT. If
-		 * {@code this.translation.cnf.solve()} is false, sets {@code this.translation}
-		 * to null.
+		 * Solves {@code translation.cnf} and adds the negation of the found
+		 * model to the set of clauses. The latter has the effect of forcing the
+		 * solver to come up with the next solution or return UNSAT. If
+		 * {@code this.translation.cnf.solve()} is false, sets
+		 * {@code this.translation} to null.
 		 * 
 		 * @requires this.translation != null
-		 * @ensures this.translation.cnf is modified to eliminate the current solution
-		 *          from the set of possible solutions
+		 * @ensures this.translation.cnf is modified to eliminate the current
+		 *          solution from the set of possible solutions
 		 * @return current solution
 		 */
 		private Solution nextNonTrivialSolution() {
@@ -1117,7 +1114,7 @@ public final class TemporalPardinusSolver
 			if (isSat) {
 				// extract the current solution; can't use the sat(..) method
 				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), originalBounds));
+				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(),originalBounds));
 			} else {
 				sol = unsat(transl, stats); // this also frees up solver
 											// resources, if any
@@ -1127,17 +1124,19 @@ public final class TemporalPardinusSolver
 		}
 
 		/**
-		 * Returns the trivial solution corresponding to the trivial translation stored
-		 * in {@code this.translation}, and if {@code this.translation.cnf.solve()} is
-		 * true, sets {@code this.translation} to a new translation that eliminates the
-		 * current trivial solution from the set of possible solutions. The latter has
-		 * the effect of forcing either the translator or the solver to come up with the
-		 * next solution or return UNSAT. If {@code this.translation.cnf.solve()} is
-		 * false, sets {@code this.translation} to null.
+		 * Returns the trivial solution corresponding to the trivial translation
+		 * stored in {@code this.translation}, and if
+		 * {@code this.translation.cnf.solve()} is true, sets
+		 * {@code this.translation} to a new translation that eliminates the
+		 * current trivial solution from the set of possible solutions. The
+		 * latter has the effect of forcing either the translator or the solver
+		 * to come up with the next solution or return UNSAT. If
+		 * {@code this.translation.cnf.solve()} is false, sets
+		 * {@code this.translation} to null.
 		 * 
 		 * @requires this.translation != null
-		 * @ensures this.translation is modified to eliminate the current trivial
-		 *          solution from the set of possible solutions
+		 * @ensures this.translation is modified to eliminate the current
+		 *          trivial solution from the set of possible solutions
 		 * @return current solution
 		 */
 		private Solution nextTrivialSolution() {
@@ -1147,15 +1146,17 @@ public final class TemporalPardinusSolver
 		/**
 		 * Calculates the next TO solutions with weights.
 		 * 
-		 * @param i       the TO mode
-		 * @param weights the signature weights
+		 * @param i
+		 *            the TO mode
+		 * @param weights
+		 *            the signature weights
 		 */
 		// [HASLab]
 		public Solution next(Map<String, Integer> weights) {
 			if (opt.targetoriented()) {
 				if (!(opt.solver().instance() instanceof TargetSATSolver))
-					throw new AbortedException(
-							"Selected solver (" + opt.solver() + ") does not have support for targets.");
+					throw new AbortedException("Selected solver (" + opt.solver()
+							+ ") does not have support for targets.");
 				if (weights != null) {
 					if (!(opt.solver().instance() instanceof WTargetSATSolver))
 						throw new AbortedException("Selected solver (" + opt.solver()

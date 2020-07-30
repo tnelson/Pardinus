@@ -241,7 +241,6 @@ public class UbdSymmetryTests {
 		opt.setRunDecomposed(true);
 		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
 		opt.setDecomposedMode(DMode.PARALLEL);
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		dsolver = new PardinusSolver(opt);
 		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),model.bounds2());
 		final Formula formula = model.partition1().and(model.partition2());
