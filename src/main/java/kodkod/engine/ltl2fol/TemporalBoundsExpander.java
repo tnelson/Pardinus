@@ -39,7 +39,7 @@ import kodkod.util.ints.IndexedEntry;
 
 /**
  * An extension to the regular Kodkod {@link Bounds bounds} that stores
- * information regarding its origin from bounds over {@link VarRelation variable
+ * information regarding its origin from bounds over {@link VarRelation variable
  * relations}. Translates {@link VarRelation variable relation} bounds into its
  * standard representation, by creating a new extended universe, appending the
  * {@link TemporalTranslator#STATE state} atoms to the bounds. The bounds of
@@ -258,7 +258,7 @@ public class TemporalBoundsExpander {
 	 * @param inst      the instance from which to bind
 	 * @return
 	 */
-	// [HASLab] explorer
+	// [HASLab] explorer
 	public static Bounds extend(PardinusBounds tmpBounds, Bounds extBounds, int prefxLen, int traceLen, TemporalInstance inst) {
 		if (!TemporalTranslator.ExplicitUnrolls)
 			throw new UnsupportedOperationException();
@@ -367,7 +367,6 @@ public class TemporalBoundsExpander {
 
 		return extBounds;
 	}
-
 
 	/**
 	 * Creates a new universe by duplicating the original one and creating a given

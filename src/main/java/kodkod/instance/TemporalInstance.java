@@ -299,6 +299,7 @@ public class TemporalInstance extends Instance {
 				bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 		}
 
+
 		Set<Relation> staticss = new HashSet<Relation>();
 		for (Relation r : states.get(0).relations())
 			if (!r.isVariable())
