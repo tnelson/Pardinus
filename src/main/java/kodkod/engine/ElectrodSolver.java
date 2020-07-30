@@ -265,7 +265,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		int ret = -1;
 		final Process p;
 		try {
-			options.reporter().solvingCNF(-1, -1, -1);
+			options.reporter().solvingCNF(-1, -1, -1, -1);
 			p = builder.start();
 			// stores the pid so that it can be correctly terminated
 			Runtime.getRuntime().addShutdownHook(new Thread() {

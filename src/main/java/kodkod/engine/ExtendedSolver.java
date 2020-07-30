@@ -198,7 +198,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				catch(IllegalStateException e) { }
 	
 			}
-			opt.reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+			opt.reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
 			
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();
