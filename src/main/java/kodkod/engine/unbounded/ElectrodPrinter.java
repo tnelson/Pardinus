@@ -866,10 +866,12 @@ public class ElectrodPrinter {
 			
 		}
 
-	static private final String[] protected_keywords = { "run", "invariant", "true", "false", "next", "always",
-			"sometime", "eventually", "until", "releases", "previous", "historically", "once", "since", "all", "some",
-			"one", "no", "lone", "let", "disj", "iff", "implies", "then", "else", "or", "and", "in", "not", "inst",
-			"sym", "var", "const", "univ", "iden", "none" };
+	static private final String[] protected_keywords = { "run", "expect", "sat", "unsat", "invariant", "true", "false",
+			"after", "always", "eventually", "until", "releases", "before", "historically", "once", "since",
+			"triggered", "all", "some", "one", "no", "lone", "let", "disj", "iff", "implies", "then", "else", "or",
+			"and", "in", "inst", "sym", "not", "var", "const", "univ", "iden", "none"
+
+	};
 
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by
