@@ -56,7 +56,7 @@ public class DijkstraT extends DModel {
 	private final Universe u;
 
 	public enum Variant {
-		SAT, UNSAT;
+		SHOW, DEADLOCKS;
 	}
 
 	/**
@@ -88,28 +88,6 @@ public class DijkstraT extends DModel {
 		u = new Universe(atoms);
 	}
 
-	/**
-	 * Returns the declaration constraints.
-	 * 
-	 * @return <pre>
-	 * sig Process {}
-	 * sig Mutex {}
-	 * sig State { holds, waits: Process -> Mutex }
-	 * </pre>
-	 */
-	public Formula declarations() {
-		final Formula f3 = holds.in(Process.product(Mutex)).always();/*
-																	 * TEMPORAL
-																	 * OP
-																	 */
-		final Formula f4 = waits.in(Process.product(Mutex)).always();/*
-																	 * TEMPORAL
-																	 * OP
-																	 */
-
-
-		return Formula.and(f3, f4);
-	}
 
 	/**
 	 * Returns the initial predicate for state s.
@@ -344,7 +322,7 @@ public class DijkstraT extends DModel {
 	 * </pre>
 	 */
 	public Formula checkDijkstraPreventsDeadlocks() {
-		return Formula.and(declarations(), Process.some(), grabOrRelease(), grabbedInOrder(), deadlock());
+		return Formula.and(Process.some(), grabOrRelease(), grabbedInOrder(), deadlock());
 	}
 
 	/**
@@ -353,7 +331,7 @@ public class DijkstraT extends DModel {
 	 * @return he showDijkstra predicate
 	 */
 	public Formula showDijkstra() {
-		return declarations().and(grabOrRelease()).and(deadlock()).and(waits.some().eventually());
+		return grabOrRelease().and(deadlock()).and(waits.some().eventually());
 	}
 
 	public PardinusBounds bounds1() {
@@ -376,20 +354,16 @@ public class DijkstraT extends DModel {
 	
 	public Bounds bounds2() {
 
-		final TupleFactory f = u.factory();
-		final Bounds b = new Bounds(u);
+		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (processes - 1)));
-		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex" + (mutexes - 1)));
-
-		b.bound(holds, pb.product(mb));
-		b.bound(waits, pb.product(mb));
+		b.bound(holds, Process.product(Mutex));
+		b.bound(waits, Process.product(Mutex));
 
 		return b;
 	}
 
 	public Formula finalFormula() {
-		if (var == Variant.SAT)
+		if (var == Variant.SHOW)
 			return showDijkstra();
 		else
 			return checkDijkstraPreventsDeadlocks();
