@@ -50,7 +50,7 @@ import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.util.collections.Containers;
 
 /**
- * A first-order formula.  Unless otherwise noted,
+ * A first-order formula. Unless otherwise noted,
  * all methods in this class throw a NullPointerException when given
  * null arguments.
  * @author Emina Torlak 
@@ -73,7 +73,7 @@ public abstract class Formula extends Node {
     public static Formula constant(boolean value) { return value ? TRUE : FALSE; }
     
     /**
-     * Returns the conjunction of this and the specified formula.  The effect
+     * Returns the conjunction of this and the specified formula. The effect
      * of this method is the same as calling this.compose(AND, formula).
      * @return this.compose(AND, formula)
      */
@@ -82,7 +82,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns the conjunction of this and the specified formula.  The effect
+     * Returns the conjunction of this and the specified formula. The effect
      * of this method is the same as calling this.compose(OR, formula).
      * @return this.compose(OR, formula)
      */
@@ -91,7 +91,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns a formula that equates this and the specified formula.  The effect
+     * Returns a formula that equates this and the specified formula. The effect
      * of this method is the same as calling this.compose(IFF, formula).
      * @return this.compose(IFF, formula)
      */
@@ -100,7 +100,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns the implication of the specified formula by this.  The effect
+     * Returns the implication of the specified formula by this. The effect
      * of this method is the same as calling this.compose(IMPLIES, formula).
      * @return this.compose(IMPLIES, formula)
      */
@@ -129,7 +129,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns the conjunction of the given formulas.  The effect of this method is the
+     * Returns the conjunction of the given formulas. The effect of this method is the
      * same as calling compose(AND, formulas).
      * @return compose(AND, formulas)
      */
@@ -138,7 +138,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns the conjunction of the given formulas.  The effect of this method is the
+     * Returns the conjunction of the given formulas. The effect of this method is the
      * same as calling compose(AND, formulas).
      * @return compose(AND, formulas)
      */
@@ -147,7 +147,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns the disjunction of the given formulas.  The effect of this method is the
+     * Returns the disjunction of the given formulas. The effect of this method is the
      * same as calling compose(OR, formulas).
      * @return compose(OR, formulas)
      */
@@ -156,7 +156,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns the disjunction of the given formulas.  The effect of this method is the
+     * Returns the disjunction of the given formulas. The effect of this method is the
      * same as calling compose(OR, formulas).
      * @return compose(OR, formulas)
      */
@@ -249,7 +249,7 @@ public abstract class Formula extends Node {
     
     /**
      * Returns the formula that results from applying the given temporal unary operator
-     * to this.  
+     * to this. 
      * @requires op.unary()
      * @return {e: Expression | e.formula = this && e.op = this }
      * @throws IllegalArgumentException  this.arity != 1
@@ -261,7 +261,7 @@ public abstract class Formula extends Node {
 
     /**
      * Returns a formula that represents a universal quantification of this
-     * formula over the given declarations.  The effect of this method is the same 
+     * formula over the given declarations. The effect of this method is the same 
      * as calling this.quantify(ALL, decls).
      * @return this.quantify(ALL, decls)
      */
@@ -271,7 +271,7 @@ public abstract class Formula extends Node {
     
     /**
      * Returns a formula that represents an existential quantification of this
-     * formula over the given declarations.  The effect of this method is the same 
+     * formula over the given declarations. The effect of this method is the same 
      * as calling this.quantify(SOME, decls).
      * @return this.quantify(SOME, decls)
      */
@@ -325,7 +325,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns this quantified with after.  The effect of this method is the same
+     * Returns this quantified with after. The effect of this method is the same
      * as calling this.apply(AFTER).
      * @return this.apply(AFTER)
      */
@@ -335,7 +335,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns this quantified with always.  The effect of this method is the same
+     * Returns this quantified with always. The effect of this method is the same
      * as calling this.apply(ALWAYS).
      * @return this.apply(ALWAYS)
      */
@@ -345,7 +345,7 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Returns this quantified with eventually.  The effect of this method is the same
+     * Returns this quantified with eventually. The effect of this method is the same
      * as calling this.apply(EVENTUALLY).
      * @return this.apply(EVENTUALLY)
      */
@@ -355,7 +355,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns this quantified with before.  The effect of this method is the same
+     * Returns this quantified with before. The effect of this method is the same
      * as calling this.apply(BEFORE).
      * @return this.apply(BEFORE)
      */
@@ -365,7 +365,7 @@ public abstract class Formula extends Node {
     }
     
     /**
-     * Returns this quantified with historically.  The effect of this method is the same
+     * Returns this quantified with historically. The effect of this method is the same
      * as calling this.apply(HISTORICALLY).
      * @return this.apply(HISTORICALLY)
      */
@@ -375,7 +375,7 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Returns this quantified with once.  The effect of this method is the same
+     * Returns this quantified with once. The effect of this method is the same
      * as calling this.apply(ONCE).
      * @return this.apply(ONCE)
      */
@@ -385,7 +385,7 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Composes this and the specified formula with until.  The effect
+     * Composes this and the specified formula with until. The effect
      * of this method is the same as calling this.compose(UNTIL, formula).
      * @return this.compose(UNTIL, formula)
      */
@@ -395,7 +395,7 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Composes this and the specified formula with releases.  The effect
+     * Composes this and the specified formula with releases. The effect
      * of this method is the same as calling this.compose(RELEASES, formula).
      * @return this.compose(RELEASES, formula)
      */
@@ -405,7 +405,7 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Composes this and the specified formula with triggered.  The effect
+     * Composes this and the specified formula with triggered. The effect
      * of this method is the same as calling this.compose(TRIGGERED, formula).
      * @return this.compose(TRIGGERED, formula)
      */
@@ -415,7 +415,7 @@ public abstract class Formula extends Node {
     }
 
     /**
-     * Composes this and the specified formula with since.  The effect
+     * Composes this and the specified formula with since. The effect
      * of this method is the same as calling this.compose(SINCE, formula).
      * @return this.compose(SINCE, formula)
      */
