@@ -145,39 +145,43 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				translation = Translator.translate(extformula, extbounds, options);
 				if (options.logTranslation() > 0)
 					translation.log().logTempTranslation(tmptrans.tempTransLog);
-			} while (translation.trivial() && traceLength <= options.maxTraceLength());
+			} while (translation.trivial() && traceLength < options.maxTraceLength());
 
 			endTransl = System.currentTimeMillis();
 			transTime += endTransl - startTransl;
 
-			while (!isSat && traceLength <= options.maxTraceLength()) {
+			if (translation.trivial() && traceLength == options.maxTraceLength())
+				return trivial(translation, endTransl - startTransl, extbounds);
 
-				if (translation.trivial() && traceLength == options.maxTraceLength())
-					return trivial(translation, endTransl - startTransl, extbounds);
-				
-				final SATSolver cnf = translation.cnf();
+			SATSolver cnf = translation.cnf();
+
+			options.reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(),
+					cnf.numberOfClauses());
+			long startSolve = System.currentTimeMillis();
+			isSat = cnf.solve();
+			long endSolve = System.currentTimeMillis();
+			solveTime += endSolve - startSolve;
+
+			while (!isSat && traceLength < options.maxTraceLength()) {
+				traceLength++;
+				extbounds = tmptrans.expand(traceLength);
+				Formula exp_reforms = tmptrans.translate();
+				startTransl = System.currentTimeMillis();
+				translation = Translator.translate(exp_reforms, extbounds, options);
+				if (options.logTranslation() > 0)
+					translation.log().logTempTranslation(tmptrans.tempTransLog);
+				endTransl = System.currentTimeMillis();
+				transTime += endTransl - startTransl;
+
+				cnf = translation.cnf();
 
 				options.reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(),
 						cnf.numberOfClauses());
-				final long startSolve = System.currentTimeMillis();
+				startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
-				final long endSolve = System.currentTimeMillis();
+				endSolve = System.currentTimeMillis();
 				solveTime += endSolve - startSolve;
 
-				if (!isSat) {
-					traceLength++;
-					// the translation of the original formula could in principle be re-used but
-					// the original past depth level is needed
-					tmptrans = new TemporalTranslator(formula, bounds, options);
-					extbounds = tmptrans.expand(traceLength);
-					Formula exp_reforms = tmptrans.translate();
-					startTransl = System.currentTimeMillis();
-					translation = Translator.translate(exp_reforms, extbounds, options);
-					if (options.logTranslation() > 0)
-						translation.log().logTempTranslation(tmptrans.tempTransLog);
-					endTransl = System.currentTimeMillis();
-					transTime += endTransl - startTransl;
-				}
 			}
 			final Statistics stats = new Statistics(translation, transTime, solveTime);
 			return isSat ? sat(translation, stats, bounds) : unsat(translation, stats);
@@ -435,7 +439,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return translation != null;
+			return !(iteration_stage == 0 && translation == null);
 		}
 
 		/**
@@ -462,7 +466,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				if (previousSol != null)
 					iteration_stage = 2;
 
-				return nextNonTrivialSolution(state, delta, fix, change);
+				return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution(state, delta, fix, change);
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
@@ -492,7 +496,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				if (previousSol != null)
 					iteration_stage = 1;
 
-				return nextNonTrivialSolution(0, -1, fix, change);
+				return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution(0, -1, fix, change);
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
@@ -522,7 +526,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 				iteration_stage = 0;
 
-				return nextNonTrivialSolution(-1, 0, fix, change);
+				return (translation != null && translation.trivial()) ? nextTrivialSolution() : nextNonTrivialSolution(-1, 0, fix, change);
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
