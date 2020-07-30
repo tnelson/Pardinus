@@ -24,7 +24,9 @@ package kodkod.engine.decomp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
+import kodkod.engine.Explorer;
 import kodkod.engine.Solution;
 import kodkod.engine.Statistics;
 import kodkod.engine.config.Reporter;
@@ -129,15 +131,16 @@ public class DMonitorImpl implements DMonitor {
 	 */
 	@Override
 	public synchronized void newSolution(DProblem<?> sol) {
-		solutions.add(sol);
-		if (sol.sat()) {
+		Entry<Solution, Explorer<Solution>> se = sol.getSolutions();
+		if (se.getKey().sat()) {
 			sats++;
-			rep.debug("Solution: " + sats + " " + sol.getSolution().outcome());
+			rep.debug("Solution: " + sats + " " + se.getKey().outcome());
 		} else {
-			rep.debug("Solution: " + sol.getSolution().outcome());
+			rep.debug("Solution: " + se.getKey().outcome());
 		}
-		vars += sol.getSolution().stats().primaryVariables();
-		clauses += sol.getSolution().stats().clauses();
+		vars += se.getKey().stats().primaryVariables();
+		clauses += se.getKey().stats().clauses();
+		solutions.add(sol);
 	}
 
 	/**
