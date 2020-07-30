@@ -151,7 +151,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
 			}
 				
-			Solution s = go(formula.and(explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE),bounds,options);
+			Solution s = go(formula,bounds,options);
 			if (s.sat())
 				prev = (TemporalInstance) s.instance();
 			else {
@@ -192,8 +192,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			if (s.sat())
 				prev = (TemporalInstance) s.instance();
 	
-			System.out.println(s);
-			
 			return s;
 		}
 		
@@ -256,7 +254,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			if (options.minTraceLength() != 1) throw new IllegalArgumentException("BMC trace length must start at 1.");
 			args.add("--bmc"); args.add(options.maxTraceLength()+"");
 		}
-		args.add(Options.isDebug()?"-v":"--");
+		if (Options.isDebug())
+			args.add("-v");
 		args.add(file+".elo");
 				
 		builder = new ProcessBuilder(args);
@@ -266,7 +265,6 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		final Process p;
 		try {
 			options.reporter().solvingCNF(-1, -1, -1);
-
 			p = builder.start();
 			// stores the pid so that it can be correctly terminated
 			Runtime.getRuntime().addShutdownHook(new Thread() {
