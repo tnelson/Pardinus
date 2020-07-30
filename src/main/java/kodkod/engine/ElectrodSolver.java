@@ -114,7 +114,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	/**
 	 * {@inheritDoc}
 	 */
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		return new SolutionIterator(formula, bounds, options);
 	}
 
@@ -132,11 +132,17 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			this.options = options;
 		}
 			
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public boolean hasNext() {
 			return formula != null;
 		}
 	
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Solution next() {
 			if (prev != null) {
