@@ -1,15 +1,23 @@
-package kodkod.test.pardinus.decomp;
+package kodkod.test.pardinus.temporal;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.sat4j.specs.ISolver;
+
+import com.sun.org.apache.regexp.internal.recompile;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.DecomposedPardinusSolver;
+import kodkod.engine.Explorer;
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.IncrementalSolver;
 import kodkod.engine.PardinusSolver;
@@ -26,14 +34,15 @@ import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
+import kodkod.instance.Universe;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
-public final class RunTestModel {
+public final class RunIterateCModel {
 
     static PardinusSolver psolver;
 
 	static Solution solution = null;
-	static Iterator<Solution> solutions = null;
+	static Explorer<Solution> solutions = null;
 
 	static int threads, sym = 20, max_trace;
 	static Solvers selected_solver;
@@ -145,31 +154,39 @@ public final class RunTestModel {
 			break;
 		}
 
-		// warm up
-//		for (int i = 0; i < 30; i++)
-//			solver.solve(f1, b1);
+		long t0;
 
-		long t1 = System.currentTimeMillis();
+		PardinusBounds x = new PardinusBounds(b1, b2);
+		PardinusBounds y = x.amalgamated();
 
 		opt.setDecomposedMode(selected_mode);
 		if (batch) {
 			opt.setRunDecomposed(false);
 			psolver = new PardinusSolver(opt);
-			solution = go_batch(b1, b2, f1, f2);
+
+			PardinusSolver solver = new PardinusSolver(psolver.options());
+			warmup(solver);
+			t0 = System.currentTimeMillis();
+			solutions = solver.solveAll(f1.and(f2), y);
+			solution = solutions.next();
 		}
 		else {
 			opt.setRunDecomposed(true);
-			opt.configOptions().setSolver(SATFactory.MiniSat);
+			opt.configOptions().setSolver(SATFactory.Glucose);
 			opt.configOptions().setRunTemporal(false);			
 			psolver = new PardinusSolver(opt);
+//			warmup(psolver);
+			t0 = System.currentTimeMillis();
 			switch (selected_mode) {
 			case PARALLEL:
 				psolver.options().setThreads(threads);
-				solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+				solutions = psolver.solveAll(f1.and(f2), new PardinusBounds(b1, b2));
+				solution = solutions.next();
 				break;
 			case HYBRID:
 				psolver.options().setThreads(threads);
-				solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+				solutions = psolver.solveAll(f1.and(f2), new PardinusBounds(b1, b2));
+				solution = solutions.next();
 				break;
 			case INCREMENTAL:
 				solution = go_incremental(b1, b2, f1, f2);
@@ -178,37 +195,51 @@ public final class RunTestModel {
 				break;
 			}
 		}
-
-		long t2 = System.currentTimeMillis();
-
-//		solution = solutions.next();
+		long t11 = System.currentTimeMillis();
 		
-//		for (int i = 0; i<10; i++)
-//			solutions.next();
-		
-//		long t3 = System.currentTimeMillis();
-//		
-//		log.append((t3 - t2));
-//		log.append("\t");
-		
-		if (selected_mode == DMode.PARALLEL || selected_mode == DMode.HYBRID) {
-			log.append((t2 - t1));
-			log.append("\t");
-			log.append(solution.sat() ? "S" : "U");
-			log.append("\t");
-			log.append(getConfigNum(psolver));
-			log.append("\t");
-//			log.append(getGenTime(psolver));
-//			log.append(psolution.getSolution().instance());
-		}
-		else {
-			log.append((t2 - t1));
-			log.append("\t");
-			log.append(solution.sat() ? "S" : "U");
-//			log.append(solution);
-		}
+		log.append((t11 - t0));
 		log.append("\t");
+//		System.out.println(solution);
+
+		if (solution.sat()) {
+			
+			long t1 = System.currentTimeMillis();
+			int i;
+			for (i=0; i<100 && solution.sat(); i++) {
+				solution = solutions.nextC();
+				System.out.println(i);
+			}
+			long t2 = System.currentTimeMillis();
+
+			for (; i<5000 && solution.sat(); i++) {
+				solution = solutions.nextC();
+			}
+			long t22 = System.currentTimeMillis();
+
+			log.append("S");
+			log.append("\t");
+			log.append(t2 - t1);
+			log.append("\t");
+			log.append(t22 - t1);
+			log.append("\t");
+			log.append(i);
+		} else
+			log.append("U");
+
 		flush();
+	}
+
+	private static void warmup(PardinusSolver solver) {
+		Universe uni = new Universe("a");
+		Relation r = Relation.unary("r");
+		Relation s = Relation.unary_variable("s");
+		PardinusBounds bnds1 = new PardinusBounds(uni);
+		bnds1.bound(r, uni.factory().setOf("a"));
+		PardinusBounds bnds2 = new PardinusBounds(uni);
+		bnds2.bound(s, uni.factory().setOf("a"));
+		
+		for (int i = 0; i < 10; i ++)
+			solver.solve(r.eq(s), new PardinusBounds(bnds1,bnds2));
 	}
 
 	private static void flush() {
@@ -225,23 +256,6 @@ public final class RunTestModel {
 			if (mon.isAmalgamated())
 				counter = -counter;
 		return counter;
-	}
-
-	/**
-	 * Solves the problem under standard Kodkod (i.e., batch mode).
-	 * 
-	 * @param b1
-	 * @param b2
-	 * @param f1
-	 * @param f2
-	 * @return
-	 */
-	private static Solution go_batch(PardinusBounds b1, Bounds b2, Formula f1, Formula f2) {
-		PardinusBounds x = new PardinusBounds(b1, b2);
-		PardinusBounds y = x.amalgamated();
-
-		PardinusSolver solver = new PardinusSolver(psolver.options());
-		return solver.solve(f1.and(f2), y);
 	}
 
 	private static Solution go_incremental(Bounds b1, Bounds b2, Formula f1, Formula f2) {

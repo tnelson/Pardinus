@@ -1,7 +1,9 @@
-package kodkod.test.pardinus.decomp;
+package kodkod.test.pardinus.temporal;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -16,15 +19,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.decomp.DProblem;
 import kodkod.examples.pardinus.temporal.DijkstraT;
-import kodkod.examples.pardinus.temporal.RingT;
+import kodkod.examples.pardinus.temporal.RingT2;
 import kodkod.examples.pardinus.temporal.SpanT;
 import kodkod.examples.pardinus.temporal.HotelT;
 
@@ -35,12 +40,12 @@ public final class RunTests {
 	static DProblem<ExtendedSolver> psolution = null;
 	static Solution solution = null;
 
-	static int tries, threads = 4, max_trace;
+	static int tries, threads = 4, max_trace = 10, iterate = 0;
 	static String timeout = "10m";
 
 	static private boolean batch = false;
 	
-	static private boolean reif = false, satit = false;
+	static private boolean reif = false, satit = true, satonly = false;
 	
 	static private StringBuilder log = new StringBuilder();
 	static private StringBuilder header = new StringBuilder();
@@ -60,9 +65,10 @@ public final class RunTests {
 
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
-		tries = Integer.valueOf(args[0]);
-		max_trace = Integer.valueOf(args[1]);
-
+		if(opts.indexOf("--tries") >= 0) tries = Integer.valueOf(opts.get(opts.indexOf("--tries")+1));
+		if(opts.indexOf("--trace") >= 0) max_trace = Integer.valueOf(opts.get(opts.indexOf("--trace")+1));
+		if(opts.indexOf("--timeout") >= 0) timeout = opts.get(opts.indexOf("--timeout")+1);
+		
 		if(opts.contains("-ms")) solvers.add(Solvers.MINISAT);
 		if(opts.contains("-gl")) solvers.add(Solvers.GLUCOSE);
 		if(opts.contains("-sy")) solvers.add(Solvers.SYRUP);
@@ -78,8 +84,11 @@ public final class RunTests {
 		if(opts.contains("-h")) modes.add(DMode.HYBRID);
 		if(opts.contains("-i")) modes.add(DMode.INCREMENTAL);
 
-		if(opts.contains("-satit")) satit = true;
-		if(opts.contains("-reif")) reif = true;
+		if(opts.contains("--satit")) satit = true;
+		if(opts.contains("--reif")) reif = true;
+		if(opts.contains("--iterateC")) iterate = 1;
+		if(opts.contains("--iterateP")) iterate = 2;
+		if(opts.contains("--satonly") || iterate > 0) satonly = true;
 
 		if (opts.contains("--all")) {
 			dijkstra = true;
@@ -137,112 +146,6 @@ public final class RunTests {
 		log.append(threads);
 		log.append("\n");
 
-		header.append("n\t");
-		if (solvers.contains(Solvers.MINISAT)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("M.B\tSat\t");
-			if (modes.contains(DMode.PARALLEL))
-				for (int i = 0; i < tries; i++)
-					header.append("M.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(DMode.HYBRID))
-				for (int i = 0; i < tries; i++)
-					header.append("M.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(DMode.INCREMENTAL))
-				for (int i = 0; i < tries; i++)
-					header.append("M.I\tSat\t");
-		}
-
-		if (solvers.contains(Solvers.GLUCOSE)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("G.B\tSat\t");
-			if (modes.contains(DMode.PARALLEL))
-				for (int i = 0; i < tries; i++)
-					header.append("G.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(DMode.HYBRID))
-				for (int i = 0; i < tries; i++)
-					header.append("G.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
-				for (int i = 0; i < tries; i++)
-					header.append("G.I\tSat\t");
-		}
-
-		if (solvers.contains(Solvers.SYRUP)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("S.B\tSat\t");
-		}
-
-		if (solvers.contains(Solvers.PLINGELING)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("P.B\tSat\t");
-		}
-		
-
-		if (solvers.contains(Solvers.NUXMVB)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("XB.B\tSat\t");
-			if (modes.contains(DMode.PARALLEL))
-				for (int i = 0; i < tries; i++)
-					header.append("XB.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(DMode.HYBRID))
-				for (int i = 0; i < tries; i++)
-					header.append("XB.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
-				for (int i = 0; i < tries; i++)
-					header.append("XB.I\tSat\t");
-		}
-		
-		if (solvers.contains(Solvers.NUSMVB)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("SB.B\tSat\t");
-			if (modes.contains(DMode.PARALLEL))
-				for (int i = 0; i < tries; i++)
-					header.append("SB.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(DMode.HYBRID))
-				for (int i = 0; i < tries; i++)
-					header.append("SB.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
-				for (int i = 0; i < tries; i++)
-					header.append("SB.I\tSat\t");
-		}
-		
-		if (solvers.contains(Solvers.NUXMVC)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("XC.B\tSat\t");
-			if (modes.contains(DMode.PARALLEL))
-				for (int i = 0; i < tries; i++)
-					header.append("XC.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(DMode.HYBRID))
-				for (int i = 0; i < tries; i++)
-					header.append("XC.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
-				for (int i = 0; i < tries; i++)
-					header.append("XC.I\tSat\t");
-		}
-		
-		if (solvers.contains(Solvers.NUSMVC)) {
-			if (batch)
-				for (int i = 0; i < tries; i++)
-					header.append("SC.B\tSat\t");
-			if (modes.contains(DMode.PARALLEL))
-				for (int i = 0; i < tries; i++)
-					header.append("SC.P\tSat\tC.#\tC.t\t");
-			if (modes.contains(DMode.HYBRID))
-				for (int i = 0; i < tries; i++)
-					header.append("SC.H\tSat\tC.#\tC.t\t");
-			if (modes.contains(kodkod.engine.config.DecomposedOptions.DMode.INCREMENTAL))
-				for (int i = 0; i < tries; i++)
-					header.append("SC.I\tSat\t");
-		}
-		
-
-		header.append("\n");
 	}
 
 	private static void flush() {
@@ -252,8 +155,38 @@ public final class RunTests {
 		log = new StringBuilder();
 	}
 	
-	static Set<List<String>> cached_timeouts = new HashSet<List<String>>();
+	private static Set<String> getCachedSolves() {
+		Set<String> caches = new HashSet<>();
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader("../cached_solves.txt"));
+			String line = reader.readLine();
+			while (line != null) {
+				caches.add(line);
+				line = reader.readLine();
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return caches;
+	}
+	
+	static Set<String> cached_timeouts_solve = getCachedSolves();
+	
+	static Set<String> cached_timeouts_iteratec = new HashSet<>();
 
+	static Set<String> cached_timeouts_iteratep = new HashSet<>();
+	
+	static Map<Integer,Set<String>> cached_timeouts = Stream.of(new Object[][] { // pre-cached timeouts at 15m
+	    { 0, cached_timeouts_solve },
+	    { 1, cached_timeouts_iteratec },
+	    { 2, cached_timeouts_iteratep }
+	}).collect(Collectors.toMap(data -> (Integer) data[0], data -> (Set<String>) data[1]));
 	/**
 	 * Runs a model instance instance for the specified number of times.
 	 * @throws IOException 
@@ -263,7 +196,20 @@ public final class RunTests {
 		String javaHome = System.getProperty("java.home");
 		String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
 		String classpath = System.getProperty("java.class.path");
-		String className = kodkod.test.pardinus.temporal.RunSolveModel.class.getCanonicalName();
+		String className = null;
+		switch (iterate) {
+		case 0:
+			className = RunSolveModel.class.getCanonicalName();
+			break;
+		case 1:
+			className = RunIterateCModel.class.getCanonicalName();
+			break;
+		case 2:
+			className = RunIteratePModel.class.getCanonicalName();
+			break;
+		default:
+			break;
+		}
 		String librarypath = System.getProperty("java.library.path");
 
 		String[] cmd_args = new String[]{"gtimeout", timeout, javaBin, "-Djava.library.path="+librarypath,"-cp", classpath, className, model};
@@ -273,13 +219,14 @@ public final class RunTests {
 
 		int exitVal = -1;
 		
-		List<String> cache = new ArrayList<String>(Arrays.asList(model_args));
-		cache.remove(6);
-		
 		for (int k = 0; k < tries; k++) {
-			if (cached_timeouts.contains(cache)) {
-				log.append("TO\t\t");
-				if (!cache.contains("BATCH")) {
+			String lk = model_args[7] + " " + model_args[1] + " " + model_args[0] + " " + model_args[2] + " "+ model_args[6] + " "+ model_args[3];
+			log.append(lk+ "\t");
+			flush();
+			boolean tos = cached_timeouts.get(iterate).contains(lk);
+			if (tos) {
+				log.append("**\t\t");
+				if (!model_args[0].equals("BATCH")) {
 					log.append("\t\t");
 				}
 			} else {
@@ -289,24 +236,28 @@ public final class RunTests {
 				InputStreamReader isr = new InputStreamReader(stderr);
 				BufferedReader br = new BufferedReader(isr);
 				String line = null;
-				while ( (line = br.readLine()) != null)
+				while ((line = br.readLine()) != null)
 					System.out.println(line);
 				exitVal = p.waitFor();
 				if (exitVal == 0) {
 					System.out.print("OK\t\t");
-					if (!cache.contains("BATCH")) {
+					if (!model_args[0].equals("BATCH")) {
 						System.out.print("\t\t");
 					}
 				}
 				else {
 	//				System.out.print("TO\t\t");
-					log.append("TO\t\t");
-					if (!cache.contains("BATCH")) {
+					log.append(timeout+"\t\t");
+					if (!model_args[0].equals("BATCH")) {
 						log.append("\t\t");
 					}
-					cached_timeouts.add(cache);
+					if (iterate>0) {
+						log.append("\t\t");						
+					}
+					cached_timeouts.get(iterate).add(lk);
 				}
 			}
+			log.append("\n");
 			flush();
 		}
 
@@ -326,8 +277,8 @@ public final class RunTests {
 		args[4] = satit+"";
 		args[5] = reif+"";
 
-		if (solvers.contains(Solvers.MINISAT)) {
-			args[1] = Solvers.MINISAT.name();
+		if (solvers.contains(Solvers.GLUCOSE)) {
+			args[1] = Solvers.GLUCOSE.name();
 			if (batch) {
 				args[0] = "BATCH";
 				runModelInstance(model,args,tries);
@@ -337,9 +288,9 @@ public final class RunTests {
 				runModelInstance(model,args,tries);
 			}
 		}
-
-		if (solvers.contains(Solvers.GLUCOSE)) {
-			args[1] = Solvers.GLUCOSE.name();
+		
+		if (solvers.contains(Solvers.MINISAT)) {
+			args[1] = Solvers.MINISAT.name();
 			if (batch) {
 				args[0] = "BATCH";
 				runModelInstance(model,args,tries);
@@ -422,61 +373,31 @@ public final class RunTests {
 	 * @throws InterruptedException 
 	 */
 	private static void runRing() throws IOException, InterruptedException {
-		String model = RingT.class.getCanonicalName();
+		String model = RingT2.class.getCanonicalName();
 
-//		int t = 10;
-//
-//		for (RingP.Variant2 s : RingP.Variant2.values())
-//			for (RingP.Variant1 v : RingP.Variant1.values()) {
-//				log.append(v.name()+" "+s.name()+" "+t+"\n"); 
-//				log.append(header);
-//				flush();
-//				for (int i = 1; i <= 8; i ++)  {
-//					log.append(i+"\t"); flush();
-//					runModes(model, new String[]{i+"", t+"", v.name(), s.name()});
-//					log.append("\n"); flush();
-//				}
-//				log.append("\n");
-//			}
+		RingT2.Variant1 v;
 
-//		int t = 20;
+		v = RingT2.Variant1.SCENARIO;
+		for (int i = 1; i <= 3; i++) {
+			runModes(model, new String[] { i + "", v.name() });
+		}
 
-		RingT.Variant2 s = RingT.Variant2.VARIABLE;
-//		for (RingP.Variant2 s : RingP.Variant2.values())
-//			for (RingP.Variant1 v : RingP.Variant1.values()) {
-				RingT.Variant1 v = RingT.Variant1.BADLIVENESS;
-//				log.append(v.name()+" "+s.name()+"\n"); 
-//				log.append(header);
-//				flush();
-//				for (int i = 1; i <= 12; i ++)  {
-//					log.append(i+"\t"); flush();
-//					runModes(model, new String[]{i+"", v.name(), s.name()});
-//					log.append("\n"); flush();
-//				}
-//				log.append("\n");
-//				
-//				v = RingT.Variant1.GOODLIVENESS;
-//				log.append(v.name()+" "+s.name()+"\n"); 
-//				log.append(header);
-//				flush();
-//				for (int i = 1; i <= 4; i ++)  {
-//					log.append(i+"\t"); flush();
-//					runModes(model, new String[]{i+"", v.name(), s.name()});
-//					log.append("\n"); flush();
-//				}
-//				log.append("\n");
-				
-				v = RingT.Variant1.GOODSAFETY;
-				log.append(v.name()+" "+s.name()+"\n"); 
-				log.append(header);
-				flush();
-				for (int i = 5; i <= 8; i ++)  {
-					log.append(i+"\t"); flush();
-					runModes(model, new String[]{i+"", v.name(), s.name()});
-					log.append("\n"); flush();
-				}
-				log.append("\n");
-//			}
+		v = RingT2.Variant1.BADLIVENESS;
+		for (int i = 1; i <= 3; i++) { 
+			runModes(model, new String[] { i + "", v.name() });
+		}
+
+		if (!satonly) {
+			v = RingT2.Variant1.GOODLIVENESS;
+			for (int i = 1; i <= 3; i++) {
+				runModes(model, new String[] { i + "", v.name() });
+			}
+
+			v = RingT2.Variant1.GOODSAFETY;
+			for (int i = 1; i <= 3; i++) {
+				runModes(model, new String[] { i + "", v.name() });
+			}
+		}
 
 	}
 
@@ -486,26 +407,14 @@ public final class RunTests {
 //		int t = 9;
 //		for (SpanP.Variant v : SpanP.Variant.values()) {
 			SpanT.Variant v = SpanT.Variant.V1;
-			log.append("Span "+v.name()+"\n"); 
-			log.append(header);
-			flush();
 			for (int i = 2; i <= 16; i ++)  {
-				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"",v.name()});
-				log.append("\n"); flush();
 			}
-			log.append("\n");
 			
 			v = SpanT.Variant.V2;
-			log.append("Span "+v.name()+"\n"); 
-			log.append(header);
-			flush();
 			for (int i = 2; i <= 16; i ++)  {
-				log.append(i+"\t"); flush();
 				runModes(model, new String[]{i+"",v.name()});
-				log.append("\n"); flush();
 			}
-			log.append("\n");
 //		}
 
 //		t = 12;
@@ -525,17 +434,16 @@ public final class RunTests {
 	private static void runDijkstra() throws IOException, InterruptedException {
 
 		String model = DijkstraT.class.getCanonicalName();
-//		int t = 15;
-		for (DijkstraT.Variant v : DijkstraT.Variant.values()) {
-			log.append("Dijkstra "+v.name()+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 1; i <= 15; i ++)  {
-				log.append(i+"\t"); flush();
+		DijkstraT.Variant v;
+		v = DijkstraT.Variant.SHOW;
+		for (int i = 12; i <= 15; i ++)  {
+			runModes(model, new String[]{i+"",v.name()});
+		}
+		if (!satonly) {
+			v = DijkstraT.Variant.DEADLOCKS;
+			for (int i = 12; i <= 15; i ++)  {
 				runModes(model, new String[]{i+"",v.name()});
-				log.append("\n"); flush();
 			}
-			log.append("\n");
 		}
 	}
 	
@@ -544,43 +452,17 @@ public final class RunTests {
 	 */
 	private static void runHotel() throws IOException, InterruptedException {
 		String model = HotelT.class.getCanonicalName();
-
-//		int t = 10;
-//
-//		for (HotelT.Variant v : HotelT.Variant.values()) {
-//			log.append(v.name()+" "+t+"\n"); 
-//			log.append(header);
-//			flush();
-//			for (int i = 1; i <= 6; i ++)  {
-//				log.append(i+"\t"); flush();
-//				runModes(model, new String[]{i+"", t+"", v.name()});
-//				log.append("\n"); flush();
-//			}
-//			log.append("\n");
-//		}
-
-//		for (HotelT.Variant v : HotelT.Variant.values()) {
-			HotelT.Variant v = HotelT.Variant.INTERVENES;
-			log.append(v.name()+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 5; i <= 10 ; i ++)  {
-				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", v.name()});
-				log.append("\n"); flush();
-			}
-			log.append("\n");
-//		}
+		HotelT.Variant v;
+		v = HotelT.Variant.INTERVENES;
+		for (int i = 1; i <= 1; i++) {
+			runModes(model, new String[] { i + "", v.name() });
+		}
+		if (!satonly) {
 			v = HotelT.Variant.NOINTERVENES;
-			log.append(v.name()+"\n"); 
-			log.append(header);
-			flush();
-			for (int i = 4; i <= 4; i ++)  {
-				log.append(i+"\t"); flush();
-				runModes(model, new String[]{i+"", v.name()});
-				log.append("\n"); flush();
+			for (int i = 5; i <= 7 ; i++) {
+				runModes(model, new String[] { i + "", v.name() });
 			}
-			log.append("\n");
+		}
 	}
 
 	public enum Solvers {
