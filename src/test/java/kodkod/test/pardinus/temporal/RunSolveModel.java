@@ -1,4 +1,4 @@
-package kodkod.test.pardinus.decomp;
+package kodkod.test.pardinus.temporal;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,9 +26,10 @@ import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
+import kodkod.instance.Universe;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
-public final class RunTestModel {
+public final class RunSolveModel {
 
     static PardinusSolver psolver;
 
@@ -145,23 +146,21 @@ public final class RunTestModel {
 			break;
 		}
 
-		// warm up
-//		for (int i = 0; i < 30; i++)
-//			solver.solve(f1, b1);
-
 		long t1 = System.currentTimeMillis();
 
 		opt.setDecomposedMode(selected_mode);
 		if (batch) {
 			opt.setRunDecomposed(false);
 			psolver = new PardinusSolver(opt);
+//			warmup(psolver);
 			solution = go_batch(b1, b2, f1, f2);
 		}
 		else {
 			opt.setRunDecomposed(true);
-			opt.configOptions().setSolver(SATFactory.MiniSat);
+			opt.configOptions().setSolver(SATFactory.Glucose);
 			opt.configOptions().setRunTemporal(false);			
 			psolver = new PardinusSolver(opt);
+//			warmup(psolver);
 			switch (selected_mode) {
 			case PARALLEL:
 				psolver.options().setThreads(threads);
@@ -209,6 +208,19 @@ public final class RunTestModel {
 		}
 		log.append("\t");
 		flush();
+	}
+
+	private static void warmup(PardinusSolver solver) {
+		Universe uni = new Universe("a");
+		Relation r = Relation.unary("r");
+		Relation s = Relation.unary_variable("s");
+		PardinusBounds bnds1 = new PardinusBounds(uni);
+		bnds1.bound(r, uni.factory().setOf("a"));
+		PardinusBounds bnds2 = new PardinusBounds(uni);
+		bnds2.bound(s, uni.factory().setOf("a"));
+		
+		for (int i = 0; i < 10; i ++)
+			solver.solve(r.eq(s), new PardinusBounds(bnds1,bnds2));
 	}
 
 	private static void flush() {

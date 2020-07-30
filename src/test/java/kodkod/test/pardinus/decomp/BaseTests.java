@@ -95,7 +95,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 13; i++) {
 			sol = sols.next();
-//			System.out.println("** "+sol.instance().toString());
+			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
