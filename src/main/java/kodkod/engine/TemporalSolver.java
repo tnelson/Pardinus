@@ -50,4 +50,18 @@ public interface TemporalSolver<O extends TemporalOptions> extends
 	@Override
 	public Solution solve(Formula formula, PardinusBounds bounds);
 
+	/**
+	 * Attempts to find a set of solutions to the given {@code formula} and
+	 * {@code bounds} with respect to {@code this.options} or, optionally, to prove
+	 * the formula's unsatisfiability. If the operation is successful, the method
+	 * returns an explorer over temporal {@link Solution} objects. If there is
+	 * more than one solution, the outcome of all of them is SAT or trivially SAT.
+	 * If the problem is unsatisfiable, the iterator will produce a single
+	 * {@link Solution} whose outcome is UNSAT or trivially UNSAT. The set of
+	 * returned solutions must be non-empty, but it is not required to be complete;
+	 * a solver could simply return a singleton set containing just the first
+	 * available solution.
+	 */
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds);
+
 }

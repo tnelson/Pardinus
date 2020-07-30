@@ -190,7 +190,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		}
 	}
 
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 		if (Options.isDebug())
 			flushFormula(formula, bounds); // [AM]
@@ -278,7 +278,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 	 * 
 	 * @author Nuno Macedo // [HASLab] temporal model finding
 	 */
-	private final static class SolutionIterator implements Iterator<Solution> {
+	private final static class SolutionIterator implements Explorer<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;

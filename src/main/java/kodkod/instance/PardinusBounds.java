@@ -731,7 +731,7 @@ public class PardinusBounds extends Bounds {
 			dereif = new HashMap<Relation, TupleSet>();
 			deps = new HashMap<Relation, Set<Relation>>();
 			compls = new HashMap<Relation, Relation>();
-			// [HASLab] this will conflict with the reification from the iteration!
+			// [HASLab] this will conflict with the reification from the iteration!
 			for (int i = 0; i < universe().size(); i++) {
 				Relation r = Relation.atom(universe().atom(i).toString());
 				reif.put(universe().atom(i), r);
