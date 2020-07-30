@@ -118,7 +118,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		return new SolutionIterator(formula, bounds, options);
 	}
 
-	private final static class SolutionIterator implements Iterator<Solution> {
+	private final static class SolutionIterator implements Explorer<Solution> {
 	
 		private Formula formula;
 		private final PardinusBounds bounds;

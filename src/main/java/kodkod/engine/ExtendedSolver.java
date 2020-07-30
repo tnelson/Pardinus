@@ -1,10 +1,10 @@
 package kodkod.engine;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
@@ -92,7 +92,8 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
 	 * @author Emina Torlak
 	 */
-	public final static class SolutionIterator implements Iterator<Solution> {
+	// [HASLab]
+	public final static class SolutionIterator implements Explorer<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
@@ -331,7 +332,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 	
 	// [HASLab]
 	@Override
-	protected Iterator<Solution> iterator(Formula formula, Bounds bounds, Options options) {
+	protected Explorer<Solution> iterator(Formula formula, Bounds bounds, Options options) {
 		return new SolutionIterator(formula, bounds, options());
 	}
 		

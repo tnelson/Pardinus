@@ -24,6 +24,7 @@ package kodkod.engine;
 
 import java.io.File;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.Formula;
@@ -34,6 +35,7 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TupleSet;
 
 /**
  * The main Pardinus solver. Depending on the define {@link options
@@ -183,7 +185,7 @@ public class PardinusSolver implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
 		assert (!TemporalTranslator.isTemporal(formula) && !bounds.hasVarRelations()) || options.temporal();
