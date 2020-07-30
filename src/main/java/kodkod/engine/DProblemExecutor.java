@@ -22,6 +22,10 @@
  */
 package kodkod.engine;
 
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,6 +37,7 @@ import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.decomp.DProblem;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TupleSet;
 
 /**
  * An executor that effectively handles a decomposed model finding problem
@@ -126,18 +131,14 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 	public abstract void run();
 
 	/**
-	 * Calculates the next solution. May block until a solution is calculated by
+	 * Calculates the next batch of solution. May block until a solution is calculated by
 	 * an integrated problem.
 	 * 
 	 * @return the solution found.
 	 * @throws InterruptedException
 	 *             if interrupted while waiting.
 	 */
-	public abstract Solution nextC() throws InterruptedException;
-
-	public abstract Solution nextP() throws InterruptedException;
-
-	public abstract Solution nextS(int state, int delta, Set<Relation> changes) throws InterruptedException;
+	public abstract Entry<Solution, Explorer<Solution>> next() throws InterruptedException;
 
 	/**
 	 * Tests whether there are further solutions. May block if there is no
@@ -164,8 +165,41 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 		}
 	}
 	
-	static Solution poison() {
-		return Solution.unsatisfiable(new Statistics(-1,-1,-1,-1,-1),null);
+	static Entry<Solution,Explorer<Solution>> poison(Solution s) {
+		if (s == null)
+			s = Solution.unsatisfiable(new Statistics(-1,-1,-1,-1,-1),null);
+		return new AbstractMap.SimpleEntry<Solution, Explorer<Solution>>(s,new Explorer<Solution>() {
+			
+			@Override
+			public boolean hasNext() {
+				return false;
+			}
+
+			@Override
+			public Solution next() {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public Solution nextC() {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public Solution nextP() {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public Solution nextS(int state, int delta, Set<Relation> change) {
+				throw new NoSuchElementException();
+			}
+		});
 	}
 	
 	static boolean isPoison(Solution sol) {

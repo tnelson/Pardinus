@@ -22,13 +22,17 @@
  */
 package kodkod.engine.decomp;
 
+import java.util.AbstractMap;
 import java.util.Iterator;
+import java.util.Map.Entry;
 
 import kodkod.ast.Formula;
 import kodkod.engine.DProblemExecutor;
+import kodkod.engine.Explorer;
 import kodkod.engine.IterableSolver;
 import kodkod.engine.AbstractSolver;
 import kodkod.engine.Solution;
+import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.instance.PardinusBounds;
 
@@ -45,7 +49,7 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 
 	private final S solver;
 
-	private Iterator<Solution> solutions;
+	private Explorer<Solution> solutions;
 	private Solution solution;
 	protected final PardinusBounds bounds;
 	private final Formula formula;
@@ -88,11 +92,10 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 		try {
 			if (solver instanceof IterableSolver<?, ?>) {
 				if (solutions == null) {
-					solutions = ((IterableSolver) solver).solveAll(formula, bounds);
+					solutions = (Explorer<Solution>) ((IterableSolver) solver).solveAll(formula, bounds);
+					solution = solutions.next();
 					solver.free();
 				}
-				if (solutions!=null)
-					solution = solutions.next();
 			} else {
 				solution = ((AbstractSolver) solver).solve(formula, bounds);
 				solver.free();
@@ -102,24 +105,14 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 			manager.failed(e);
 		}
 	}
-
-	public boolean sat() {
-		return solution.sat();
-	}
-
-	public boolean hasNext() {
-		return solutions.hasNext();
-	}
 	
-	public DProblem<S> next() {
-		if (solutions.hasNext())
-			return this;
-	    else
-			return null;
+	public Entry<Solution,Explorer<Solution>> getSolutions() {
+		return new AbstractMap.SimpleEntry(solution,solutions);
 	}
 
-	public Solution getSolution() {
-		return solution;
-	}
 
+	
+	
+	
+	
 }
