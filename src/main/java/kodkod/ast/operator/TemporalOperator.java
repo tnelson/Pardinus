@@ -31,7 +31,7 @@ package kodkod.ast.operator;
  */
 public enum TemporalOperator {
     /** Next unary temporal operator. */
-    AFTER 			{ public String toString() { return "next"; }},
+    AFTER 			{ public String toString() { return "after"; }},
     /** Always unary temporal operator. */
     ALWAYS  		{ public String toString() { return "always"; }},
     /** Eventually unary temporal operator. */

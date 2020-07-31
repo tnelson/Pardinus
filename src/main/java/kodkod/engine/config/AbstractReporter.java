@@ -74,7 +74,8 @@ public abstract class AbstractReporter implements Reporter {
 	/**
 	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
 	 */
-	public void solvingCNF(int primaryVars, int vars, int clauses) {}
+	// [HASLab]
+	public void solvingCNF(int step, int primaryVars, int vars, int clauses) {}
 
 	/**
 	 * @see kodkod.engine.config.Reporter#optimizingBoundsAndFormula()

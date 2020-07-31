@@ -28,13 +28,16 @@ import kodkod.engine.fol2sat.Translation;
  * a given formula.
  * @specfield formula: Formula // the formula being solved
  * @specfield bounds: Bounds // the bounds on the formula
+ * 
+ * @modified Nuno Macedo // [HASLab] temporal model finding
  */
 public final class Statistics {
 	
 	private static final String NEW_LINE = System.getProperty("line.separator");
 	
-	private final int vars, pVars, clauses;
-	private final long translation, solving; 
+	// [HASLab] remove final
+	private int vars, pVars, clauses;
+	private long translation, solving; 
 	
 	/**
 	 * Constructs a new Statistics object using the provided values.
@@ -54,6 +57,15 @@ public final class Statistics {
 	Statistics(Translation translation, long translationTime, long solvingTime) { 
 		this(translation.numPrimaryVariables(), translation.cnf().numberOfVariables(), 
 				translation.cnf().numberOfClauses(), translationTime, solvingTime);
+	}
+	
+	// [HASLab]
+	public void update(Translation translation, long translationTime, long solvingTime) {
+		this.pVars += translation.numPrimaryVariables();
+		this.vars += translation.cnf().numberOfVariables();
+		this.clauses += translation.cnf().numberOfClauses();
+		this.translation += translationTime;
+		this.solving += solvingTime;
 	}
 	
 	/**

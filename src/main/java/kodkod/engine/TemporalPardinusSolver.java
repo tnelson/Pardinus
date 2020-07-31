@@ -134,6 +134,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			long transTime = endTransl - startTransl;
 			boolean isSat = false;
 			long solveTime = 0;
+			int primaryVars = -1, clauses = 0, vars = 0;
 			Translation.Whole translation = null;
 			int traceLength = options.minTraceLength()-1;
 			PardinusBounds extbounds = null;
@@ -155,12 +156,16 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 			SATSolver cnf = translation.cnf();
 
-			options.reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(),
-					cnf.numberOfClauses());
+			primaryVars +=  translation.numPrimaryVariables();
+			vars += cnf.numberOfVariables();
+			clauses += cnf.numberOfClauses();
+			
+			options.reporter().solvingCNF(traceLength, primaryVars, vars, clauses);
 			long startSolve = System.currentTimeMillis();
 			isSat = cnf.solve();
 			long endSolve = System.currentTimeMillis();
-			solveTime += endSolve - startSolve;
+			solveTime = endSolve - startSolve;
+			final Statistics stats = new Statistics(translation, transTime, solveTime);
 
 			while (!isSat && traceLength < options.maxTraceLength()) {
 				traceLength++;
@@ -171,19 +176,22 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				if (options.logTranslation() > 0)
 					translation.log().logTempTranslation(tmptrans.tempTransLog);
 				endTransl = System.currentTimeMillis();
-				transTime += endTransl - startTransl;
+				transTime = endTransl - startTransl;
 
 				cnf = translation.cnf();
 
-				options.reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(),
-						cnf.numberOfClauses());
+				primaryVars +=  translation.numPrimaryVariables();
+				vars += cnf.numberOfVariables();
+				clauses += cnf.numberOfClauses();
+				
+				options.reporter().solvingCNF(traceLength, primaryVars, vars, clauses);
 				startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
 				endSolve = System.currentTimeMillis();
-				solveTime += endSolve - startSolve;
+				solveTime = endSolve - startSolve;
 
+				stats.update(translation, transTime, solveTime);
 			}
-			final Statistics stats = new Statistics(translation, transTime, solveTime);
 			return isSat ? sat(translation, stats, bounds) : unsat(translation, stats);
 		} catch (SATAbortedException sae) {
 			throw new AbortedException(sae);
@@ -401,7 +409,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				cnf = transl.cnf();
 				primaryVars = transl.numPrimaryVariables();
 
-				transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+				transl.options().reporter().solvingCNF(current_trace, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
 				final long startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
@@ -687,7 +695,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole transl = null;
-			int primaryVars = -1;
+			int primaryVars = -1, clauses = 0, vars = 0;
 			SATSolver cnf = null;
 			
 
@@ -725,6 +733,8 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				for (int[] cnfs : notModel)
 					translation.cnf().addClause(cnfs);
 			}
+			
+			final Statistics stats = new Statistics(0, 0, 0, 0, 0);
 
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (translation == null) {
@@ -739,7 +749,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 					if (opt.logTranslation() > 0)
 						translation.log().logTempTranslation(tmptrans.tempTransLog);
 					long translEnd = System.currentTimeMillis();
-					translTime += translEnd - translStart;
+					translTime = translEnd - translStart;
 
 					for (IterationStep inst : previousSols) {
 						final List<int[]> notModel = instanceToSat(inst);
@@ -751,14 +761,18 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				transl = translation;
 
 				cnf = transl.cnf();
-				primaryVars = transl.numPrimaryVariables();
+				primaryVars += transl.numPrimaryVariables();
+				vars += cnf.numberOfVariables();
+				clauses += cnf.numberOfClauses();
 
-				transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+				transl.options().reporter().solvingCNF(current_trace, primaryVars, vars, clauses);
 
 				final long startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
 				final long endSolve = System.currentTimeMillis();
-				solveTime += endSolve - startSolve;
+				solveTime = endSolve - startSolve;
+				
+				stats.update(transl, translTime, solveTime);
 				
 				if (!isSat) {
 					current_trace++;
@@ -766,7 +780,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				}
 			}
 
-			final Statistics stats = new Statistics(transl, translTime, solveTime);
 			final Solution sol;
 
 			if (isSat) {
@@ -842,7 +855,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				cnf = transl.cnf();
 				primaryVars = transl.numPrimaryVariables();
 
-				transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+				transl.options().reporter().solvingCNF(current_trace, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
 				final long startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
@@ -1101,7 +1114,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 					throw e;
 				}
 
-				opt.reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+				opt.reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
 				final long startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();

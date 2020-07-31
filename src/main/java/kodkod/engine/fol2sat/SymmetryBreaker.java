@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -400,7 +398,7 @@ final class SymmetryBreaker {
 	 * this.bounds.upperBound[acyclic.relation] is the cross product of some partition in this.symmetries with
 	 * itself. Assuming that this is the case, we then break symmetry on acyclic.relation using one of the methods
 	 * described in {@linkplain #breakMatrixSymmetries(Map, boolean)}; the method used depends
-	 * on the value of the "agressive" flag.
+	 * on the value of the "aggressive" flag.
 	 * The partition that formed the upper bound of acylic.relation is removed from this.symmetries.</p>
 	 * 
 	 * @return null if symmetry cannot be broken on acyclic; otherwise returns a formula
@@ -462,13 +460,13 @@ final class SymmetryBreaker {
 	 * cross-multiplied with itself gives the upper bound of total.relation. Assuming that this is the case, 
 	 * we then break symmetry on total.relation, total.first, total.last, and total.ordered using one of the methods
 	 * described in {@linkplain #breakMatrixSymmetries(Map, boolean)}; the method used depends
-	 * on the value of the "agressive" flag.
+	 * on the value of the "aggressive" flag.
 	 * The partition that formed the upper bound of total.ordered is removed from this.symmetries.</p>
 	 * 
 	 * @return null if symmetry cannot be broken on total; otherwise returns a formula
 	 * f such that the meaning of total with respect to this.bounds is equivalent to the
 	 * meaning of f with respect to this.bounds' 
-	 * @ensures this.symmetries and this.bounds are modified as desribed in {@linkplain #breakMatrixSymmetries(Map, boolean)} 
+	 * @ensures this.symmetries and this.bounds are modified as described in {@linkplain #breakMatrixSymmetries(Map, boolean)} 
 	 * iff total.first, total.last, and total.ordered have the same upper bound, which, when 
 	 * cross-multiplied with itself gives the upper bound of total.relation
 	 * 
