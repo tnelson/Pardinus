@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.activity.InvalidActivityException;
+
 import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
@@ -243,7 +245,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		if (TemporalTranslator.isTemporal(relationPredicate))
 			// cannot simply expand since it would loose symmetry breaking
 			// return relationPredicate.toConstraints().always().accept(this);
-			throw new UnsupportedOperationException("Total orders over variable relations not supported.");
+			throw new InvalidMutableExpressionException(relationPredicate);
 		else
 			return relationPredicate;
 	}
