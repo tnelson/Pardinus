@@ -56,6 +56,8 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ReificationTests {
+	
+	private boolean SomeDisjPattern = false;
 
 	/* Static reification. */
 	@Test
@@ -100,9 +102,9 @@ public class ReificationTests {
 
 //		relations: {a=[[A2]], b=[[B2]]}
 
-		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula).toString());
+		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, SomeDisjPattern).not());
 
 		solution = solver.solveAll(formula, bounds);
 
@@ -115,11 +117,11 @@ public class ReificationTests {
 //		relations: {a=[[A1], [A2]], b=[[B1], [B2]], $$A2$$=[[A2]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = ($$B1$$ + $$B2$$)))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, SomeDisjPattern).not());
 
-		solution = solver.solveAll(formula.and(inst.formulate(bounds, x, formula).not()), bounds);
+		solution = solver.solveAll(formula.and(inst.formulate(bounds, x, formula, SomeDisjPattern).not()), bounds);
 
 		inst = solution.next().instance();
 
@@ -130,7 +132,7 @@ public class ReificationTests {
 //		relations: {a=[[A1], [A2]], b=[[B2]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B1$$=[[B1]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$B0$$=[[B0]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = $$B2$$))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -184,7 +186,7 @@ public class ReificationTests {
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and next((a = none))) and always((((a = (($$A0$$ + $$A1$$) + $$A2$$)) implies next(next((a = (($$A0$$ + $$A1$$) + $$A2$$))))) and ((a = none) implies next(next((a = none)))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		inst = solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -198,7 +200,7 @@ public class ReificationTests {
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and next(((a = none) and next((a = $$A2$$))))) and always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) implies next(next(next((a = (($$A0$$ + $$A1$$) + $$A2$$)))))) and ((a = none) implies next(next(next((a = none)))))) and ((a = $$A2$$) implies next(next(next((a = $$A2$$))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -254,7 +256,7 @@ public class ReificationTests {
 
 		assertEquals(
 				"((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(always(((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		inst = solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -270,7 +272,7 @@ public class ReificationTests {
 
 		assertEquals(
 				"((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -324,30 +326,30 @@ public class ReificationTests {
 //		* state 2 LAST
 //		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]]}
 
-		assertEquals("true", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
+		assertEquals("true", inst.formulate(bounds.clone(), x, formula, -1, -1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(always(((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
 		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		inst = (TemporalInstance) solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -363,26 +365,26 @@ public class ReificationTests {
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
 		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -435,29 +437,29 @@ public class ReificationTests {
 //		* state 1 LAST
 //		relations: {a=[], b=[]}
 
-		assertEquals("(a = none)", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
+		assertEquals("(a = none)", inst.formulate(bounds.clone(), x, formula, -1, -1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))) and always((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))) and ((b = (none -> none)) implies next(next((b = (none -> none))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		inst = (TemporalInstance) solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -470,25 +472,25 @@ public class ReificationTests {
 //		relations: {a=[], b=[[A1, B0], [A1, B1]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
 
 		assertEquals("next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))) and always(((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))) and ((b = (none -> none)) implies next(next(next((b = (none -> none))))))) and ((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next(((b = (none -> none)) and next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -537,9 +539,9 @@ public class ReificationTests {
 
 //		relations: {a=[[A2]], b=[[B2]]}
 
-		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula).toString());
+		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, SomeDisjPattern).not());
 
 		solution = solver.solveAll(formula, bounds);
 
@@ -552,11 +554,11 @@ public class ReificationTests {
 //		relations: {a=[[A1], [A2]], b=[[B1], [B2]], $$A2$$=[[A2]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = ($$B1$$ + $$B2$$)))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, SomeDisjPattern).not());
 
-		solution = solver.solveAll(formula.and(inst.formulate(bounds, x, formula).not()), bounds);
+		solution = solver.solveAll(formula.and(inst.formulate(bounds, x, formula, SomeDisjPattern).not()), bounds);
 
 		inst = solution.next().instance();
 
@@ -567,7 +569,7 @@ public class ReificationTests {
 //		relations: {a=[[A1], [A2]], b=[[B2]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B1$$=[[B1]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$B0$$=[[B0]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = $$B2$$))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -620,7 +622,7 @@ public class ReificationTests {
 
 		assertEquals(
 				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = none) and next((a = ((A0 + A1) + A2)))) and always((((a = none) implies next(next((a = none)))) and ((a = ((A0 + A1) + A2)) implies next(next((a = ((A0 + A1) + A2))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		inst = solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -632,7 +634,7 @@ public class ReificationTests {
 		
 		assertEquals(
 				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = A2) and next((a = (A0 + A1)))) and always((((a = A2) implies next(next((a = A2)))) and ((a = (A0 + A1)) implies next(next((a = (A0 + A1))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -688,7 +690,7 @@ public class ReificationTests {
 
 		assertEquals(
 				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and ((((a = none) and (b = none)) and next((((a = (A1 + A2)) and (b = B2)) and next(((a = none) and (b = B2)))))) and next(always(((((a = (A1 + A2)) and (b = B2)) implies next(next(((a = (A1 + A2)) and (b = B2))))) and (((a = none) and (b = B2)) implies next(next(((a = none) and (b = B2)))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		inst = solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -704,7 +706,7 @@ public class ReificationTests {
 
 		assertEquals(
 				"((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -758,30 +760,30 @@ public class ReificationTests {
 //		* state 2 LAST
 //		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]]}
 
-		assertEquals("true", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
+		assertEquals("true", inst.formulate(bounds.clone(), x, formula, -1, -1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(always(((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
 		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		inst = (TemporalInstance) solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -797,26 +799,26 @@ public class ReificationTests {
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
 		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		solver.free();
 
@@ -869,29 +871,29 @@ public class ReificationTests {
 //		* state 1 LAST
 //		relations: {a=[], b=[]}
 
-		assertEquals("(a = none)", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
+		assertEquals("(a = none)", inst.formulate(bounds.clone(), x, formula, -1, -1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))) and always((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))) and ((b = (none -> none)) implies next(next((b = (none -> none))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		inst = (TemporalInstance) solution.next().instance();
 		opt.reporter().debug(inst.toString());
@@ -904,25 +906,25 @@ public class ReificationTests {
 //		relations: {a=[], b=[[A1, B0], [A1, B1]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
 
 		assertEquals("next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"(next(next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))) and always(((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))) and ((b = (none -> none)) implies next(next(next((b = (none -> none))))))) and ((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				inst.formulate(bounds.clone(), x, formula, 2, null, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, 0, 2, SomeDisjPattern).toString());
 
 		assertEquals(
 				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				inst.formulate(bounds.clone(), x, formula, -1, 2, SomeDisjPattern).toString());
 
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1, SomeDisjPattern).toString());
 
 		assertEquals(
 				"next(((b = (none -> none)) and next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				inst.formulate(bounds.clone(), x, formula, 1, 5, SomeDisjPattern).toString());
 
 		solver.free();
 

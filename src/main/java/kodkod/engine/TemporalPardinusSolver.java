@@ -340,7 +340,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				for (Relation r : prev.state(state < 0 ? 0 : state).relations())
 					if (!ignore.contains(r))
 						relevants = relevants.and(r.eq(r));
-				Formula curr = prev.state(state < 0 ? 0 : state).formulate(originalBounds, reifs, relevants).not();
+				Formula curr = prev.state(state < 0 ? 0 : state).formulate(originalBounds, reifs, relevants, SomeDisjPattern).not();
 
 				for (int i = 0; i < state; i++)
 					curr = curr.after();
@@ -825,7 +825,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			Formula reforms = Formula.TRUE;
 			for (IterationStep i : previousSols) {
 				Formula reform = i.prev.formulate(originalBounds, reifs, originalFormula, i.start,
-						i.end == -1 ? null : i.start + i.end - 1);
+						i.end == -1 ? null : i.start + i.end - 1, SomeDisjPattern);
 				opt.reporter().debug("Negated instance: " + reform);
 				reforms = reforms.and(reform.not());
 			}

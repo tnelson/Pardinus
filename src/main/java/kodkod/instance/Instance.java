@@ -250,7 +250,7 @@ public class Instance implements Cloneable {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
 
 		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
 		// reify atoms not yet reified

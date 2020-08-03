@@ -147,7 +147,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		public Solution next() {
 			if (prev != null) {
 				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
-				Formula trns = prev.formulate(bounds,reifs,formula).not();
+				Formula trns = prev.formulate(bounds,reifs,formula,false).not();
 				options.reporter().debug("Reified instance: "+trns);
 				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
 			}
@@ -179,11 +179,11 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
 			
 
-			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1).not();
+			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1,false).not();
 			options.reporter().debug("Force change: "+change);
 			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
 
-			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1);
+			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1,false);
 			options.reporter().debug("Preserve prefix: "+fix);
 
 			explorations.put(state, explorations.get(state).and(change));

@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,7 +46,6 @@ public final class RunTests {
 	static private boolean reif = false, satit = true, satonly = false;
 	
 	static private StringBuilder log = new StringBuilder();
-	static private StringBuilder header = new StringBuilder();
 
 	static private PrintWriter writer;
 	private static boolean ring, hotel, span, dijkstra;
@@ -377,27 +374,27 @@ public final class RunTests {
 
 		RingT2.Variant1 v;
 
+		if (!satonly) {
+			v = RingT2.Variant1.GOODLIVENESS;
+			for (int i = 1; i <= 8; i++) {
+				runModes(model, new String[] { i + "", v.name() });
+			}
+			
+			v = RingT2.Variant1.GOODSAFETY;
+			for (int i = 1; i <= 8; i++) {
+				runModes(model, new String[] { i + "", v.name() });
+			}
+		}
 		v = RingT2.Variant1.SCENARIO;
-		for (int i = 1; i <= 3; i++) {
+		for (int i = 1; i <= 12; i++) {
 			runModes(model, new String[] { i + "", v.name() });
 		}
 
 		v = RingT2.Variant1.BADLIVENESS;
-		for (int i = 1; i <= 3; i++) { 
+		for (int i = 1; i <= 12; i++) { 
 			runModes(model, new String[] { i + "", v.name() });
 		}
 
-		if (!satonly) {
-			v = RingT2.Variant1.GOODLIVENESS;
-			for (int i = 1; i <= 3; i++) {
-				runModes(model, new String[] { i + "", v.name() });
-			}
-
-			v = RingT2.Variant1.GOODSAFETY;
-			for (int i = 1; i <= 3; i++) {
-				runModes(model, new String[] { i + "", v.name() });
-			}
-		}
 
 	}
 
@@ -436,12 +433,12 @@ public final class RunTests {
 		String model = DijkstraT.class.getCanonicalName();
 		DijkstraT.Variant v;
 		v = DijkstraT.Variant.SHOW;
-		for (int i = 12; i <= 15; i ++)  {
+		for (int i = 1; i <= 20; i ++)  {
 			runModes(model, new String[]{i+"",v.name()});
 		}
 		if (!satonly) {
 			v = DijkstraT.Variant.DEADLOCKS;
-			for (int i = 12; i <= 15; i ++)  {
+			for (int i = 1; i <= 20; i ++)  {
 				runModes(model, new String[]{i+"",v.name()});
 			}
 		}
@@ -454,12 +451,12 @@ public final class RunTests {
 		String model = HotelT.class.getCanonicalName();
 		HotelT.Variant v;
 		v = HotelT.Variant.INTERVENES;
-		for (int i = 1; i <= 1; i++) {
+		for (int i = 1; i <= 12; i++) {
 			runModes(model, new String[] { i + "", v.name() });
 		}
 		if (!satonly) {
 			v = HotelT.Variant.NOINTERVENES;
-			for (int i = 5; i <= 7 ; i++) {
+			for (int i = 1; i <= 8 ; i++) {
 				runModes(model, new String[] { i + "", v.name() });
 			}
 		}
