@@ -19,9 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package kodkod.engine.ltl2fol;
-
-import kodkod.ast.Node;
+package kodkod.engine;
 
 /**
  * Thrown when a node contains a higher order declaration that cannot
@@ -30,8 +28,7 @@ import kodkod.ast.Node;
  * @specfield decl: Decl // higher order decl that caused the exception to be thrown
  * @author Nuno Macedo
  */
-public final class InvalidMutableExpressionException extends RuntimeException {
-	private final Node node;
+public final class InvalidSolverParamException extends RuntimeException {
 	private static final long serialVersionUID = 1892780864484615171L;
 
 	/**
@@ -39,17 +36,9 @@ public final class InvalidMutableExpressionException extends RuntimeException {
 	 * @requires decl.multiplicity != ONE
 	 * @ensures this.decl' = decl
 	 */
-	 InvalidMutableExpressionException(Node node) {
-		super("Invalid mutable expression: " + node);
-		this.node = node;
+	 InvalidSolverParamException(String msg) {
+		super(msg);
 	}
 
-	/**
-	 * Returns this.decl
-	 * @return this.decl
-	 */
-	public Node node() {
-		return node;
-	}
 
 }

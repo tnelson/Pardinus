@@ -172,9 +172,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		@Override
 		public Solution nextS(int state, int steps, Set<Relation> force) {
 			if (steps != 1 && steps != -1)
-				throw new IllegalArgumentException("Electrod only supports step or infinite iteration.");
+				throw new InvalidSolverParamException("Electrod only supports step or infinite iteration.");
 			if (prev == null)
-				throw new IllegalStateException("Cannot iterate without previous solution.");
+				throw new InvalidSolverParamException("Cannot iterate without previous solution.");
 			
 			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
 			
@@ -198,15 +198,15 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		
 		@Override
 		public Solution nextC() {
-			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");	
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
 		}
 		@Override
 		public Solution nextP() {
-			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");	
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
 		}
 		
 		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
-			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");
 		}
 
 	}
@@ -252,7 +252,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
 		if (!options.unbounded()) {
-			if (options.minTraceLength() != 1) throw new IllegalArgumentException("BMC trace length must start at 1.");
+			if (options.minTraceLength() != 1) throw new InvalidSolverParamException("Electrod bounded model checking at length 1.");
 			args.add("--bmc"); args.add(options.maxTraceLength()+"");
 		}
 		if (Options.isDebug())
