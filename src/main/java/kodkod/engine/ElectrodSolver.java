@@ -252,7 +252,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
 		if (!options.unbounded()) {
-			if (options.minTraceLength() != 1) throw new InvalidSolverParamException("Electrod bounded model checking at length 1.");
+			if (options.minTraceLength() != 1) throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
 			args.add("--bmc"); args.add(options.maxTraceLength()+"");
 		}
 		if (Options.isDebug())
