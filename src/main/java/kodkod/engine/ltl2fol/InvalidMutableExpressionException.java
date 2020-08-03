@@ -1,5 +1,6 @@
 /* 
  * Kodkod -- Copyright (c) 2005-present, Emina Torlak
+ * Pardinus -- Copyright (c) 2013-present, Nuno Macedo, INESC TEC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +25,7 @@ package kodkod.engine.ltl2fol;
 import kodkod.ast.Node;
 
 /**
- * Thrown when a node contains a higher order declaration that cannot
- * be skolemized, or it can be skolemized but skolemization is disabled.
- * 
- * @specfield decl: Decl // higher order decl that caused the exception to be thrown
+ * TODO
  * @author Nuno Macedo
  */
 public final class InvalidMutableExpressionException extends RuntimeException {
@@ -35,9 +33,7 @@ public final class InvalidMutableExpressionException extends RuntimeException {
 	private static final long serialVersionUID = 1892780864484615171L;
 
 	/**
-	 * Constructs a HigherOrderDeclException for the given decl.
-	 * @requires decl.multiplicity != ONE
-	 * @ensures this.decl' = decl
+	 * TODO
 	 */
 	 InvalidMutableExpressionException(Node node) {
 		super("Invalid mutable expression: " + node);
@@ -45,8 +41,7 @@ public final class InvalidMutableExpressionException extends RuntimeException {
 	}
 
 	/**
-	 * Returns this.decl
-	 * @return this.decl
+	 * TODO
 	 */
 	public Node node() {
 		return node;
