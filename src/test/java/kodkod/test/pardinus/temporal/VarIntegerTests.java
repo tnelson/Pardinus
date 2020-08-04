@@ -54,10 +54,10 @@ public class VarIntegerTests {
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
-
-		int c = 0;
-		while (sols.hasNext()) {
-			Solution sol = sols.next();
+		Solution sol = sols.next();
+		int c = 1;
+		while (sol.sat()) {
+			sol = sols.next();
 			c++;
 			if (sol.sat()) {
 //				System.out.println(sol.instance().toString());
@@ -98,10 +98,11 @@ public class VarIntegerTests {
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
-
-		int c = 0;
-		while (sols.hasNext()) {
-			Solution sol = sols.next();
+		Solution sol = sols.next();
+		
+		int c = 1;
+		while (sol.sat()) {
+			sol = sols.next();
 			c++;
 			if (sol.sat()) {
 //				System.out.println(sol.instance().toString());

@@ -252,12 +252,6 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		public void remove() { throw new UnsupportedOperationException(); }
 
 		@Override
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
 		public Solution next() {
 			return nextC();
 		}

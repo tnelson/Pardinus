@@ -49,10 +49,12 @@ import kodkod.engine.bool.BooleanValue;
 import kodkod.engine.bool.Operator;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
+import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleFactory;
+import kodkod.instance.TupleSet;
 import kodkod.util.ints.IndexedEntry;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
@@ -207,36 +209,55 @@ final class SymmetryBreaker {
 			IntIterator indeces = sym.iterator();
 			for(int prevIndex = indeces.next(); indeces.hasNext(); ) {
 				int curIndex = indeces.next();
-				for(Iterator<RelationParts> rIter = relParts.iterator(); rIter.hasNext() && original.size() < predLength;) {
-					
-					RelationParts rparts = rIter.next();
-					Relation r = rparts.relation;
-					
-					// [HASLab] ignore symmetries that are not considered relevant at this stage 
-					// (should only occur on decomposed problems at the configuration stage).
-					if (!stage_bounds.relations().contains(r))
-						continue; 
-
-					if (!rparts.representatives.contains(sym.min())) 
-						continue;  // r does not range over sym
-					
-					// [HASLab]
-					if (r.isSkolem() && options.temporal())
-						continue;
-					
-					BooleanMatrix m = interpreter.interpret(r);
-					for(IndexedEntry<BooleanValue> entry : m) {
-						int permIndex = permutation(r.arity(), entry.index(), prevIndex, curIndex);
-						BooleanValue permValue = m.get(permIndex);
-						if (permIndex==entry.index() || atSameIndex(original, permValue, permuted, entry.value()))
+				Iterator<Tuple> times = null;
+				if (bounds.relations().contains(TemporalTranslator.STATE))
+						bounds.lowerBound(TemporalTranslator.STATE).iterator();
+				Tuple time = null;
+				do {
+					for(Iterator<RelationParts> rIter = relParts.iterator(); rIter.hasNext() && original.size() < predLength;) {
+						
+						RelationParts rparts = rIter.next();
+						Relation r = rparts.relation;
+						
+						// [HASLab] ignore symmetries that are not considered relevant at this stage 
+						// (should only occur on decomposed problems at the configuration stage).
+						if (!stage_bounds.relations().contains(r))
+							continue; 
+	
+						if (!rparts.representatives.contains(sym.min())) 
+							continue;  // r does not range over sym
+						
+						// [HASLab]
+						if (r.isSkolem() && options.temporal())
 							continue;
 						
-						_original.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), entry.index()))); // [HASLab]
-						_permuted.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), permIndex))); // [HASLab]
-						original.add(entry.value());
-						permuted.add(permValue);			
+						BooleanMatrix m = interpreter.interpret(r);
+						for(IndexedEntry<BooleanValue> entry : m) {
+							int permIndex = permutation(r.arity(), entry.index(), prevIndex, curIndex);
+							BooleanValue permValue = m.get(permIndex);
+							if (permIndex==entry.index() || atSameIndex(original, permValue, permuted, entry.value()))
+								continue;
+							
+							boolean zzz = false;
+								if (times != null) {
+								TupleSet yyy = bounds.lowerBound(TemporalTranslator.STATE);
+								Tuple xxx = interpreter.universe().factory().tuple(interpreter.universe().factory().tuple(r.arity(), entry.index()).atom(r.arity()-1));
+								zzz = yyy.contains(xxx);	
+							}
+							
+							if ((time == null && !zzz)
+									|| (time != null && interpreter.universe().factory().tuple(r.arity(), entry.index()).contains(time.atom(0)))) {
+								_original.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), entry.index()))); // [HASLab]
+								_permuted.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), permIndex))); // [HASLab]
+								original.add(entry.value());
+								permuted.add(permValue);	
+							}
+						}
 					}
-				}
+					if (times != null && times.hasNext())
+						time = times.next();
+					else time = null;
+				} while (time != null);
 								
 				reporter.reportLex(_original,_permuted); // [HASLab]
 

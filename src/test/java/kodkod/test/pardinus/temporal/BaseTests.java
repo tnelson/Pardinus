@@ -73,6 +73,7 @@ public class BaseTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
+		opt.setMinTraceLength(2);
 
 		int n = 2;
 
@@ -102,6 +103,42 @@ public class BaseTests {
 		
 		assertTrue("base problem should be sat", sol.sat());
 	}
+	
+	@Test
+	public void testBug() {
+		opt.setSolver(SATFactory.MiniSat);
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		dsolver = new PardinusSolver(opt);
+
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+
+		Object[] atoms = new Object[n * 2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+		for (int i = 0; i < n; i++)
+			atoms[n + i] = "B" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, bs);
+		Formula p = a.some();
+		Formula q = b.some();
+		Formula formula = ((p.releases(q)).after()).iff((p.after()).releases(q.after()));
+		
+		Solution sol = dsolver.solveAll(formula.not(), bounds).next();
+		
+		assertTrue("base problem should be sat", sol.sat());
+	}
+	
 	
 	@Test
 	public void testSATLen() {

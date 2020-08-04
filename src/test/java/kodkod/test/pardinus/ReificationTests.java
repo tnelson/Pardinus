@@ -24,6 +24,7 @@ package kodkod.test.pardinus;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,10 +34,8 @@ import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.Reporter;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Instance;
@@ -46,7 +45,6 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 import org.junit.Test;
-import org.slf4j.LoggerFactory;
 
 /**
  * Tests the reification of states and paths into formulas, needed for default
@@ -56,11 +54,10 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ReificationTests {
-
+	
 	/* Static reification. */
 	@Test
 	public void testStaticReif() {
-		TemporalPardinusSolver.SomeDisjPattern = false;
 		int n = 3;
 
 		Relation a = Relation.unary("a");
@@ -84,62 +81,48 @@ public class ReificationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setRunTemporal(false);
-		opt.setRunDecomposed(false);
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
-
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		Instance inst = solution.next().instance();
-
+		Instance inst = new Instance(uni);
+		inst.add(a, f.setOf("A"+(n-1)));
+		inst.add(b, f.setOf("B"+(n-1)));
+		
 		opt.reporter().debug(inst.toString());
-//		opt.reporter().debug(inst.formulate(bounds,x,formula));
-//		opt.reporter().debug(x);
-
 //		relations: {a=[[A2]], b=[[B2]]}
 
-		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula).toString());
+		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula, false).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, false).not());
 
-		solution = solver.solveAll(formula, bounds);
-
-		inst = solution.next().instance();
+		inst = new Instance(uni);
+		inst.add(a, f.range(f.tuple("A1"),f.tuple("A2")));
+		inst.add(b, f.range(f.tuple("B1"),f.tuple("B2")));
 
 		opt.reporter().debug(inst.toString());
-//		opt.reporter().debug(inst.formulate(bounds,x,formula));
-//		opt.reporter().debug(x);
 
 //		relations: {a=[[A1], [A2]], b=[[B1], [B2]], $$A2$$=[[A2]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = ($$B1$$ + $$B2$$)))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, false).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, false).not());
 
-		solution = solver.solveAll(formula.and(inst.formulate(bounds, x, formula).not()), bounds);
-
-		inst = solution.next().instance();
+		inst = new Instance(uni);
+		inst.add(a, f.range(f.tuple("A1"),f.tuple("A2")));
+		inst.add(b, f.setOf("B"+(n-1)));
 
 		opt.reporter().debug(inst.toString());
-//		opt.reporter().debug(inst.formulate(bounds,x,formula));
-//		opt.reporter().debug(x);
 
 //		relations: {a=[[A1], [A2]], b=[[B2]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B1$$=[[B1]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$B0$$=[[B0]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = $$B2$$))",
-				inst.formulate(bounds.clone(), x, formula).toString());
-
-		solver.free();
+				inst.formulate(bounds.clone(), x, formula, false).toString());
 
 	}
 
 	/* Temporal reification, not all relations relevant, loop not first. */
 	@Test
 	public void testTmpReif() {
-		TemporalPardinusSolver.SomeDisjPattern = false;
 		int n = 3;
 
 		Relation a = Relation.unary_variable("a");
@@ -162,52 +145,52 @@ public class ReificationTests {
 		Formula formula = ((a.eq(a.prime()).not())).always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-
-//		opt.setReporter(new ConsoleReporter());
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(true);
-		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
+		opt.setReporter(new ConsoleReporter());
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		Instance inst = solution.next().instance();
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.noneOf(1));
+		inst0.add(b, f.noneOf(1));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.range(f.tuple("A0"), f.tuple("A" + (n - 1))));
+		inst1.add(b, f.noneOf(1));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
-//		relations: {a=[[A0], [A1], [A2]], b=[]}
-//		* state 1 LAST
 //		relations: {a=[], b=[]}
+//		* state 1 LAST
+//		relations: {a=[[A0], [A1], [A2]], b=[]}
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and next((a = none))) and always((((a = (($$A0$$ + $$A1$$) + $$A2$$)) implies next(next((a = (($$A0$$ + $$A1$$) + $$A2$$))))) and ((a = none) implies next(next((a = none)))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				"(((a = none) and after((a = (($$A0$$ + $$A1$$) + $$A2$$)))) and always((((a = none) implies after(after((a = none)))) and ((a = (($$A0$$ + $$A1$$) + $$A2$$)) implies after(after((a = (($$A0$$ + $$A1$$) + $$A2$$))))))))",
+				inst.formulate(bounds.clone(), x, formula, false).toString());
 
-		inst = solution.next().instance();
+		inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A"+(n-1)));
+		inst0.add(b, f.noneOf(1));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.range(f.tuple("A0"), f.tuple("A1")));
+		inst1.add(b, f.noneOf(1));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
-//		relations: {a=[[A0], [A1], [A2]], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 1
-//		relations: {a=[], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 2 LAST
-//		relations: {a=[[A2]], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
+//		relations: {a=[[A2]], b=[]}
+//		* state 1 LAST
+//		relations: {a=[[A0], [A1]], b=[]}
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and next(((a = none) and next((a = $$A2$$))))) and always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) implies next(next(next((a = (($$A0$$ + $$A1$$) + $$A2$$)))))) and ((a = none) implies next(next(next((a = none)))))) and ((a = $$A2$$) implies next(next(next((a = $$A2$$))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
-
-		solver.free();
-
+				"(((a = $$A2$$) and after((a = ($$A0$$ + $$A1$$)))) and always((((a = $$A2$$) implies after(after((a = $$A2$$)))) and ((a = ($$A0$$ + $$A1$$)) implies after(after((a = ($$A0$$ + $$A1$$))))))))",
+				inst.formulate(bounds.clone(), x, formula, false).toString());
 	}
 
 	/* Temporal reification. */
 	@Test
 	public void testTmp2Reif() {
-		TemporalPardinusSolver.SomeDisjPattern = false;
 		int n = 3;
 
 		Relation a = Relation.unary_variable("a");
@@ -232,54 +215,62 @@ public class ReificationTests {
 		ExtendedOptions opt = new ExtendedOptions();
 
 		opt.setReporter(new SLF4JReporter());
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(true);
-		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		Instance inst = solution.next().instance();
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A1","A2"));
+		inst0.add(b, f.noneOf(1));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A0","A2"));
+		inst1.add(b, f.setOf("B2"));
+		Instance inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A1"));
+		inst2.add(b, f.setOf("B1"));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2), 1, 1);
+
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
-//		relations: {a=[[A0], [A1], [A2]], b=[]}
+//		relations: {a=[[A1], [A2]], b=[]}
 //		* state 1 LOOP
-//		relations: {a=[[A1], [A2]], b=[[B0], [B1], [B2]]}
+//		relations: {a=[[A0], [A2]], b=[[B2]]}
 //		* state 2 LAST
-//		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]]}
+//		relations: {a=[[A1]], b=[[B1]]}
 
 		assertEquals(
-				"((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(always(((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				"((((a = ($$A1$$ + $$A2$$)) and (b = none)) and after((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) and after(((a = $$A1$$) and (b = $$B1$$)))))) and after(always(((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) implies after(after(((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$))))) and (((a = $$A1$$) and (b = $$B1$$)) implies after(after(((a = $$A1$$) and (b = $$B1$$)))))))))",
+				inst.formulate(bounds.clone(), x, formula, false).toString());
 
-		inst = solution.next().instance();
+		inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A2"));
+		inst0.add(b, f.noneOf(1));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A1"));
+		inst1.add(b, f.setOf("B2"));
+		inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A0","A2"));
+		inst2.add(b, f.setOf("B1"));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2), 1, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
-//		relations: {a=[[A0], [A1], [A2]], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 1
-//		relations: {a=[[A1], [A2]], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 2 LOOP
-//		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 3 LAST
-//		relations: {a=[], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
+//		relations: {a=[[A2]], b=[]}
+//		* state 1 LOOP
+//		relations: {a=[[A1]], b=[[B2]]}
+//		* state 2 LAST
+//		relations: {a=[[A0], [A2]], b=[[B1]]}
 
 		assertEquals(
-				"((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
-
-		solver.free();
+				"((((a = $$A2$$) and (b = none)) and after((((a = $$A1$$) and (b = $$B2$$)) and after(((a = ($$A0$$ + $$A2$$)) and (b = $$B1$$)))))) and after(always(((((a = $$A1$$) and (b = $$B2$$)) implies after(after(((a = $$A1$$) and (b = $$B2$$))))) and (((a = ($$A0$$ + $$A2$$)) and (b = $$B1$$)) implies after(after(((a = ($$A0$$ + $$A2$$)) and (b = $$B1$$)))))))))",
+				inst.formulate(bounds.clone(), x, formula, false).toString());
 
 	}
 
 	/* Temporal segment reification. */
 	@Test
 	public void testTmpSegmentReif() {
-		TemporalPardinusSolver.SomeDisjPattern = false;
 		int n = 3;
 
 		Relation a = Relation.unary_variable("a");
@@ -304,52 +295,68 @@ public class ReificationTests {
 		ExtendedOptions opt = new ExtendedOptions();
 
 //		opt.setReporter(new ConsoleReporter());
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(true);
-		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		TemporalInstance inst = (TemporalInstance) solution.next().instance();
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A1","A2"));
+		inst0.add(b, f.noneOf(1));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A0","A2"));
+		inst1.add(b, f.setOf("B2"));
+		Instance inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A1"));
+		inst2.add(b, f.setOf("B1"));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2), 1, 1);
+
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
-//		relations: {a=[[A0], [A1], [A2]], b=[]}
+//		relations: {a=[[A1], [A2]], b=[]}
 //		* state 1 LOOP
-//		relations: {a=[[A1], [A2]], b=[[B0], [B1], [B2]]}
+//		relations: {a=[[A0], [A2]], b=[[B2]]}
 //		* state 2 LAST
-//		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]]}
+//		relations: {a=[[A1]], b=[[B1]]}
 
-		assertEquals("true", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
-
-		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+		assertEquals("true", inst.formulate(bounds.clone(), x, formula, -1, -1, false).toString());
 
 		assertEquals(
-				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(always(((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"after((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) and after(((a = $$A1$$) and (b = $$B1$$)))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, false).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"(after(after((((a = $$A1$$) and (b = $$B1$$)) and after(((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)))))) and after(always(((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) implies after(after(((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$))))) and (((a = $$A1$$) and (b = $$B1$$)) implies after(after(((a = $$A1$$) and (b = $$B1$$)))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, false).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
-
-		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+				"(((a = ($$A1$$ + $$A2$$)) and (b = none)) and after((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) and after(((a = $$A1$$) and (b = $$B1$$))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, false).toString());
 
 		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				"(((a = ($$A1$$ + $$A2$$)) and (b = none)) and after((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) and after(((a = $$A1$$) and (b = $$B1$$))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, false).toString());
 
-		inst = (TemporalInstance) solution.next().instance();
+		assertEquals("after(((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)))",
+				inst.formulate(bounds.clone(), x, formula, 1, 1, false).toString());
+
+		assertEquals(
+				"after((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) and after((((a = $$A1$$) and (b = $$B1$$)) and after((((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)) and after((((a = $$A1$$) and (b = $$B1$$)) and after(((a = ($$A0$$ + $$A2$$)) and (b = $$B2$$)))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, false).toString());
+
+		inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A0","A1","A2"));
+		inst0.add(b, f.noneOf(1));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A1","A2"));
+		inst1.add(b, f.setOf("B0","B1","B2"));
+		inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A0","A1","A2"));
+		inst2.add(b, f.setOf("B0","B1","B2"));
+		Instance inst3 = new Instance(uni);
+		inst3.add(a, f.noneOf(1));
+		inst3.add(b, f.setOf("B0","B1","B2"));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2, inst3), 2, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
@@ -362,29 +369,27 @@ public class ReificationTests {
 //		relations: {a=[], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
 
 		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				"after((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, false).toString());
 
 		assertEquals(
-				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"(after(after((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and after(after(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies after(after(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies after(after(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, false).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and after((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, false).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and after((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, false).toString());
 
-		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("after(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 1, false).toString());
 
 		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
-
-		solver.free();
+				"after((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after((((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and after(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, false).toString());
 
 	}
 
@@ -392,7 +397,6 @@ public class ReificationTests {
 	@Test
 	public void testTmpConfigSegmentReif() {
 		int n = 2;
-		TemporalPardinusSolver.SomeDisjPattern = false;
 
 		Relation a = Relation.unary("a");
 		Relation b = Relation.binary_variable("b");
@@ -417,87 +421,89 @@ public class ReificationTests {
 		ExtendedOptions opt = new ExtendedOptions();
 
 //		opt.setReporter(new ConsoleReporter());
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(true);
-		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		TemporalInstance inst = (TemporalInstance) solution.next().instance();
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.noneOf(1));
+		inst0.add(b, f.setOf(f.tuple("A0","B0"),f.tuple("A0","B1"),f.tuple("A1","B0")));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.noneOf(1));
+		inst1.add(b, f.setOf(f.tuple("A0","B1"),f.tuple("A1","B0"),f.tuple("A1","B1")));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
-//		relations: {a=[], b=[[A0, B0], [A0, B1], [A1, B0], [A1, B1]]}
+//		relations: {a=[], b=[[A0, B0], [A0, B1], [A1, B0]]}
 //		* state 1 LAST
-//		relations: {a=[], b=[]}
+//		relations: {a=[], b=[[A0, B1], [A1, B0], [A1, B1]]}
 
-		assertEquals("(a = none)", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
-
-		assertEquals(
-				"next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+		assertEquals("(a = none)", inst.formulate(bounds.clone(), x, formula, -1, -1, false).toString());
 
 		assertEquals(
-				"(next(next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))) and always((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))) and ((b = (none -> none)) implies next(next((b = (none -> none))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"after(((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and after((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, false).toString());
 
 		assertEquals(
-				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"(after(after(((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))) and after((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))) and always((((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))) implies after(after((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)))))) and ((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies after(after((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, false).toString());
 
 		assertEquals(
-				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
-
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+				"((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))) and after(((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and after((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, false).toString());
 
 		assertEquals(
-				"next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				"((a = none) and ((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))) and after(((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and after((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, false).toString());
 
-		inst = (TemporalInstance) solution.next().instance();
+		assertEquals("after((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))", inst.formulate(bounds.clone(), x, formula, 1, 1, false).toString());
+
+		assertEquals(
+				"after(((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and after(((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))) and after(((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and after(((b = ((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$))) and after((b = ((($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, false).toString());
+
+		inst0 = new Instance(uni);
+		inst0.add(a, f.noneOf(1));
+		inst0.add(b, f.setOf(f.tuple("A0","B1"),f.tuple("A1","B0")));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.noneOf(1));
+		inst1.add(b, f.setOf(f.tuple("A0","B0"),f.tuple("A1","B1")));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
-//		relations: {a=[], b=[[A0, B0], [A0, B1], [A1, B0], [A1, B1]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
-//		* state 1
-//		relations: {a=[], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
-//		* state 2 LAST
-//		relations: {a=[], b=[[A1, B0], [A1, B1]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
+//		relations: {a=[], b=[[A0, B1], [A1, B0]]}
+//		* state 1 LAST
+//		relations: {a=[], b=[[A0, B0], [A1, B1]]}
 
-		assertEquals("next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+		assertEquals("after(((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and after((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, false).toString());
 
 		assertEquals(
-				"(next(next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))) and always(((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))) and ((b = (none -> none)) implies next(next(next((b = (none -> none))))))) and ((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"(after(after(((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))) and after((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))) and always((((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))) implies after(after((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)))))) and ((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) implies after(after((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$)))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, false).toString());
 
 		assertEquals(
-				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))) and after(((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and after((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$)))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, false).toString());
 
 		assertEquals(
-				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				"((a = none) and ((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))) and after(((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and after((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, false).toString());
 
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("after((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))", inst.formulate(bounds.clone(), x, formula, 1, 1, false).toString());
 
 		assertEquals(
-				"next(((b = (none -> none)) and next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
-
-		solver.free();
+				"after(((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and after(((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))) and after(((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and after(((b = (($$A0$$ -> $$B1$$) + ($$A1$$ -> $$B0$$))) and after((b = (($$A0$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, false).toString());
 
 	}
 
 	/* Static reification. */
 	@Test
 	public void testStaticSome() {
-		TemporalPardinusSolver.SomeDisjPattern = true;
 		int n = 3;
 
 		Relation a = Relation.unary("a");
@@ -521,15 +527,11 @@ public class ReificationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setRunTemporal(false);
-		opt.setRunDecomposed(false);
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
-
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		Instance inst = solution.next().instance();
+		Instance inst = new Instance(uni);
+		inst.add(a, f.setOf("A"+(n-1)));
+		inst.add(b, f.setOf("B"+(n-1)));
 
 		opt.reporter().debug(inst.toString());
 //		opt.reporter().debug(inst.formulate(bounds,x,formula));
@@ -537,13 +539,13 @@ public class ReificationTests {
 
 //		relations: {a=[[A2]], b=[[B2]]}
 
-		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula).toString());
+		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula, true).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, true).not());
 
-		solution = solver.solveAll(formula, bounds);
-
-		inst = solution.next().instance();
+		inst = new Instance(uni);
+		inst.add(a, f.setOf("A1","A2"));
+		inst.add(b, f.setOf("B1","B2"));
 
 		opt.reporter().debug(inst.toString());
 //		opt.reporter().debug(inst.formulate(bounds,x,formula));
@@ -552,13 +554,13 @@ public class ReificationTests {
 //		relations: {a=[[A1], [A2]], b=[[B1], [B2]], $$A2$$=[[A2]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = ($$B1$$ + $$B2$$)))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				inst.formulate(bounds.clone(), x, formula, true).toString());
 
-		formula = formula.and(inst.formulate(bounds, x, formula).not());
+		formula = formula.and(inst.formulate(bounds, x, formula, true).not());
 
-		solution = solver.solveAll(formula.and(inst.formulate(bounds, x, formula).not()), bounds);
-
-		inst = solution.next().instance();
+		inst = new Instance(uni);
+		inst.add(a, f.setOf("A1","A2"));
+		inst.add(b, f.setOf("B2"));
 
 		opt.reporter().debug(inst.toString());
 //		opt.reporter().debug(inst.formulate(bounds,x,formula));
@@ -567,16 +569,13 @@ public class ReificationTests {
 //		relations: {a=[[A1], [A2]], b=[[B2]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B1$$=[[B1]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$B0$$=[[B0]]}
 
 		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = $$B2$$))",
-				inst.formulate(bounds.clone(), x, formula).toString());
-
-		solver.free();
+				inst.formulate(bounds.clone(), x, formula, true).toString());
 
 	}
 
 	/* Temporal reification, not all relations relevant, loop not first. */
 	@Test
 	public void testTmpSome() {
-		TemporalPardinusSolver.SomeDisjPattern = true;
 		int n = 3;
 
 		Relation a = Relation.unary_variable("a");
@@ -604,13 +603,17 @@ public class ReificationTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		Instance inst = solution.next().instance();
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.noneOf(1));
+		inst0.add(b, f.noneOf(1));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A0","A1","A2"));
+		inst1.add(b, f.noneOf(1));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
@@ -619,10 +622,17 @@ public class ReificationTests {
 //		relations: {a=[[A0], [A1], [A2]], b=[]}
 
 		assertEquals(
-				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = none) and next((a = ((A0 + A1) + A2)))) and always((((a = none) implies next(next((a = none)))) and ((a = ((A0 + A1) + A2)) implies next(next((a = ((A0 + A1) + A2))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = none) and after((a = ((A0 + A1) + A2)))) and always((((a = none) implies after(after((a = none)))) and ((a = ((A0 + A1) + A2)) implies after(after((a = ((A0 + A1) + A2))))))))))",
+				inst.formulate(bounds.clone(), x, formula, true).toString());
 
-		inst = solution.next().instance();
+		inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A2"));
+		inst0.add(b, f.noneOf(1));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A0","A1"));
+		inst1.add(b, f.noneOf(1));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
@@ -631,17 +641,14 @@ public class ReificationTests {
 //		relations: {a=[[A0], [A1]], b=[]}
 		
 		assertEquals(
-				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = A2) and next((a = (A0 + A1)))) and always((((a = A2) implies next(next((a = A2)))) and ((a = (A0 + A1)) implies next(next((a = (A0 + A1))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
-
-		solver.free();
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = A2) and after((a = (A0 + A1)))) and always((((a = A2) implies after(after((a = A2)))) and ((a = (A0 + A1)) implies after(after((a = (A0 + A1))))))))))",
+				inst.formulate(bounds.clone(), x, formula, true).toString());
 
 	}
 
 	/* Temporal reification. */
 	@Test
 	public void testTmp2Some() {
-		TemporalPardinusSolver.SomeDisjPattern = true;
 		int n = 3;
 
 		Relation a = Relation.unary_variable("a");
@@ -666,54 +673,62 @@ public class ReificationTests {
 		ExtendedOptions opt = new ExtendedOptions();
 
 		opt.setReporter(new SLF4JReporter());
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(true);
-		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		Instance inst = solution.next().instance();
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A1","A2"));
+		inst0.add(b, f.noneOf(1));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.noneOf(1));
+		inst1.add(b, f.setOf("B2"));
+		Instance inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A0"));
+		inst2.add(b, f.setOf("B2"));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2), 1, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
-//		relations: {a=[[A0], [A1], [A2]], b=[]}
+//		relations: {a=[[A1], [A2]], b=[]}
 //		* state 1 LOOP
-//		relations: {a=[[A1], [A2]], b=[[B0], [B1], [B2]]}
+//		relations: {a=[], b=[[B2]]}
 //		* state 2 LAST
-//		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]]}
+//		relations: {a=[[A0]], b=[[B2]]}
 
 		assertEquals(
-				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and ((((a = none) and (b = none)) and next((((a = (A1 + A2)) and (b = B2)) and next(((a = none) and (b = B2)))))) and next(always(((((a = (A1 + A2)) and (b = B2)) implies next(next(((a = (A1 + A2)) and (b = B2))))) and (((a = none) and (b = B2)) implies next(next(((a = none) and (b = B2)))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and ((((a = (A1 + A2)) and (b = none)) and after((((a = none) and (b = B2)) and after(((a = A0) and (b = B2)))))) and after(always(((((a = none) and (b = B2)) implies after(after(((a = none) and (b = B2))))) and (((a = A0) and (b = B2)) implies after(after(((a = A0) and (b = B2)))))))))))",
+				inst.formulate(bounds.clone(), x, formula, true).toString());
 
-		inst = solution.next().instance();
+		inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A1","A2"));
+		inst0.add(b, f.noneOf(1));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.noneOf(1));
+		inst1.add(b, f.setOf("B2"));
+		inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A0"));
+		inst2.add(b, f.setOf("B2"));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2), 1, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
-//		relations: {a=[[A0], [A1], [A2]], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 1
-//		relations: {a=[[A1], [A2]], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 2 LOOP
-//		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
-//		* state 3 LAST
-//		relations: {a=[], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
+//		relations: {a=[[A1], [A2]], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
+//		* state 1 LOOP
+//		relations: {a=[], b=[[B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
+//		* state 2 LAST
+//		relations: {a=[[A0]], b=[[B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
 
 		assertEquals(
-				"((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula).toString());
-
-		solver.free();
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and ((((a = (A1 + A2)) and (b = none)) and after((((a = none) and (b = B2)) and after(((a = A0) and (b = B2)))))) and after(always(((((a = none) and (b = B2)) implies after(after(((a = none) and (b = B2))))) and (((a = A0) and (b = B2)) implies after(after(((a = A0) and (b = B2)))))))))))",
+				inst.formulate(bounds.clone(), x, formula, true).toString());
 
 	}
 
 	/* Temporal segment reification. */
 	@Test
 	public void testTmpSegmentSome() {
-		TemporalPardinusSolver.SomeDisjPattern = true;
 		int n = 3;
 
 		Relation a = Relation.unary_variable("a");
@@ -738,17 +753,20 @@ public class ReificationTests {
 		ExtendedOptions opt = new ExtendedOptions();
 
 //		opt.setReporter(new ConsoleReporter());
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(true);
-		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
-		TemporalInstance inst = (TemporalInstance) solution.next().instance();
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A0","A1","A2"));
+		inst0.add(b, f.noneOf(1));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A1","A2"));
+		inst1.add(b, f.setOf("B0","B1","B2"));
+		Instance inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A0","A1","A2"));
+		inst2.add(b, f.setOf("B0","B1","B2"));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2), 1, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
@@ -758,32 +776,45 @@ public class ReificationTests {
 //		* state 2 LAST
 //		relations: {a=[[A0], [A1], [A2]], b=[[B0], [B1], [B2]]}
 
-		assertEquals("true", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
+		assertEquals("(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and true))", inst.formulate(bounds.clone(), x, formula, -1, -1, true).toString());
 
 		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, true).toString());
 
 		assertEquals(
-				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(always(((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (after(after((((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) and after(((a = (A1 + A2)) and (b = ((B0 + B1) + B2))))))) and after(always(((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) implies after(after(((a = (A1 + A2)) and (b = ((B0 + B1) + B2)))))) and (((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) implies after(after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, true).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = ((A0 + A1) + A2)) and (b = none)) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2)))))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, true).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = ((A0 + A1) + A2)) and (b = none)) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2)))))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, true).toString());
 
-		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and after(((a = (A1 + A2)) and (b = ((B0 + B1) + B2))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 1, true).toString());
 
 		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after((((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after((((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) and after(((a = (A1 + A2)) and (b = ((B0 + B1) + B2))))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, true).toString());
 
-		inst = (TemporalInstance) solution.next().instance();
+		inst0 = new Instance(uni);
+		inst0.add(a, f.setOf("A0","A1","A2"));
+		inst0.add(b, f.noneOf(1));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.setOf("A1","A2"));
+		inst1.add(b, f.setOf("B0","B1","B2"));
+		inst2 = new Instance(uni);
+		inst2.add(a, f.setOf("A0","A1","A2"));
+		inst2.add(b, f.setOf("B0","B1","B2"));
+		Instance inst3 = new Instance(uni);
+		inst3.add(a, f.noneOf(1));
+		inst3.add(b, f.setOf("B0","B1","B2"));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1, inst2, inst3), 2, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0
@@ -796,29 +827,27 @@ public class ReificationTests {
 //		relations: {a=[], b=[[B0], [B1], [B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B0$$=[[B0]], $$B1$$=[[B1]], $$B2$$=[[B2]]}
 
 		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, true).toString());
 
 		assertEquals(
-				"(next(next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))) and next(next(always(((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))) and (((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) implies next(next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (after(after((((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) and after(((a = none) and (b = ((B0 + B1) + B2))))))) and after(after(always(((((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) implies after(after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2)))))) and (((a = none) and (b = ((B0 + B1) + B2))) implies after(after(((a = none) and (b = ((B0 + B1) + B2)))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, true).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = ((A0 + A1) + A2)) and (b = none)) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2)))))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, true).toString());
 
 		assertEquals(
-				"(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = none)) and next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and (((a = ((A0 + A1) + A2)) and (b = none)) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after(((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2)))))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, true).toString());
 
-		assertEquals("next(((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and after(((a = (A1 + A2)) and (b = ((B0 + B1) + B2))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 1, true).toString());
 
 		assertEquals(
-				"next((((a = ($$A1$$ + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next((((a = (($$A0$$ + $$A1$$) + $$A2$$)) and (b = (($$B0$$ + $$B1$$) + $$B2$$))) and next(((a = none) and (b = (($$B0$$ + $$B1$$) + $$B2$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
-
-		solver.free();
+				"(some [A1: one univ, B2: one univ, A2: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((((A1 + B2) + A2) + B0) + A0) + B1) = univ) and after((((a = (A1 + A2)) and (b = ((B0 + B1) + B2))) and after((((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) and after((((a = none) and (b = ((B0 + B1) + B2))) and after((((a = ((A0 + A1) + A2)) and (b = ((B0 + B1) + B2))) and after(((a = none) and (b = ((B0 + B1) + B2))))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, true).toString());
 
 	}
 
@@ -826,7 +855,6 @@ public class ReificationTests {
 	@Test
 	public void testTmpConfigSegmentSome() {
 		int n = 2;
-		TemporalPardinusSolver.SomeDisjPattern = true;
 
 		Relation a = Relation.unary("a");
 		Relation b = Relation.binary_variable("b");
@@ -851,80 +879,83 @@ public class ReificationTests {
 		ExtendedOptions opt = new ExtendedOptions();
 
 //		opt.setReporter(new ConsoleReporter());
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(true);
-		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
-
-		TemporalInstance inst = (TemporalInstance) solution.next().instance();
+		
+		Instance inst0 = new Instance(uni);
+		inst0.add(a, f.noneOf(1));
+		inst0.add(b, f.setOf(f.tuple("A0","B0"),f.tuple("A0","B1"),f.tuple("A1","B0")));
+		Instance inst1 = new Instance(uni);
+		inst1.add(a, f.noneOf(1));
+		inst1.add(b, f.setOf(f.tuple("A0","B1"),f.tuple("A1","B0"),f.tuple("A1","B1")));
+		TemporalInstance inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+		
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
-//		relations: {a=[], b=[[A0, B0], [A0, B1], [A1, B0], [A1, B1]]}
+//		relations: {a=[], b=[[A0, B0], [A0, B1], [A1, B0]]}
 //		* state 1 LAST
-//		relations: {a=[], b=[]}
+//		relations: {a=[], b=[[A0, B1], [A1, B0], [A1, B1]]}
 
-		assertEquals("(a = none)", inst.formulate(bounds.clone(), x, formula, -1, -1).toString());
-
-		assertEquals(
-				"next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+		assertEquals("(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and (a = none)))", inst.formulate(bounds.clone(), x, formula, -1, -1, true).toString());
 
 		assertEquals(
-				"(next(next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))) and always((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))) and ((b = (none -> none)) implies next(next((b = (none -> none))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and after(((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))) and after((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, true).toString());
 
 		assertEquals(
-				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and (after(after(((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))) and after((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))))))) and always((((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))) implies after(after((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0)))))) and ((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))) implies after(after((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1)))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, true).toString());
 
 		assertEquals(
-				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
-
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and ((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))) and after(((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))) and after((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0)))))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, true).toString());
 
 		assertEquals(
-				"next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and ((a = none) and ((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))) and after(((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))) and after((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))))))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, true).toString());
 
-		inst = (TemporalInstance) solution.next().instance();
+		assertEquals("(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and after((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))))))", inst.formulate(bounds.clone(), x, formula, 1, 1, true).toString());
+
+		assertEquals(
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and after(((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))) and after(((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))) and after(((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))) and after(((b = (((A0 -> B0) + (A0 -> B1)) + (A1 -> B0))) and after((b = (((A0 -> B1) + (A1 -> B0)) + (A1 -> B1))))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, true).toString());
+
+		inst0 = new Instance(uni);
+		inst0.add(a, f.noneOf(1));
+		inst0.add(b, f.setOf(f.tuple("A0","B1"),f.tuple("A1","B0")));
+		inst1 = new Instance(uni);
+		inst1.add(a, f.noneOf(1));
+		inst1.add(b, f.setOf(f.tuple("A0","B0"),f.tuple("A1","B1")));
+		inst = new TemporalInstance(Arrays.asList(inst0, inst1), 0, 1);
+
 		opt.reporter().debug(inst.toString());
 
 //		* state 0 LOOP
-//		relations: {a=[], b=[[A0, B0], [A0, B1], [A1, B0], [A1, B1]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
-//		* state 1
-//		relations: {a=[], b=[], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
-//		* state 2 LAST
-//		relations: {a=[], b=[[A1, B0], [A1, B1]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
+//		relations: {a=[], b=[[A0, B1], [A1, B0]]}
+//		* state 1 LAST
+//		relations: {a=[], b=[[A0, B0], [A1, B1]]}
 
-		assertEquals("next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 2).toString());
+		assertEquals("(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and after(((b = ((A0 -> B0) + (A1 -> B1))) and after((b = ((A0 -> B1) + (A1 -> B0))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 2, true).toString());
 
 		assertEquals(
-				"(next(next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next((b = (none -> none)))))))) and always(((((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))))))) and ((b = (none -> none)) implies next(next(next((b = (none -> none))))))) and ((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) implies next(next(next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 2, null).toString());
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and (after(after(((b = ((A0 -> B1) + (A1 -> B0))) and after((b = ((A0 -> B0) + (A1 -> B1))))))) and always((((b = ((A0 -> B1) + (A1 -> B0))) implies after(after((b = ((A0 -> B1) + (A1 -> B0)))))) and ((b = ((A0 -> B0) + (A1 -> B1))) implies after(after((b = ((A0 -> B0) + (A1 -> B1)))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 2, null, true).toString());
 
 		assertEquals(
-				"((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$)))))))",
-				inst.formulate(bounds.clone(), x, formula, 0, 2).toString());
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and ((b = ((A0 -> B1) + (A1 -> B0))) and after(((b = ((A0 -> B0) + (A1 -> B1))) and after((b = ((A0 -> B1) + (A1 -> B0)))))))))",
+				inst.formulate(bounds.clone(), x, formula, 0, 2, true).toString());
 
 		assertEquals(
-				"((a = none) and ((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))",
-				inst.formulate(bounds.clone(), x, formula, -1, 2).toString());
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and ((a = none) and ((b = ((A0 -> B1) + (A1 -> B0))) and after(((b = ((A0 -> B0) + (A1 -> B1))) and after((b = ((A0 -> B1) + (A1 -> B0))))))))))",
+				inst.formulate(bounds.clone(), x, formula, -1, 2, true).toString());
 
-		assertEquals("next((b = (none -> none)))", inst.formulate(bounds.clone(), x, formula, 1, 1).toString());
+		assertEquals("(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and after((b = ((A0 -> B0) + (A1 -> B1))))))", inst.formulate(bounds.clone(), x, formula, 1, 1, true).toString());
 
 		assertEquals(
-				"next(((b = (none -> none)) and next(((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))) and next(((b = (((($$A0$$ -> $$B0$$) + ($$A0$$ -> $$B1$$)) + ($$A1$$ -> $$B0$$)) + ($$A1$$ -> $$B1$$))) and next(((b = (none -> none)) and next((b = (($$A1$$ -> $$B0$$) + ($$A1$$ -> $$B1$$))))))))))))",
-				inst.formulate(bounds.clone(), x, formula, 1, 5).toString());
-
-		solver.free();
+				"(some [A1: one univ, B0: one univ, A0: one univ, B1: one univ] | (((((A1 + B0) + A0) + B1) = univ) and after(((b = ((A0 -> B0) + (A1 -> B1))) and after(((b = ((A0 -> B1) + (A1 -> B0))) and after(((b = ((A0 -> B0) + (A1 -> B1))) and after(((b = ((A0 -> B1) + (A1 -> B0))) and after((b = ((A0 -> B0) + (A1 -> B1))))))))))))))",
+				inst.formulate(bounds.clone(), x, formula, 1, 5, true).toString());
 
 	}
 }

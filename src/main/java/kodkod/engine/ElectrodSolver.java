@@ -145,22 +145,24 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 */
 		@Override
 		public Solution next() {
-			if (prev != null) {
-				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
-				Formula trns = prev.formulate(bounds,reifs,formula).not();
-				options.reporter().debug("Reified instance: "+trns);
-				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
-			}
-				
-			Solution s = go(formula,bounds,options);
-			if (s.sat())
-				prev = (TemporalInstance) s.instance();
-			else {
-				prev = null;
-				formula = null;
-			}
-	
-			return s;
+			throw new InvalidSolverParamException("Iteration not currently supported with complete model checking.");	
+
+//			if (prev != null) {
+//				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
+//				Formula trns = prev.formulate(bounds,reifs,formula,false).not();
+//				options.reporter().debug("Reified instance: "+trns);
+//				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
+//			}
+//				
+//			Solution s = go(formula,bounds,options);
+//			if (s.sat())
+//				prev = (TemporalInstance) s.instance();
+//			else {
+//				prev = null;
+//				formula = null;
+//			}
+//	
+//			return s;
 		}
 
 		TemporalInstance prev;
@@ -171,42 +173,44 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 */
 		@Override
 		public Solution nextS(int state, int steps, Set<Relation> force) {
-			if (steps != 1 && steps != -1)
-				throw new IllegalArgumentException("Electrod only supports step or infinite iteration.");
-			if (prev == null)
-				throw new IllegalStateException("Cannot iterate without previous solution.");
-			
-			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
-			
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
 
-			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1).not();
-			options.reporter().debug("Force change: "+change);
-			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
-
-			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1);
-			options.reporter().debug("Preserve prefix: "+fix);
-
-			explorations.put(state, explorations.get(state).and(change));
-
-			Solution s = go(formula.and(explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(fix),bounds,options);
-			
-			if (s.sat())
-				prev = (TemporalInstance) s.instance();
-	
-			return s;
+//			if (steps != 1 && steps != -1)
+//				throw new InvalidSolverParamException("Electrod only supports step or infinite iteration.");
+//			if (prev == null)
+//				throw new InvalidSolverParamException("Cannot iterate without previous solution.");
+//			
+//			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
+//			
+//
+//			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1,false).not();
+//			options.reporter().debug("Force change: "+change);
+//			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
+//
+//			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1,false);
+//			options.reporter().debug("Preserve prefix: "+fix);
+//
+//			explorations.put(state, explorations.get(state).and(change));
+//
+//			Solution s = go(formula.and(explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(fix),bounds,options);
+//			
+//			if (s.sat())
+//				prev = (TemporalInstance) s.instance();
+//	
+//			return s;
 		}
 		
 		@Override
 		public Solution nextC() {
-			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");	
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
 		}
 		@Override
 		public Solution nextP() {
-			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");	
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
 		}
 		
 		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
-			throw new UnsupportedOperationException("Branching solutions not currently supported with complete model checking.");
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");
 		}
 
 	}
@@ -252,7 +256,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
 		if (!options.unbounded()) {
-			if (options.minTraceLength() != 1) throw new IllegalArgumentException("BMC trace length must start at 1.");
+			if (options.minTraceLength() != 1) throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
 			args.add("--bmc"); args.add(options.maxTraceLength()+"");
 		}
 		if (Options.isDebug())

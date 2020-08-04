@@ -38,7 +38,6 @@ import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.Evaluator;
-import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
@@ -244,8 +243,8 @@ public class TemporalInstance extends Instance {
 	 */
 	// [HASLab]
 	@Override
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
-		return formulate(bounds, reif, formula, -1, null);
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
+		return formulate(bounds, reif, formula, -1, null, someDisj);
 	}
 
 	/**
@@ -275,9 +274,9 @@ public class TemporalInstance extends Instance {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, int start, Integer end) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, int start, Integer end, boolean someDisj) {
 		if (start < -1)
-			throw new IllegalArgumentException("Segment start must be > -1.");
+			throw new IllegalArgumentException("Segment start must be >= -1.");
 		if (end != null && end < start)
 			throw new IllegalArgumentException("Segment end must be after its start (or null if infinite).");
 
@@ -286,7 +285,7 @@ public class TemporalInstance extends Instance {
 		for (int i = 0; i < sta_uni.size(); i++) {
 			Expression r;
 			if (!reif.keySet().contains(sta_uni.atom(i))) {
-				if (TemporalPardinusSolver.SomeDisjPattern) {
+				if (someDisj) {
 					r = Variable.unary(sta_uni.atom(i).toString());
 				} else {
 					r = Relation.atom(sta_uni.atom(i).toString());
@@ -295,7 +294,7 @@ public class TemporalInstance extends Instance {
 			} else {
 				r = reif.get(sta_uni.atom(i));
 			}
-			if (!TemporalPardinusSolver.SomeDisjPattern && !bounds.relations.contains((Relation) r))
+			if (!someDisj && !bounds.relations.contains((Relation) r))
 				bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 		}
 
@@ -317,13 +316,13 @@ public class TemporalInstance extends Instance {
 			// if null then end at the last state of the prefix, unless the start is beyond
 			// it
 			// TODO: the looping formula should also be offset in this case!
-			if (j == null) // TODO: changing this is not caught by the unit tests
+			if (j == null)
 				j = Integer.max(start + (prefixLength() - 1) - loop, prefixLength() - 1);
 			if (j >= 0) {
 				// the state formulas, start from the end and accumulate afters
-				res = state(j--).formulate(bounds, reif, slcs.getValue());
+				res = state(j--).formulate(bounds, reif, slcs.getValue(), someDisj);
 				for (; j >= Integer.max(0, start); j--)
-					res = state(j).formulate(bounds, reif, slcs.getValue()).and(res.after());
+					res = state(j).formulate(bounds, reif, slcs.getValue(), someDisj).and(res.after());
 				// after offset when start > 0
 				for (; j >= 0; j--)
 					res = res.after();
@@ -332,7 +331,7 @@ public class TemporalInstance extends Instance {
 
 			// the configuration formula, if start = -1
 			if (start < 0 && !slcs.getKey().equals(Formula.TRUE)) {
-				Formula sres = states.get(prefixLength() - 1).formulate(bounds, reif, slcs.getKey());
+				Formula sres = states.get(prefixLength() - 1).formulate(bounds, reif, slcs.getKey(), someDisj);
 				res = res.equals(Formula.TRUE) ? sres : sres.and(res);
 			}
 
@@ -341,14 +340,14 @@ public class TemporalInstance extends Instance {
 				// create the looping constraint
 				// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
 				// after^(end-loop) Sloop+1 && ...)
-				Formula rei = states.get(loop).formulate(bounds, reif, slcs.getValue());
+				Formula rei = states.get(loop).formulate(bounds, reif, slcs.getValue(), someDisj);
 				Formula rei2 = rei;
 				for (int i = loop; i < prefixLength(); i++)
 					rei2 = rei2.after();
 
 				Formula looping = rei.implies(rei2);
 				for (int i = loop + 1; i < prefixLength(); i++) {
-					rei = states.get(i).formulate(bounds, reif, slcs.getValue());
+					rei = states.get(i).formulate(bounds, reif, slcs.getValue(), someDisj);
 					rei2 = rei;
 					for (int k = loop; k < prefixLength(); k++)
 						rei2 = rei2.after();
@@ -361,7 +360,7 @@ public class TemporalInstance extends Instance {
 				res = res.and(looping);
 			}
 
-			if (TemporalPardinusSolver.SomeDisjPattern) {
+			if (someDisj) {
 				Decls decls = null;
 				Expression al = null;
 				for (Expression e : reif.values()) {

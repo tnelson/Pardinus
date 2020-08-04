@@ -24,7 +24,6 @@ package kodkod.engine;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.Formula;
@@ -35,7 +34,6 @@ import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TupleSet;
 
 /**
  * The main Pardinus solver. Depending on the define {@link options
@@ -207,12 +205,6 @@ public class PardinusSolver implements
 				@Override
 				public boolean hasNext() {
 					return it.hasNext();
-				}
-
-				@Override
-				public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force,
-						boolean exclude) {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
 				}
 
 				@Override
