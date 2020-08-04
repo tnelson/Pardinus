@@ -419,7 +419,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		 * @see java.util.Iterator#next()
 		 */
 		public Solution next() {
-			return nextP();
+			return nextC();
 		}
 
 		/** @throws UnsupportedOperationException */
