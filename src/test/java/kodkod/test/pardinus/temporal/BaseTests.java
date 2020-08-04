@@ -73,6 +73,7 @@ public class BaseTests {
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
+		opt.setMinTraceLength(2);
 
 		int n = 2;
 

@@ -1,6 +1,7 @@
 package kodkod.test.pardinus.temporal;
 
 import kodkod.ast.*;
+import kodkod.engine.ltl2fol.InvalidMutableExpressionException;
 import kodkod.engine.ltl2fol.LTL2FOLTranslator;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 
@@ -81,7 +82,7 @@ public class TemporalTranslatorTests {
 		try {
 			((NaryFormula)LTL2FOLTranslator.translate(initial,0,false,new LinkedHashMap<Formula,Formula>())).child(1).toString();
 			assert(false);
-		} catch (UnsupportedOperationException e) {
+		} catch (InvalidMutableExpressionException e) {
 			assert(true);
 		}
 	}
@@ -92,7 +93,7 @@ public class TemporalTranslatorTests {
 		try {
 			((NaryFormula)LTL2FOLTranslator.translate(initial,0,false,new LinkedHashMap<Formula,Formula>())).child(1).toString();
 			assert(false);
-		} catch (UnsupportedOperationException e) {
+		} catch (InvalidMutableExpressionException e) {
 			assert(true);
 		}
 	}

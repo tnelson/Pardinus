@@ -145,22 +145,24 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 */
 		@Override
 		public Solution next() {
-			if (prev != null) {
-				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
-				Formula trns = prev.formulate(bounds,reifs,formula,false).not();
-				options.reporter().debug("Reified instance: "+trns);
-				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
-			}
-				
-			Solution s = go(formula,bounds,options);
-			if (s.sat())
-				prev = (TemporalInstance) s.instance();
-			else {
-				prev = null;
-				formula = null;
-			}
-	
-			return s;
+			throw new InvalidSolverParamException("Iteration not currently supported with complete model checking.");	
+
+//			if (prev != null) {
+//				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
+//				Formula trns = prev.formulate(bounds,reifs,formula,false).not();
+//				options.reporter().debug("Reified instance: "+trns);
+//				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
+//			}
+//				
+//			Solution s = go(formula,bounds,options);
+//			if (s.sat())
+//				prev = (TemporalInstance) s.instance();
+//			else {
+//				prev = null;
+//				formula = null;
+//			}
+//	
+//			return s;
 		}
 
 		TemporalInstance prev;
@@ -171,29 +173,31 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 */
 		@Override
 		public Solution nextS(int state, int steps, Set<Relation> force) {
-			if (steps != 1 && steps != -1)
-				throw new InvalidSolverParamException("Electrod only supports step or infinite iteration.");
-			if (prev == null)
-				throw new InvalidSolverParamException("Cannot iterate without previous solution.");
-			
-			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
-			
+			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
 
-			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1,false).not();
-			options.reporter().debug("Force change: "+change);
-			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
-
-			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1,false);
-			options.reporter().debug("Preserve prefix: "+fix);
-
-			explorations.put(state, explorations.get(state).and(change));
-
-			Solution s = go(formula.and(explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(fix),bounds,options);
-			
-			if (s.sat())
-				prev = (TemporalInstance) s.instance();
-	
-			return s;
+//			if (steps != 1 && steps != -1)
+//				throw new InvalidSolverParamException("Electrod only supports step or infinite iteration.");
+//			if (prev == null)
+//				throw new InvalidSolverParamException("Cannot iterate without previous solution.");
+//			
+//			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
+//			
+//
+//			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1,false).not();
+//			options.reporter().debug("Force change: "+change);
+//			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
+//
+//			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1,false);
+//			options.reporter().debug("Preserve prefix: "+fix);
+//
+//			explorations.put(state, explorations.get(state).and(change));
+//
+//			Solution s = go(formula.and(explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(fix),bounds,options);
+//			
+//			if (s.sat())
+//				prev = (TemporalInstance) s.instance();
+//	
+//			return s;
 		}
 		
 		@Override

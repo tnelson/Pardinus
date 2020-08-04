@@ -38,7 +38,6 @@ import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.Evaluator;
-import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.decomp.DecompFormulaSlicer;
 import kodkod.engine.ltl2fol.TemporalBoundsExpander;
 import kodkod.engine.ltl2fol.TemporalTranslator;
@@ -277,7 +276,7 @@ public class TemporalInstance extends Instance {
 	// [HASLab]
 	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, int start, Integer end, boolean someDisj) {
 		if (start < -1)
-			throw new IllegalArgumentException("Segment start must be > -1.");
+			throw new IllegalArgumentException("Segment start must be >= -1.");
 		if (end != null && end < start)
 			throw new IllegalArgumentException("Segment end must be after its start (or null if infinite).");
 
@@ -317,7 +316,7 @@ public class TemporalInstance extends Instance {
 			// if null then end at the last state of the prefix, unless the start is beyond
 			// it
 			// TODO: the looping formula should also be offset in this case!
-			if (j == null) // TODO: changing this is not caught by the unit tests
+			if (j == null)
 				j = Integer.max(start + (prefixLength() - 1) - loop, prefixLength() - 1);
 			if (j >= 0) {
 				// the state formulas, start from the end and accumulate afters

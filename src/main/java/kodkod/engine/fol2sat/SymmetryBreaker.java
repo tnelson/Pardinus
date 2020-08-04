@@ -209,7 +209,9 @@ final class SymmetryBreaker {
 			IntIterator indeces = sym.iterator();
 			for(int prevIndex = indeces.next(); indeces.hasNext(); ) {
 				int curIndex = indeces.next();
-				Iterator<Tuple> times = bounds.lowerBound(TemporalTranslator.STATE).iterator();
+				Iterator<Tuple> times = null;
+				if (bounds.relations().contains(TemporalTranslator.STATE))
+						bounds.lowerBound(TemporalTranslator.STATE).iterator();
 				Tuple time = null;
 				do {
 					for(Iterator<RelationParts> rIter = relParts.iterator(); rIter.hasNext() && original.size() < predLength;) {
@@ -236,9 +238,12 @@ final class SymmetryBreaker {
 							if (permIndex==entry.index() || atSameIndex(original, permValue, permuted, entry.value()))
 								continue;
 							
-							TupleSet yyy = bounds.lowerBound(TemporalTranslator.STATE);
-							Tuple xxx = interpreter.universe().factory().tuple(interpreter.universe().factory().tuple(r.arity(), entry.index()).atom(r.arity()-1));
-							boolean zzz = yyy.contains(xxx);		
+							boolean zzz = false;
+								if (times != null) {
+								TupleSet yyy = bounds.lowerBound(TemporalTranslator.STATE);
+								Tuple xxx = interpreter.universe().factory().tuple(interpreter.universe().factory().tuple(r.arity(), entry.index()).atom(r.arity()-1));
+								zzz = yyy.contains(xxx);	
+							}
 							
 							if ((time == null && !zzz)
 									|| (time != null && interpreter.universe().factory().tuple(r.arity(), entry.index()).contains(time.atom(0)))) {
@@ -249,7 +254,7 @@ final class SymmetryBreaker {
 							}
 						}
 					}
-					if (times.hasNext())
+					if (times != null && times.hasNext())
 						time = times.next();
 					else time = null;
 				} while (time != null);

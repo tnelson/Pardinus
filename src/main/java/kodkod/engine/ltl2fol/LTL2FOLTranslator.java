@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.activity.InvalidActivityException;
-
 import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
