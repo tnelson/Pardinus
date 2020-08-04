@@ -324,122 +324,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			this.opt = options;
 		}
 
-		private Map<Integer, Formula> explorations = new HashMap<Integer, Formula>();
-
-		/**
-		 * {@inheritDoc}
-		 */
-		// [HASLab] explorer
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> upper, boolean exclude) {
-
-			Formula f = Formula.TRUE;
-			if (exclude) {
-				TemporalInstance prev = previousSols.get(previousSols.size() - 1).prev;
-
-				Formula relevants = Formula.TRUE;
-				for (Relation r : prev.state(state < 0 ? 0 : state).relations())
-					if (!ignore.contains(r))
-						relevants = relevants.and(r.eq(r));
-				Formula curr = prev.state(state < 0 ? 0 : state).formulate(originalBounds, reifs, relevants, SomeDisjPattern).not();
-
-				for (int i = 0; i < state; i++)
-					curr = curr.after();
-
-				f = explorations.get(state) == null ? Formula.TRUE : explorations.get(state);
-
-				explorations.put(state, f.and(curr));
-
-				f = f.and(curr); // this differs from #branch(int,Map,exclude)
-			}
-
-			Solution sol = branchCore(state, f, upper);
-			// store the reformulated instance
-			if (sol.sat()) {
-				previousSols.add(new IterationStep((TemporalInstance) sol.instance(), -1, -1, null, null));
-				explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
-			} else
-				translation = null; // unsat, no more solutions
-
-			return sol;
-		}
-
-		/**
-		 * The core functionality of branching iteration, common to the specific
-		 * operations.
-		 * 
-		 * @param state the state which will be iterated.
-		 * @param form  an additional formula to be enforced at {@code state}.
-		 * @param upper fixed valuations for a set of relations that will be changed at
-		 *              {@code state}.
-		 * @return
-		 */
-		// [HASLab] explorer
-		private Solution branchCore(int state, Formula form, Map<Relation, TupleSet> upper) {
-			if (previousSols.isEmpty())
-				throw new IllegalArgumentException();
-			TemporalInstance prev = previousSols.get(previousSols.size() - 1).prev;
-			this.translTime = System.currentTimeMillis();
-
-			// if >0, maybe will not increase, but 0 always increases
-			current_trace = state <= 0 ? 1 : state + 1;
-
-			boolean isSat = false;
-			long solveTime = 0;
-			Translation.Whole transl = null;
-			int primaryVars = -1;
-			SATSolver cnf = null;
-
-			while (!isSat && current_trace <= opt.maxTraceLength()) {
-				// in general, this operation must restart the process since the branching
-				// formula is ephemeral
-				// to exploit incremental SAT, it needed to be convertible into SAT vars
-				// (possible in the action scenario)
-				TemporalTranslator tmptrans = new TemporalTranslator(originalFormula.and(form), originalBounds, opt);
-				extbounds = tmptrans.expand(current_trace);
-				TemporalBoundsExpander.extend(originalBounds, extbounds, state < 0 ? 0 : state, current_trace, prev,
-						upper);
-				Formula exp_reforms = tmptrans.translate();
-				long translStart = System.currentTimeMillis();
-				translation = Translator.translate(exp_reforms, extbounds, opt);
-				long translEnd = System.currentTimeMillis();
-				translTime += translEnd - translStart;
-
-				transl = translation;
-
-				cnf = transl.cnf();
-				primaryVars = transl.numPrimaryVariables();
-
-				transl.options().reporter().solvingCNF(current_trace, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
-
-				final long startSolve = System.currentTimeMillis();
-				isSat = cnf.solve();
-				final long endSolve = System.currentTimeMillis();
-				solveTime += endSolve - startSolve;
-
-				if (!isSat) {
-					current_trace++;
-				}
-			}
-
-			if (transl == null) { // init scope beyond max
-				TemporalTranslator tmptrans = new TemporalTranslator(Formula.FALSE, originalBounds, opt);
-				transl = Translator.translate(Formula.FALSE, tmptrans.expand(1), opt);
-			}
-
-			final Statistics stats = new Statistics(transl, translTime, solveTime);
-
-			final Solution sol;
-
-			if (isSat) {
-				// extract the current solution; can't use the sat(..) method
-				// because it frees the sat solver
-				sol = Solution.satisfiable(stats, new TemporalInstance(transl.interpret(), originalBounds));
-			} else {
-				sol = unsat(transl, stats); // this also frees up solver resources, if any
-			}
-
-			return sol;
-		}
 
 		/**
 		 * Returns true if there is another solution.
@@ -459,10 +343,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			if (delta < 1)
 				throw new IllegalArgumentException("Cannot iterate boundless with s != 0, breaks completeness.");
 
-			if (!explorations.isEmpty()) { // [HASLab]
-				this.current_trace = opt.minTraceLength();
-				explorations.clear();
-			}
 			if (!hasNext())
 				throw new NoSuchElementException();
 			try {
@@ -486,10 +366,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				throw new IllegalArgumentException(
 						"Cannot iterate boundless after segment iteration, breaks completeness.");
 
-			if (!explorations.isEmpty()) { // [HASLab]
-				this.current_trace = opt.minTraceLength();
-				explorations.clear();
-			}
 			if (!hasNext())
 				throw new NoSuchElementException();
 			try {
@@ -512,10 +388,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		}
 
 		public Solution nextC() {
-			if (!explorations.isEmpty()) { // [HASLab]
-				this.current_trace = opt.minTraceLength();
-				explorations.clear();
-			}
 			// if unsat on other mode, can still try new config
 			if (iteration_stage == 0 && !hasNext())
 				throw new NoSuchElementException();
@@ -1178,11 +1050,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			}
 			this.weights = weights;
 			return next();
-		}
-
-		@Override
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
-			throw new UnsupportedOperationException("Branching solutions not currently supported.");
 		}
 
 		@Override

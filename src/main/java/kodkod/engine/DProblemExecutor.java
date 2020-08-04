@@ -23,7 +23,6 @@
 package kodkod.engine;
 
 import java.util.AbstractMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -37,7 +36,6 @@ import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.decomp.DProblem;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TupleSet;
 
 /**
  * An executor that effectively handles a decomposed model finding problem
@@ -177,11 +175,6 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 
 			@Override
 			public Solution next() {
-				throw new NoSuchElementException();
-			}
-
-			@Override
-			public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
 				throw new NoSuchElementException();
 			}
 
