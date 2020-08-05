@@ -128,7 +128,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					// terminate the amalgamated problem
 					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
-						running.decrementAndGet();
 					}
 					if (running.get() == 1 && !monitor.isAmalgamated())
 						if (monitor.isConfigsDone())
@@ -138,11 +137,14 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				// if it is unsat...
 				else {
 					running.decrementAndGet();
+					System.out.println("* decremented: "+running.get());
 					// if last running integrated...
 					if (running.get() == 0 && !monitor.isAmalgamated()) {
-						if (monitor.isConfigsDone())
+						if (monitor.isConfigsDone()) {
 							// store the unsat solution
 							solution_queue.put(sol.getSolutions());
+							System.out.println("* put unsat: "+running.get());
+						}
 						else 
 							launchBatch(true);
 					}
