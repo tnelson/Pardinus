@@ -1,6 +1,7 @@
 package kodkod.engine;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -93,7 +94,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 	 * @author Emina Torlak
 	 */
 	// [HASLab]
-	public final static class SolutionIterator implements Explorer<Solution> {
+	public final static class SolutionIterator implements Iterator<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
@@ -302,31 +303,11 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 			return next();
 		}
 
-		// [HASLab]
-		@Override
-		public Solution nextS(int state, int delta, Set<Relation> force) {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-
-		// [HASLab]
-		@Override
-		public Solution nextC() {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-
-		// [HASLab]
-		@Override
-		public Solution nextP() {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
 }	
 	
 	// [HASLab]
 	@Override
-	protected Explorer<Solution> iterator(Formula formula, Bounds bounds, Options options) {
+	protected Iterator<Solution> iterator(Formula formula, Bounds bounds, Options options) {
 		return new SolutionIterator(formula, bounds, options());
 	}
 		

@@ -137,7 +137,7 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 */
 		@Override
 		public boolean hasNext() {
-			return formula != null;
+			return false;
 		}
 	
 		/**
@@ -145,8 +145,8 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		 */
 		@Override
 		public Solution next() {
-			throw new InvalidSolverParamException("Iteration not currently supported with complete model checking.");	
 
+			// currently disabled due to issues on backends
 //			if (prev != null) {
 //				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
 //				Formula trns = prev.formulate(bounds,reifs,formula,false).not();
@@ -154,15 +154,14 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 //				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
 //			}
 //				
-//			Solution s = go(formula,bounds,options);
 //			if (s.sat())
 //				prev = (TemporalInstance) s.instance();
 //			else {
 //				prev = null;
 //				formula = null;
 //			}
-//	
-//			return s;
+
+			return go(formula,bounds,options);
 		}
 
 		TemporalInstance prev;
@@ -209,8 +208,14 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
 		}
 		
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
-			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");
+		@Override
+		public boolean hasNextP() {
+			return false;
+		}
+
+		@Override
+		public boolean hasNextC() {
+			return false;
 		}
 
 	}

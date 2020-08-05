@@ -22,7 +22,6 @@
  */
 package kodkod.engine;
 
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +38,6 @@ import kodkod.engine.config.PardinusOptions;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TupleSet;
 
 /**
  * A computational engine for solving relational satisfiability problems in a
@@ -75,7 +73,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 
 	/** the decomposed problem options */
 	final private ExtendedOptions options;
-
+	
 	/**
 	 * Constructs a new decomposed solver built over a standard Kodkod
 	 * {@link kodkod.engine.Solver solver}. The solving
@@ -196,19 +194,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-			try {
-				return executor.hasNext();
-			} catch (InterruptedException e) {
-				reporter.debug("Waiting for next interrupted.");
-				try {
-					executor.terminate();
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-				// Should throw AbortedException
-//				e.printStackTrace();
-			}
-			return false;
+			return hasNextP();
 		}
 		
 		/**
@@ -217,19 +203,20 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		 */
 		@Override
 		public Solution nextP() {
-			if (!hasNext()) return null;
+			if (!hasNextP()) return null;
+			if (sols == null) return nextC();
 			return sols.nextP();
 		}
 		
 		@Override
 		public Solution nextS(int state, int delta, Set<Relation> changes) {
-			if (!hasNext()) return null;
+			if (!hasNextP()) return null;
 			return sols.nextS(state, delta, changes);
 		}
 		
 		@Override
 		public Solution nextC() {
-			if (!hasNext()) return null;
+			if (!hasNextC()) return null;
 			try {
 				Entry<Solution,Explorer<Solution>> xx = executor.next();
 				Solution sol = xx.getKey();
@@ -253,7 +240,30 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 
 		@Override
 		public Solution next() {
-			return nextC();
+			return nextP();
+		}
+
+		@Override
+		public boolean hasNextP() {
+			if (sols == null) return hasNextC();
+			return sols.hasNextP();
+		}
+
+		@Override
+		public boolean hasNextC() {
+			try {
+				return executor.hasNext();
+			} catch (InterruptedException e) {
+				reporter.debug("Waiting for next interrupted.");
+				try {
+					executor.terminate();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				// Should throw AbortedException
+//				e.printStackTrace();
+			}
+			return false;
 		}
 
 	}

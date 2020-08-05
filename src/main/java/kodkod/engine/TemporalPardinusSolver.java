@@ -331,9 +331,17 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
+			return hasNextP();
+		}
+
+		public boolean hasNextC() {
 			return !(iteration_stage == 0 && translation == null);
 		}
 
+		public boolean hasNextP() {
+			return !(iteration_stage == 1 && translation == null);
+		}
+		
 		/**
 		 * Returns the next solution if any.
 		 * 
@@ -419,7 +427,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		 * @see java.util.Iterator#next()
 		 */
 		public Solution next() {
-			return nextC();
+			return nextP();
 		}
 
 		/** @throws UnsupportedOperationException */
@@ -1065,6 +1073,18 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		@Override
 		public Solution nextP() {
 			throw new UnsupportedOperationException("Branching solutions not currently supported.");
+		}
+
+		@Override
+		public boolean hasNextP() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean hasNextC() {
+			// TODO Auto-generated method stub
+			return false;
 		}
 
 	}
