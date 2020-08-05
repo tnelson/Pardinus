@@ -98,13 +98,13 @@ public class NextExplorationTests {
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		
 		sol = sols.nextS(2,1, Collections.singleton(a));
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,1,Collections.singleton(a));
 		assertFalse(sol.sat());
@@ -155,99 +155,99 @@ public class NextExplorationTests {
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		changes.add(b);
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(5, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(5, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(5, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(6, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(6, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(6, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(6, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(6, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(6, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		changes.remove(a);
 		sol = sols.nextS(4,1, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(7, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(4,1, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(7, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(4,1, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(7, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(4,1, changes);
 		assertFalse(sol.sat());
@@ -297,21 +297,21 @@ public class NextExplorationTests {
 		Solution sol = sols.next();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		// fixes prefix up to two
 		sol = sols.nextS(2,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		// state 1 is fixed but 2 can still change
 		sol = sols.nextS(1,2, changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		// state 1 cannot change
@@ -348,7 +348,7 @@ public class NextExplorationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(true);
@@ -361,49 +361,49 @@ public class NextExplorationTests {
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		
 		// just fixing, solution never changes
 		sol = sols.nextS(2,2, new HashSet<Relation>());
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		// just fixing, solution never changes
 		sol = sols.nextS(2,2, new HashSet<Relation>());
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		// just fixing, solution never changes
 		sol = sols.nextS(2,2, new HashSet<Relation>());
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		// just fixing, solution never changes
 		sol = sols.nextS(2,2, new HashSet<Relation>());
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		// beyond prefix length, must unroll
 		sol = sols.nextS(2,5, new HashSet<Relation>());
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(7, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		// prefix is already fixed up to 6
 		sol = sols.nextS(0,1, new HashSet<Relation>());
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
 		assertEquals(7, ((TemporalInstance) sol.instance()).prefixLength());	
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		
 		// beyond the maximum trace length
 		sol = sols.nextS(9,2, new HashSet<Relation>());
@@ -452,14 +452,14 @@ public class NextExplorationTests {
 		Solution sol = sols.next();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		for (int i = 0; i < 23; i++) {
 			sol = sols.nextP();
 			assertTrue(sol.sat());
 			assertTrue(sols.hasNext());
-			System.out.println(sol.instance());
+			opt.reporter().debug(sol.instance().toString());
 			assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
 		}
 
@@ -467,7 +467,7 @@ public class NextExplorationTests {
 			sol = sols.nextP();
 			assertTrue(sol.sat());
 			assertTrue(sols.hasNext());
-			System.out.println(sol.instance());
+			opt.reporter().debug(sol.instance().toString());
 			assertEquals(5, ((TemporalInstance) sol.instance()).prefixLength());	
 		}
 
@@ -512,19 +512,19 @@ public class NextExplorationTests {
 		Solution sol = sols.next();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		sol = sols.nextP();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		sol = sols.nextS(0,1,Collections.singleton(a));
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(2, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		try {
@@ -535,7 +535,7 @@ public class NextExplorationTests {
 		sol = sols.nextS(0,2,Collections.singleton(a));
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		sol = sols.nextS(0,2,Collections.singleton(a));
@@ -586,20 +586,20 @@ public class NextExplorationTests {
 		Solution sol = sols.next();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		sol = sols.nextP();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		for (int i = 0; i<6; i++) {
 			sol = sols.nextP();
 			assertTrue(sol.sat());
 			assertTrue(sols.hasNext());
-			System.out.println(sol.instance());
+			opt.reporter().debug(sol.instance().toString());
 			assertEquals(2, ((TemporalInstance) sol.instance()).prefixLength());	
 		}
 
@@ -607,14 +607,14 @@ public class NextExplorationTests {
 			sol = sols.nextS(0,2,changes);
 			assertTrue(sol.sat());
 			assertTrue(sols.hasNext());
-			System.out.println(sol.instance());
+			opt.reporter().debug(sol.instance().toString());
 			assertEquals(3, ((TemporalInstance) sol.instance()).prefixLength());	
 		}
 
 		sol = sols.nextS(0,3,changes);
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(4, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		sol = sols.nextS(0,3,changes);
@@ -650,7 +650,7 @@ public class NextExplorationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(true);
@@ -665,14 +665,14 @@ public class NextExplorationTests {
 		Solution sol = sols.next();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		for (int i = 0; i < 3; i++) {
 			sol = sols.nextC();
 			assertTrue(sol.sat());
 			assertTrue(sols.hasNext());
-			System.out.println(sol.instance());
+			opt.reporter().debug(sol.instance().toString());
 			assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());	
 		}
 
@@ -724,37 +724,37 @@ public class NextExplorationTests {
 		Solution sol = sols.next();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());
 		
 		for (int i = 0; i < 5; i ++) {
 			sol = sols.nextP();
 			assertTrue(sol.sat());
 			assertTrue(sols.hasNext());
-			System.out.println(sol.instance());
+			opt.reporter().debug(sol.instance().toString());
 		}
 
 		sol = sols.nextC();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());	
 
-		while (sols.hasNext()) {
+		while (sols.hasNextP()) {
 			sol = sols.nextP();
-			System.out.println(sol.instance());
+			opt.reporter().debug(sol.toString());
 		}
 		
 		sol = sols.nextC();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		sol = sols.nextS(0,1,Collections.singleton(b));
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 
 		sol = sols.nextS(0,1,Collections.singleton(b));
 		assertFalse(sol.sat());
@@ -763,7 +763,7 @@ public class NextExplorationTests {
 		sol = sols.nextC();
 		assertTrue(sol.sat());
 		assertTrue(sols.hasNext());
-		System.out.println(sol.instance());
+		opt.reporter().debug(sol.instance().toString());
 		assertEquals(1, ((TemporalInstance) sol.instance()).prefixLength());	
 
 		sol = sols.nextC();

@@ -25,9 +25,12 @@ package kodkod.test.pardinus.decomp;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.Reporter;
+import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
@@ -57,8 +60,7 @@ public class BaseTests {
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(false);
-//		Reporter rep = new SLF4JReporter();
-//		opt.setReporter(rep);
+//		opt.setReporter(new SLF4JReporter());
 //		opt.configOptions().setReporter(rep);
 	}
 
@@ -91,11 +93,14 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)).and(b.eq(c).not()); // never trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 13; i++) {
-			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -131,11 +136,14 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.in(b).and(b.eq(c).not()); // config trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 15; i++) {
-			sol = sols.next();
-//			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -171,15 +179,16 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)); // all remainder trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
-		StringBuilder sb = new StringBuilder();
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 18; i++) {
-			sol = sols.next();
-			sb.append("** "+sol.instance().relationTuples().toString()+"\n");
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
-//		System.out.println(sb.toString());
 		sol = sols.next();
 		assertFalse("base problem should have 9 sols", sol.sat());
 	}
@@ -213,12 +222,16 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)).and(b.in(c)); // some remainder trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 9; i++) {
-			sol = sols.next();
-//			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
+
 		}
 		sol = sols.next();
 		assertFalse("base problem should have 9 sols", sol.sat());
@@ -253,11 +266,14 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)).and(b.eq(c).not()); // never trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 13; i++) {
-			sol = sols.next();
-//			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();

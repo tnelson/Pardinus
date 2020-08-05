@@ -63,8 +63,7 @@ public class BaseTests {
 		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(false);
-		Reporter rep = new SLF4JReporter();
-		opt.setReporter(rep);
+//		opt.setReporter(new SLF4JReporter());
 	}
 
 	@Test

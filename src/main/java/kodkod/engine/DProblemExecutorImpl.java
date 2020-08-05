@@ -54,14 +54,16 @@ import kodkod.instance.PardinusBounds;
 public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, ExtendedOptions>>
 		extends DProblemExecutor<S> {
 
+	final static public int BATCH_SIZE = 20;
+
 	/** a buffer for solutions, popped by the hasNext test */
-	private Entry<Solution,Explorer<Solution>> buffer;
+	private Entry<Solution,Iterator<Solution>> buffer;
 
 	/** the number of effectively running solvers */
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Entry<Solution,Explorer<Solution>>> solution_queue = new LinkedBlockingQueue<Entry<Solution,Explorer<Solution>>>(4);
+	private final BlockingQueue<Entry<Solution,Iterator<Solution>>> solution_queue = new LinkedBlockingQueue<Entry<Solution,Iterator<Solution>>>(4);
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -142,7 +144,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 							// store the unsat solution
 							solution_queue.put(sol.getSolutions());
 						else 
-							launchBatch(false);
+							launchBatch(true);
 					}
 				}
 			}
@@ -161,8 +163,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	@Override
 	public void failed(Throwable e) {
 		solver_partial.options().reporter().warning("Integrated solver failed.");
-		if (Options.isDebug())
-			solver_partial.options().reporter().debug(e.getLocalizedMessage());
+		solver_partial.options().reporter().debug(e.getLocalizedMessage());
 		running.decrementAndGet();
 		// if last running integrated...
 		if (monitor.isConfigsDone()
@@ -195,15 +196,14 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	}
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
 
-	private Entry<Solution,Explorer<Solution>> last_sol;
+	private Entry<Solution,Iterator<Solution>> last_sol;
 	
 	void launchBatch(boolean first) {
-		int size = 20;
 		
-		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(size);
+		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(BATCH_SIZE);
 
 		// collects a batch of configurations
-		while (configs.hasNext() && problem_queue.size() < size) {
+		while (configs.hasNext() && problem_queue.size() < BATCH_SIZE) {
 			Solution config = configs.next();
 			if (config.unsat()) {
 				// when there is no configuration no solver will ever
@@ -212,7 +212,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					try {
 						// get the stats from the unsat
 						monitor.newConfig(config);
-						terminate();
+//						terminate();
 						solution_queue.put(poison(config));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -242,7 +242,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Entry<Solution,Explorer<Solution>> next() throws InterruptedException {
+	public Entry<Solution,Iterator<Solution>> next() throws InterruptedException {
 		if (buffer != null) {
 			last_sol = buffer;
 			buffer = null;

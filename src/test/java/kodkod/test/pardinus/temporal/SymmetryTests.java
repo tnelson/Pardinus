@@ -213,18 +213,14 @@ public class SymmetryTests {
 		boolean trivial_decomp = false;
 		while (solutione.hasNextC()) {
 			Solution sol = solutione.nextC();
-			while (solutione.hasNextP()) {
-				if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
-					trivial_decomp = true;
-				decomp_counter++;
-				System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
+			decomp_counter++;
+			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+				trivial_decomp = true;
+			while (solutione.hasNext()) {
+				sol = solutione.next();
 				if (sol.sat())
-					System.out.println(sol.instance().relationTuples());
-				else
-					System.out.println();
-				sol = solutione.nextP();
+					decomp_counter++;
 			}
-
 		}
 		Set<IntSet> decomp_syms = last;
 		dsolver.free();
@@ -234,21 +230,18 @@ public class SymmetryTests {
 
 		opt.setRunDecomposed(false);
 		PardinusSolver solver = new PardinusSolver(opt);
-		Explorer<Solution> solution = solver.solveAll(formula, bounds.amalgamated());
+		solutione = solver.solveAll(formula, bounds.amalgamated());
 		int batch_counter = 0;
 		boolean trivial_batch = false;
-		while (solution.hasNextC()) {
-			Solution sol = solution.nextC();
-			while (solution.hasNextP()) {
-				if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
-					trivial_batch = true;
-				batch_counter++;
-				System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
+		while (solutione.hasNextC()) {
+			Solution sol = solutione.nextC();
+			batch_counter++;
+			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+				trivial_decomp = true;
+			while (solutione.hasNext()) {
+				sol = solutione.next();
 				if (sol.sat())
-					System.out.println(sol.instance().relationTuples());
-				else
-					System.out.println();
-				sol = solution.nextP();
+					batch_counter++;
 			}
 		}
 		Set<IntSet> batch_syms = last;

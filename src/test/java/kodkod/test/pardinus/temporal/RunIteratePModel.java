@@ -5,15 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.sat4j.specs.ISolver;
-
-import com.sun.org.apache.regexp.internal.recompile;
-
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.DecomposedPardinusSolver;
@@ -23,17 +14,14 @@ import kodkod.engine.IncrementalSolver;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.TemporalPardinusSolver;
-import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TemporalInstance;
 import kodkod.instance.Universe;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
 

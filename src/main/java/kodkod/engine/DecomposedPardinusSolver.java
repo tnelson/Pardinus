@@ -22,6 +22,7 @@
  */
 package kodkod.engine;
 
+import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -62,7 +63,7 @@ import kodkod.instance.PardinusBounds;
  *
  */
 public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> implements
-		DecomposedSolver<ExtendedOptions>, IterableSolver<PardinusBounds, ExtendedOptions> {
+		DecomposedSolver<ExtendedOptions>, ExplorableSolver<PardinusBounds, ExtendedOptions> {
 
 	/** the regular Kodkod solver used in the parallelization */
 	final private ExtendedSolver solver1;
@@ -121,7 +122,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		executor.start();
 		Solution sol = null;
 		try {
-			Entry<Solution,Explorer<Solution>> exp = executor.next();
+			Entry<Solution,Iterator<Solution>> exp = executor.next();
 			sol = exp.getKey();
 			executor.terminate();
 		} catch (InterruptedException e) {
@@ -168,12 +169,15 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	private static class DSolutionIterator<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> implements Explorer<Solution> {
 		private DProblemExecutor<S> executor;
 		private Reporter reporter;
-		private Explorer<Solution> sols;
+		private Iterator<Solution> sols;
+		private boolean branches = false;
 		
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
 		DSolutionIterator(Formula formula, PardinusBounds bounds, DecomposedOptions options, ExtendedSolver solver1, S solver2) {
+			if (solver2 instanceof ExplorableSolver<?, ?>)
+				branches = true;
 			reporter = options.reporter();
 			if (options.decomposedMode() == DMode.HYBRID)
 				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), true);
@@ -194,7 +198,8 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		 * @see java.util.Iterator#hasNext()
 		 */
 		public boolean hasNext() {
-			return hasNextP();
+			if (sols == null) return hasNextC();
+			return sols.hasNext();
 		}
 		
 		/**
@@ -203,22 +208,26 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		 */
 		@Override
 		public Solution nextP() {
+			if  (! (sols instanceof Explorer<?>)) 
+				throw new UnsupportedOperationException();
 			if (!hasNextP()) return null;
 			if (sols == null) return nextC();
-			return sols.nextP();
+			return ((Explorer<Solution>) sols).nextP();
 		}
 		
 		@Override
 		public Solution nextS(int state, int delta, Set<Relation> changes) {
+			if  (! (sols instanceof Explorer<?>)) 
+				throw new UnsupportedOperationException();
 			if (!hasNextP()) return null;
-			return sols.nextS(state, delta, changes);
+			return ((Explorer<Solution>) sols).nextS(state, delta, changes);
 		}
 		
 		@Override
 		public Solution nextC() {
 			if (!hasNextC()) return null;
 			try {
-				Entry<Solution,Explorer<Solution>> xx = executor.next();
+				Entry<Solution,Iterator<Solution>> xx = executor.next();
 				Solution sol = xx.getKey();
 				sols = xx.getValue();
 				return sol;
@@ -240,13 +249,17 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 
 		@Override
 		public Solution next() {
-			return nextP();
+			if (!hasNext()) return null;
+			if (sols == null) return nextC();
+			return sols.next();
 		}
 
 		@Override
 		public boolean hasNextP() {
+			if  (! (sols instanceof Explorer<?>)) 
+				throw new UnsupportedOperationException();
 			if (sols == null) return hasNextC();
-			return sols.hasNextP();
+			return ((Explorer<Solution>) sols).hasNextP();
 		}
 
 		@Override

@@ -58,7 +58,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.one().always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -103,7 +102,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.some().always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -148,7 +146,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.some().before().once().eventually().and(a.no());
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -252,7 +249,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.eq(b).always().eventually();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -354,7 +350,7 @@ public class TemporalPathIterationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSkolemDepth(1);
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
@@ -402,7 +398,7 @@ public class TemporalPathIterationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSkolemDepth(1);
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
@@ -511,7 +507,6 @@ public class TemporalPathIterationTests {
 		Formula formula = b.in(a).always().eventually().and(an.totalOrder(a, af, al));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -617,7 +612,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.some().always();
 	
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
@@ -666,7 +660,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.eq(a).and(b.eq(b));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);

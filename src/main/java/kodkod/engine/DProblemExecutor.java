@@ -23,6 +23,7 @@
 package kodkod.engine;
 
 import java.util.AbstractMap;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -136,7 +137,7 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 	 * @throws InterruptedException
 	 *             if interrupted while waiting.
 	 */
-	public abstract Entry<Solution, Explorer<Solution>> next() throws InterruptedException;
+	public abstract Entry<Solution, Iterator<Solution>> next() throws InterruptedException;
 
 	/**
 	 * Tests whether there are further solutions. May block if there is no
@@ -163,10 +164,10 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 		}
 	}
 	
-	static Entry<Solution,Explorer<Solution>> poison(Solution s) {
+	static Entry<Solution,Iterator<Solution>> poison(Solution s) {
 		if (s == null)
 			s = Solution.unsatisfiable(new Statistics(-1,-1,-1,-1,-1),null);
-		return new AbstractMap.SimpleEntry<Solution, Explorer<Solution>>(s,new Explorer<Solution>() {
+		return new AbstractMap.SimpleEntry<Solution, Iterator<Solution>>(s,new Explorer<Solution>() {
 			
 			@Override
 			public boolean hasNext() {
