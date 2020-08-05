@@ -182,7 +182,7 @@ public final class IncrementalSolver implements BoundedSolver<Bounds,Options> {
 			} else {
 				final SATSolver cnf = translation.cnf();
 				
-				translation.options().reporter().solvingCNF(0, translation.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
+				translation.options().reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses());
 				final long startSolve = System.currentTimeMillis();
 				final boolean sat = cnf.solve();
 				final long endSolve = System.currentTimeMillis();

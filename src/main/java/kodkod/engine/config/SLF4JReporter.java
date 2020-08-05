@@ -70,7 +70,7 @@ public class SLF4JReporter implements Reporter {
 	/**
 	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
 	 */
-	public void solvingCNF(int step, int primaryVars, int vars, int clauses) {
+	public void solvingCNF(int primaryVars, int vars, int clauses) {
 		LOGGER.info("solving p cnf " + vars + " " + clauses);
 	}
 

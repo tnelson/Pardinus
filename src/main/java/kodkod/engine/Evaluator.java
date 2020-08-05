@@ -22,10 +22,6 @@
  */
 package kodkod.engine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
@@ -141,18 +137,9 @@ public final class Evaluator {
 		if (formula == null) throw new NullPointerException("formula");
 		if (!(instance instanceof TemporalInstance))
 			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
-		// must unroll the instance if the formula to be evaluated has past ops
-		TemporalInstance tmp = (TemporalInstance) instance;
-		int dp = TemporalTranslator.countHeight(formula);
-		if (dp > 1) {
-			List<Instance> tempss = new ArrayList<Instance>();
-			for (int i = 0; i < ((TemporalInstance) instance).prefixLength(); i++)
-				tempss.add(((TemporalInstance) instance).state(i));
-			tmp = new TemporalInstance(tempss,tmp.loop, dp);
-		}
 		// temporal instances are evaluated using the static expansion
-		formula = LTL2FOLTranslator.translate(formula, instant, tmp.contains(TemporalTranslator.UNROLL_MAP), new HashMap<Formula,Formula>());
-		return (Translator.evaluate(formula, tmp, options)).booleanValue();
+		formula = LTL2FOLTranslator.translate(formula, instant, false);
+		return (Translator.evaluate(formula, instance, options)).booleanValue();
 	}
 	
 	/**
@@ -202,19 +189,10 @@ public final class Evaluator {
 		if (expression == null) throw new NullPointerException("Null expression.");
 		if (!(instance instanceof TemporalInstance))
 			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
-		// must unroll the instance if the formula to be evaluated has past ops
-		TemporalInstance tmp = (TemporalInstance) instance;
-		int dp = TemporalTranslator.countHeight(expression);
-		if (dp > 1) {
-			List<Instance> tempss = new ArrayList<Instance>();
-			for (int i = 0; i < ((TemporalInstance) instance).prefixLength(); i++)
-				tempss.add(((TemporalInstance) instance).state(i));
-			tmp = new TemporalInstance(tempss,tmp.loop, dp);
-		}
 		// temporal instances are always evaluated using the static expansion
-		Expression e1 = LTL2FOLTranslator.translate(expression, instant, tmp.contains(TemporalTranslator.UNROLL_MAP)); 
-		final BooleanMatrix sol = Translator.evaluate(e1,tmp,options);
-		TupleSet exttuple = tmp.universe().factory().setOf(e1.arity(), sol.denseIndices());
+		Expression e1 = LTL2FOLTranslator.translate(expression, instant, false); 
+		final BooleanMatrix sol = Translator.evaluate(e1,instance,options);
+		TupleSet exttuple = instance.universe().factory().setOf(e1.arity(), sol.denseIndices());
 		// convert back into static universe, if available; will fail for initializing temporal instances
 		if (((TemporalInstance) instance).staticUniverse() != null)
 			exttuple = TemporalBoundsExpander.convertToUniv(exttuple, ((TemporalInstance) instance).staticUniverse());
@@ -264,18 +242,9 @@ public final class Evaluator {
 		if (intExpr == null) throw new NullPointerException("intexpression");
 		if (!(instance instanceof TemporalInstance))
 			throw new IllegalArgumentException("Can't evaluate static instance at particular step.");
-		// must unroll the instance if the formula to be evaluated has past ops
-		TemporalInstance tmp = (TemporalInstance) instance;
-		int dp = TemporalTranslator.countHeight(intExpr);
-		if (dp > 1) {
-			List<Instance> tempss = new ArrayList<Instance>();
-			for (int i = 0; i < ((TemporalInstance) instance).prefixLength(); i++)
-				tempss.add(((TemporalInstance) instance).state(i));
-			tmp = new TemporalInstance(tempss,tmp.loop, dp);
-		}
 		// temporal instances are always evaluated using the static expansion
 		IntExpression e1 = LTL2FOLTranslator.translate(intExpr, instant, false); 
-		final Int sol = Translator.evaluate(e1, tmp, options);
+		final Int sol = Translator.evaluate(e1, instance, options);
 		this.wasOverflow = sol.defCond().isOverflowFlag(); // [AM]
 		return sol.value();
 	}

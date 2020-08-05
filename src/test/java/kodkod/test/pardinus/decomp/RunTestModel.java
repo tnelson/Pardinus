@@ -14,18 +14,15 @@ import kodkod.engine.ExtendedSolver;
 import kodkod.engine.IncrementalSolver;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.TemporalPardinusSolver;
-import kodkod.engine.config.ConsoleReporter;
+import kodkod.engine.Solver;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
+import kodkod.engine.config.FileReporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
-import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TemporalInstance;
 import kodkod.test.pardinus.decomp.RunTests.Solvers;
 
 public final class RunTestModel {
@@ -35,7 +32,7 @@ public final class RunTestModel {
 	static Solution solution = null;
 	static Iterator<Solution> solutions = null;
 
-	static int threads, sym = 20, max_trace;
+	static int threads, sym = 20;
 	static Solvers selected_solver;
 	static DMode selected_mode;
 	static private boolean batch = false;
@@ -63,7 +60,7 @@ public final class RunTestModel {
 	ClassNotFoundException, InterruptedException {
 
 		// the arguments for the partition model
-		String[] model_args = Arrays.copyOfRange(args, 7, args.length);
+		String[] model_args = Arrays.copyOfRange(args, 4, args.length);
 
 		// dynamically create a partition model from the specified class
 		model = (DModel) Class.forName(args[0]).getConstructor(String[].class)
@@ -77,11 +74,7 @@ public final class RunTestModel {
 		// the chosen solver
 		selected_solver = Solvers.valueOf(args[2]);
 
-		max_trace = Integer.valueOf(args[3]);
-		threads = Integer.valueOf(args[4]);
-		
-		TemporalPardinusSolver.SATOPTITERATION = Boolean.valueOf(args[5]);
-		TemporalPardinusSolver.SomeDisjPattern = Boolean.valueOf(args[6]);
+		threads = Integer.valueOf(args[3]);
 		
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
@@ -100,19 +93,16 @@ public final class RunTestModel {
 	 * @throws InterruptedException 
 	 */
 	private static void run_tests() throws InterruptedException {
-
 		final PardinusBounds b1 = model.bounds1();
 		final Bounds b2 = model.bounds2();
 		final Formula f1 = model.partition1();
 		final Formula f2 = model.partition2();
 
 		ExtendedOptions opt = new ExtendedOptions();
-//		opt.setReporter(new SLF4JReporter());
+		
+		opt.setReporter(new FileReporter());
 		opt.setBitwidth(model.getBitwidth());
 		opt.setSymmetryBreaking(sym);
-		opt.setMaxTraceLength(max_trace);
-		if (TemporalTranslator.isTemporal(f1.and(f2)))
-			opt.setRunTemporal(true);
 
 		switch (selected_solver) {
 		case GLUCOSE:
@@ -127,20 +117,6 @@ public final class RunTestModel {
 		case SYRUP:
 			opt.setSolver(SATFactory.syrup());
 			break;
-		case NUSMVB:
-			opt.setSolver(SATFactory.electrod("-t","NuSMV"));
-			break;
-		case NUXMVB:
-			opt.setSolver(SATFactory.electrod("-t","nuXmv"));
-			break;
-		case NUSMVC:
-			opt.setRunUnbounded(true);
-			opt.setSolver(SATFactory.electrod("-t","NuSMV"));
-			break;
-		case NUXMVC:
-			opt.setRunUnbounded(true);
-			opt.setSolver(SATFactory.electrod("-t","nuXmv"));
-			break;
 		default:
 			break;
 		}
@@ -152,31 +128,28 @@ public final class RunTestModel {
 		long t1 = System.currentTimeMillis();
 
 		opt.setDecomposedMode(selected_mode);
-		if (batch) {
-			opt.setRunDecomposed(false);
-			psolver = new PardinusSolver(opt);
+		psolver = new PardinusSolver(opt);
+		if (batch)
 			solution = go_batch(b1, b2, f1, f2);
-		}
-		else {
-			opt.setRunDecomposed(true);
-			opt.configOptions().setSolver(SATFactory.MiniSat);
-			opt.configOptions().setRunTemporal(false);			
-			psolver = new PardinusSolver(opt);
-			switch (selected_mode) {
-			case PARALLEL:
-				psolver.options().setThreads(threads);
-				solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-				break;
-			case HYBRID:
-				psolver.options().setThreads(threads);
-				solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-				break;
-			case INCREMENTAL:
-				solution = go_incremental(b1, b2, f1, f2);
-				break;
-			default:
-				break;
-			}
+		else
+		switch (selected_mode) {
+		case PARALLEL:
+			psolver.options().setThreads(threads);
+			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+			break;
+		case HYBRID:
+			psolver.options().setThreads(threads);
+			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+			break;
+		case INCREMENTAL:
+			solution = go_incremental(b1, b2, f1, f2);
+			break;
+		case EXHAUSTIVE:
+			psolver.options().setThreads(threads);
+			solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
+			break;
+		default:
+			break;
 		}
 
 		long t2 = System.currentTimeMillis();
@@ -201,6 +174,38 @@ public final class RunTestModel {
 //			log.append(getGenTime(psolver));
 //			log.append(psolution.getSolution().instance());
 		}
+		else if (selected_mode == DMode.EXHAUSTIVE) {
+			DMonitor mon = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor;
+
+			long tt = mon.getNumRuns();
+			log.append(tt);
+			log.append("\t");
+			log.append(mon.getNumSATs());
+			log.append("\t");
+			log.append(tt-mon.getNumSATs());
+			log.append("\t");
+			if (tt != 0)
+				log.append(((mon.getNumSATs() * 100) / (long) tt));
+			else 
+				log.append("0");
+			log.append("\t");
+			log.append(mon.getConfigStats().primaryVariables());
+			log.append("\t");
+			log.append(mon.getConfigStats().clauses());
+			log.append("\t");
+			log.append(mon.getTotalVars());
+			log.append("\t");
+			log.append(mon.getTotalClauses());
+			log.append("\t");
+			log.append(mon.getConfigTimes());
+			log.append("\t");
+//			solution = go_batch(b1, b2, f1, f2);
+//			log.append(solution.stats().primaryVariables());
+//			log.append("\t");
+//			log.append(solution.stats().clauses());
+//			log.append("\t");
+
+		}
 		else {
 			log.append((t2 - t1));
 			log.append("\t");
@@ -212,7 +217,7 @@ public final class RunTestModel {
 	}
 
 	private static void flush() {
-//		System.out.print(log.toString());
+		System.out.print(log.toString());
 		writer.print(log.toString());
 		writer.flush();
 		log = new StringBuilder();
@@ -240,7 +245,7 @@ public final class RunTestModel {
 		PardinusBounds x = new PardinusBounds(b1, b2);
 		PardinusBounds y = x.amalgamated();
 
-		PardinusSolver solver = new PardinusSolver(psolver.options());
+		Solver solver = new Solver(psolver.options());
 		return solver.solve(f1.and(f2), y);
 	}
 

@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
@@ -49,10 +48,8 @@ import kodkod.engine.unbounded.ElectrodPrinter;
 import kodkod.engine.unbounded.ElectrodReader;
 import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.engine.unbounded.InvalidUnboundedSolution;
-import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
-import kodkod.instance.TupleSet;
 
 /**
  * A computational engine for solving unbounded temporal relational
@@ -114,11 +111,11 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	/**
 	 * {@inheritDoc}
 	 */
-	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		return new SolutionIterator(formula, bounds, options);
 	}
 
-	private final static class SolutionIterator implements Explorer<Solution> {
+	private final static class SolutionIterator implements Iterator<Solution> {
 	
 		private Formula formula;
 		private final PardinusBounds bounds;
@@ -132,83 +129,27 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			this.options = options;
 		}
 			
-		/**
-		 * {@inheritDoc}
-		 */
 		@Override
 		public boolean hasNext() {
 			return formula != null;
 		}
 	
-		/**
-		 * {@inheritDoc}
-		 */
 		@Override
 		public Solution next() {
-			if (prev != null) {
-				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
-				Formula trns = prev.formulate(bounds,reifs,formula,false).not();
-				options.reporter().debug("Reified instance: "+trns);
-				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
-			}
 				
 			Solution s = go(formula,bounds,options);
-			if (s.sat())
-				prev = (TemporalInstance) s.instance();
-			else {
-				prev = null;
-				formula = null;
+	
+			if (s.sat()) {
+				Formula trns = s.instance().formulate(bounds,reifs,formula).not();
+				options.reporter().debug("Reified instance: "+trns);
+				formula = formula.and(trns);
 			}
+			else 
+				formula = null;
 	
 			return s;
 		}
-
-		TemporalInstance prev;
-		Map<Integer,Formula> explorations = new HashMap<Integer,Formula>();
-		
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public Solution nextS(int state, int steps, Set<Relation> force) {
-			if (steps != 1 && steps != -1)
-				throw new InvalidSolverParamException("Electrod only supports step or infinite iteration.");
-			if (prev == null)
-				throw new InvalidSolverParamException("Cannot iterate without previous solution.");
-			
-			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
-			
-
-			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1,false).not();
-			options.reporter().debug("Force change: "+change);
-			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
-
-			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1,false);
-			options.reporter().debug("Preserve prefix: "+fix);
-
-			explorations.put(state, explorations.get(state).and(change));
-
-			Solution s = go(formula.and(explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(fix),bounds,options);
-			
-			if (s.sat())
-				prev = (TemporalInstance) s.instance();
 	
-			return s;
-		}
-		
-		@Override
-		public Solution nextC() {
-			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
-		}
-		@Override
-		public Solution nextP() {
-			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
-		}
-		
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
-			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");
-		}
-
 	}
 
 	/**
@@ -235,37 +176,32 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		String file = dir.toString()+File.separatorChar+String.format("%05d", bounds.integration);
 		PrintWriter writer;
 		try {
-			if (!Options.isDebug()) {
+			if (!Options.isDebug())
 				new File(file+".elo").deleteOnExit();
-			}
 			writer = new PrintWriter(file+".elo");
 			String electrod = ElectrodPrinter.print(formula, bounds, rep);
 			writer.println(electrod);
 			writer.close();
 			rep.debug("New Electrod problem at "+dir+".");
-		} catch (Exception e) {
-			rep.debug(e.getMessage());
+		} catch (FileNotFoundException e) {
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
 		ProcessBuilder builder;
 		List<String> args = new ArrayList<String>();
 		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
-		if (!options.unbounded()) {
-			if (options.minTraceLength() != 1) throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
-			args.add("--bmc"); args.add(options.maxTraceLength()+"");
-		}
-		if (Options.isDebug())
-			args.add("-v");
+		args.add(Options.isDebug()?"-v":"--");
 		args.add(file+".elo");
 				
 		builder = new ProcessBuilder(args);
-		builder.environment().put("PATH", builder.environment().get("PATH"));
+		
+		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
 		builder.redirectErrorStream(true);
 		int ret = -1;
 		final Process p;
 		try {
-			options.reporter().solvingCNF(-1, -1, -1, -1);
+			options.reporter().solvingCNF(-1, -1, -1);
+
 			p = builder.start();
 			// stores the pid so that it can be correctly terminated
 			Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -273,18 +209,13 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				public void run() {
 					if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
 						try {
-							if (p.isAlive()) {
-								Field f = p.getClass().getDeclaredField("pid");
-								f.setAccessible(true);
-	//							p.destroy();
-	//							System.out.println(f.get(p));
-	//							new ProcessBuilder("kill",f.get(p).toString()).start();
-								Process x = Runtime.getRuntime().exec("kill " + f.get(p));
-							}
-						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException
-								 e) {
+							Field f = p.getClass().getDeclaredField("pid");
+							f.setAccessible(true);
+							Runtime.getRuntime().exec("kill -SIGTERM " + f.get(p));
+						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
+								| IllegalAccessException | IOException e) {
 							// TODO Auto-generated catch block
-							 e.printStackTrace();
+							e.printStackTrace();
 						}
 					else
 						p.destroy();

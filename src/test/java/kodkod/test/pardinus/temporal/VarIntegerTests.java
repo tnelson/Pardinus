@@ -16,7 +16,6 @@ import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
@@ -43,7 +42,6 @@ public class VarIntegerTests {
 		Formula formula = a.sum().eq(IntConstant.constant(1)).always();
         
 		ExtendedOptions opt = new ExtendedOptions();
-//		opt.setReporter(new SLF4JReporter());
         opt.setBitwidth(2);
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
@@ -161,7 +159,6 @@ public class VarIntegerTests {
 		Formula formula = a.sum().eq(IntConstant.constant(1)).always();
         
 		ExtendedOptions opt = new ExtendedOptions();
-//		opt.setReporter(new SLF4JReporter());
         opt.setBitwidth(2);
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);

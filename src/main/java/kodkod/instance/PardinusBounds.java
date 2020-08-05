@@ -731,7 +731,7 @@ public class PardinusBounds extends Bounds {
 			dereif = new HashMap<Relation, TupleSet>();
 			deps = new HashMap<Relation, Set<Relation>>();
 			compls = new HashMap<Relation, Relation>();
-			// [HASLab] this will conflict with the reification from the iteration!
+			// [HASLab] this will conflict with the reification from the iteration!
 			for (int i = 0; i < universe().size(); i++) {
 				Relation r = Relation.atom(universe().atom(i).toString());
 				reif.put(universe().atom(i), r);
@@ -828,10 +828,8 @@ public class PardinusBounds extends Bounds {
 			TupleSet pre1 = PardinusBounds.super.lowerBound(rel);
 			TupleSet pre2 = PardinusBounds.super.upperBound(rel);
 			// if already resolved 
-			if (PardinusBounds.super.relations().contains(rel) && pre1.size() == pre2.size()) {
-				relations_symb.remove(rel);
+			if (PardinusBounds.super.relations().contains(rel) && pre1.size() == pre2.size())
 				return constrs;
-			}
 			
 			TupleSet low_low = resolveLower(lowerSymbBound(rel));
 			TupleSet upp_upp = resolveUpper(upperSymbBound(rel));

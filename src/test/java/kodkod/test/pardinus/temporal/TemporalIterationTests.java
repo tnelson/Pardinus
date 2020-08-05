@@ -19,6 +19,7 @@ import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.TemporalPardinusSolver;
+import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
@@ -28,12 +29,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-/**
- * Tests full path iterations (in contrast to branch iteration).
- * 
- * @author nmm
- */
-public class TemporalPathIterationTests {
+public class TemporalIterationTests {
 
 	@Test
 	public void test0() {
@@ -77,11 +73,11 @@ public class TemporalPathIterationTests {
 				assertFalse(eval.evaluate(a.no(), 1));
 				assertTrue(eval.evaluate(a.no(), 2));
 				assertFalse(eval.evaluate(a.no(), 3));
-				assertFalse(eval.evaluate(a.no().after(), 0));
-				assertTrue(eval.evaluate(a.no().after(), 1));
-				assertFalse(eval.evaluate(a.no().after(), 2));
-				assertTrue(eval.evaluate(a.no().after(), 3));
-				assertTrue(eval.evaluate(a.no().after(), 1));
+				assertFalse(eval.evaluate(a.no().next(), 0));
+				assertTrue(eval.evaluate(a.no().next(), 1));
+				assertFalse(eval.evaluate(a.no().next(), 2));
+				assertTrue(eval.evaluate(a.no().next(), 3));
+				assertTrue(eval.evaluate(a.no().next(), 1));
 				assertTrue(eval.evaluate(a, 0).isEmpty());
 				assertFalse(eval.evaluate(a, 1).isEmpty());
 				assertTrue(eval.evaluate(a, 2).isEmpty());
@@ -98,7 +94,7 @@ public class TemporalPathIterationTests {
 				assertEquals(eval.evaluate(a.prime().count(), 1), 0);
 				assertTrue(eval.evaluate(a.prime().count(), 2) > 0);
 				assertEquals(eval.evaluate(a.prime().count(), 3), 0);
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(9, c);
@@ -106,11 +102,8 @@ public class TemporalPathIterationTests {
 
 	}
 
-	// plain full iteration (== branch(-1,-1)), only upper bounds, symmetric, no
-	// past
-	// always one a
 	@Test
-	public void testBasic() {
+	public void test() {
 		int n = 2;
 
 		Relation a = Relation.unary_variable("a");
@@ -128,7 +121,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.one().always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -143,7 +135,7 @@ public class TemporalPathIterationTests {
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(10, c);
@@ -151,8 +143,6 @@ public class TemporalPathIterationTests {
 
 	}
 
-	// full iteration with lower bounds (== branch(-1,-1)), no past
-	// always some a, A0..An-1 in lower (breaks symmetry)
 	@Test
 	public void testLower() {
 		final int n = 3;
@@ -173,7 +163,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.some().always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -185,20 +174,19 @@ public class TemporalPathIterationTests {
 
 		int c = 0;
 		while (sols.hasNext()) {
+
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 
 		assertEquals(96, c);
 		solver.free();
+
 	}
 
-	// full iteration with past operators (== branch(-1,-1)), no lower bounds,
-	// symmetric
-	// no a and eventually once before some a
 	@Test
 	public void testPast() {
 		final int n = 1;
@@ -215,10 +203,10 @@ public class TemporalPathIterationTests {
 
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
-		Formula formula = a.some().before().once().eventually().and(a.no());
+		Formula formula = a.some().previous().once().eventually().and(a.no());
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -230,25 +218,23 @@ public class TemporalPathIterationTests {
 
 		int c = 0;
 		while (sols.hasNext()) {
+
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
 				Evaluator eval = new Evaluator(sol.instance());
 				assertTrue(eval.evaluate(a.no(), 0));
-				assertFalse(eval.evaluate(Expression.NONE.no().before(), 0));
-				assertTrue(eval.evaluate(a.no().before(), 1));
-				opt.reporter().debug(sol.instance().toString());
+				assertFalse(eval.evaluate(Expression.NONE.no().previous(), 0));
+				assertTrue(eval.evaluate(a.no().previous(), 1));
+//				System.out.println(sol.instance().toString());
 			}
 		}
 
 		assertEquals(9, c);
 		solver.free();
+
 	}
 
-	// full iteration for unbounded engine with lower bounds (== branch(-1,-1)), no
-	// past
-	// always some a, A0..An-1 in lower (breaks symmetry)
-	// NOTE: not working, same solution keeps getting returned
 	@Test
 	public void testLowerUbd() {
 		final int n = 2;
@@ -269,8 +255,8 @@ public class TemporalPathIterationTests {
 		Formula formula = a.some().always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
-		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
+//		opt.setReporter(new SLF4JReporter());
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -284,11 +270,12 @@ public class TemporalPathIterationTests {
 		int c = 0;
 
 		while (sols.hasNext() && c < 10) {
+
 			Solution sol = sols.next();
 			c++;
 
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 
@@ -297,9 +284,6 @@ public class TemporalPathIterationTests {
 
 	}
 
-	// full iteration with temporal skolem vars due to outermost eventually 
-	// (== branch(-1,-1)), lower bounds, not symmetric
-	// eventually always a = b
 	@Test
 	public void testTempSkolem() {
 		int n = 2;
@@ -322,7 +306,7 @@ public class TemporalPathIterationTests {
 		Formula formula = a.eq(b).always().eventually();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -334,73 +318,17 @@ public class TemporalPathIterationTests {
 
 		int c = 0;
 		while (sols.hasNext()) {
+
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(5, c);
 		solver.free();
 	}
 
-	// full iteration with temporal skolem vars due to outermost eventually 
-	// (== branch(-1,-1)), lower bounds, not symmetric
-	// NOTE: not working, same solution keeps getting returned
-	@Test
-	public void testTempSkolemUbd() {
-		int n = 2;
-	
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary_variable("b");
-	
-		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-	
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet ls = f.setOf(f.tuple("A0"));
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-	
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, ls, as);
-		bounds.boundExactly(b, as);
-		Formula formula = a.eq(b).always().eventually();
-	
-		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
-		opt.setRunUnbounded(true);
-		opt.setReporter(new SLF4JReporter());
-		opt.setRunTemporal(true);
-		opt.setRunDecomposed(false);
-		opt.setMaxTraceLength(3);
-		PardinusSolver solver = new PardinusSolver(opt);
-	
-		assertTrue(solver.solve(formula, bounds).sat());
-	
-		Iterator<Solution> sols = solver.solveAll(formula, bounds);
-	
-		int c = 0;
-	
-		while (sols.hasNext() && c < 10) {
-	
-			Solution sol = sols.next();
-			c++;
-	
-			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
-	
-			}
-		}
-	
-		assertEquals(10, c);
-		solver.free();
-	}
-
-	// full iteration with regular skolem vars due to outermost existential quantification 
-	// (== branch(-1,-1)), symmetric bounds
-	// always (some v : b | v in a) and after one b
 	@Test
 	public void testSkolem() {
 		int n = 2;
@@ -420,11 +348,11 @@ public class TemporalPathIterationTests {
 		bounds.boundExactly(a, as);
 		bounds.bound(b, as);
 		Variable v = Variable.unary("x");
-		Formula formula = v.in(a).forSome(v.oneOf(b)).always().and(b.one().after());
+		Formula formula = v.in(a).forSome(v.oneOf(b)).always().and(b.one().next());
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSkolemDepth(1);
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
@@ -436,19 +364,17 @@ public class TemporalPathIterationTests {
 
 		int c = 0;
 		while (sols.hasNext()) {
+
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(6, c);
 		solver.free();
 	}
 
-	// full iteration with regular skolem vars due to outermost existential quantification 
-	// (== branch(-1,-1)), symmetric bounds
-	// always (some a) and some v : b | v in b
 	@Test
 	public void testSkolem2() {
 		int n = 2;
@@ -472,7 +398,7 @@ public class TemporalPathIterationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 		opt.setSkolemDepth(1);
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
@@ -484,26 +410,23 @@ public class TemporalPathIterationTests {
 
 		int c = 0;
 		while (sols.hasNext()) {
+
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(24, c);
 		solver.free();
 	}
 
-	// full iteration with regular skolem vars due to outermost existential quantification 
-	// (== branch(-1,-1)), symmetric bounds
-	// always (some a) and some v : b | v in b
-	// NOTE: not working, same solution keeps getting returned
 	@Test
 	public void testSkolemUnb() {
 		int n = 2;
 
 		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary("b");
+		Relation b = Relation.unary_variable("b");
 
 		Object[] atoms = new Object[n];
 		for (int i = 0; i < n; i++)
@@ -517,16 +440,111 @@ public class TemporalPathIterationTests {
 		bounds.bound(a, as);
 		bounds.bound(b, as);
 		Variable v = Variable.unary("x");
-		Formula formula = a.some().always().and(v.in(b).forSome(v.oneOf(b)));
+		Formula formula = v.in(a).forSome(v.oneOf(b)).always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
 		opt.setSkolemDepth(1);
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
+		PardinusSolver solver = new PardinusSolver(opt);
+
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+
+		while (sols.hasNext() && c < 5) {
+
+			Solution sol = sols.next();
+			c++;
+
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
+		}
+
+		assertEquals(5, c);
+		solver.free();
+	}
+
+	@Test
+	public void testNoRef() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet ls = f.setOf(f.tuple("A0"));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, ls, as);
+		Formula formula = a.some().always();
+
+		ExtendedOptions opt = new ExtendedOptions();
+//		opt.setReporter(new ConsoleReporter());
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(2);
+		PardinusSolver solver = new PardinusSolver(opt);
+
+		assertTrue(solver.solve(formula, bounds).sat());
+
+		Iterator<Solution> sols = solver.solveAll(formula, bounds);
+
+		int c = 0;
+		while (sols.hasNext()) {
+
+			Solution sol = sols.next();
+			c++;
+			if (sol.sat()) {
+//				System.out.println(sol.instance().toString());
+			}
+		}
+		assertEquals(9, c);
+		solver.free();
+	}
+
+	@Test
+	public void testTempSkolemUbd() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet ls = f.setOf(f.tuple("A0"));
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, ls, as);
+		bounds.boundExactly(b, as);
+		Formula formula = a.eq(b).always().eventually();
+
+		ExtendedOptions opt = new ExtendedOptions();
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setRunUnbounded(true);
+//		opt.setReporter(new ConsoleReporter());
+		opt.setRunTemporal(true);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(3);
 		PardinusSolver solver = new PardinusSolver(opt);
 
 		assertTrue(solver.solve(formula, bounds).sat());
@@ -541,7 +559,7 @@ public class TemporalPathIterationTests {
 			c++;
 
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 
@@ -549,9 +567,6 @@ public class TemporalPathIterationTests {
 		solver.free();
 	}
 
-	// full iteration with temporal skolem vars due to outermost eventually 
-	// (== branch(-1,-1)) and a total order
-	// (eventually always b in a) and totalorder a
 	@Test
 	public void testTempSkolemTotalOrder() {
 		int n = 2;
@@ -579,7 +594,7 @@ public class TemporalPathIterationTests {
 		Formula formula = b.in(a).always().eventually().and(an.totalOrder(a, af, al));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -595,7 +610,7 @@ public class TemporalPathIterationTests {
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(2, c);
@@ -603,7 +618,6 @@ public class TemporalPathIterationTests {
 
 	}
 
-	// NOTE: not working, same solution keeps getting returned
 	@Test
 	public void testTempSkolemTotalOrderUbd() {
 		int n = 2;
@@ -631,9 +645,9 @@ public class TemporalPathIterationTests {
 		Formula formula = b.in(a).always().eventually().and(an.totalOrder(a, af, al));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new ConsoleReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
@@ -646,11 +660,12 @@ public class TemporalPathIterationTests {
 		int c = 0;
 
 		while (sols.hasNext() && c < 10) {
+
 			Solution sol = sols.next();
 			c++;
 
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 
@@ -659,57 +674,6 @@ public class TemporalPathIterationTests {
 
 	}
 
-	// full iteration with a relation variable not referenced in the formula
-	// (== branch(-1,-1)), lower bound on that var but ignored during symmetry breaking
-	// also, assigned a minimal value
-	// always some a
-	@Test
-	public void testNoRef() {
-		int n = 2;
-	
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary_variable("b");
-	
-		Object[] atoms = new Object[n];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-	
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet ls = f.setOf(f.tuple("A0"));
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-	
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, as);
-		bounds.bound(b, ls, as);
-		Formula formula = a.some().always();
-	
-		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
-		opt.setRunTemporal(true);
-		opt.setRunDecomposed(false);
-		opt.setMaxTraceLength(2);
-		PardinusSolver solver = new PardinusSolver(opt);
-	
-		assertTrue(solver.solve(formula, bounds).sat());
-	
-		Iterator<Solution> sols = solver.solveAll(formula, bounds);
-	
-		int c = 0;
-		while (sols.hasNext()) {
-			Solution sol = sols.next();
-			c++;
-			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
-			}
-		}
-		assertEquals(9, c);
-		solver.free();
-	}
-
-	// full iteration with symbolic bounds and relation not mentioned in the formula
-	// (== branch(-1,-1)), lower bound, not symmetric
-	// a = b and b = b
 	@Test
 	public void testSymb() {
 		int n = 2;
@@ -734,7 +698,6 @@ public class TemporalPathIterationTests {
 		Formula formula = a.eq(a).and(b.eq(b));
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(2);
@@ -749,16 +712,13 @@ public class TemporalPathIterationTests {
 			Solution sol = sols.next();
 			cc++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(16, cc);
 		solver.free();
 	}
 
-	// full iteration with symbolic bounds and relation not mentioned in the formula
-	// (== branch(-1,-1)), lower bound, not symmetric
-	// a = b and b = b
 	@Test
 	public void testSymb2() {
 		int n = 1;
@@ -797,7 +757,7 @@ public class TemporalPathIterationTests {
 			Solution sol = sols.next();
 			cc++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(2, cc);
@@ -841,7 +801,7 @@ public class TemporalPathIterationTests {
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(24, c);
@@ -886,7 +846,7 @@ public class TemporalPathIterationTests {
 			Solution sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(8, c);
@@ -933,7 +893,7 @@ public class TemporalPathIterationTests {
 			sol = sols.next();
 			c++;
 			if (sol.sat()) {
-				opt.reporter().debug(sol.instance().toString());
+//				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(24, c);
@@ -944,6 +904,7 @@ public class TemporalPathIterationTests {
 	public void hotel() {
 		final int t = 2, ty = 1;
 		List<List<Long>> alls;
+		TemporalPardinusSolver.SATOPTITERATION = false;
 		alls = new ArrayList<List<Long>>();
 		for (int tr = 0; tr < ty; tr++) {
 			List<Long> times = new ArrayList<Long>();
@@ -1016,7 +977,7 @@ public class TemporalPathIterationTests {
 		Formula f6a = outbox.prime().eq((e6a).union(e6b));
 		Formula f6 = f6a.forSome(p6.oneOf(process).and(i6.oneOf(p6.join(outbox)))).always();
 		Variable p7 = Variable.unary("p");
-		Formula f7a = (p7.join(idf).in(p7.join(outbox)).and(p7.join(idf).in(p7.join(outbox)).not().before())).once();
+		Formula f7a = (p7.join(idf).in(p7.join(outbox)).and(p7.join(idf).in(p7.join(outbox)).not().previous())).once();
 		Formula f7 = elected.eq(f7a.comprehension(p7.oneOf(process))).always();
 
 		Variable p8 = Variable.unary("p");
@@ -1031,6 +992,7 @@ public class TemporalPathIterationTests {
 
 		int nn = 6, tt = 2, ty = 4;
 		List<List<List<Long>>> alls;
+		TemporalPardinusSolver.SATOPTITERATION = false;
 		alls = new ArrayList<List<List<Long>>>();
 		for (int tr = 0; tr < ty; tr++) {
 			List<List<Long>> times = new ArrayList<List<Long>>(nn);

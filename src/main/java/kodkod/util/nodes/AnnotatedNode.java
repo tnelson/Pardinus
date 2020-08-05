@@ -26,6 +26,7 @@ import static kodkod.ast.RelationPredicate.Name.ACYCLIC;
 import static kodkod.ast.RelationPredicate.Name.FUNCTION;
 import static kodkod.ast.RelationPredicate.Name.TOTAL_ORDERING;
 import static kodkod.ast.operator.FormulaOperator.AND;
+import static kodkod.ast.operator.TemporalOperator.ALWAYS;
 import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
 
@@ -473,7 +474,7 @@ public final class AnnotatedNode<N extends Node> {
 		public void visit(UnaryTempFormula tempFormula) {
 			if (visited(tempFormula)) return;
 			final TemporalOperator op = tempFormula.op();
-			if ((!negated && op==TemporalOperator.ALWAYS) || (negated && op==TemporalOperator.EVENTUALLY))
+			if ((!negated && op==ALWAYS) || (negated && op==TemporalOperator.EVENTUALLY))
 				tempFormula.formula().accept(this);
 		}
 		/**

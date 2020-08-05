@@ -28,6 +28,8 @@ import kodkod.ast.Relation;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.SLF4JReporter;
+import kodkod.engine.config.Reporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
@@ -95,7 +97,7 @@ public class BaseTests {
 		Solution sol;
 		for (int i = 0; i < 13; i++) {
 			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+//			System.out.println("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();

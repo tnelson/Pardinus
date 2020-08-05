@@ -25,8 +25,6 @@
 //import kodkod.instance.TupleSet;
 //import kodkod.instance.Universe;
 //
-// [HASLab] no support for HOL in current version
-//
 ////FIXED: tests are failing because atom relations are not automatically created
 ////TODO: add this test
 //// for x: X | some set s: S | ...

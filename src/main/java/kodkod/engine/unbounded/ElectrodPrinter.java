@@ -454,6 +454,7 @@ public class ElectrodPrinter {
 			
 			/** @ensures this.tokens' = concat[ this.tokens, node ] */
 			public void visit(IntConstant node) {
+				//TODO: warning
 				append(node); 
 			}
 			
@@ -531,6 +532,7 @@ public class ElectrodPrinter {
 			/** @ensures appends the given op and child to this.tokens; the child is 
 			 * parenthesized if it's not an instance of unary int expression or int constant. **/
 			public void visit(UnaryIntExpression node)  { 
+				//TODO: warning
 				final IntExpression child = node.intExpr();
 				final IntOperator op = node.op();
 				final boolean parens = 
@@ -616,6 +618,7 @@ public class ElectrodPrinter {
 			
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(BinaryIntExpression node) {
+				//TODO: warning
 				final IntOperator op = node.op();
 				visitChild(node.left(), parenthesize(op, node.left()));
 				infix(op);
@@ -674,6 +677,7 @@ public class ElectrodPrinter {
 			
 			/** @ensures this.tokens' = concat[ this.tokens, tokenize[node.left], node.op, tokenize[node.right] */
 			public void visit(IntComparisonFormula node) {
+				//TODO: warning
 				visitChild(node.left(), parenthesize(node.left()));
 				infix(node.op());
 				visitChild(node.right(), parenthesize(node.right()));
@@ -712,6 +716,7 @@ public class ElectrodPrinter {
 			
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(IfIntExpression node) {
+				//TODO: warning
 				visitChild(node.condition(), parenthesize(node.condition()));
 				infix("=>");
 				indent++;
@@ -742,6 +747,7 @@ public class ElectrodPrinter {
 			/** @ensures this.tokens' = concat[ this.tokens,  "sum",
 			 *   tokenize[node.decls], "|", tokenize[ node.intExpr ],  ]*/
 			public void visit(SumExpression node) {
+				//TODO: warning
 				keyword("sum");
 				node.decls().accept(this);
 				infix("|");
@@ -775,6 +781,7 @@ public class ElectrodPrinter {
 			}
 			/** @ensures appends the tokenization of the given node to this.tokens */
 			public void visit(NaryIntExpression node) {
+				//TODO: warning
 				final IntOperator op = node.op();
 				visitChild(node.child(0), parenthesize(op, node.child(0)));
 				for(int i = 1, size = node.size(); i < size; i++) {
@@ -814,10 +821,7 @@ public class ElectrodPrinter {
 			 *   tokenize[node.intExpr], "]" ] **/
 			// [HASLab] integer relations
 			public void visit(IntToExprCast node) {
-				append("Int");
-				append("[");
-				node.intExpr().accept(this);
-				append("]");
+				throw new IllegalArgumentException("No support for relations over integers: "+node);
 			}
 			
 			/** @throws InvalidUnboundedProblem 
@@ -827,11 +831,7 @@ public class ElectrodPrinter {
 			public void visit(ExprToIntCast node) {
 				switch(node.op()) { 
 				case SUM:
-					append("int");
-					append("[");
-					node.expression().accept(this);
-					append("]");
-					break;
+					throw new IllegalArgumentException("No support for relations over integers: "+node);
 				case CARDINALITY : 
 					append("#");
 					append("(");
@@ -866,12 +866,10 @@ public class ElectrodPrinter {
 			
 		}
 
-	static private final String[] protected_keywords = { "run", "expect", "sat", "unsat", "invariant", "true", "false",
-			"after", "always", "eventually", "until", "releases", "before", "historically", "once", "since",
-			"triggered", "all", "some", "one", "no", "lone", "let", "disj", "iff", "implies", "then", "else", "or",
-			"and", "in", "inst", "sym", "not", "var", "const", "univ", "iden", "none"
-
-	};
+	static private final String[] protected_keywords = { "run", "invariant", "true", "false", "next", "always",
+			"sometime", "eventually", "until", "releases", "previous", "historically", "once", "since", "all", "some",
+			"one", "no", "lone", "let", "disj", "iff", "implies", "then", "else", "or", "and", "in", "not", "inst",
+			"sym", "var", "const", "univ", "iden", "none" };
 
 	/**
 	 * Converts identifiers into a version that is compatible with Electrod by

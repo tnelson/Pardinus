@@ -356,7 +356,7 @@ public abstract class Translation {
 		 * @see kodkod.engine.fol2sat.Translation#numPrimaryVariables()
 		 */
 		@Override
-		public int numPrimaryVariables() { return interpreter.vars().values().stream().map((x)->x.size()).reduce(0, Integer::sum); } // [HASLab] fixed number variables
+		public int numPrimaryVariables() { return interpreter.factory().numberOfVariables(); }
 		
 	}
 

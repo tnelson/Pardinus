@@ -36,7 +36,6 @@ import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
-import kodkod.ast.Variable;
 import kodkod.engine.fol2sat.RelationCollector;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
@@ -240,8 +239,6 @@ public class Instance implements Cloneable {
 	 * every relevant atom be reified into a singleton relation, which may be
 	 * re-used between calls.
 	 * 
-	 * Will change <bounds> if not all atoms of the universe are present at <reif>.
-	 * 
  	 * @assumes reif != null
 	 * @param reif
 	 *            the previously reified atoms
@@ -250,20 +247,17 @@ public class Instance implements Cloneable {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula) {
 
 		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
+
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {
-			Expression r;
-			if (reif.keySet().contains(universe().atom(i)))
-				r = reif.get(universe().atom(i));
-			else {
-				r = Relation.atom(universe().atom(i).toString());
+			if (!reif.keySet().contains(universe().atom(i))) {
+				Relation r = Relation.atom(universe().atom(i).toString());
 				reif.put(universe().atom(i), r);
+				bounds.boundExactly(r, bounds.universe().factory().setOf(universe().atom(i)));
 			}
-			if (r instanceof Relation && !bounds.relations.contains(r))
-				bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(universe().atom(i)));
 		}
 
 		// create an equality for every relation
@@ -271,7 +265,7 @@ public class Instance implements Cloneable {
 		List<Formula> res = new ArrayList<Formula>();
 		for (Relation rel : tuples.keySet()) {
 			// do not translate relations from reified from atoms
-			if (rel.isAtom() || (relevants != null && !relevants.contains(rel)))
+			if (reif.values().contains(rel) || (relevants != null && !relevants.contains(rel)))
 				continue;
 
 			TupleSet tset = tuples.get(rel);

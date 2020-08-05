@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -104,7 +106,7 @@ final class SymmetryBreaker {
 		// [HASLab] we can't simply use the stage bounds at the integrated stage
 		// because the fixed configurations would affect the symmetries.
 		stage_bounds = bounds;
-		if (bounds instanceof PardinusBounds && !((PardinusBounds) bounds).integrated && ((PardinusBounds) bounds).amalgamated != null) 
+		if (bounds instanceof PardinusBounds && ((PardinusBounds) bounds).amalgamated() != null) 
 			bounds = ((PardinusBounds) bounds).amalgamated();
 		
 		this.reporter = reporter; // [HASLab] preserve reporter
@@ -224,27 +226,87 @@ final class SymmetryBreaker {
 					if (r.isSkolem() && options.temporal())
 						continue;
 					
+					// [HASLab] configuration matrices have a set of variables assigned T.
+					// when the process iterates over these, we may obtain variables that are
+					// not in the original SBP order; eg, if originally we had [1,2] < [3,4],
+					// and 3=2=T, we need to generate [F,T]<[T,F]; but since it will only
+					// iterate over T values, it will first retrieve 2=T, leading to [T,F]<[F,T]
+					// thus we must store the variables and then sort them
+					SortedMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>> aux;
+					aux = new TreeMap<Integer,AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>>();
+
 					BooleanMatrix m = interpreter.interpret(r);
 					for(IndexedEntry<BooleanValue> entry : m) {
 						int permIndex = permutation(r.arity(), entry.index(), prevIndex, curIndex);
 						BooleanValue permValue = m.get(permIndex);
-						if (permIndex==entry.index() || atSameIndex(original, permValue, permuted, entry.value()))
+						// [HASLab] relParts() filters out every fixed relation at the
+						// general problem, so any constant value will have arisen from
+						// the fixed configuration.
+						// [HASLab] the found T variable may be the "larger" var, at 
+						// which case atSameIndex will fail, but we still need to process it.
+						if (permIndex==entry.index() || (!(permValue instanceof BooleanConstant) && atSameIndex(original, permValue, permuted, entry.value())))
 							continue;
 						
-						_original.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), entry.index()))); // [HASLab]
-						_permuted.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), permIndex))); // [HASLab]
-						original.add(entry.value());
-						permuted.add(permValue);			
+						// [HASLab] we know that boolean constants only occur at
+						// configuration matrices; otherwise behave as usual.
+						if (!(permValue instanceof BooleanConstant)) {
+							// [HASLab] report lexes
+							_original.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), entry.index())));
+							_permuted.add(new AbstractMap.SimpleEntry<Relation, Tuple>(r, interpreter.universe().factory().tuple(r.arity(), permIndex)));
+							original.add(entry.value());
+							permuted.add(permValue);			
+						} else {
+							// [HASLab] if the values are equal, then it does not affect the lexer
+							// [HASLab] store the values so that they can be ordered below
+							if ((entry.value()) != (permValue)) {
+								Entry<Integer, BooleanValue> e1 = new AbstractMap.SimpleEntry<Integer, BooleanValue>(entry.index(),entry.value());
+								Entry<Integer, BooleanValue> e2 = new AbstractMap.SimpleEntry<Integer, BooleanValue>(permIndex,permValue);
+								aux.put(entry.index()>permIndex?permIndex:entry.index(), new AbstractMap.SimpleEntry<Entry<Integer, BooleanValue>, Entry<Integer, BooleanValue>>(e1,e2));
+							} 
+						}
+					}
+					// [HASLab] redo all this!!
+					// [HASLab] TODO: optimize this: [T, ...] < [F, ...] = F, [F, ...] < [T, ...] = T
+					for (Integer index : aux.keySet()) {
+						Entry<Integer, BooleanValue> e1 = aux.get(index).getKey();
+						Entry<Integer, BooleanValue> e2 = aux.get(index).getValue();
+						
+						if (e1.getKey() > e2.getKey() && !(e2.getValue() == BooleanConstant.TRUE)) {
+							original.add(e2.getValue());
+							permuted.add(e1.getValue());
+							_original.add(null); // this will allows to identify F < T below
+							_permuted.add(null);
+						} else if (e1.getKey() < e2.getKey() && !(e1.getValue() == BooleanConstant.TRUE)) {
+							original.add(e1.getValue());
+							permuted.add(e2.getValue());
+							_original.add(null); // this will allows to identify F < T below
+							_permuted.add(null);
+						} else {
+							// [HASLab] this happens because I can't filter the fixed bounds from total orders
+							// since the bounds are cloned at the translator and the TOTALORDER is lost for 
+							// the integrated problem
+						}
+
 					}
 				}
 								
-				reporter.reportLex(_original,_permuted); // [HASLab]
-
+				// [HASLab] report lexes
+				final List<Entry<Relation, Tuple>> _foriginal = new ArrayList<Entry<Relation, Tuple>>(_original.size());
+				final List<Entry<Relation, Tuple>> _fpermuted = new ArrayList<Entry<Relation, Tuple>>(_original.size());
+				for (int i = 0; i < _original.size(); i ++) {
+					 // identify F < T and ignore remaineder
+					if (_original.get(i) == null && _permuted.get(i) == null) break;
+					_foriginal.add(_original.get(i));
+					_fpermuted.add(_permuted.get(i));
+				}
+				reporter.reportLex(_foriginal,_fpermuted);
+				
+				reporter.debug("act: "+original.toString()+" < "+permuted.toString());
 				sbp.add(leq(factory, original, permuted));
 				original.clear();
 				permuted.clear();
-				_original.clear(); // [HASLab]
-				_permuted.clear(); // [HASLab]
+				_original.clear();
+				_permuted.clear();
 				prevIndex = curIndex;
 			}
 		}
@@ -398,7 +460,7 @@ final class SymmetryBreaker {
 	 * this.bounds.upperBound[acyclic.relation] is the cross product of some partition in this.symmetries with
 	 * itself. Assuming that this is the case, we then break symmetry on acyclic.relation using one of the methods
 	 * described in {@linkplain #breakMatrixSymmetries(Map, boolean)}; the method used depends
-	 * on the value of the "aggressive" flag.
+	 * on the value of the "agressive" flag.
 	 * The partition that formed the upper bound of acylic.relation is removed from this.symmetries.</p>
 	 * 
 	 * @return null if symmetry cannot be broken on acyclic; otherwise returns a formula
@@ -460,13 +522,13 @@ final class SymmetryBreaker {
 	 * cross-multiplied with itself gives the upper bound of total.relation. Assuming that this is the case, 
 	 * we then break symmetry on total.relation, total.first, total.last, and total.ordered using one of the methods
 	 * described in {@linkplain #breakMatrixSymmetries(Map, boolean)}; the method used depends
-	 * on the value of the "aggressive" flag.
+	 * on the value of the "agressive" flag.
 	 * The partition that formed the upper bound of total.ordered is removed from this.symmetries.</p>
 	 * 
 	 * @return null if symmetry cannot be broken on total; otherwise returns a formula
 	 * f such that the meaning of total with respect to this.bounds is equivalent to the
 	 * meaning of f with respect to this.bounds' 
-	 * @ensures this.symmetries and this.bounds are modified as described in {@linkplain #breakMatrixSymmetries(Map, boolean)} 
+	 * @ensures this.symmetries and this.bounds are modified as desribed in {@linkplain #breakMatrixSymmetries(Map, boolean)} 
 	 * iff total.first, total.last, and total.ordered have the same upper bound, which, when 
 	 * cross-multiplied with itself gives the upper bound of total.relation
 	 * 
@@ -475,6 +537,7 @@ final class SymmetryBreaker {
 	private final Formula breakTotalOrder(RelationPredicate.TotalOrdering total, boolean aggressive) {
 		final Relation first = total.first(), last = total.last(), ordered = total.ordered(), relation = total.relation();
 		final IntSet domain = bounds.upperBound(ordered).indexView();		
+
 		// [HASLab] explorer, this avoids breaking the symmetry on total order relations whose bounds are not symmetric
 		// however, when exploring, these are already fixed from the fixed prefix and would not be identified as so
 		if (symmetricColumnPartitions(ordered)!=null && 

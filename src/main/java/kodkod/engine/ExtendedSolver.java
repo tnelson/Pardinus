@@ -1,10 +1,10 @@
 package kodkod.engine;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import kodkod.ast.Formula;
 import kodkod.ast.IntExpression;
@@ -92,8 +92,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
 	 * @author Emina Torlak
 	 */
-	// [HASLab]
-	public final static class SolutionIterator implements Explorer<Solution> {
+	public final static class SolutionIterator implements Iterator<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
 		private int trivial;
@@ -198,7 +197,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				catch(IllegalStateException e) { }
 	
 			}
-			opt.reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
+			opt.reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 			
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();
@@ -301,38 +300,11 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 			this.weights = weights;
 			return next();
 		}
-
-		// [HASLab]
-		@Override
-		public Solution branch(int state, Set<Relation> ignore, Map<Relation,TupleSet> upper, boolean exclude) {
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-
-		// [HASLab]
-		@Override
-		public Solution nextS(int state, int delta, Set<Relation> force) {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-
-		// [HASLab]
-		@Override
-		public Solution nextC() {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-
-		// [HASLab]
-		@Override
-		public Solution nextP() {
-			// TODO Auto-generated method stub
-			throw new UnsupportedOperationException("No branching on regular Kodkod.");
-		}
-}	
+	}	
 	
 	// [HASLab]
 	@Override
-	protected Explorer<Solution> iterator(Formula formula, Bounds bounds, Options options) {
+	protected Iterator<Solution> iterator(Formula formula, Bounds bounds, Options options) {
 		return new SolutionIterator(formula, bounds, options());
 	}
 		

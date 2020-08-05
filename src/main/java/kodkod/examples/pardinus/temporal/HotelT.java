@@ -28,7 +28,6 @@ import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.Evaluator;
-import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.config.ExtendedOptions;
@@ -77,14 +76,14 @@ public class HotelT extends DModel {
 		occupant = Relation.binary_variable("FrontDesk.occupant");
 		gkeys = Relation.binary_variable("Guest.gkeys");
 		
-		List<String> atoms = new ArrayList<String>(n*4);
-		for (int i = 0; i < n+1; i++) {
+		List<String> atoms = new ArrayList<String>(n*6);
+		for (int i = 0; i < n+3; i++) {
 			atoms.add("Key" + i);
 		}
 		for (int i = 0; i < n; i++) {
 			atoms.add("Room" + i);
 		}
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < n+2; i++) {
 			atoms.add("Guest" + i);
 		}
 		u = new Universe(atoms);
@@ -192,7 +191,7 @@ public class HotelT extends DModel {
 		Formula checkin = checkin(r, k, g);
 		Formula entry = entry(r, k, g);
 
-		Formula x394 = checkin.implies(entry.after());/* TEMPORAL OP */
+		Formula x394 = checkin.implies(entry.next());/* TEMPORAL OP */
 
 		return x394.forAll(g.oneOf(guest).and(r.oneOf(room)).and(k.oneOf(key))).always();/*
 																						 * TEMPORAL
@@ -321,8 +320,8 @@ public class HotelT extends DModel {
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+1 - 1)));
-		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
+		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+3 - 1)));
+		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n+2 - 1)));
 		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room" + (n - 1)));
 
 		b.boundExactly(key, kb);
@@ -341,20 +340,14 @@ public class HotelT extends DModel {
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
-		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+1 - 1)));
-		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n - 1)));
+		final TupleSet kb = f.range(f.tuple("Key0"), f.tuple("Key" + (n+3 - 1)));
+		final TupleSet gb = f.range(f.tuple("Guest0"), f.tuple("Guest" + (n+2 - 1)));
 		final TupleSet rb = f.range(f.tuple("Room0"), f.tuple("Room" + (n - 1)));
 
-//		b.bound(lastkey, rb.product(kb));
-//		b.bound(occupant, rb.product(gb));
-//		b.bound(current, rb.product(kb));
-//		b.bound(gkeys, gb.product(kb));
-
-		b.bound(lastkey, room.product(key));
-		b.bound(occupant, room.product(guest));
-		b.bound(current, room.product(key));
-		b.bound(gkeys, guest.product(key));
-
+		b.bound(lastkey, rb.product(kb));
+		b.bound(occupant, rb.product(gb));
+		b.bound(current, rb.product(kb));
+		b.bound(gkeys, gb.product(kb));
 		return b;
 	}
 
@@ -365,7 +358,7 @@ public class HotelT extends DModel {
 
 	@Override
 	public Formula partition2() {
-		Formula f2 = Formula.and(/*tempDecls(),*/ tempFacts(), init(), next(), noBadEntries().not());
+		Formula f2 = Formula.compose(FormulaOperator.AND, tempDecls(), tempFacts(), init(), next(), noBadEntries().not());
 		if (variant == Variant.NOINTERVENES)
 			f2 = f2.and(noIntervenes());
 		return f2;
@@ -383,23 +376,32 @@ public class HotelT extends DModel {
 	}
 
 	public static void main(String[] args) {
-		HotelT model = new HotelT(new String[] { "4", "NOINTERVENES" });
+		HotelT model = new HotelT(new String[] { "3", "INTERVENES" });
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setSolver(SATFactory.electrod("-t","nuXmv"));
-		opt.setRunDecomposed(false);
-		opt.configOptions().setSolver(SATFactory.Glucose);
-		opt.setDecomposedMode(DMode.HYBRID);
-		opt.setMaxTraceLength(4);
-//			opt.setReporter(new SLF4JReporter());
-		opt.setRunTemporal(true);
-		PardinusSolver solver = new PardinusSolver(opt);
-
-		PardinusBounds bnds = new PardinusBounds(model.bounds1(),model.bounds2());
-		Formula f = model.partition1().and(model.partition2());
-		Solution sol = solver.solve(f, bnds);
-
+		opt.setSolver(SATFactory.Glucose);
+		opt.setMaxTraceLength(10);
+		opt.setDecomposedMode(DMode.PARALLEL);
+		TemporalPardinusSolver solver = new TemporalPardinusSolver(opt);
+		PardinusBounds tbmpbound = model.bounds1();
+		tbmpbound.merge(model.bounds2());
+		System.out.println(tbmpbound.toString());
+		Solution sol = solver.solveAll(model.partition1().and(model.partition2()), tbmpbound).next();
 		System.out.println(sol);
+		if (sol.sat()) {
+			Evaluator eval = new Evaluator(sol.instance(), opt);
+			System.out.println(eval.evaluate(model.occupant, 0));
+			System.out.println(eval.evaluate(model.occupant, 1));
+			System.out.println(eval.evaluate(model.occupant, 2));
+			System.out.println(eval.evaluate(model.occupant, 3));
+			System.out.println(eval.evaluate(model.occupant, 4));
+			System.out.println(eval.evaluate(model.occupant, 5));
+			System.out.println(eval.evaluate(model.occupant, 6));
+			System.out.println(eval.evaluate(model.occupant, 7));
+			System.out.println(eval.evaluate(model.occupant, 8));
+			System.out.println(eval.evaluate(model.occupant, 9));
+			System.out.println(eval.evaluate((model.occupant.no()).next()));
+		}
 		return;
 	}
 }

@@ -69,6 +69,7 @@ public final class RunTestsA {
 		if(opts.contains("-sy")) solvers.add(Solvers.SYRUP);
 		if(opts.contains("-pl")) solvers.add(Solvers.PLINGELING);
 
+		if(opts.contains("-t")) modes.add(DMode.EXHAUSTIVE);
 		if(opts.contains("-b")) batch = true;
 		if(opts.contains("-s")) { modes.add(DMode.PARALLEL); threads = 1;}
 		if(opts.contains("-p")) modes.add(DMode.PARALLEL);
@@ -293,6 +294,14 @@ public final class RunTestsA {
 		System.arraycopy(model_args, 0, args, 3, model_args.length);
 		args[2] = threads+"";
 
+		if (modes.contains(DMode.EXHAUSTIVE)) {
+			args[0] = DMode.EXHAUSTIVE.name();
+			args[1] = Solvers.GLUCOSE.name();
+			args[2] = "1";
+			runModelInstance(model,args,1);
+			return ;
+		}
+		
 		if (solvers.contains(Solvers.MINISAT)) {
 			args[1] = Solvers.MINISAT.name();
 			for (DMode m : modes) {

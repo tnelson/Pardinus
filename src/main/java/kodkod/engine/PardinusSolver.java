@@ -24,18 +24,14 @@ package kodkod.engine;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import kodkod.ast.Formula;
-import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.HigherOrderDeclException;
 import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TupleSet;
 
 /**
  * The main Pardinus solver. Depending on the define {@link options
@@ -131,15 +127,12 @@ public class PardinusSolver implements
 		
 		if (options.unbounded() && !options.solver().unbounded())
 			throw new IllegalArgumentException("Cannot run complete with purely bounded solver.");
-
-		if (!options.temporal() && options.solver().unbounded())
-			throw new IllegalArgumentException("Cannot run static with complete model checkers.");
-
+			
 		if (options.decomposed()) {
 
 			if (options.temporal()) {
 				TemporalSolver<ExtendedOptions> solver2;
-				if (options.solver().toString().equals("electrod"))
+				if (options.unbounded())
 					solver2 = new ElectrodSolver(options);
 				else 
 					solver2 = new TemporalPardinusSolver(options);
@@ -155,7 +148,7 @@ public class PardinusSolver implements
 
 			if (options.temporal()) {
 				TemporalSolver<ExtendedOptions> solver;
-				if (options.solver().toString().equals("electrod"))
+				if (options.unbounded())
 					solver = new ElectrodSolver(options);
 				else 
 					solver = new TemporalPardinusSolver(options);
@@ -185,7 +178,7 @@ public class PardinusSolver implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
+	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) throws HigherOrderDeclException,
 			UnboundLeafException, AbortedException {
 
 		assert (!TemporalTranslator.isTemporal(formula) && !bounds.hasVarRelations()) || options.temporal();
@@ -193,44 +186,10 @@ public class PardinusSolver implements
 		assert options.maxTraceLength() - options.minTraceLength() >= 0;
 //		assert options.solver().incremental();
 		
-		Iterator<Solution> it = ((IterableSolver) solver).solveAll(formula, bounds);
-		if (it instanceof Explorer)
-			return (Explorer<Solution>) it;
-		else {
-			return new Explorer<Solution>() {
-				
-				@Override
-				public Solution next() {
-					return it.next();
-				}
-				
-				@Override
-				public boolean hasNext() {
-					return it.hasNext();
-				}
+//		if (!(this.solver instanceof IterableSolver))
+//			throw new UnsupportedOperationException();
 
-				@Override
-				public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force,
-						boolean exclude) {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
-				}
-
-				@Override
-				public Solution nextP() {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
-				}
-
-				@Override
-				public Solution nextC() {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
-				}
-
-				@Override
-				public Solution nextS(int state, int delta, Set<Relation> force) {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
-				}
-};
-		}
+		return ((IterableSolver<PardinusBounds,ExtendedOptions>) solver).solveAll(formula, bounds);				
 	}
 
 }

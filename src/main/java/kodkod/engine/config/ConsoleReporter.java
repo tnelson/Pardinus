@@ -65,8 +65,7 @@ public final class ConsoleReporter implements Reporter {
 	/**
 	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
 	 */
-	// [HASLab]
-	public void solvingCNF(int step, int primaryVars, int vars, int clauses) {
+	public void solvingCNF(int primaryVars, int vars, int clauses) {
 		System.out.println("solving p cnf " + vars + " " + clauses);
 	}
 

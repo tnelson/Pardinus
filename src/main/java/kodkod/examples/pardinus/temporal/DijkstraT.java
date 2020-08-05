@@ -52,11 +52,9 @@ public class DijkstraT extends DModel {
 
 	private int processes, mutexes;
 	private Variant var;
-	
-	private final Universe u;
 
 	public enum Variant {
-		SHOW, DEADLOCKS;
+		SAT, UNSAT;
 	}
 
 	/**
@@ -73,21 +71,33 @@ public class DijkstraT extends DModel {
 		waits = Relation.binary_variable("waits");
 
 		this.processes = Integer.valueOf(args[0]);
-		this.mutexes = Integer.valueOf(args[0]);
-		this.var = Variant.valueOf(args[1]);
+		this.mutexes = Integer.valueOf(args[1]);
+		this.var = Variant.valueOf(args[2]);
 
-
-		final List<String> atoms = new ArrayList<String>(processes + mutexes);
-		for (int i = 0; i < processes; i++) {
-			atoms.add("Process" + i);
-		}
-		for (int i = 0; i < mutexes; i++) {
-			atoms.add("Mutex" + i);
-		}
-
-		u = new Universe(atoms);
 	}
 
+	/**
+	 * Returns the declaration constraints.
+	 * 
+	 * @return <pre>
+	 * sig Process {}
+	 * sig Mutex {}
+	 * sig State { holds, waits: Process -> Mutex }
+	 * </pre>
+	 */
+	public Formula declarations() {
+		final Formula f3 = holds.in(Process.product(Mutex)).always();/*
+																	 * TEMPORAL
+																	 * OP
+																	 */
+		final Formula f4 = waits.in(Process.product(Mutex)).always();/*
+																	 * TEMPORAL
+																	 * OP
+																	 */
+
+
+		return Formula.and(f3, f4);
+	}
 
 	/**
 	 * Returns the initial predicate for state s.
@@ -322,7 +332,7 @@ public class DijkstraT extends DModel {
 	 * </pre>
 	 */
 	public Formula checkDijkstraPreventsDeadlocks() {
-		return Formula.and(Process.some(), grabOrRelease(), grabbedInOrder(), deadlock());
+		return Formula.and(declarations(), Process.some(), grabOrRelease(), grabbedInOrder(), deadlock());
 	}
 
 	/**
@@ -331,11 +341,20 @@ public class DijkstraT extends DModel {
 	 * @return he showDijkstra predicate
 	 */
 	public Formula showDijkstra() {
-		return grabOrRelease().and(deadlock()).and(waits.some().eventually());
+		return declarations().and(grabOrRelease()).and(deadlock()).and(waits.some().eventually());
 	}
 
 	public PardinusBounds bounds1() {
 
+		final List<String> atoms = new ArrayList<String>(processes + mutexes);
+		for (int i = 0; i < processes; i++) {
+			atoms.add("Process" + i);
+		}
+		for (int i = 0; i < mutexes; i++) {
+			atoms.add("Mutex" + i);
+		}
+
+		Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 		final PardinusBounds b = new PardinusBounds(u);
 
@@ -354,16 +373,29 @@ public class DijkstraT extends DModel {
 	
 	public Bounds bounds2() {
 
-		final PardinusBounds b = new PardinusBounds(u);
+		final List<String> atoms = new ArrayList<String>(processes + mutexes);
+		for (int i = 0; i < processes; i++) {
+			atoms.add("Process" + i);
+		}
+		for (int i = 0; i < mutexes; i++) {
+			atoms.add("Mutex" + i);
+		}
 
-		b.bound(holds, Process.product(Mutex));
-		b.bound(waits, Process.product(Mutex));
+		Universe u = new Universe(atoms);
+		final TupleFactory f = u.factory();
+		final Bounds b = new Bounds(u);
+
+		final TupleSet pb = f.range(f.tuple("Process0"), f.tuple("Process" + (processes - 1)));
+		final TupleSet mb = f.range(f.tuple("Mutex0"), f.tuple("Mutex" + (mutexes - 1)));
+
+		b.bound(holds, pb.product(mb));
+		b.bound(waits, pb.product(mb));
 
 		return b;
 	}
 
 	public Formula finalFormula() {
-		if (var == Variant.SHOW)
+		if (var == Variant.SAT)
 			return showDijkstra();
 		else
 			return checkDijkstraPreventsDeadlocks();

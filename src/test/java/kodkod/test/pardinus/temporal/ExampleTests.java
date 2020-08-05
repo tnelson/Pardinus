@@ -4,11 +4,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
+import org.junit.runners.model.TestTimedOutException;
 
 import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.temporal.HotelT;
 import kodkod.examples.pardinus.temporal.HotelT.Variant;
@@ -68,10 +70,12 @@ public class ExampleTests {
 		assert(!sol.sat());
 	}
 	
-	@Test
+	// NuSMV times out
+	@Test(expected = TestTimedOutException.class)
 	public void testSATComplete() {
+		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
-		options.setSolver(SATFactory.electrod("-t","nuXmv"));
+		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"1",Variant.INTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();
@@ -80,10 +84,12 @@ public class ExampleTests {
 		assert(sol.sat());
 	}
 
-	@Test
+	// NuSMV times out
+	@Test(expected = TestTimedOutException.class)
 	public void testUNSATFormulaComplete() {
+		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
-		options.setSolver(SATFactory.electrod("-t","nuXmv"));
+		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"1",Variant.NOINTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();

@@ -23,6 +23,9 @@ package kodkod.engine.satlab;
 
 import java.io.File;
 
+
+
+
 /**
  * A skeleton implementation of a wrapper for a sat solver
  * accessed through JNI.
@@ -69,7 +72,7 @@ abstract class NativeSolver implements SATSolver {
 					} catch (UnsatisfiedLinkError e1) { }
 				}
 			}
-
+	
 			throw new UnsatisfiedLinkError("Could not load the library " + 
 						System.mapLibraryName(name) + " or any of its variants:" + e.getMessage());
 		}
