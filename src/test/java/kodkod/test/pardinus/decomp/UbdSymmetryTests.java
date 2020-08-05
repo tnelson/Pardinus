@@ -33,9 +33,7 @@ import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.AbstractReporter;
-import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.decomp.DModel;
@@ -84,7 +82,7 @@ public class UbdSymmetryTests {
 		opt.setSolver(SATFactory.MiniSat);
 		opt.setDecomposedMode(DMode.HYBRID);
 		opt.setThreads(4);
-		Reporter rep = new SLF4JReporter() {
+		Reporter rep = new AbstractReporter() {
 			private Bounds bounds;
 
 			@Override
@@ -240,7 +238,7 @@ public class UbdSymmetryTests {
 		opt.setRunTemporal(true);
 		opt.setNoOverflow(true);
 		opt.setRunDecomposed(true);
-		opt.setSolver(SATFactory.electrod("-t","nuXmv"));
+		opt.setSolver(SATFactory.electrod("-t","NuSMV"));
 		opt.setDecomposedMode(DMode.PARALLEL);
 		dsolver = new PardinusSolver(opt);
 		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),model.bounds2());
