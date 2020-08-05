@@ -239,6 +239,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				e.printStackTrace();
 			}
 			running.incrementAndGet();
+			System.out.println("* decremented: "+running.get());
 		}
 		monitor.configsDone(configs.hasNext());
 	}
