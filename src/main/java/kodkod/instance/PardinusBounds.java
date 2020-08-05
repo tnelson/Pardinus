@@ -211,8 +211,6 @@ public class PardinusBounds extends Bounds {
 				problematic.add(r);
 		
 		relations.removeAll(problematic);
-		
-		
 	}
 	
 	/**
