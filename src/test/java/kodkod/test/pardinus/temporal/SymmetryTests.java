@@ -211,18 +211,18 @@ public class SymmetryTests {
 		int decomp_counter = 0;
 
 		boolean trivial_decomp = false;
-		while (solutione.hasNext()) {
+		while (solutione.hasNextC()) {
 			Solution sol = solutione.nextC();
-			while (sol.sat()) {
-			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
-				trivial_decomp = true;
-			decomp_counter++;
-			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
-			if (sol.sat())
-				System.out.println(sol.instance().relationTuples());
-			else
-				System.out.println();
-			sol = solutione.nextP();
+			while (solutione.hasNextP()) {
+				if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+					trivial_decomp = true;
+				decomp_counter++;
+				System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
+				if (sol.sat())
+					System.out.println(sol.instance().relationTuples());
+				else
+					System.out.println();
+				sol = solutione.nextP();
 			}
 
 		}
@@ -237,18 +237,18 @@ public class SymmetryTests {
 		Explorer<Solution> solution = solver.solveAll(formula, bounds.amalgamated());
 		int batch_counter = 0;
 		boolean trivial_batch = false;
-		while (solution.hasNext()) {
+		while (solution.hasNextC()) {
 			Solution sol = solution.nextC();
-			while (sol.sat()) {
-			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
-				trivial_batch = true;
-			batch_counter++;
-			System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
-			if (sol.sat())
-				System.out.println(sol.instance().relationTuples());
-			else
-				System.out.println();
-			sol = solution.nextP();
+			while (solution.hasNextP()) {
+				if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+					trivial_batch = true;
+				batch_counter++;
+				System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
+				if (sol.sat())
+					System.out.println(sol.instance().relationTuples());
+				else
+					System.out.println();
+				sol = solution.nextP();
 			}
 		}
 		Set<IntSet> batch_syms = last;

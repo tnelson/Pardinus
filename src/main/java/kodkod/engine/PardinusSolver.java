@@ -221,6 +221,16 @@ public class PardinusSolver implements
 				public Solution nextS(int state, int delta, Set<Relation> force) {
 					throw new UnsupportedOperationException("Branching not supported for this solver.");
 				}
+
+				@Override
+				public boolean hasNextP() {
+					return false;
+				}
+
+				@Override
+				public boolean hasNextC() {
+					return false;
+				}
 };
 		}
 	}

@@ -192,6 +192,16 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 			public Solution nextS(int state, int delta, Set<Relation> change) {
 				throw new NoSuchElementException();
 			}
+
+			@Override
+			public boolean hasNextP() {
+				return false;
+			}
+
+			@Override
+			public boolean hasNextC() {
+				return false;
+			}
 		});
 	}
 	

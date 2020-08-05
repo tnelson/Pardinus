@@ -205,7 +205,7 @@ public final class RunIteratePModel {
 			int auxi = 0;
 			long t1 = System.currentTimeMillis();
 			int i;
-			for (i=0; i<100 && solution.sat(); i++) {
+			for (i=0; i<100 && solutions.hasNextP(); i++) {
 				solution = solutions.nextP();
 			}
 			long t2 = System.currentTimeMillis();

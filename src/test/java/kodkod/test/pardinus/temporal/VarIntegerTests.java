@@ -60,7 +60,7 @@ public class VarIntegerTests {
 			sol = sols.next();
 			c++;
 			if (sol.sat()) {
-//				System.out.println(sol.instance().toString());
+				System.out.println(sol.instance().toString());
 			}
 		}
 		assertEquals(29, c);

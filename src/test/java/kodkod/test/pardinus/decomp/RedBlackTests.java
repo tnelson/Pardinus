@@ -256,33 +256,6 @@ public class RedBlackTests {
 	}
 	
 	@Test 
-	public void testUNSAT6() throws InterruptedException {
-		thrown.expect(TestTimedOutException.class);
-		opt.setDecomposedMode(DMode.PARALLEL);
-		int n = 6;
-		Variant1 v1 = Variant1.THEOREM;
-		Variant2 v2 = Variant2.V1;
-		
-		String[] args = new String[]{n+"",v1.name(),v2.name()};
-		DModel model = new RedBlackTreeP(args);
-
-		opt.setBitwidth(model.getBitwidth());
-		opt2.setBitwidth(model.getBitwidth());
-		
-		final PardinusBounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
-		final Formula f1 = model.partition1();
-		final Formula f2 = model.partition2();
-		
-		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertFalse(model.shortName()+": SAT", solution.sat());
-//		assertEquals(model.shortName()+": #Runs", 132, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
-//		assertEquals(model.shortName()+": #Configs", 132, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
-		assertEquals(model.shortName()+": #Runs", 748, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
-		assertEquals(model.shortName()+": #Configs", 748, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
-	}
-	
-	@Test 
 	public void testHSAT3() throws InterruptedException {
 		int n = 3;
 		Variant1 v1 = Variant1.COUNTER;

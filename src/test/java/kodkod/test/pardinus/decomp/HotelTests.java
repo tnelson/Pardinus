@@ -184,65 +184,6 @@ public class HotelTests {
 	}
 	
 	@Test 
-	public void testUNSAT4() throws InterruptedException {
-		int n = 4;
-		int t = 20;
-		Variant v1 = Variant.NOINTERVENES;
-		
-		String[] args = new String[]{n+"",t+"",v1.name()};
-		DModel model = new HotelP(args);
-
-		opt.setBitwidth(model.getBitwidth());
-		opt.setRunDecomposed(true);
-		
-		final PardinusBounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
-		final Formula f1 = model.partition1();
-		final Formula f2 = model.partition2();
-		
-		PardinusSolver psolver = new PardinusSolver(opt);
-
-		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
-		
-		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
-		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
-
-		assertFalse(model.shortName()+": SAT", solution.sat());
-		assertEquals(model.shortName()+": #Runs", 75, runs);
-		assertEquals(model.shortName()+": #Configs", 75, configs);
-	}
-	
-	@Test 
-	public void testUNSAT5() throws InterruptedException {
-		thrown.expect(TestTimedOutException.class);
-		int n = 5;
-		int t = 20;
-		Variant v1 = Variant.NOINTERVENES;
-		
-		String[] args = new String[]{n+"",t+"",v1.name()};
-		DModel model = new HotelP(args);
-
-		opt.setBitwidth(model.getBitwidth());
-		opt.setRunDecomposed(true);
-		
-		final PardinusBounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
-		final Formula f1 = model.partition1();
-		final Formula f2 = model.partition2();
-		
-		PardinusSolver psolver = new PardinusSolver(opt);
-
-		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
-		
-		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
-		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
-
-		assertFalse(model.shortName()+": SAT", solution.sat());
-		assertEquals(model.shortName()+": #Runs", 312, runs);
-		assertEquals(model.shortName()+": #Configs", 312, configs);
-	}
-	
-	@Test 
 	public void testHSAT3() throws InterruptedException {
 		int n = 3;
 		int t = 20;
@@ -307,38 +248,6 @@ public class HotelTests {
 	}
 	
 	@Test 
-	public void testHSAT5() throws InterruptedException {
-		int n = 5;
-		int t = 20;
-		Variant v1 = Variant.INTERVENES;
-		opt.setDecomposedMode(DMode.HYBRID);
-
-		String[] args = new String[]{n+"",t+"",v1.name()};
-		DModel model = new HotelP(args);
-
-		opt.setBitwidth(model.getBitwidth());
-		opt.setRunDecomposed(true);
-		
-		final PardinusBounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
-		final Formula f1 = model.partition1();
-		final Formula f2 = model.partition2();
-
-		PardinusSolver psolver = new PardinusSolver(opt);
-
-		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
-		
-		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
-		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
-		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
-
-		assertTrue(model.shortName()+": SAT", solution.sat());
-		assertTrue(model.shortName()+": #Configs", configs <= 312);
-		assertTrue(model.shortName()+": #Runs", runs < 312);
-		assertFalse(model.shortName()+": Amalg", amalgamated);
-	}
-	
-	@Test 
 	public void testHUNSAT3() throws InterruptedException {
 		int n = 3;
 		int t = 20;
@@ -399,39 +308,6 @@ public class HotelTests {
 		assertFalse(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 75);
 		assertTrue(model.shortName()+": #Runs", runs < 75);
-		assertTrue(model.shortName()+": Amalg", amalgamated);
-	}
-	
-	@Test 
-	public void testHUNSAT5() throws InterruptedException {
-		thrown.expect(TestTimedOutException.class);
-		int n = 5;
-		int t = 20;
-		Variant v1 = Variant.NOINTERVENES;
-		opt.setDecomposedMode(DMode.HYBRID);
-
-		String[] args = new String[]{n+"",t+"",v1.name()};
-		DModel model = new HotelP(args);
-
-		opt.setBitwidth(model.getBitwidth());
-		opt.setRunDecomposed(true);
-		
-		final PardinusBounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
-		final Formula f1 = model.partition1();
-		final Formula f2 = model.partition2();
-		
-		PardinusSolver psolver = new PardinusSolver(opt);
-
-		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1,b2));
-		
-		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
-		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
-		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
-
-		assertFalse(model.shortName()+": SAT", solution.sat());
-		assertTrue(model.shortName()+": #Configs", configs <= 312);
-		assertTrue(model.shortName()+": #Runs", runs < 312);
 		assertTrue(model.shortName()+": Amalg", amalgamated);
 	}
 

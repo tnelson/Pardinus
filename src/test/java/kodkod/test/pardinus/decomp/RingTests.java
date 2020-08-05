@@ -72,29 +72,6 @@ public class RingTests {
 	}
 	
 	@Test 
-	public void testSAT9() throws InterruptedException {
-		thrown.expect(TestTimedOutException.class);
-		int n = 9;
-		int t = 20;
-		Variant1 v1 = Variant1.BADLIVENESS;
-		Variant2 v2 = Variant2.VARIABLE;
-		
-		String[] args = new String[]{n+"",t+"",v1.name(),v2.name()};
-		DModel model = new RingP(args);
-
-		psolver.options().setBitwidth(model.getBitwidth());
-
-		final PardinusBounds b1 = model.bounds1();
-		final Bounds b2 = model.bounds2();
-		final Formula f1 = model.partition1();
-		final Formula f2 = model.partition2();
-		
-		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
-		assertTrue(model.shortName()+": SAT", solution.sat());
-		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() >= 200);
-	}
-	
-	@Test 
 	public void testSAT6() throws InterruptedException {
 		thrown.expect(TestTimedOutException.class);
 		int n = 6;

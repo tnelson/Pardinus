@@ -38,5 +38,9 @@ public interface Explorer<T> extends Iterator<T> {
 	public T nextP();
 
 	public T nextS(int state, int delta, Set<Relation> change);
+	
+	public boolean hasNextP();
+	
+	public boolean hasNextC();
 
 }
