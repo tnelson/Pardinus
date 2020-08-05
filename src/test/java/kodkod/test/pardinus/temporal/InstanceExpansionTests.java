@@ -32,6 +32,7 @@ import java.util.Iterator;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.Evaluator;
+import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
@@ -81,7 +82,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -414,7 +415,7 @@ public class InstanceExpansionTests {
 		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
+		Explorer<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
 		for (int i = 0; i < inst.prefixLength() + 3; i++) {
@@ -423,7 +424,7 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
-		inst = (TemporalInstance) solution.next().instance();
+		inst = (TemporalInstance) solution.nextC().instance();
 		e1 = new Evaluator(inst);
 		for (int i = 0; i < inst.prefixLength() + 2; i++) {
 			Evaluator e2 = new Evaluator(inst.state(i));

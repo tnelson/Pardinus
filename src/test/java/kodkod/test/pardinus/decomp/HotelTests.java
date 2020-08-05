@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import kodkod.ast.Formula;
+import kodkod.engine.DProblemExecutorImpl;
 import kodkod.engine.DecomposedPardinusSolver;
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.PardinusSolver;
@@ -121,8 +122,7 @@ public class HotelTests {
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 
 		assertTrue(model.shortName()+": SAT", solution.sat());
-		// 75, but decomp launches batches of 50
-		assertEquals(model.shortName()+": #Configs", 50, configs);
+		assertEquals(model.shortName()+": #Configs", Math.min(75,DProblemExecutorImpl.BATCH_SIZE), configs);
 
 	}
 	
@@ -150,8 +150,8 @@ public class HotelTests {
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 
 		assertTrue(model.shortName()+": SAT", solution.sat());
-		// >200, but decomp launches batches of 50
-		assertEquals(model.shortName()+": #Configs", 50, configs);
+		// >200, but decomp launches batches of 20
+		assertEquals(model.shortName()+": #Configs", DProblemExecutorImpl.BATCH_SIZE, configs);
 	}
 	
 	@Test 
@@ -250,7 +250,7 @@ public class HotelTests {
 	@Test 
 	public void testHUNSAT3() throws InterruptedException {
 		int n = 3;
-		int t = 20;
+		int t = 10;
 		Variant v1 = Variant.NOINTERVENES;
 		opt.setDecomposedMode(DMode.HYBRID);
 
@@ -282,7 +282,7 @@ public class HotelTests {
 	@Test 
 	public void testHUNSAT4() throws InterruptedException {
 		int n = 4;
-		int t = 20;
+		int t = 10;
 		Variant v1 = Variant.NOINTERVENES;
 		opt.setDecomposedMode(DMode.HYBRID);
 

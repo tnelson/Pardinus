@@ -145,7 +145,7 @@ public class ReificationTests {
 		Formula formula = ((a.eq(a.prime()).not())).always();
 
 		ExtendedOptions opt = new ExtendedOptions();
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
@@ -214,7 +214,7 @@ public class ReificationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
@@ -599,7 +599,7 @@ public class ReificationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
@@ -672,7 +672,7 @@ public class ReificationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 
 		Map<Object, Expression> x = new HashMap<Object, Expression>();
 
