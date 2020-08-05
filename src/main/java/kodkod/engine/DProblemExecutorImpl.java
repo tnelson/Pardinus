@@ -151,8 +151,10 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			monitor.newSolution(sol);
 		} catch (InterruptedException | IllegalThreadStateException e1) {
 			// was interrupted in the meantime
+			e1.printStackTrace();
 		} catch (RejectedExecutionException e) {
 			// was shutdown in the meantime
+			e.printStackTrace();
 		}
 	}
 
@@ -232,6 +234,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				executor.execute(problem);
 			} catch (RejectedExecutionException e) {
 				// if it was shutdown in the meantime
+				e.printStackTrace();
 			}
 			running.incrementAndGet();
 		}
@@ -247,7 +250,9 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			last_sol = buffer;
 			buffer = null;
 		} else {
+			System.out.println("* wait at has next");
 			last_sol = solution_queue.take();
+			System.out.println("* leaving has next");
 		}
 		monitor.gotNext(false);
 		// if UNSAT, terminate execution
@@ -272,7 +277,9 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			return !solution_queue.isEmpty();
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output
+		System.out.println("* wait at has next");
 		buffer = solution_queue.take();
+		System.out.println("* leaving has next");
 		return true;
 	}
 
