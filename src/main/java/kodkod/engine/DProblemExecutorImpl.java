@@ -277,7 +277,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			return !solution_queue.isEmpty();
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output
-		System.out.println("* wait at has next");
+		System.out.println("* wait at has next: "+running.get());
 		buffer = solution_queue.take();
 		System.out.println("* leaving has next: "+buffer.getKey().outcome());
 		return true;
