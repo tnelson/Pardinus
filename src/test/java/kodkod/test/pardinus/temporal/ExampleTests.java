@@ -72,7 +72,7 @@ public class ExampleTests {
 	public void testSATComplete() {
 		options.setRunUnbounded(true);
 		options.setSolver(SATFactory.electrod("-t","nuXmv"));
-		HotelT model = new HotelT(new String[] {"1",Variant.INTERVENES.toString()} );
+		HotelT model = new HotelT(new String[] {"2",Variant.INTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();
 		PardinusSolver solver = new PardinusSolver(options);

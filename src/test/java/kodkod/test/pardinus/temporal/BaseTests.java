@@ -136,7 +136,7 @@ public class BaseTests {
 		
 		Solution sol = dsolver.solveAll(formula.not(), bounds).next();
 		
-		assertTrue("base problem should be sat", sol.sat());
+		assertFalse("problem should be unsat", sol.sat());
 	}
 	
 	
@@ -183,6 +183,7 @@ public class BaseTests {
 		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
+		opt.setMinTraceLength(1);
 		opt.setMaxTraceLength(1);
 		dsolver = new PardinusSolver(opt);
 

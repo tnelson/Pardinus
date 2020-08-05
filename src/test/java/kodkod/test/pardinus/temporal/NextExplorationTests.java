@@ -87,7 +87,7 @@ public class NextExplorationTests {
 //		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
-		opt.setRunDecomposed(true);
+		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(10);
 		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
@@ -107,7 +107,7 @@ public class NextExplorationTests {
 
 		sol = sols.nextS(2,1,Collections.singleton(a));
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertTrue(sols.hasNext());
 
 		solver.free();
 	}
@@ -249,7 +249,7 @@ public class NextExplorationTests {
 
 		sol = sols.nextS(4,1, changes);
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertTrue(sols.hasNext());
 
 		solver.free();
 	}
@@ -314,7 +314,7 @@ public class NextExplorationTests {
 		// state 1 cannot change
 		sol = sols.nextS(1,1, changes);
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertTrue(sols.hasNext());
 
 		solver.free();
 	}
@@ -404,7 +404,7 @@ public class NextExplorationTests {
 		// beyond the maximum trace length
 		sol = sols.nextS(9,2, new HashSet<Relation>());
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertTrue(sols.hasNext());
 		
 		solver.free();
 	}
@@ -534,7 +534,7 @@ public class NextExplorationTests {
 
 		sol = sols.nextS(0,2,Collections.singleton(a));
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertTrue(sols.hasNext());
 
 		solver.free();
 	}
@@ -612,7 +612,7 @@ public class NextExplorationTests {
 
 		sol = sols.nextS(0,3,changes);
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertTrue(sols.hasNext());
 		
 		solver.free();
 	}
@@ -670,7 +670,7 @@ public class NextExplorationTests {
 
 		sol = sols.nextC();
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertFalse(sols.hasNextC());
 
 		solver.free();
 	}
@@ -749,7 +749,7 @@ public class NextExplorationTests {
 
 		sol = sols.nextS(0,1,Collections.singleton(b));
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertTrue(sols.hasNext());
 
 		sol = sols.nextC();
 		assertTrue(sol.sat());
@@ -759,7 +759,7 @@ public class NextExplorationTests {
 
 		sol = sols.nextC();
 		assertFalse(sol.sat());
-		assertFalse(sols.hasNext());
+		assertFalse(sols.hasNextC());
 
 		solver.free();
 	}
