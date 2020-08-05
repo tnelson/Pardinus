@@ -243,10 +243,10 @@ public class NNFReplacer extends AbstractReplacer {
 				return cache(tf,tf.formula().accept(this).once());
 			case ONCE:
 				return cache(tf,tf.formula().accept(this).historically());
-			case NEXT:
-				return cache(tf,tf.formula().accept(this).next());
-			case PREVIOUS:
-				return cache(tf,tf.formula().accept(this).previous());
+			case AFTER:
+				return cache(tf,tf.formula().accept(this).after());
+			case BEFORE:
+				return cache(tf,tf.formula().accept(this).before());
 			default:
 				negated = !negated;
 				Formula temp = tf.formula().accept(this);
@@ -266,7 +266,7 @@ public class NNFReplacer extends AbstractReplacer {
 		
 		if (negated) {
 			switch (tf.op()) {
-			case UNTIL: case RELEASE: case SINCE: case TRIGGER:
+			case UNTIL: case RELEASES: case SINCE: case TRIGGERED:
 				return cache(tf,tf.left().accept(this).compose(tf.op(),tf.right().accept(this)));
 			default:
 				negated = !negated;

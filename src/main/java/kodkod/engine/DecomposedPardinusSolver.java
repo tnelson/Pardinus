@@ -22,7 +22,9 @@
  */
 package kodkod.engine;
 
-import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +39,7 @@ import kodkod.engine.config.PardinusOptions;
 import kodkod.engine.config.Reporter;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
+import kodkod.instance.TupleSet;
 
 /**
  * A computational engine for solving relational satisfiability problems in a
@@ -116,14 +119,12 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		if (!options.configOptions().solver().incremental())
 			throw new IllegalArgumentException("An incremental solver is required to iterate the configurations.");
 
-		if (options.decomposedMode() == DMode.EXHAUSTIVE)
-			executor = new DStatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
-		else
-			executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), options.decomposedMode() == DMode.HYBRID);
+		executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), options.decomposedMode() == DMode.HYBRID);
 		executor.start();
 		Solution sol = null;
 		try {
-			sol = executor.next();
+			Entry<Solution,Explorer<Solution>> exp = executor.next();
+			sol = exp.getKey();
 			executor.terminate();
 		} catch (InterruptedException e) {
 			options.reporter().debug("Waiting for next interrupted.");
@@ -160,24 +161,23 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	}
 
 	@Override
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) {
 		if (!options.configOptions().solver().incremental())
 			throw new IllegalArgumentException("cannot enumerate solutions without an incremental solver.");
 		return new DSolutionIterator<S>(formula, bounds, options, solver1, solver2); 
 	}
 	
-	private static class DSolutionIterator<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> implements Iterator<Solution> {
+	private static class DSolutionIterator<S extends AbstractSolver<PardinusBounds, ExtendedOptions>> implements Explorer<Solution> {
 		private DProblemExecutor<S> executor;
 		private Reporter reporter;
+		private Explorer<Solution> sols;
 		
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
 		DSolutionIterator(Formula formula, PardinusBounds bounds, DecomposedOptions options, ExtendedSolver solver1, S solver2) {
 			reporter = options.reporter();
-			if (options.decomposedMode() == DMode.EXHAUSTIVE)
-				executor = new DStatsExecutor<S>(formula, bounds, solver1, solver2, options.threads(), options.reporter());
-			else if (options.decomposedMode() == DMode.HYBRID)
+			if (options.decomposedMode() == DMode.HYBRID)
 				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), true);
 			else
 				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), false);
@@ -215,12 +215,25 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		 * Returns the next solution if any.
 		 * @see java.util.Iterator#next()
 		 */
-		public Solution next() {
+		@Override
+		public Solution nextP() {
+			if (!hasNext()) return null;
+			return sols.nextP();
+		}
+		
+		@Override
+		public Solution nextS(int state, int delta, Set<Relation> changes) {
+			if (!hasNext()) return null;
+			return sols.nextS(state, delta, changes);
+		}
+		
+		@Override
+		public Solution nextC() {
 			if (!hasNext()) return null;
 			try {
-				Solution sol = executor.next();
-				if (DProblemExecutor.isPoison(sol)) // poison, failed
-					throw new RuntimeException("Integrated solver failed.");
+				Entry<Solution,Explorer<Solution>> xx = executor.next();
+				Solution sol = xx.getKey();
+				sols = xx.getValue();
 				return sol;
 			} catch (InterruptedException e) {
 				reporter.debug("Waiting for next interrupted.");
@@ -230,14 +243,25 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 					e1.printStackTrace();
 				}
 				// Should throw AbortedException
-//				e.printStackTrace();
+				e.printStackTrace();
 			}
 			return null;
 		}
 
 		/** @throws UnsupportedOperationException */
 		public void remove() { throw new UnsupportedOperationException(); }
-		
+
+		@Override
+		public Solution branch(int state, Set<Relation> ignore, Map<Relation, TupleSet> force, boolean exclude) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Solution next() {
+			return nextC();
+		}
+
 	}
 	
 

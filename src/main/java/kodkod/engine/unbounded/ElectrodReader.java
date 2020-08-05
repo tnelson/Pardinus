@@ -43,6 +43,7 @@ import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
+import kodkod.util.ints.IndexedEntry;
 
 /**
  * Processes the output of an Electrod solving process into a
@@ -127,8 +128,6 @@ public class ElectrodReader {
 	private Instance state(Node node) {
 		Instance inst = new Instance(bounds.universe());
 
-		// TODO: parse the integer solution back into Instance#ints()
-
 		for (Relation r : bounds.relations()) {
 			NodeList e = null;
 			for (int i = 0; i < node.getChildNodes().getLength(); i++) {
@@ -175,6 +174,11 @@ public class ElectrodReader {
 				t = bounds.universe().factory().setOf(buff);
 
 			inst.add(r, t);
+		}
+		
+		// propagate integers
+		for(IndexedEntry<TupleSet> x : bounds.intBounds()) {
+			inst.add(x.index(), x.value());
 		}
 
 		return inst;

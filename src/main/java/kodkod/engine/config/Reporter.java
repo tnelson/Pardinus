@@ -100,7 +100,8 @@ public interface Reporter {
 	 * given number of variables and clauses, is being analyzed by
 	 * a sat solver (stage 7 of the analysis).
 	 */
-	public void solvingCNF(int primaryVars, int vars, int clauses);
+	// [HASLab]
+	public void solvingCNF(int step, int primaryVars, int vars, int clauses);
 	
 	/**
 	 * TODO

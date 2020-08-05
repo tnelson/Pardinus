@@ -21,10 +21,13 @@
  */
 package kodkod.engine.fol2sat;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Node;
 import kodkod.engine.config.Options;
 import kodkod.instance.Bounds;
 
@@ -42,6 +45,7 @@ import kodkod.instance.Bounds;
  * @author Emina Torlak
  */
 public abstract class TranslationLog {
+
 	TranslationLog() {}
 	
 	/**
@@ -101,6 +105,37 @@ public abstract class TranslationLog {
 	 */
 	public final Iterator<TranslationRecord> replay() {
 		return replay(RecordFilter.ALL);
+	}
+
+	/**
+	 * Logs the translation of temporal formulas, from resulting formula to original
+	 * formula.
+	 */
+	// [HASLab]
+	private final Map<Formula, Formula> tmpTransLog = new HashMap<Formula,Formula>();
+
+	/**
+	 * Registers the log of translating (possibly temporal) formulas into plain
+	 * relational formulas during temporal translation.
+	 * 
+	 * @param tmpLog the mapping from resulting formula to original formula.
+	 */
+	// [HASLab]
+	public void logTempTranslation(Map<Formula,Formula> tmpLog) {
+		this.tmpTransLog.putAll(tmpLog);
+	}
+
+	/**
+	 * Returns the original, possibly temporal, formula that resulted in the input
+	 * formula during temporal translation. Only top-level conjuncts are logged.
+	 * 
+	 * @param form the resulting formula.
+	 * @return the original (possibly temporal) formula (or null if not logged).
+	 */
+	// [HASLab]
+	public Node temporalTransLog(Node form) {
+		if (tmpTransLog == null || tmpTransLog.get(form) == null) return form;
+		return tmpTransLog.get(form);
 	}
 	
 //	/**

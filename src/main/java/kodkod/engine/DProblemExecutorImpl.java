@@ -23,6 +23,7 @@
 package kodkod.engine;
 
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -54,13 +55,13 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		extends DProblemExecutor<S> {
 
 	/** a buffer for solutions, popped by the hasNext test */
-	private Solution buffer;
+	private Entry<Solution,Explorer<Solution>> buffer;
 
 	/** the number of effectively running solvers */
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(2);
+	private final BlockingQueue<Entry<Solution,Explorer<Solution>>> solution_queue = new LinkedBlockingQueue<Entry<Solution,Explorer<Solution>>>(4);
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -108,36 +109,29 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			// if the amalgamated terminates...
 			if (!(sol instanceof IProblem)) {
 				// store the sat or unsat solution
-				solution_queue.put(sol.getSolution());
+				solution_queue.put(sol.getSolutions());
 //				running.set(1);
 				monitor.amalgamatedWon();
 //				 terminate the integrated problems
-//				if (!executor.isTerminated())
-//					terminate();
-				// if sat, iterate and launch
-				if (sol.sat()) {
-					amalgamated = sol.next();
-					executor.execute(amalgamated);
-				} else {
-					running.decrementAndGet();
-				}
+				if (!executor.isTerminated())
+					terminate();
+				running.decrementAndGet();
 			}
 			// if an integrated terminates...
 			else {
 				// if it is sat...
-				if (sol.sat()) {
+				if (sol.getSolutions().getKey().sat()) {
 					// store the sat solution
-					solution_queue.put(sol.getSolution());
+					solution_queue.put(sol.getSolutions());
 					// terminate the amalgamated problem
 					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
 						running.decrementAndGet();
 					}
-					// iterate and launch
-					if (sol.hasNext() && !monitor.isAmalgamated())
-						executor.execute(sol.next());
-					else
-						running.decrementAndGet();
+					if (running.get() == 1 && !monitor.isAmalgamated())
+						if (monitor.isConfigsDone())
+							solution_queue.put(poison(null));
+					running.decrementAndGet();
 				}
 				// if it is unsat...
 				else {
@@ -146,7 +140,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					if (running.get() == 0 && !monitor.isAmalgamated()) {
 						if (monitor.isConfigsDone())
 							// store the unsat solution
-							solution_queue.put(sol.getSolution());
+							solution_queue.put(sol.getSolutions());
 						else 
 							launchBatch(false);
 					}
@@ -154,7 +148,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			}
 			monitor.newSolution(sol);
 		} catch (InterruptedException | IllegalThreadStateException e1) {
-			e1.printStackTrace();
 			// was interrupted in the meantime
 		} catch (RejectedExecutionException e) {
 			// was shutdown in the meantime
@@ -176,7 +169,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				&& (running.get() == 0 || (amalgamated != null && running
 						.get() == 1))) {
 			try {
-				solution_queue.put(poison());
+				solution_queue.put(poison(null));
 				terminate();
 			} catch (InterruptedException e1) {
 				// was interrupted in the meantime
@@ -201,16 +194,17 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		launchBatch(true);
 	}
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
+
+	private Entry<Solution,Explorer<Solution>> last_sol;
 	
 	void launchBatch(boolean first) {
-		int size = 50;
+		int size = 20;
 		
 		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(size);
 
 		// collects a batch of configurations
 		while (configs.hasNext() && problem_queue.size() < size) {
 			Solution config = configs.next();
-
 			if (config.unsat()) {
 				// when there is no configuration no solver will ever
 				// callback so it must be terminated here
@@ -219,12 +213,13 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 						// get the stats from the unsat
 						monitor.newConfig(config);
 						terminate();
-						solution_queue.put(config);
+						solution_queue.put(poison(config));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 			} else {
 				monitor.newConfig(config);
+
 				DProblem<S> problem = new IProblem<S>(config, this);
 				problem_queue.add(problem);
 			}
@@ -247,19 +242,18 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Solution next() throws InterruptedException {
-		Solution sol;
+	public Entry<Solution,Explorer<Solution>> next() throws InterruptedException {
 		if (buffer != null) {
-			sol = buffer;
+			last_sol = buffer;
 			buffer = null;
 		} else {
-			sol = solution_queue.take();
+			last_sol = solution_queue.take();
 		}
 		monitor.gotNext(false);
 		// if UNSAT, terminate execution
-		if (!sol.sat())
+		if (!last_sol.getValue().hasNext())
 			terminate();
-		return sol;
+		return last_sol;
 	}
 
 	/**
@@ -281,4 +275,5 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		buffer = solution_queue.take();
 		return true;
 	}
+
 }
