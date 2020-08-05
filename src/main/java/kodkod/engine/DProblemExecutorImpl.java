@@ -250,9 +250,9 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			last_sol = buffer;
 			buffer = null;
 		} else {
-			System.out.println("* wait at has next");
+			System.out.println("* wait at do next");
 			last_sol = solution_queue.take();
-			System.out.println("* leaving has next");
+			System.out.println("* leaving do next: "+last_sol.getKey().outcome());
 		}
 		monitor.gotNext(false);
 		// if UNSAT, terminate execution
@@ -279,7 +279,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		// emptyness must wait for the next output
 		System.out.println("* wait at has next");
 		buffer = solution_queue.take();
-		System.out.println("* leaving has next");
+		System.out.println("* leaving has next: "+buffer.getKey().outcome());
 		return true;
 	}
 
