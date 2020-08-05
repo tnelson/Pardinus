@@ -125,19 +125,23 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				if (sol.getSolutions().getKey().sat()) {
 					// store the sat solution
 					solution_queue.put(sol.getSolutions());
+					System.out.println("* put sat: "+running.get());
 					// terminate the amalgamated problem
 					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
 					}
 					if (running.get() == 1 && !monitor.isAmalgamated())
-						if (monitor.isConfigsDone())
+						if (monitor.isConfigsDone()) {
 							solution_queue.put(poison(null));
+							System.out.println("* put poison at sat: "+running.get());
+						}
 					running.decrementAndGet();
+					System.out.println("* decremented at sat: "+running.get());
 				}
 				// if it is unsat...
 				else {
 					running.decrementAndGet();
-					System.out.println("* decremented: "+running.get());
+					System.out.println("* decremented at unsat: "+running.get());
 					// if last running integrated...
 					if (running.get() == 0 && !monitor.isAmalgamated()) {
 						if (monitor.isConfigsDone()) {
