@@ -45,7 +45,7 @@ public class HotelTests {
 			
 			@Override
 			public void detectedSymmetries(Set<IntSet> parts) {
-				System.out.println("symmetry: " + parts.toString());
+				System.out.println("symmetry: " + parts.toString());	
 			}
 			
 			@Override
