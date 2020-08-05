@@ -49,7 +49,7 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 
 	private final S solver;
 
-	private Explorer<Solution> solutions;
+	private Iterator<Solution> solutions;
 	private Solution solution;
 	protected final PardinusBounds bounds;
 	private final Formula formula;
@@ -92,7 +92,7 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 		try {
 			if (solver instanceof IterableSolver<?, ?>) {
 				if (solutions == null) {
-					solutions = (Explorer<Solution>) ((IterableSolver) solver).solveAll(formula, bounds);
+					solutions = ((IterableSolver) solver).solveAll(formula, bounds);
 					solution = solutions.next();
 					solver.free();
 				}
@@ -106,7 +106,7 @@ public class DProblem<S extends AbstractSolver<PardinusBounds,ExtendedOptions>>
 		}
 	}
 	
-	public Entry<Solution,Explorer<Solution>> getSolutions() {
+	public Entry<Solution,Iterator<Solution>> getSolutions() {
 		return new AbstractMap.SimpleEntry(solution,solutions);
 	}
 

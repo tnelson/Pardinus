@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -72,7 +71,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * @author Nuno Macedo // [HASLab] target-oriented and temporal model finding
  */
 public final class TemporalPardinusSolver
-implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<ExtendedOptions> {
+implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<ExtendedOptions>, ExplorableSolver<PardinusBounds, ExtendedOptions> {
 	
 	// alternative encodings, instance formula or sat
 	public static boolean SATOPTITERATION = true;
