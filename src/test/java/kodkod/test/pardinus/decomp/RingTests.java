@@ -74,7 +74,7 @@ public class RingTests {
 	@Test 
 	public void testSAT6() throws InterruptedException {
 		thrown.expect(TestTimedOutException.class);
-		int n = 6;
+		int n = 5;
 		int t = 20;
 		Variant1 v1 = Variant1.BADLIVENESS;
 		Variant2 v2 = Variant2.VARIABLE;

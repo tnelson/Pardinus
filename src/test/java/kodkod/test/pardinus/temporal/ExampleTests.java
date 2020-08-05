@@ -71,7 +71,7 @@ public class ExampleTests {
 	@Test
 	public void testSATComplete() {
 		options.setRunUnbounded(true);
-		options.setSolver(SATFactory.electrod("-t","nuXmv"));
+		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"2",Variant.INTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();
@@ -83,7 +83,7 @@ public class ExampleTests {
 	@Test
 	public void testUNSATFormulaComplete() {
 		options.setRunUnbounded(true);
-		options.setSolver(SATFactory.electrod("-t","nuXmv"));
+		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"1",Variant.NOINTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();
