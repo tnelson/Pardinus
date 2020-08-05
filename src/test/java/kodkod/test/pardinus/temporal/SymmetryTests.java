@@ -76,8 +76,8 @@ public class SymmetryTests {
 	private Set<IntSet> last;
 	private boolean trivial_config;
 
-//	@Rule
-//    public Timeout globalTimeout = Timeout.seconds(60);
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
 	@Before
 	public void method() throws InterruptedException {
@@ -212,14 +212,17 @@ public class SymmetryTests {
 
 		boolean trivial_decomp = false;
 		while (solutione.hasNextC()) {
+			System.out.println("dc "+decomp_counter);
 			Solution sol = solutione.nextC();
 			decomp_counter++;
 			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
 				trivial_decomp = true;
 			while (solutione.hasNext()) {
+				System.out.println("dn "+decomp_counter);
 				sol = solutione.next();
-				if (sol.sat())
+				if (sol.sat()) {
 					decomp_counter++;
+				}
 			}
 		}
 		Set<IntSet> decomp_syms = last;
@@ -234,11 +237,13 @@ public class SymmetryTests {
 		int batch_counter = 0;
 		boolean trivial_batch = false;
 		while (solutione.hasNextC()) {
+			System.out.println("bc "+batch_counter);
 			Solution sol = solutione.nextC();
 			batch_counter++;
 			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
 				trivial_decomp = true;
 			while (solutione.hasNext()) {
+				System.out.println("bn "+batch_counter);
 				sol = solutione.next();
 				if (sol.sat())
 					batch_counter++;
