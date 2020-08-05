@@ -76,8 +76,8 @@ public class SymmetryTests {
 	private Set<IntSet> last;
 	private boolean trivial_config;
 
-	@Rule
-    public Timeout globalTimeout = Timeout.seconds(60);
+//	@Rule
+//    public Timeout globalTimeout = Timeout.seconds(60);
 
 	@Before
 	public void method() throws InterruptedException {

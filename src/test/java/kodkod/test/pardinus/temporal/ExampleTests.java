@@ -26,8 +26,8 @@ public class ExampleTests {
 //		options.setReporter(new SLF4JReporter());
 	}
 	
-	@Rule
-    public Timeout globalTimeout = Timeout.seconds(60);
+//	@Rule
+//    public Timeout globalTimeout = Timeout.seconds(60);
 	@Rule
     public final ExpectedException thrown = ExpectedException.none();
 	

@@ -85,7 +85,7 @@ public class NextExplorationTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-//		opt.setReporter(new SLF4JReporter());
+		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(true);
