@@ -339,7 +339,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		}
 
 		public boolean hasNextP() {
-			return !(iteration_stage == 1 && translation == null);
+			return !(iteration_stage == 1 && translation == null) && hasNextC();
 		}
 		
 		/**
