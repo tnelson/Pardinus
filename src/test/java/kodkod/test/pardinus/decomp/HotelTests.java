@@ -276,7 +276,7 @@ public class HotelTests {
 		assertFalse(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 20);
 		assertTrue(model.shortName()+": #Runs", runs < 20);
-		assertTrue(model.shortName()+": Amalg", amalgamated);
+//		assertTrue(model.shortName()+": Amalg", amalgamated);
 	}
 	
 	@Test 

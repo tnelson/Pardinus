@@ -112,14 +112,12 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			if (!(sol instanceof IProblem)) {
 				// store the sat or unsat solution
 				solution_queue.put(sol.getSolutions());
-				System.out.println("* put amalg: "+running.get());
 //				running.set(1);
 				monitor.amalgamatedWon();
 //				 terminate the integrated problems
 				if (!executor.isTerminated())
 					terminate();
 				running.decrementAndGet();
-				System.out.println("* decremented at amalg: "+running.get());
 			}
 			// if an integrated terminates...
 			else {
@@ -127,7 +125,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				if (sol.getSolutions().getKey().sat()) {
 					// store the sat solution
 					solution_queue.put(sol.getSolutions());
-					System.out.println("* put sat: "+running.get());
 					// terminate the amalgamated problem
 					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
@@ -135,21 +132,17 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					if (running.get() == 1 && !monitor.isAmalgamated())
 						if (monitor.isConfigsDone()) {
 							solution_queue.put(poison(null));
-							System.out.println("* put poison at sat: "+running.get());
 						}
 					running.decrementAndGet();
-					System.out.println("* decremented at sat: "+running.get());
 				}
 				// if it is unsat...
 				else {
 					running.decrementAndGet();
-					System.out.println("* decremented at unsat: "+running.get());
 					// if last running integrated...
 					if (running.get() == 0 && !monitor.isAmalgamated()) {
 						if (monitor.isConfigsDone()) {
 							// store the unsat solution
 							solution_queue.put(sol.getSolutions());
-							System.out.println("* put unsat: "+running.get());
 						}
 						else 
 							launchBatch(true);
@@ -181,7 +174,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 						.get() == 1))) {
 			try {
 				solution_queue.put(poison(null));
-				System.out.println("* put poison fail: "+running.get());
 				terminate();
 			} catch (InterruptedException e1) {
 				// was interrupted in the meantime
@@ -200,7 +192,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			DProblem<S> amalg = new DProblem<S>(this);
 			executor.execute(amalg);
 			running.incrementAndGet();
-			System.out.println("* incremented amalg: "+running.get());
 			amalgamated = amalg;
 		} 
 
@@ -226,7 +217,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 						monitor.newConfig(config);
 //						terminate();
 						solution_queue.put(poison(config));
-						System.out.println("* put poison config: "+running.get());
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -248,7 +238,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				e.printStackTrace();
 			}
 			running.incrementAndGet();
-			System.out.println("* incremented: "+running.get());
 		}
 		monitor.configsDone(configs.hasNext());
 	}
@@ -262,9 +251,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			last_sol = buffer;
 			buffer = null;
 		} else {
-			System.out.println("* wait at do next");
 			last_sol = solution_queue.take();
-			System.out.println("* leaving do next: "+last_sol.getKey().outcome());
 		}
 		monitor.gotNext(false);
 		// if UNSAT, terminate execution
@@ -291,9 +278,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		}
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output
-		System.out.println("* wait at has next: "+running.get());
 		buffer = solution_queue.take();
-		System.out.println("* leaving has next: "+buffer.getKey().outcome());
 		return true;
 	}
 

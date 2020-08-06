@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
+import org.junit.runners.model.TestTimedOutException;
 
 import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
@@ -26,8 +27,9 @@ public class ExampleTests {
 //		options.setReporter(new SLF4JReporter());
 	}
 	
-//	@Rule
-//    public Timeout globalTimeout = Timeout.seconds(60);
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
 	@Rule
     public final ExpectedException thrown = ExpectedException.none();
 	
@@ -70,6 +72,7 @@ public class ExampleTests {
 	
 	@Test
 	public void testSATComplete() {
+		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
 		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"2",Variant.INTERVENES.toString()} );

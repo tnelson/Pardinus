@@ -260,12 +260,10 @@ public class SymmetryTests {
 		boolean trivial_decomp = false;
 		while (solutione.hasNextC()) {
 			Solution sol = solutione.nextC();
-			System.out.println("dc "+decomp_counter);
 			decomp_counter++;
 			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
 				trivial_decomp = true;
 			while (solutione.hasNext()) {
-				System.out.println("dp "+decomp_counter);
 				sol = solutione.next();
 				if (sol.sat())
 					decomp_counter++;
@@ -283,7 +281,6 @@ public class SymmetryTests {
 		int batch_counter = 0;
 		boolean trivial_batch = false;
 		while (solution.hasNext()) {
-			System.out.println("bn "+batch_counter);
 			Solution sol = solution.next();
 			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
 				trivial_batch = true;
