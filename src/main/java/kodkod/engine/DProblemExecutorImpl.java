@@ -199,6 +199,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			DProblem<S> amalg = new DProblem<S>(this);
 			executor.execute(amalg);
 			running.incrementAndGet();
+			System.out.println("* incremented amalg: "+running.get());
 			amalgamated = amalg;
 		} 
 
@@ -245,7 +246,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				e.printStackTrace();
 			}
 			running.incrementAndGet();
-			System.out.println("* decremented: "+running.get());
+			System.out.println("* incremented: "+running.get());
 		}
 		monitor.configsDone(configs.hasNext());
 	}
