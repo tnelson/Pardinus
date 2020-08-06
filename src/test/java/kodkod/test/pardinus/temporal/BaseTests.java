@@ -253,7 +253,7 @@ public class BaseTests {
 	
 	@Test
 	public void testSATU() {
-		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
 		opt.setRunTemporal(true);
 		dsolver = new PardinusSolver(opt);
@@ -289,7 +289,7 @@ public class BaseTests {
 	
 	@Test
 	public void testUNSATU() {
-		opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
 		opt.setRunTemporal(true);
 		dsolver = new PardinusSolver(opt);
@@ -432,7 +432,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid2() {
 		try {
-			opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
+			opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 			opt.setRunTemporal(false);
 			opt.setRunUnbounded(true);
 			dsolver = new PardinusSolver(opt);
@@ -443,7 +443,7 @@ public class BaseTests {
 	@Test
 	public void testInvalid3() {
 		try {
-			opt.setSolver(SATFactory.electrod("-t", "nuXmv"));
+			opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 			opt.setRunTemporal(true);
 			opt.setRunUnbounded(false);
 			dsolver = new PardinusSolver(opt);

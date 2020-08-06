@@ -61,7 +61,7 @@ public class BaseTests {
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(false);
 //		opt.setReporter(new SLF4JReporter());
-//		opt.configOptions().setReporter(rep);
+		opt.configOptions().setReporter(opt.reporter());
 	}
 
 	@Test

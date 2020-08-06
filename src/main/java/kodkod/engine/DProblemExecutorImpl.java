@@ -108,6 +108,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
+			monitor.newSolution(sol);
 			// if the amalgamated terminates...
 			if (!(sol instanceof IProblem)) {
 				// store the sat or unsat solution
@@ -128,31 +129,31 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					// terminate the amalgamated problem
 					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
-						running.decrementAndGet();
 					}
 					if (running.get() == 1 && !monitor.isAmalgamated())
-						if (monitor.isConfigsDone())
+						if (monitor.isConfigsDone()) {
 							solution_queue.put(poison(null));
+						}
 					running.decrementAndGet();
 				}
 				// if it is unsat...
 				else {
 					running.decrementAndGet();
 					// if last running integrated...
-					if (running.get() == 0 && !monitor.isAmalgamated()) {
+					if ((running.get() == 0 && !hybrid) || (running.get() == 1 && hybrid))
 						if (monitor.isConfigsDone())
 							// store the unsat solution
 							solution_queue.put(sol.getSolutions());
-						else 
+						else
 							launchBatch(true);
-					}
 				}
 			}
-			monitor.newSolution(sol);
 		} catch (InterruptedException | IllegalThreadStateException e1) {
 			// was interrupted in the meantime
+			e1.printStackTrace();
 		} catch (RejectedExecutionException e) {
 			// was shutdown in the meantime
+			e.printStackTrace();
 		}
 	}
 
@@ -232,6 +233,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				executor.execute(problem);
 			} catch (RejectedExecutionException e) {
 				// if it was shutdown in the meantime
+				e.printStackTrace();
 			}
 			running.incrementAndGet();
 		}
@@ -261,15 +263,17 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 */
 	@Override
 	public boolean hasNext() throws InterruptedException {
-		// buffer is needed because hasNext can't test for emptyness, must wait
-		// for an output
-		if (buffer != null)
-			return true;
-		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
-			launchBatch(false);
-			
-		if (monitor.isConfigsDone() && running.get() == 0)
-			return !solution_queue.isEmpty();
+		synchronized (this) {
+			// buffer is needed because hasNext can't test for emptyness, must wait
+			// for an output
+			if (buffer != null)
+				return true;
+			if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
+				launchBatch(false);
+				
+			if (monitor.isConfigsDone() && running.get() == 0)
+				return !solution_queue.isEmpty();
+		}
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output
 		buffer = solution_queue.take();

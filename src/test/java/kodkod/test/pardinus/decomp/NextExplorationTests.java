@@ -29,7 +29,6 @@ import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.instance.PardinusBounds;
@@ -46,7 +45,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 /**
  * Tests whether the symmetries are being correctly calculated for decomposed
@@ -58,6 +59,9 @@ import org.junit.Test;
  *
  */
 public class NextExplorationTests {
+
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
 
 	@Test
 	public void testBasic() {

@@ -218,8 +218,9 @@ public class SymmetryTests {
 				trivial_decomp = true;
 			while (solutione.hasNext()) {
 				sol = solutione.next();
-				if (sol.sat())
+				if (sol.sat()) {
 					decomp_counter++;
+				}
 			}
 		}
 		Set<IntSet> decomp_syms = last;

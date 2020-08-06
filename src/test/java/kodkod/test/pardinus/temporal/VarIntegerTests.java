@@ -140,7 +140,6 @@ public class VarIntegerTests {
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		assertFalse(solver.solve(formula, bounds).sat());
-
 	}
 	
 	@Test

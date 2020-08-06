@@ -244,7 +244,6 @@ public class SymmetryTests {
 
 		String[] args = new String[] { n + "", v1.name(), v2.name(), v3.name() };
 		DModel model = new SymmetryP(args);
-
 		
 		opt.setBitwidth(model.getBitwidth());
 		opt.setRunTemporal(false);
