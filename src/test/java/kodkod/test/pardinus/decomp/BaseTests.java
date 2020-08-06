@@ -60,7 +60,7 @@ public class BaseTests {
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(false);
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.configOptions().setReporter(opt.reporter());
 	}
 
