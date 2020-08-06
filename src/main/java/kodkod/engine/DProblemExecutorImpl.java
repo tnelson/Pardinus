@@ -278,15 +278,17 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 */
 	@Override
 	public boolean hasNext() throws InterruptedException {
-		// buffer is needed because hasNext can't test for emptyness, must wait
-		// for an output
-		if (buffer != null)
-			return true;
-		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
-			launchBatch(false);
-			
-		if (monitor.isConfigsDone() && running.get() == 0)
-			return !solution_queue.isEmpty();
+		synchronized (this) {
+			// buffer is needed because hasNext can't test for emptyness, must wait
+			// for an output
+			if (buffer != null)
+				return true;
+			if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
+				launchBatch(false);
+				
+			if (monitor.isConfigsDone() && running.get() == 0)
+				return !solution_queue.isEmpty();
+		}
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output
 		System.out.println("* wait at has next: "+running.get());
