@@ -242,7 +242,6 @@ public class SymmetryTests {
 	public void test() {
 		int n = 3;
 
-		System.out.println(v1.name()+" "+v2.name()+" "+v3.name());
 		String[] args = new String[] { n + "", v1.name(), v2.name(), v3.name() };
 		DModel model = new SymmetryP(args);
 		

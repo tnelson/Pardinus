@@ -150,7 +150,7 @@ public class RedBlackTests {
 //		System.out.println(solution.instance());
 		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 42);
-		assertEquals(model.shortName()+": #Configs", Math.min(42,DProblemExecutorImpl.BATCH_SIZE), ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() <= 42);
 	}
 	
 	@Test 
