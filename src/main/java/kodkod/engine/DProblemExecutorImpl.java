@@ -108,6 +108,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
+			monitor.newSolution(sol);
 			// if the amalgamated terminates...
 			if (!(sol instanceof IProblem)) {
 				// store the sat or unsat solution
@@ -147,7 +148,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 							launchBatch(true);
 				}
 			}
-			monitor.newSolution(sol);
 		} catch (InterruptedException | IllegalThreadStateException e1) {
 			// was interrupted in the meantime
 			e1.printStackTrace();
