@@ -378,6 +378,7 @@ public class OverflowNumTest extends TestCase {
         int max = max();
         for (int i = min; i <= max; i++) {
             for (int j = min; j <= max; j++) {
+            	System.out.println("Tester "+t.toString());
                 t.doTest(i, j);
             }
         }
