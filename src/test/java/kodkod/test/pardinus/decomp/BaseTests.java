@@ -139,10 +139,12 @@ public class BaseTests {
 		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
 		Solution sol = null;
 		for (int i = 0; i < 15; i++) {
-			if (sols.hasNext())
+			if (sols.hasNext()) {
 				sol = sols.next();
-			if (sol.unsat()) 
+			}
+			if (sol.unsat()) {
 				sol = sols.nextC();
+			}
 			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}

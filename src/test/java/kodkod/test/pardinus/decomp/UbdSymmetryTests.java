@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import kodkod.ast.Formula;
+import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.DecomposedOptions.DMode;
@@ -243,23 +244,23 @@ public class UbdSymmetryTests {
 		dsolver = new PardinusSolver(opt);
 		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),model.bounds2());
 		final Formula formula = model.partition1().and(model.partition2());
-		Iterator<Solution> sols;
+		Explorer<Solution> sols;
 		
 //		System.out.println("----- Solving decomposed -----");
 		sols = dsolver.solveAll(formula, bounds);
 		Solution sol;
 		int decomp_counter = 0;
-		while (sols.hasNext()) {
-			sol = sols.next();
-		
-//			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
-			if (sol.sat()) {
-				decomp_counter++;
-//				System.out.println(sol.instance().relationTuples());
-			} else {
-//				System.out.println();
-			}
-		}
+//		while (sols.hasNextC()) {
+//			sol = sols.nextC();
+//		
+////			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
+//			if (sol.sat()) {
+//				decomp_counter++;
+////				System.out.println(sol.instance().relationTuples());
+//			} else {
+////				System.out.println();
+//			}
+//		}
 		Set<IntSet> decomp_syms = last;
 		dsolver.free();
 		last = null;
@@ -273,12 +274,12 @@ public class UbdSymmetryTests {
 		sol = solver.solve(formula, mbounds);
 		int batch_counter = 0;
 //		System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
-		if (sol.sat()) {
-			batch_counter++;
-//			System.out.println(sol.instance().relationTuples());
-		} else {
-//			System.out.println();
-		}
+//		if (sol.sat()) {
+//			batch_counter++;
+////			System.out.println(sol.instance().relationTuples());
+//		} else {
+////			System.out.println();
+//		}
 		Set<IntSet> batch_syms = last;
 		solver.free();
 		
