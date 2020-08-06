@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import kodkod.ast.Formula;
-import kodkod.engine.DProblemExecutorImpl;
 import kodkod.engine.DecomposedPardinusSolver;
 import kodkod.engine.ExtendedSolver;
 import kodkod.engine.PardinusSolver;
@@ -56,7 +55,7 @@ public class RedBlackTests {
 		opt.setThreads(4);
 		opt2 = new ExtendedOptions(opt);
 		opt2.setRunTarget(false);
-		opt2.setSolver(SATFactory.PMaxSAT4J);
+		opt2.setSolver(SATFactory.MiniSat);
 		opt.setConfigOptions(opt2);
 		Reporter rep = new AbstractReporter() {
 			@Override
