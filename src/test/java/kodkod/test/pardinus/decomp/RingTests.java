@@ -136,7 +136,7 @@ public class RingTests {
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertFalse(model.shortName()+": SAT", solution.sat());
-		assertEquals(model.shortName()+": #Runs", 8, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns());
+		assertTrue(model.shortName()+": #Runs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns() <= 8);
 		assertEquals(model.shortName()+": #Configs", 8, ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs());
 	}
 	
