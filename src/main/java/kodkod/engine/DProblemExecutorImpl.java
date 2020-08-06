@@ -181,6 +181,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 						.get() == 1))) {
 			try {
 				solution_queue.put(poison(null));
+				System.out.println("* put poison fail: "+running.get());
 				terminate();
 			} catch (InterruptedException e1) {
 				// was interrupted in the meantime
@@ -225,6 +226,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 						monitor.newConfig(config);
 //						terminate();
 						solution_queue.put(poison(config));
+						System.out.println("* put poison config: "+running.get());
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
