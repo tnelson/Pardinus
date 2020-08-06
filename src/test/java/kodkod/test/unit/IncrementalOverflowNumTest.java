@@ -38,7 +38,6 @@ public class IncrementalOverflowNumTest extends OverflowNumTest {
         Variable n = Variable.unary("n");
         Formula f = n.sum().plus(IntConstant.constant(1)).lte(n.sum()).forSome(n.oneOf(Expression.INTS));
         Solution sol = solver.solve(f, b);
-        System.out.println(sol.toString());
         assertNoInstance(sol);
     }
 }
