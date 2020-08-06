@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.decomp.DMonitorImpl;
 import kodkod.engine.decomp.DProblem;
