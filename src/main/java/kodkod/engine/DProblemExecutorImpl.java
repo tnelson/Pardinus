@@ -62,7 +62,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Entry<Solution,Iterator<Solution>>> solution_queue = new LinkedBlockingQueue<Entry<Solution,Iterator<Solution>>>(4);
+	private final BlockingQueue<Entry<Solution,Iterator<Solution>>> solution_queue;
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -96,6 +96,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			PardinusBounds bounds, ExtendedSolver solver1,
 			S solver2, int n, boolean hybrid) {
 		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
+		this.solution_queue = new LinkedBlockingQueue<Entry<Solution,Iterator<Solution>>>(BATCH_SIZE+1);
 		this.hybrid = hybrid;
 	}
 
@@ -123,17 +124,20 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			else {
 				// if it is sat...
 				if (sol.getSolutions().getKey().sat()) {
+
 					// store the sat solution
 					solution_queue.put(sol.getSolutions());
 					// terminate the amalgamated problem
 					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
 					}
+
 					if (running.get() == 1 && !monitor.isAmalgamated())
 						if (monitor.isConfigsDone()) {
 							solution_queue.put(poison(null));
 						}
 					running.decrementAndGet();
+
 				}
 				// if it is unsat...
 				else {
@@ -249,10 +253,11 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			buffer = null;
 		} else {
 			last_sol = solution_queue.take();
+			System.out.print(last_sol.getKey()+", "+solution_queue.size());
 		}
 		monitor.gotNext(false);
 		// if UNSAT, terminate execution
-		if (!last_sol.getValue().hasNext())
+		if (last_sol.getValue() == null || !last_sol.getValue().hasNext())
 			terminate();
 		return last_sol;
 	}
@@ -267,9 +272,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			// for an output
 			if (buffer != null)
 				return true;
-			if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
-				launchBatch(false);
-				
 			if (monitor.isConfigsDone() && running.get() == 0)
 				return !solution_queue.isEmpty();
 		}
