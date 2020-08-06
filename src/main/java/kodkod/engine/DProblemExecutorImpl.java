@@ -139,14 +139,12 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				else {
 					running.decrementAndGet();
 					// if last running integrated...
-					if (running.get() == 0 && !monitor.isAmalgamated()) {
-						if (monitor.isConfigsDone()) {
+					if ((running.get() == 0 && !hybrid) || (running.get() == 1 && hybrid))
+						if (monitor.isConfigsDone())
 							// store the unsat solution
 							solution_queue.put(sol.getSolutions());
-						}
-						else 
+						else
 							launchBatch(true);
-					}
 				}
 			}
 			monitor.newSolution(sol);
