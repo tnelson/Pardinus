@@ -112,12 +112,14 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			if (!(sol instanceof IProblem)) {
 				// store the sat or unsat solution
 				solution_queue.put(sol.getSolutions());
+				System.out.println("* put amalg: "+running.get());
 //				running.set(1);
 				monitor.amalgamatedWon();
 //				 terminate the integrated problems
 				if (!executor.isTerminated())
 					terminate();
 				running.decrementAndGet();
+				System.out.println("* decremented at amalg: "+running.get());
 			}
 			// if an integrated terminates...
 			else {
