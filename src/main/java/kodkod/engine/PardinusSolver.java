@@ -191,47 +191,95 @@ public class PardinusSolver implements
 		assert options.maxTraceLength() - options.minTraceLength() >= 0;
 //		assert options.solver().incremental();
 		
-		Iterator<Solution> it = ((IterableSolver) solver).solveAll(formula, bounds);
-		if (it instanceof Explorer)
-			return (Explorer<Solution>) it;
+		if (solver instanceof IterableSolver<?,?>) {
+			Iterator<Solution> it = ((IterableSolver) solver).solveAll(formula, bounds);
+			if (it instanceof Explorer)
+				return (Explorer<Solution>) it;
+			else {
+				return new Explorer<Solution>() {
+					
+					@Override
+					public Solution next() {
+						return it.next();
+					}
+					
+					@Override
+					public boolean hasNext() {
+						return it.hasNext();
+					}
+	
+					@Override
+					public Solution nextP() {
+						throw new UnsupportedOperationException("Branching not supported for this solver.");
+					}
+	
+					@Override
+					public Solution nextC() {
+						throw new UnsupportedOperationException("Branching not supported for this solver.");
+					}
+	
+					@Override
+					public Solution nextS(int state, int delta, Set<Relation> force) {
+						throw new UnsupportedOperationException("Branching not supported for this solver.");
+					}
+	
+					@Override
+					public boolean hasNextP() {
+						return false;
+					}
+	
+					@Override
+					public boolean hasNextC() {
+						return false;
+					}
+				};
+			}
+		}
 		else {
+			Solution sl = solver.solve(formula, bounds);
+
 			return new Explorer<Solution>() {
-				
+				boolean first = true;
 				@Override
 				public Solution next() {
-					return it.next();
+					if (first) {
+						first = !first;
+						return sl;
+					}
+					else
+						throw new UnsupportedOperationException("Selected solver does not support solution iteration.");
 				}
 				
 				@Override
 				public boolean hasNext() {
-					return it.hasNext();
+					return false;
 				}
-
+	
 				@Override
 				public Solution nextP() {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
+					throw new UnsupportedOperationException("Selected solver does not support scenario exploration.");
 				}
-
+	
 				@Override
 				public Solution nextC() {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
+					throw new UnsupportedOperationException("Selected solver does not support scenario exploration.");
 				}
-
+	
 				@Override
 				public Solution nextS(int state, int delta, Set<Relation> force) {
-					throw new UnsupportedOperationException("Branching not supported for this solver.");
+					throw new UnsupportedOperationException("Selected solver does not support scenario exploration.");
 				}
-
+	
 				@Override
 				public boolean hasNextP() {
 					return false;
 				}
-
+	
 				@Override
 				public boolean hasNextC() {
 					return false;
 				}
-};
+			};
 		}
 	}
 

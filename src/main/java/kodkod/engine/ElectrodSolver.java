@@ -24,21 +24,15 @@ package kodkod.engine;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
-import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
@@ -49,10 +43,8 @@ import kodkod.engine.unbounded.ElectrodPrinter;
 import kodkod.engine.unbounded.ElectrodReader;
 import kodkod.engine.unbounded.InvalidUnboundedProblem;
 import kodkod.engine.unbounded.InvalidUnboundedSolution;
-import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
-import kodkod.instance.TupleSet;
 
 /**
  * A computational engine for solving unbounded temporal relational
@@ -78,8 +70,7 @@ import kodkod.instance.TupleSet;
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  */
 public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
-		TemporalSolver<ExtendedOptions>,
-		IterableSolver<PardinusBounds, ExtendedOptions> {
+		TemporalSolver<ExtendedOptions> {
 
 	private final ExtendedOptions options;
 
@@ -108,43 +99,43 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 */
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
-		return ElectrodSolver.go(formula,bounds,options);
+		return go(formula,bounds,options);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Explorer<Solution> solveAll(Formula formula, PardinusBounds bounds) {
-		return new SolutionIterator(formula, bounds, options);
-	}
-
-	private final static class SolutionIterator implements Explorer<Solution> {
-	
-		private Formula formula;
-		private final PardinusBounds bounds;
-		private Map<Object,Expression> reifs;
-		private ExtendedOptions options;
-		
-		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
-			this.formula = formula;
-			this.reifs = new HashMap<Object,Expression>();
-			this.bounds = bounds;
-			this.options = options;
-		}
-			
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public boolean hasNext() {
-			return false;
-		}
-	
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public Solution next() {
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+//		return new SolutionIterator(formula, bounds, options);
+//	}
+//
+//	private final static class SolutionIterator implements Iterator<Solution> {
+//	
+//		private Formula formula;
+//		private final PardinusBounds bounds;
+//		private Map<Object,Expression> reifs;
+//		private ExtendedOptions options;
+//		
+//		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
+//			this.formula = formula;
+//			this.reifs = new HashMap<Object,Expression>();
+//			this.bounds = bounds;
+//			this.options = options;
+//		}
+//			
+//		/**
+//		 * {@inheritDoc}
+//		 */
+//		@Override
+//		public boolean hasNext() {
+//			return false;
+//		}
+//	
+//		/**
+//		 * {@inheritDoc}
+//		 */
+//		@Override
+//		public Solution next() {
 
 			// currently disabled due to issues on backends
 //			if (prev != null) {
@@ -160,20 +151,18 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 //				prev = null;
 //				formula = null;
 //			}
-
-			return go(formula,bounds,options);
-		}
-
-		TemporalInstance prev;
-		Map<Integer,Formula> explorations = new HashMap<Integer,Formula>();
-		
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public Solution nextS(int state, int steps, Set<Relation> force) {
-			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
-
+//			return go(formula,bounds,options);
+//		}
+//
+//		TemporalInstance prev;
+//		Map<Integer,Formula> explorations = new HashMap<Integer,Formula>();
+//		
+//		/**
+//		 * {@inheritDoc}
+//		 */
+//		@Override
+//		public Solution nextS(int state, int steps, Set<Relation> force) {
+//
 //			if (steps != 1 && steps != -1)
 //				throw new InvalidSolverParamException("Electrod only supports step or infinite iteration.");
 //			if (prev == null)
@@ -197,28 +186,9 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 //				prev = (TemporalInstance) s.instance();
 //	
 //			return s;
-		}
-		
-		@Override
-		public Solution nextC() {
-			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
-		}
-		@Override
-		public Solution nextP() {
-			throw new InvalidSolverParamException("Branching solutions not currently supported with complete model checking.");	
-		}
-		
-		@Override
-		public boolean hasNextP() {
-			return false;
-		}
-
-		@Override
-		public boolean hasNextC() {
-			return false;
-		}
-
-	}
+//		}
+//		
+//	}
 
 	/**
 	 * Effectively launches an Electrod process. Used at single solve and at

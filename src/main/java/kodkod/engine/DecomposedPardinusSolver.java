@@ -170,14 +170,11 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 		private DProblemExecutor<S> executor;
 		private Reporter reporter;
 		private Iterator<Solution> sols;
-		private boolean branches = false;
 		
 		/**
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
 		DSolutionIterator(Formula formula, PardinusBounds bounds, DecomposedOptions options, ExtendedSolver solver1, S solver2) {
-			if (solver2 instanceof ExplorableSolver<?, ?>)
-				branches = true;
 			reporter = options.reporter();
 			if (options.decomposedMode() == DMode.HYBRID)
 				executor = new DProblemExecutorImpl<S>(options.reporter(), formula, bounds, solver1, solver2, options.threads(), true);
