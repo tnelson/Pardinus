@@ -29,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
-import org.junit.runners.model.TestTimedOutException;
 
 /*
  * The automatic partition of this model is not ideal for UNSAT problems, since 
@@ -81,7 +80,6 @@ public class RedBlackTests {
 	
 	@Test 
 	public void testSAT3() throws InterruptedException {
-		System.out.println("Test SAT 3");
 		opt.setDecomposedMode(DMode.PARALLEL);
 		int n = 3;
 		Variant1 v1 = Variant1.COUNTER;
