@@ -29,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
-import org.junit.runners.model.TestTimedOutException;
 
 /*
  * The automatic partition of this model is not ideal for UNSAT problems, since 
