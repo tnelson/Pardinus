@@ -203,7 +203,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 
 	private Entry<Solution,Iterator<Solution>> last_sol;
 	
-	void launchBatch(boolean first) {
+	synchronized void launchBatch(boolean first) {
 		
 		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(BATCH_SIZE);
 		// collects a batch of configurations
