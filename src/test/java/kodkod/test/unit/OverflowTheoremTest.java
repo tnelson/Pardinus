@@ -89,6 +89,9 @@ public class OverflowTheoremTest extends TestCase {
     }
 
     protected Solution[] solve(Formula formula) {
+    	System.out.println(options);
+    	System.out.println(formula);
+    	System.out.println(bounds);
         Solution s1 = new Solver(options).solve(formula, bounds);
         Options opt2 = options.clone();
         opt2.setSkolemDepth(2);
