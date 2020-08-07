@@ -261,7 +261,7 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 
 		@Override
 		public boolean hasNextC() {
-			try {
+			try {				
 				return executor.hasNext();
 			} catch (InterruptedException e) {
 				reporter.debug("Waiting for next interrupted.");

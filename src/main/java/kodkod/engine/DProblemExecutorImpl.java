@@ -105,6 +105,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 */
 	@Override
 	synchronized public void end(DProblem<S> sol) {
+		System.out.println("*end "+sol.getSolutions().getKey());
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
@@ -205,10 +206,10 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	void launchBatch(boolean first) {
 		
 		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(BATCH_SIZE);
-
 		// collects a batch of configurations
 		while (configs.hasNext() && problem_queue.size() < BATCH_SIZE) {
 			Solution config = configs.next();
+			System.out.println("*cfg "+config.toString());
 			if (config.unsat()) {
 				// when there is no configuration no solver will ever
 				// callback so it must be terminated here
@@ -253,7 +254,6 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			buffer = null;
 		} else {
 			last_sol = solution_queue.take();
-			System.out.print(last_sol.getKey()+", "+solution_queue.size());
 		}
 		monitor.gotNext(false);
 		// if UNSAT, terminate execution
