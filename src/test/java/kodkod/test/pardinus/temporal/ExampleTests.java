@@ -72,9 +72,8 @@ public class ExampleTests {
 	
 	@Test
 	public void testSATComplete() {
-		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
-		options.setSolver(SATFactory.electrod("-t","NuSMV"));
+		options.setSolver(SATFactory.electrod("-t","nuXmv"));
 		HotelT model = new HotelT(new String[] {"2",Variant.INTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();
