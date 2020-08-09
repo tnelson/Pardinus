@@ -133,7 +133,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			long transTime = endTransl - startTransl;
 			boolean isSat = false;
 			long solveTime = 0;
-			int primaryVars = -1, clauses = 0, vars = 0;
 			Translation.Whole translation = null;
 			int traceLength = options.minTraceLength()-1;
 			PardinusBounds extbounds = null;
@@ -155,11 +154,8 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 			SATSolver cnf = translation.cnf();
 
-			primaryVars +=  translation.numPrimaryVariables();
-			vars += cnf.numberOfVariables();
-			clauses += cnf.numberOfClauses();
-			
-			options.reporter().solvingCNF(traceLength, primaryVars, vars, clauses);
+			options.reporter().solvingCNF(traceLength, translation.numPrimaryVariables(), cnf.numberOfVariables(),
+					cnf.numberOfClauses());
 			long startSolve = System.currentTimeMillis();
 			isSat = cnf.solve();
 			long endSolve = System.currentTimeMillis();
@@ -179,11 +175,8 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 				cnf = translation.cnf();
 
-				primaryVars +=  translation.numPrimaryVariables();
-				vars += cnf.numberOfVariables();
-				clauses += cnf.numberOfClauses();
-				
-				options.reporter().solvingCNF(traceLength, primaryVars, vars, clauses);
+				options.reporter().solvingCNF(traceLength, translation.numPrimaryVariables(), cnf.numberOfVariables(),
+						cnf.numberOfClauses());
 				startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
 				endSolve = System.currentTimeMillis();
@@ -574,7 +567,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole transl = null;
-			int primaryVars = -1, clauses = 0, vars = 0;
+			int primaryVars = -1;
 			SATSolver cnf = null;
 			
 
@@ -640,11 +633,9 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				transl = translation;
 
 				cnf = transl.cnf();
-				primaryVars += transl.numPrimaryVariables();
-				vars += cnf.numberOfVariables();
-				clauses += cnf.numberOfClauses();
-
-				transl.options().reporter().solvingCNF(current_trace, primaryVars, vars, clauses);
+				primaryVars = transl.numPrimaryVariables();
+				
+				transl.options().reporter().solvingCNF(current_trace, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
 				final long startSolve = System.currentTimeMillis();
 				isSat = cnf.solve();
