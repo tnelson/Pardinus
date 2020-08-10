@@ -14,7 +14,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class DiffEgP implements DModel {
+public class DiffEgP extends DModel {
 
     private final Relation Subject, Resource, Action, Request, Conflicted;
     private final Relation sRequest, rRequest, action, sConflicted, rConflicted;

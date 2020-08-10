@@ -32,6 +32,7 @@ import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.Solution.Outcome;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.SLF4JReporter;
@@ -69,6 +70,7 @@ public class SymmetryTests {
 	private PardinusSolver dsolver;
 	private ExtendedOptions opt;
 	private Set<IntSet> last;
+	private boolean trivial_config;
 
 	@Before
 	public void method() throws InterruptedException {
@@ -100,7 +102,12 @@ public class SymmetryTests {
 				if (Options.isDebug())
 					super.debug("symmetry: " + x.toString());
 			}
-
+			
+			@Override
+			public void reportConfigs(int configs, int vars, int pvars, int clauses) {
+				super.reportConfigs(configs, vars, pvars, clauses);
+				trivial_config = vars == 0;
+			}
 		};
 
 		opt.setReporter(rep);
@@ -240,24 +247,26 @@ public class SymmetryTests {
 		opt.setRunDecomposed(true);
 		opt.setDecomposedMode(DMode.PARALLEL);
 		dsolver = new PardinusSolver(opt);
-		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),
-				model.bounds2());
+		final PardinusBounds bounds = new PardinusBounds(model.bounds1(),model.bounds2());
 		final Formula formula = model.partition1().and(model.partition2());
 		Iterator<Solution> solution ;
 		System.out.println("----- Solving decomposed -----");
 		solution = dsolver.solveAll(formula, bounds);
 		int decomp_counter = 0;
 
+		boolean trivial_decomp = false;
 		while (solution.hasNext()) {
 			Solution sol = solution.next();
+			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+				trivial_decomp = true;
 			decomp_counter++;
 			System.out.print(sol.outcome().toString()+" " + decomp_counter + ": ");
 			if (sol.sat())
 				System.out.println(sol.instance().relationTuples());
 			else
 				System.out.println();
-
 		}
+		
 		Set<IntSet> decomp_syms = last;
 		dsolver.free();
 		last = null;
@@ -269,8 +278,11 @@ public class SymmetryTests {
 		PardinusBounds b = bounds.amalgamated();
 		solution = solver.solveAll(formula, b);
 		int batch_counter = 0;
+		boolean trivial_batch = false;
 		while (solution.hasNext()) {
 			Solution sol = solution.next();
+			if (sol.outcome().equals(Outcome.TRIVIALLY_SATISFIABLE) || sol.outcome().equals(Outcome.TRIVIALLY_UNSATISFIABLE))
+				trivial_batch = true;
 			batch_counter++;
 			System.out.print(sol.outcome().toString()+" " + batch_counter + ": ");
 			if (sol.sat())
@@ -282,8 +294,10 @@ public class SymmetryTests {
 
 		// if config is trivially unsat, then time symmetries are not found on partial problem
 		Assert.assertTrue(batch_syms.equals(decomp_syms) || (decomp_counter == 1 && batch_syms.size() == decomp_syms.size()+1));
-		Assert.assertEquals(batch_counter, decomp_counter);
-
+		if (!trivial_batch && !trivial_decomp && !trivial_config)
+			Assert.assertEquals(batch_counter, decomp_counter);
+		else
+			Assert.assertEquals(batch_counter == 0, decomp_counter == 0);
 	}
 
 }

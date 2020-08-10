@@ -26,6 +26,8 @@ import static kodkod.ast.operator.FormulaOperator.AND;
 import static kodkod.ast.operator.FormulaOperator.IFF;
 import static kodkod.ast.operator.FormulaOperator.IMPLIES;
 import static kodkod.ast.operator.FormulaOperator.OR;
+import static kodkod.ast.operator.TemporalOperator.ALWAYS;
+import static kodkod.ast.operator.TemporalOperator.EVENTUALLY;
 import static kodkod.ast.operator.Quantifier.ALL;
 import static kodkod.ast.operator.Quantifier.SOME;
 
@@ -53,6 +55,7 @@ import kodkod.ast.RelationPredicate;
 import kodkod.ast.UnaryTempFormula;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.Quantifier;
+import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractVoidVisitor;
 import kodkod.util.nodes.AnnotatedNode;
 
@@ -93,6 +96,7 @@ final public class FormulaFlattener extends AbstractVoidVisitor {
 	private final Map<Node,Boolean> visited;
 	private final Set<Node> shared;
 	private boolean negated;
+	private boolean always; // [HASLab]
 	private final boolean breakupQuantifiers;
 	/**
 	 * Constructs a flattener for a formula in which the given nodes are shared.
@@ -102,6 +106,7 @@ final public class FormulaFlattener extends AbstractVoidVisitor {
 		this.shared = shared;
 		this.visited = new IdentityHashMap<Node,Boolean>();
 		this.negated = false;
+		this.always = false; // [HASLab]
 		this.breakupQuantifiers = breakupQuantifiers;
 	}
 	
@@ -173,7 +178,9 @@ final public class FormulaFlattener extends AbstractVoidVisitor {
 	 * to this.conjuncts.
 	 */
 	private final void addConjunct(Formula conjunct) { 
-		conjuncts.put(negated ? conjunct.not() : conjunct, conjunct);
+		Formula key = negated ? conjunct.not() : conjunct;
+		key = always ? key.always() : key; // [HASLab]
+		conjuncts.put(key, conjunct);
 	}
 	
 	/**
@@ -264,9 +271,24 @@ final public class FormulaFlattener extends AbstractVoidVisitor {
 	/** @see #visitFormula(Formula) */
 	public final void visit(BinaryTempFormula tf) 		{ visitFormula(tf); }
 
-	// [HASLab] temporal formulas, cannot be broken into conjuncts
-	/** @see #visitFormula(Formula) */
-	public final void visit(UnaryTempFormula tf) 		{ visitFormula(tf); }			
+	/**
+	 * Visits the formula's children with appropriate settings
+	 * for the negated flag if bf  has not been visited before.
+	 * @see kodkod.ast.visitor.AbstractVoidVisitor#visit(kodkod.ast.NaryFormula)
+	 */
+	// [HASLab]
+	public final void visit(UnaryTempFormula tf) { 
+		if (visited(tf)) return;
+		final TemporalOperator op = tf.op();
+		if ((negated && op==EVENTUALLY) || (!negated && op==ALWAYS)) { // will break down further
+			boolean p = always;
+			always = true;
+			tf.formula().accept(this);
+			always = p;
+		} else { // can't break down further in these cases
+			addConjunct(tf);
+		}
+	}
 		
 	/** @see #visitFormula(Formula) */
 	public final void visit(ComparisonFormula cf) 		{ visitFormula(cf); }

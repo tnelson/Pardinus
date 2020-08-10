@@ -27,7 +27,6 @@ import java.util.List;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.ast.VarRelation;
 import kodkod.engine.decomp.DModel;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
@@ -45,7 +44,7 @@ import kodkod.instance.Universe;
  * @author Nuno Macedo // [HASLab] decomposed model finding
  *
  */
-public final class SymmetryT implements DModel {
+public final class SymmetryT extends DModel {
 
 	final private int n, m;
 
@@ -77,7 +76,7 @@ public final class SymmetryT implements DModel {
 		this.v3 = VariantOrder.valueOf(args[3]);
 
 		r = Relation.unary("r");
-		s = VarRelation.unary("s");
+		s = Relation.unary_variable("s");
 
 		a1 = Relation.binary("a_next");
 		a2 = Relation.unary("a_first");

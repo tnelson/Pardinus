@@ -16,7 +16,7 @@ import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
 
-public class SpanR implements DModel {
+public class SpanR extends DModel {
 
 	final private Universe u;
 //	final private Variant2 var;

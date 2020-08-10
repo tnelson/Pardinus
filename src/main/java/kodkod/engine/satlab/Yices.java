@@ -27,9 +27,8 @@ package kodkod.engine.satlab;
  * 
  * @author Tiago Guimarães // [HASLab] target-oriented model finding
  */
-class Yices extends NativeSolver {
+final public class Yices extends NativeSolver {
 
-	
 	private boolean makearray;
 	protected long array = 0;
 	
@@ -45,15 +44,6 @@ class Yices extends NativeSolver {
 	static {
 		loadLibrary(Yices.class);
 	}
-
-	
-	/**
-	 * {@inheritDoc}
-	 * @see java.lang.Object#toString()
-	 */
-	public String toString() {
-		return "Yices";
-	}
 	
 	/**
 	 * Returns a pointer to an instance of Yices.
@@ -61,7 +51,6 @@ class Yices extends NativeSolver {
 	 */
 	private static native long make();
 	private static native long allocArray();
-	
 	
 	/**
 	 * {@inheritDoc}
@@ -100,18 +89,24 @@ class Yices extends NativeSolver {
 	
 	native boolean natAddClause(long peer,int[] lits,boolean makearray, long array);
 	
-	
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.NativeSolver#solve(int)
 	 */
 	native boolean solve(long peer);
-	
 
 	/**
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.NativeSolver#valueOf(int, int)
 	 */
 	native boolean valueOf(long peer, int literal);
-
+	
+	/**
+	 * {@inheritDoc}
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "Yices";
+	}
+	
 }

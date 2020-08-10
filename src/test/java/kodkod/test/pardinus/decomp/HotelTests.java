@@ -1,6 +1,7 @@
 package kodkod.test.pardinus.decomp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
@@ -23,7 +24,11 @@ import kodkod.instance.PardinusBounds;
 import kodkod.util.ints.IntSet;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.Timeout;
+import org.junit.runners.model.TestTimedOutException;
 
 public class HotelTests {
 	ExtendedOptions opt;
@@ -58,6 +63,11 @@ public class HotelTests {
 		opt.setReporter(rep);
 	}
 	
+	@Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+	@Rule
+    public final ExpectedException thrown = ExpectedException.none();
+	
 	@Test 
 	public void testSAT3() throws InterruptedException {
 		int n = 3;
@@ -82,8 +92,8 @@ public class HotelTests {
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 		
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertEquals(model.shortName()+": #Configs", configs, 20);
+		assertTrue(model.shortName()+": SAT", solution.sat());
+		assertEquals(model.shortName()+": #Configs", 20, configs);
 		
 	}
 	
@@ -110,8 +120,9 @@ public class HotelTests {
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertEquals(model.shortName()+": #Configs", configs, 75);
+		assertTrue(model.shortName()+": SAT", solution.sat());
+		// 75, but decomp launches batches of 50
+		assertEquals(model.shortName()+": #Configs", 50, configs);
 
 	}
 	
@@ -138,9 +149,9 @@ public class HotelTests {
 		
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
-		assertTrue(model.shortName()+": #Configs", configs >= 200);
-
+		assertTrue(model.shortName()+": SAT", solution.sat());
+		// >200, but decomp launches batches of 50
+		assertEquals(model.shortName()+": #Configs", 50, configs);
 	}
 	
 	@Test 
@@ -167,9 +178,9 @@ public class HotelTests {
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", runs, 20);
-		assertEquals(model.shortName()+": #Configs", configs, 20);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+		assertEquals(model.shortName()+": #Runs", 20, runs);
+		assertEquals(model.shortName()+": #Configs", 20, configs);
 	}
 	
 	@Test 
@@ -196,13 +207,14 @@ public class HotelTests {
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", runs, 75);
-		assertEquals(model.shortName()+": #Configs", configs, 75);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+		assertEquals(model.shortName()+": #Runs", 75, runs);
+		assertEquals(model.shortName()+": #Configs", 75, configs);
 	}
 	
 	@Test 
 	public void testUNSAT5() throws InterruptedException {
+		thrown.expect(TestTimedOutException.class);
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
@@ -225,9 +237,9 @@ public class HotelTests {
 		long configs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs();
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
-		assertEquals(model.shortName()+": #Runs", runs, 312);
-		assertEquals(model.shortName()+": #Configs", configs, 312);
+		assertFalse(model.shortName()+": SAT", solution.sat());
+		assertEquals(model.shortName()+": #Runs", 312, runs);
+		assertEquals(model.shortName()+": #Configs", 312, configs);
 	}
 	
 	@Test 
@@ -256,10 +268,10 @@ public class HotelTests {
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 20);
 		assertTrue(model.shortName()+": #Runs", runs < 20);
-		assertEquals(model.shortName()+": Amalg", amalgamated, false);
+		assertFalse(model.shortName()+": Amalg", amalgamated);
 	}
 	
 	@Test 
@@ -288,10 +300,10 @@ public class HotelTests {
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 75);
 		assertTrue(model.shortName()+": #Runs", runs < 75);
-		assertEquals(model.shortName()+": Amalg", amalgamated, false);
+		assertFalse(model.shortName()+": Amalg", amalgamated);
 	}
 	
 	@Test 
@@ -320,10 +332,10 @@ public class HotelTests {
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), true);
+		assertTrue(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 312);
 		assertTrue(model.shortName()+": #Runs", runs < 312);
-		assertEquals(model.shortName()+": Amalg", amalgamated, false);
+		assertFalse(model.shortName()+": Amalg", amalgamated);
 	}
 	
 	@Test 
@@ -352,10 +364,10 @@ public class HotelTests {
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
+		assertFalse(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 20);
 		assertTrue(model.shortName()+": #Runs", runs < 20);
-		assertEquals(model.shortName()+": Amalg", amalgamated, true);
+		assertTrue(model.shortName()+": Amalg", amalgamated);
 	}
 	
 	@Test 
@@ -384,14 +396,15 @@ public class HotelTests {
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
+		assertFalse(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 75);
 		assertTrue(model.shortName()+": #Runs", runs < 75);
-		assertEquals(model.shortName()+": Amalg", amalgamated, true);
+		assertTrue(model.shortName()+": Amalg", amalgamated);
 	}
 	
 	@Test 
 	public void testHUNSAT5() throws InterruptedException {
+		thrown.expect(TestTimedOutException.class);
 		int n = 5;
 		int t = 20;
 		Variant v1 = Variant.NOINTERVENES;
@@ -416,10 +429,10 @@ public class HotelTests {
 		long runs = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumRuns();
 		boolean amalgamated = ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.isAmalgamated();
 
-		assertEquals(model.shortName()+": SAT", solution.sat(), false);
+		assertFalse(model.shortName()+": SAT", solution.sat());
 		assertTrue(model.shortName()+": #Configs", configs <= 312);
 		assertTrue(model.shortName()+": #Runs", runs < 312);
-		assertEquals(model.shortName()+": Amalg", amalgamated, true);
+		assertTrue(model.shortName()+": Amalg", amalgamated);
 	}
 
 }

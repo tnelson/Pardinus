@@ -114,7 +114,7 @@ public class Bounds implements Cloneable {
 	 * @return a set view of the relations mapped by the given lower/upper
 	 *         bounds
 	 */
-	// [HASLab] protected, generic types
+	// [HASLab] generic types
 	protected static <T extends Relation> Set<T> relations(final Map<T, ?> lowers, final Map<T, ?> uppers) { 
 		return new AbstractSet<T>() {
 
@@ -320,7 +320,7 @@ public class Bounds implements Cloneable {
 
 	/**
 	 * Makes the specified tupleset the upper bound on the contents of the given
-	 * relation. The lower bound automatically becomen an empty tupleset with
+	 * relation. The lower bound automatically becomes an empty tupleset with
 	 * the same arity as the relation.
 	 * 
 	 * @requires upper.arity = r.arity && upper.universe = this.universe

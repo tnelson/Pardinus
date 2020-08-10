@@ -35,7 +35,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public final class FilesystemP implements DModel {
+public final class FilesystemP extends DModel {
 
 	final private int n;
 	final private Variant variant;

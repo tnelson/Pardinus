@@ -17,7 +17,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class RedBlackTreeR implements DModel {
+public class RedBlackTreeR extends DModel {
 
 	final private Relation Node, Root, left, right, parent, key, color, Black, Red, Num;
 	final int n;

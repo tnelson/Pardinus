@@ -17,7 +17,7 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
-public class HandshakeR implements DModel {
+public class HandshakeR extends DModel {
 
 	final private Relation hypo;
 	final private Relation Person, Hilary, Jocelyn, shaken, spouse;

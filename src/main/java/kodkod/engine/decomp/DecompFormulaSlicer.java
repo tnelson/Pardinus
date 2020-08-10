@@ -23,8 +23,10 @@
 package kodkod.engine.decomp;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -70,61 +72,54 @@ public class DecompFormulaSlicer {
 	 *            variables.
 	 * @return two conjuncts of the formula according to the selected variables.
 	 */
-	public static Entry<Formula, Formula> slice(Formula formula,
-			PardinusBounds bounds) {
-		Set<Relation> partials = bounds.relations();
-		partials.addAll(bounds.relationsSymb());
+	public static Entry<Formula, Formula> slice(Formula formula, PardinusBounds bounds) {
+		Set<Relation> partials = new HashSet<Relation>();
 		if (bounds.integrated()) {
-			Set<Relation> aux = new HashSet<Relation>();
-			for (Relation r : partials)
-				if (bounds.lowerBound(r).size() == bounds.upperBound(r).size())
-					aux.add(r);
-			// iterating trivial integrated solutions
-			// TODO: there is probably a better way to handle this
-			if (partials.equals(aux))
-				return new SimpleEntry<Formula, Formula>(Formula.TRUE, formula);
-			partials = aux;
+			for (Relation r : bounds.relations())
+				// new relation, probably from trivial iteration
+				if (!bounds.amalgamated.relations().contains(r)) {} 
+				// still symbolic, not partial
+				else if (bounds.lowerSymbBound(r) != null) {} 
+				// if exactly bound, was part of the partial problem
+				else if (bounds.amalgamated.upperBound(r).size() == bounds.amalgamated.lowerBound(r).size())
+					partials.add(r);
+		} else {
+			// if not integrated, bounds are the partial
+			partials = bounds.relations();
 		}
 		// converts to NNF and flattens the formula
 		AnnotatedNode<Formula> flat = FormulaFlattener.flatten(
 				AnnotatedNode.annotateRoots(formula), false);
-		Formula f1 = flat.node();
-		Formula f2 = Formula.TRUE;	
+		final Formula form = flat.node();
+		List<Formula> f2 = new ArrayList<Formula>();
+		List<Formula> f1 = new ArrayList<Formula>();
 		RelationCollector col = new RelationCollector(flat.sharedNodes());
 		// select the appropriate conjuncts
-		if (f1 instanceof BinaryFormula
-				&& ((BinaryFormula) f1).op() == FormulaOperator.AND) {
-			Set<Relation> rsl = ((BinaryFormula) f1).left().accept(col);
-			Set<Relation> rsr = ((BinaryFormula) f1).right().accept(col);
-			if (partials.containsAll(rsl)) {
-				if (!partials.containsAll(rsr)) {
-					f2 = ((BinaryFormula) f1).right();
-					f1 = ((BinaryFormula) f1).left();
-				}
-			} else {
-				if (partials.containsAll(rsr)) {
-					f2 = ((BinaryFormula) f1).left();
-					f1 = ((BinaryFormula) f1).right();
-				} else {
-					f2 = f1;
-					f1 = Formula.TRUE;
-				}
-			}
-		} else if (f1 instanceof NaryFormula
-				&& ((NaryFormula) f1).op() == FormulaOperator.AND) {
-			Iterator<Formula> it = ((NaryFormula) f1).iterator();
-			Formula aux = null;
+		if (form instanceof BinaryFormula
+				&& ((BinaryFormula) form).op() == FormulaOperator.AND) {
+			Set<Relation> rsl = ((BinaryFormula) form).left().accept(col);
+			Set<Relation> rsr = ((BinaryFormula) form).right().accept(col);
+			(partials.containsAll(rsl)?f1:f2).add(((BinaryFormula) form).left());
+			(partials.containsAll(rsr)?f1:f2).add(((BinaryFormula) form).right());
+		} else if (form instanceof NaryFormula
+				&& ((NaryFormula) form).op() == FormulaOperator.AND) {
+			Iterator<Formula> it = ((NaryFormula) form).iterator();
 			while (it.hasNext()) {
 				Formula f = it.next();
 				Set<Relation> rs = f.accept(col);
 				if (partials.containsAll(rs))
-					aux = aux==null?f:aux.and(f);
+					f1.add(f);
 				else
-					f2 = f2.and(f);
+					f2.add(f);
 			}
-			f1 = aux;
+		} else {
+			Set<Relation> rs = form.accept(col);
+			if (partials.containsAll(rs))
+				f1.add(form);
+			else 
+				f2.add(form);
 		}
-		return new SimpleEntry<Formula, Formula>(f1, f2);
+		return new SimpleEntry<Formula, Formula>(NaryFormula.and(f1), NaryFormula.and(f2));
 	}
 	
 	// TODO: temporal slicing will fail if temporal formulas over static relations
