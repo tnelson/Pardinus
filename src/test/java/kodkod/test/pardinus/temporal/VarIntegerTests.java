@@ -16,12 +16,16 @@ import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
+/**
+ * Tests for mutable integer relations.
+ *
+ * @author Nuno Macedo // [HASLab] temporal model finding
+ */
 public class VarIntegerTests {
 
 	@Test
@@ -105,7 +109,7 @@ public class VarIntegerTests {
 			sol = sols.next();
 			c++;
 			if (sol.sat()) {
-//				opt.reporter().debug(sol.instance().toString());
+				opt.reporter().debug(sol.instance().toString());
 			}
 		}
 		assertEquals(7, c);

@@ -27,31 +27,28 @@ import kodkod.engine.config.PardinusOptions;
 import kodkod.instance.Bounds;
 
 /**
- * Å relational constraint solver interface that support solution iteration,
- * independent of the underlying technology (bounded vs. unbounded) and
- * functionalities (temporal, target-oriented, decomposed, symbolic).
+ * A relational constraint solver interface that support solution advanced
+ * iteration operations, independent of the underlying technology (bounded vs.
+ * unbounded) and functionalities (temporal, target-oriented, decomposed,
+ * symbolic).
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy
  *
- * @param <B>
- *            the class of bounds required by a concrete solver
- * @param <O>
- *            the class of options required by a concrete solver
+ * @param <B> the class of bounds required by a concrete solver
+ * @param <O> the class of options required by a concrete solver
  */
-public interface ExplorableSolver<B extends Bounds, O extends PardinusOptions>
-		extends IterableSolver<B, O> {
+public interface ExplorableSolver<B extends Bounds, O extends PardinusOptions> extends IterableSolver<B, O> {
 
 	/**
 	 * Attempts to find a set of solutions to the given {@code formula} and
-	 * {@code bounds} with respect to the set options or, optionally, to
-	 * prove the formula's unsatisfiability. If the operation is successful, the
-	 * method returns an iterator over {@link Solution} objects. If there is
-	 * more than one solution, the outcome of all of them is SAT or trivially
-	 * SAT. If the problem is unsatisfiable, the iterator will produce a single
-	 * {@link Solution} whose outcome is UNSAT or trivially UNSAT. The set of
-	 * returned solutions must be non-empty, but it is not required to be
-	 * complete; a solver could simply return a singleton set containing just
-	 * the first available solution.
+	 * {@code bounds} with respect to the set options or, optionally, to prove the
+	 * formula's unsatisfiability. If the operation is successful, the method
+	 * returns an iterator over {@link Solution} objects. If there is more than one
+	 * solution, the outcome of all of them is SAT or trivially SAT. If the problem
+	 * is unsatisfiable, the iterator will produce a single {@link Solution} whose
+	 * outcome is UNSAT or trivially UNSAT. The set of returned solutions must be
+	 * non-empty, but it is not required to be complete; a solver could simply
+	 * return a singleton set containing just the first available solution.
 	 */
 	public Explorer<Solution> solveAll(Formula formula, B bounds);
 

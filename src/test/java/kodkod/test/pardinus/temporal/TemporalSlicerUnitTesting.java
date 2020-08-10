@@ -58,7 +58,7 @@ public class TemporalSlicerUnitTesting {
 		bounds1.bound(tord, u.factory().allOf(2));
 		bounds1.bound(succ1, u.factory().allOf(2));
 		bounds1.bound(succ2, u.factory().allOf(2));
-		bounds = new PardinusBounds(bounds1, true);
+		bounds = PardinusBounds.splitAtTemporal(bounds1);
 	}
 	
 	@Test

@@ -40,9 +40,9 @@ import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
 /**
+ * Tests symbolic bound resolution.
  * 
  * @author Nuno Macedo // [HASLab] decomposed model finding
- *
  */
 public class ResolutionTests {
 

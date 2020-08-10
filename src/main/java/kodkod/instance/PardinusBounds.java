@@ -103,11 +103,10 @@ public class PardinusBounds extends Bounds {
 	/** Statistics, how many times has this bound been integrated. */
 	public int integration = 0;
 	
-	/* Constructors */
-
 	/**
 	 * Constructs new empty bounds over the given universe.
 	 * 
+	 * @param universe the atom universe
 	 * @ensures this.universe' = universe && no this.relations' && no
 	 *          this.intBound'
 	 * @throws NullPointerException
@@ -158,11 +157,11 @@ public class PardinusBounds extends Bounds {
 
 	/**
 	 * Constructor for decomposed bounds. The first is the partial problem
-	 * (which will be encoded in this) and the second is amalgamated with the
+	 * (which will be embedded in <this>) and the second is amalgamated with the
 	 * first in amalgamated. Non-mergeable data is selected from <partial>.
 	 * 
-	 * @param partial
-	 * @param remainder
+	 * @param partial the partial problem bounds
+	 * @param remainder the remainder bounds
 	 */
 	public PardinusBounds(PardinusBounds partial, Bounds remainder) {
 		this(partial.universe().factory(), partial.lowers, partial.uppers, partial.targets,
@@ -174,31 +173,31 @@ public class PardinusBounds extends Bounds {
 	}
 	
 	/**
-	 * Automatic partition into static/relation bounds.
+	 * Automatic partition of exiting bounds into static/relation bounds.
 	 * 
-	 * @param amalg
-	 * @param x
+	 * @param bounds the original, non-decomposed bounds
+	 * @return the bounds split between static and mutable relations
 	 */
-	public PardinusBounds(PardinusBounds amalg, boolean x) {
+	static public PardinusBounds splitAtTemporal(PardinusBounds bounds) {
 		// Create a new bound with static information
-		this(amalg.universe().factory(), 
-				new HashMap<Relation, TupleSet>(amalg.lowers), new HashMap<Relation, TupleSet>(amalg.uppers),
-				new HashMap<Relation, TupleSet>(amalg.targets), new HashMap<Relation, Integer>(amalg.weights), 
-				new HashMap<Relation, Expression>(amalg.lowers_symb), new HashMap<Relation, Expression>(amalg.uppers_symb),
-				amalg.symbolic, amalg.intBounds(), null, amalg.integrated,
-				amalg.trivial_config, amalg.integration);
+		PardinusBounds b = new PardinusBounds(bounds.universe().factory(), 
+				new HashMap<Relation, TupleSet>(bounds.lowers), new HashMap<Relation, TupleSet>(bounds.uppers),
+				new HashMap<Relation, TupleSet>(bounds.targets), new HashMap<Relation, Integer>(bounds.weights), 
+				new HashMap<Relation, Expression>(bounds.lowers_symb), new HashMap<Relation, Expression>(bounds.uppers_symb),
+				bounds.symbolic, bounds.intBounds(), null, bounds.integrated,
+				bounds.trivial_config, bounds.integration);
 		// TODO: is it problematic to use the same #SymbolicStructures?
 		
-		this.amalgamated = amalg.clone();
+		b.amalgamated = bounds.clone();
 
 		// the automatic partition splits static / variable relations
 		// however, symbolic bounds of static relations may refer to variable relations
 		// (even indirectly, for instance, if a var sig extends a static sig)
 		// in this automatic splitting they are irrelevant any way, since static are resolved first
 		List<Relation> problematic = new LinkedList<Relation>();
-		Set<Relation> rs = relations_symb; 
+		Set<Relation> rs = b.relations_symb; 
 		for (Relation r : rs)
-			for (Relation d : symbolic.deps.get(r))
+			for (Relation d : b.symbolic.deps.get(r))
 				if (d.isVariable())
 					problematic.add(r);
 		
@@ -206,11 +205,13 @@ public class PardinusBounds extends Bounds {
 		
 		problematic.clear();
 		
-		for (Relation r : relations)
+		for (Relation r : b.relations)
 			if (r.isVariable())
 				problematic.add(r);
 		
-		relations.removeAll(problematic);
+		b.relations.removeAll(problematic);
+		
+		return b;
 	}
 	
 	/**

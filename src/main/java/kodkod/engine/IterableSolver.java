@@ -29,7 +29,7 @@ import kodkod.engine.config.PardinusOptions;
 import kodkod.instance.Bounds;
 
 /**
- * Å relational constraint solver interface that support solution iteration,
+ * A relational constraint solver interface that support solution iteration,
  * independent of the underlying technology (bounded vs. unbounded) and
  * functionalities (temporal, target-oriented, decomposed, symbolic).
  * 

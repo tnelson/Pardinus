@@ -150,10 +150,9 @@ public class TemporalTranslator {
 
 		formula = formula.and(symbForm);
 		
-		this.formula = formula; // NNFReplacer.nnf(form);
+		this.formula = formula;
 		this.bounds = bounds;
 		this.past_depth = countHeight(formula);
-//		this.has_always = hasAlways(formula);
 	}
 
 	/**

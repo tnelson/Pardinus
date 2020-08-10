@@ -28,7 +28,6 @@ import org.junit.Test;
  * partial and remainder bounds is correct.
  * 
  * @author Eduardo Pessoa, Nuno Macedo // [HASLab] decomposed model finding
- *
  */
 public class SlicerUnitTesting {
 

@@ -26,18 +26,12 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
-import kodkod.engine.PardinusSolver;
-import kodkod.engine.Solution;
-import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
-import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TemporalInstance;
@@ -47,11 +41,10 @@ import kodkod.instance.Universe;
 import org.junit.Test;
 
 /**
- * Tests the reification of states and paths into formulas, needed for default
- * iteration.
+ * Tests the reification of state and path instances into formulas, needed for
+ * non-incremental iteration.
  * 
  * @author Nuno Macedo // [HASLab] temporal model finding
- *
  */
 public class ReificationTests {
 	
