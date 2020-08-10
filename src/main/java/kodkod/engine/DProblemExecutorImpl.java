@@ -167,7 +167,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	@Override
 	public void failed(Throwable e) {
 		solver_partial.options().reporter().warning("Integrated solver failed.");
-		solver_partial.options().reporter().debug(e.getLocalizedMessage());
+		solver_partial.options().reporter().debug(e.getStackTrace().toString());
 		running.decrementAndGet();
 		// if last running integrated...
 		if (monitor.isConfigsDone()

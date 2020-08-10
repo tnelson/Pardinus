@@ -125,7 +125,7 @@ public class PardinusSolver implements
 	 */
 	private AbstractSolver<PardinusBounds,ExtendedOptions> solver() {
 		assert options.temporal() || !options.unbounded();
-		assert options.unbounded() == options.solver().unbounded();
+		assert !options.unbounded() || options.solver().unbounded();
 		
 		if (options.unbounded() && !options.solver().unbounded())
 			throw new IllegalArgumentException("Cannot run complete with purely bounded solver.");
