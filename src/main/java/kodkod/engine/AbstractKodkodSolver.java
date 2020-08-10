@@ -72,7 +72,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
 //[HASLab] solver hierarchy
-public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> implements KodkodSolver<B,O> { 
+public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> implements KodkodSolver<B,O>, IterableSolver<B, O> { 
 	
 	/**
 	 * {@inheritDoc}

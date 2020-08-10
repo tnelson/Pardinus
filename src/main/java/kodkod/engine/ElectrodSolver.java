@@ -67,6 +67,8 @@ import kodkod.instance.TemporalInstance;
  * restarting the solver.
  * </p>
  * 
+ * As or Pardinus 1.2, SMV iteration is disabled due to issues on the backends.
+ * 
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  */
 public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,

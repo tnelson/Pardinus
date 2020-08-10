@@ -192,7 +192,7 @@ public class PardinusSolver implements
 //		assert options.solver().incremental();
 		
 		if (solver instanceof IterableSolver<?,?>) {
-			Iterator<Solution> it = ((IterableSolver) solver).solveAll(formula, bounds);
+			Iterator<Solution> it = ((IterableSolver<PardinusBounds, ExtendedOptions>) solver).solveAll(formula, bounds);
 			if (it instanceof Explorer)
 				return (Explorer<Solution>) it;
 			else {
