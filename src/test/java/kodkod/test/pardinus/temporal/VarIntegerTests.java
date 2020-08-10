@@ -21,6 +21,11 @@ import kodkod.instance.TupleFactory;
 import kodkod.instance.TupleSet;
 import kodkod.instance.Universe;
 
+/**
+ * Tests for mutable integer relations.
+ *
+ * @author Nuno Macedo // [HASLab] temporal model finding
+ */
 public class VarIntegerTests {
 
 	@Test
@@ -42,6 +47,7 @@ public class VarIntegerTests {
 		Formula formula = a.sum().eq(IntConstant.constant(1)).always();
         
 		ExtendedOptions opt = new ExtendedOptions();
+//		opt.setReporter(new SLF4JReporter());
         opt.setBitwidth(2);
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);
@@ -52,13 +58,14 @@ public class VarIntegerTests {
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
-
-		int c = 0;
-		while (sols.hasNext()) {
-			Solution sol = sols.next();
+		Solution sol = sols.next();
+		int c = 1;
+		while (sol.sat()) {
+			sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+				opt.reporter().debug(sol.instance().toString());
+			}
 		}
 		assertEquals(29, c);
 		
@@ -95,13 +102,15 @@ public class VarIntegerTests {
 		assertTrue(solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
-
-		int c = 0;
-		while (sols.hasNext()) {
-			Solution sol = sols.next();
+		Solution sol = sols.next();
+		
+		int c = 1;
+		while (sol.sat()) {
+			sol = sols.next();
 			c++;
-			if (sol.sat())
-				System.out.println(sol.instance().toString());
+			if (sol.sat()) {
+				opt.reporter().debug(sol.instance().toString());
+			}
 		}
 		assertEquals(7, c);
 		solver.free();
@@ -135,7 +144,6 @@ public class VarIntegerTests {
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		assertFalse(solver.solve(formula, bounds).sat());
-
 	}
 	
 	@Test
@@ -157,6 +165,7 @@ public class VarIntegerTests {
 		Formula formula = a.sum().eq(IntConstant.constant(1)).always();
         
 		ExtendedOptions opt = new ExtendedOptions();
+//		opt.setReporter(new SLF4JReporter());
         opt.setBitwidth(2);
 		opt.setRunTemporal(true);
 		opt.setRunDecomposed(false);

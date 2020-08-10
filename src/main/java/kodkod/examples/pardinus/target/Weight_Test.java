@@ -50,7 +50,7 @@ public class Weight_Test {
 		bounds.setTarget(b, fac.setOf(fac.tuple(a1, a3),fac.tuple(a3,a3)));*/
 		Solver solver = new Solver();
 		
-		solver.options().setSolver(SATFactory.PMaxYices);
+		solver.options().setSolver(SATFactory.PMaxSAT4J);
 		
 		Solution sol = solver.solve(f, bounds);
 		

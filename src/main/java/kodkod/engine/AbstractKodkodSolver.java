@@ -72,7 +72,7 @@ import kodkod.util.nodes.PrettyPrinter;
  * @modified Nuno Macedo // [HASLab] model finding hierarchy
  */
 //[HASLab] solver hierarchy
-public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> implements KodkodSolver<B,O> { 
+public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> implements KodkodSolver<B,O>, IterableSolver<B, O> { 
 	
 	/**
 	 * {@inheritDoc}
@@ -137,7 +137,7 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 
 			final SATSolver cnf = translation.cnf();
 			
-			options().reporter().solvingCNF(translation.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses());
+			options().reporter().solvingCNF(0, translation.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();
 			final long endSolve = System.currentTimeMillis();
@@ -316,7 +316,7 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 			final SATSolver cnf = transl.cnf();
 			final int primaryVars = transl.numPrimaryVariables();
 			
-			transl.options().reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+			transl.options().reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
 			
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();

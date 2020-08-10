@@ -1,0 +1,22 @@
+language: java
+
+jdk:
+  - openjdk8
+
+before_install:
+  - sudo wget https://github.com/ocaml/opam/releases/download/2.0.0/opam-2.0.0-x86_64-linux -O /usr/bin/opam
+  - sudo chmod 755 /usr/bin/opam
+  - opam init -a --disable-sandboxing 
+  - opam update
+  - eval $(opam env)
+  - curl -L "http://nusmv.fbk.eu/distrib/NuSMV-2.6.0-zchaff-linux64.tar.gz" | tar --extract --gzip --strip-components=2 -C $HOME/bin "NuSMV-2.6.0-Linux/bin/NuSMV" || true
+  - curl -N -L "http://es-static.fbk.eu/tools/nuxmv/downloads/nuXmv-2.0.0-linux64.tar.gz" | tar --extract --gzip --strip-components=2 -C $HOME/bin "nuXmv-2.0.0-Linux/bin/nuXmv" || true
+
+script: mvn clean package -e -P solvers
+
+cache:
+  directories:
+  - $HOME/bin
+  - $HOME/.opam
+  - $HOME/.m2
+  - build/jni

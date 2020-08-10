@@ -25,11 +25,10 @@ package kodkod.test.pardinus.decomp;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
-import kodkod.engine.config.Reporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
@@ -39,15 +38,13 @@ import kodkod.instance.Universe;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Basic tests to check whether the temporal bounded engine is running.
+ * Basic tests to check whether the temporal bounded engine is running with the decomposed strategy.
  * 
- * @author Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal, decomposed, unbounded model finding
  */
 public class BaseTests {
 	private static PardinusSolver dsolver;
@@ -59,9 +56,8 @@ public class BaseTests {
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(true);
 		opt.setRunTemporal(false);
-		Reporter rep = new SLF4JReporter();
-		opt.setReporter(rep);
-		opt.configOptions().setReporter(rep);
+//		opt.setReporter(new SLF4JReporter());
+		opt.configOptions().setReporter(opt.reporter());
 	}
 
 	@Test
@@ -93,11 +89,14 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)).and(b.eq(c).not()); // never trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 13; i++) {
-			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -133,11 +132,16 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.in(b).and(b.eq(c).not()); // config trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 15; i++) {
-			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext()) {
+				sol = sols.next();
+			}
+			if (sol.unsat()) {
+				sol = sols.nextC();
+			}
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
@@ -173,15 +177,16 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)); // all remainder trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
-		StringBuilder sb = new StringBuilder();
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 18; i++) {
-			sol = sols.next();
-			sb.append("** "+sol.instance().relationTuples().toString()+"\n");
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
-		System.out.println(sb.toString());
 		sol = sols.next();
 		assertFalse("base problem should have 9 sols", sol.sat());
 	}
@@ -215,12 +220,16 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)).and(b.in(c)); // some remainder trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 9; i++) {
-			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
+
 		}
 		sol = sols.next();
 		assertFalse("base problem should have 9 sols", sol.sat());
@@ -255,307 +264,18 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(bounds1, bounds2);
 		Formula formula = a.eq(Expression.UNIV).not().and(a.in(b)).and(b.eq(c).not()); // never trivial
 		
-		Iterator<Solution> sols = dsolver.solveAll(formula, bounds);
-		Solution sol;
+		Explorer<Solution> sols = dsolver.solveAll(formula, bounds);
+		Solution sol = null;
 		for (int i = 0; i < 13; i++) {
-			sol = sols.next();
-			System.out.println("** "+sol.instance().toString());
+			if (sols.hasNext())
+				sol = sols.next();
+			if (sol.unsat()) 
+				sol = sols.nextC();
+			opt.reporter().debug("** "+sol.instance().toString());
 			assertTrue("base problem should be sat", sol.sat());
 		}
 		sol = sols.next();
 		assertFalse("base problem should have 9 sols", sol.sat());
 	}
 	
-	
-	/*
-	@Test
-	public void testSATLen() {
-		opt.setSolver(SATFactory.MiniSat);
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(false);
-		opt.setMinTraceLength(10);
-		opt.setMaxTraceLength(20);
-		dsolver = new PardinusSolver(opt);
-
-		int n = 2;
-
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary("b");
-		Relation r = Relation.binary_variable("r");
-
-		Object[] atoms = new Object[n * 2];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-		for (int i = 0; i < n; i++)
-			atoms[n + i] = "B" + i;
-
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, as);
-		bounds.bound(b, bs);
-		bounds.bound(r, a.product(b));
-		Formula formula = ((a.eq(a.prime()).not())).and(r.lone()).always();
-		Formula run = a.no().eventually();
-		
-		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
-		
-		assertTrue("base problem should be sat for this trace length", sol.sat());
-	}
-	
-	@Test
-	public void testUNSATLen() {
-		opt.setSolver(SATFactory.MiniSat);
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(false);
-		opt.setMaxTraceLength(1);
-		dsolver = new PardinusSolver(opt);
-
-		int n = 2;
-
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary("b");
-		Relation r = Relation.binary_variable("r");
-
-		Object[] atoms = new Object[n * 2];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-		for (int i = 0; i < n; i++)
-			atoms[n + i] = "B" + i;
-
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, as);
-		bounds.bound(b, bs);
-		bounds.bound(r, a.product(b));
-		Formula formula = ((a.eq(a.prime()).not())).and(r.lone()).always();
-		Formula run = a.no().eventually();
-		
-		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
-		
-		assertFalse("base problem should not be sat for this trace length", sol.sat());
-	}
-	
-	@Test
-	public void testUNSAT() {
-		opt.setSolver(SATFactory.MiniSat);
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(false);
-		dsolver = new PardinusSolver(opt);
-
-		int n = 2;
-
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary("b");
-		Relation r = Relation.binary_variable("r");
-
-		Object[] atoms = new Object[n * 2];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-		for (int i = 0; i < n; i++)
-			atoms[n + i] = "B" + i;
-
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, as);
-		bounds.bound(b, bs);
-		bounds.bound(r, a.product(b));
-		Formula formula = ((a.eq(a.prime()).not())).and(r.some()).always();
-		Formula run = r.no().eventually();
-		
-		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
-		
-		assertFalse("base problem should be unsat",sol.sat());
-	}
-	
-	@Test
-	public void testSATU() {
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		opt.setRunUnbounded(true);
-		opt.setRunTemporal(true);
-		dsolver = new PardinusSolver(opt);
-
-		int n = 2;
-
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary("b");
-		Relation r = Relation.binary_variable("r");
-
-		Object[] atoms = new Object[n * 2];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-		for (int i = 0; i < n; i++)
-			atoms[n + i] = "B" + i;
-
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, as);
-		bounds.bound(b, bs);
-		bounds.bound(r, a.product(b));
-		Formula formula = ((a.eq(a.prime()).not())).and(r.lone()).always();
-		Formula run = a.no().eventually();
-		
-		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
-		
-		assertTrue("base problem should be sat", sol.sat());
-	}
-	
-	@Test
-	public void testUNSATU() {
-		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-		opt.setRunUnbounded(true);
-		opt.setRunTemporal(true);
-		dsolver = new PardinusSolver(opt);
-
-		int n = 2;
-
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary("b");
-		Relation r = Relation.binary_variable("r");
-
-		Object[] atoms = new Object[n * 2];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-		for (int i = 0; i < n; i++)
-			atoms[n + i] = "B" + i;
-
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, as);
-		bounds.bound(b, bs);
-		bounds.bound(r, a.product(b));
-		Formula formula = ((a.eq(a.prime()).not())).and(r.some()).always();
-		Formula run = r.no().eventually();
-		
-		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
-		
-		assertFalse("base problem should be unsat",sol.sat());
-	}
-	
-	@Test
-	public void testInvalid1() {
-		try {
-			opt.setSolver(SATFactory.MiniSat);
-			opt.setRunTemporal(false);
-			opt.setRunUnbounded(false);
-			dsolver = new PardinusSolver(opt);
-			int n = 2;
-
-			Relation a = Relation.unary_variable("a");
-			Relation b = Relation.unary("b");
-			Relation r = Relation.binary_variable("r");
-
-			Object[] atoms = new Object[n * 2];
-			for (int i = 0; i < n; i++)
-				atoms[i] = "A" + i;
-			for (int i = 0; i < n; i++)
-				atoms[n + i] = "B" + i;
-
-			Universe uni = new Universe(atoms);
-			TupleFactory f = uni.factory();
-			TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-			TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-			PardinusBounds bounds = new PardinusBounds(uni);
-			bounds.bound(a, as);
-			bounds.bound(b, bs);
-			bounds.bound(r, a.product(b));
-			Formula formula = ((a.eq(a.prime()).not())).and(r.some()).always();
-			Formula run = r.no().eventually();
-			
-			dsolver.solveAll(formula.and(run), bounds).next();
-			fail("must run temporal for temporal problems");
-		} catch (AssertionError e) {}
-	}
-	
-	@Test
-	public void testInvalid5() {
-		try {
-			opt.setSolver(SATFactory.MiniSat);
-			opt.setRunTemporal(false);
-			opt.setRunUnbounded(false);
-			opt.setMaxTraceLength(0);
-			dsolver = new PardinusSolver(opt);
-			int n = 2;
-
-			Relation a = Relation.unary_variable("a");
-			Relation b = Relation.unary("b");
-			Relation r = Relation.binary_variable("r");
-
-			Object[] atoms = new Object[n * 2];
-			for (int i = 0; i < n; i++)
-				atoms[i] = "A" + i;
-			for (int i = 0; i < n; i++)
-				atoms[n + i] = "B" + i;
-
-			Universe uni = new Universe(atoms);
-			TupleFactory f = uni.factory();
-			TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-			TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-			PardinusBounds bounds = new PardinusBounds(uni);
-			bounds.bound(a, as);
-			bounds.bound(b, bs);
-			bounds.bound(r, a.product(b));
-			Formula formula = ((a.eq(a.prime()).not())).and(r.some()).always();
-			Formula run = r.no().eventually();
-			
-			dsolver.solveAll(formula.and(run), bounds).next();
-			fail("must run temporal for temporal problems");
-		} catch (AssertionError e) {}
-	}
-
-
-	@Test
-	public void testInvalid2() {
-		try {
-			opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-			opt.setRunTemporal(false);
-			opt.setRunUnbounded(true);
-			dsolver = new PardinusSolver(opt);
-			fail("must run temporal for unbounded run");
-		} catch (Exception e) {}
-	}
-
-	@Test
-	public void testInvalid3() {
-		try {
-			opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
-			opt.setRunTemporal(true);
-			opt.setRunUnbounded(false);
-			dsolver = new PardinusSolver(opt);
-			fail("must select bounded solver for bounded run");
-		} catch (AssertionError e) {}
-	}
-
-	@Test
-	public void testInvalid4() {
-		try {
-			opt.setSolver(SATFactory.MiniSat);
-			opt.setRunTemporal(true);
-			opt.setRunUnbounded(true);
-			dsolver = new PardinusSolver(opt);
-			fail("must select unbounded solver for unbounded run");
-		} catch (AssertionError e) {}
-	}
-	*/
 }

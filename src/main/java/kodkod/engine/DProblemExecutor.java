@@ -22,11 +22,17 @@
  */
 package kodkod.engine;
 
+import java.util.AbstractMap;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.decomp.DProblem;
@@ -124,14 +130,14 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 	public abstract void run();
 
 	/**
-	 * Calculates the next solution. May block until a solution is calculated by
+	 * Calculates the next batch of solution. May block until a solution is calculated by
 	 * an integrated problem.
 	 * 
 	 * @return the solution found.
 	 * @throws InterruptedException
 	 *             if interrupted while waiting.
 	 */
-	public abstract Solution next() throws InterruptedException;
+	public abstract Entry<Solution, Iterator<Solution>> next() throws InterruptedException;
 
 	/**
 	 * Tests whether there are further solutions. May block if there is no
@@ -158,8 +164,46 @@ abstract public class DProblemExecutor<S extends AbstractSolver<PardinusBounds, 
 		}
 	}
 	
-	static Solution poison() {
-		return Solution.unsatisfiable(new Statistics(-1,-1,-1,-1,-1),null);
+	static Entry<Solution,Iterator<Solution>> poison(Solution s) {
+		if (s == null)
+			s = Solution.unsatisfiable(new Statistics(-1,-1,-1,-1,-1),null);
+		return new AbstractMap.SimpleEntry<Solution, Iterator<Solution>>(s,new Explorer<Solution>() {
+			
+			@Override
+			public boolean hasNext() {
+				return false;
+			}
+
+			@Override
+			public Solution next() {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public Solution nextC() {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public Solution nextP() {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public Solution nextS(int state, int delta, Set<Relation> change) {
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public boolean hasNextP() {
+				return false;
+			}
+
+			@Override
+			public boolean hasNextC() {
+				return false;
+			}
+		});
 	}
 	
 	static boolean isPoison(Solution sol) {

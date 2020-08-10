@@ -101,7 +101,6 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 	private DMode decomp_mode = DMode.PARALLEL;
 	private ExtendedOptions config_options = null;
 	
-	
 	/**
 	 * {@inheritDoc}
 	 */

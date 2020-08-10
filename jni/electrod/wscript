@@ -10,10 +10,14 @@ def configure(conf):
     subprocess.check_call('opam update',shell=True)
 
 def build(bld):
-    bld(rule = 'opam install -y electrod')
+    bld(rule = 'opam install -y electrod --destdir ' + bld.path.abspath() + '/electrod')
+    
+    bld.install_files('${LIBDIR}', 'electrod/bin/electrod', chmod=493)
 
 def distclean(ctx):
-    pass
+    from waflib import Scripting
+    Scripting.distclean(ctx)
+    shutil.rmtree(ctx.path.abspath() + '/electrod', True)
 
 def sourceclean(ctx):
     pass

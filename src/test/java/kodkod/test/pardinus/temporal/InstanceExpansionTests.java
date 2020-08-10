@@ -32,10 +32,10 @@ import java.util.Iterator;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.Evaluator;
+import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Instance;
 import kodkod.instance.PardinusBounds;
@@ -81,7 +81,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -97,16 +97,16 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
 
-		inst = (TemporalInstance) solution.next().instance();
-		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.prefixLength() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.state(i));
-			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
-			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
-		}
-
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
+//		inst = (TemporalInstance) solution.next().instance();
+//		e1 = new Evaluator(inst);
+//		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+//			Evaluator e2 = new Evaluator(inst.state(i));
+//			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+//			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
+//		}
+//
+//		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
+//		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
 
 		solver.free();
 	}
@@ -138,7 +138,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -154,16 +154,16 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
 		}
 
-		inst = (TemporalInstance) solution.next().instance();
-		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.prefixLength() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.state(i));
-			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
-			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
-		}
-
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
+//		inst = (TemporalInstance) solution.next().instance();
+//		e1 = new Evaluator(inst);
+//		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+//			Evaluator e2 = new Evaluator(inst.state(i));
+//			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+//			assertEquals("expanded representation mistached with single state", e1.evaluate(b, i).toString(), e2.evaluate(b).toString());
+//		}
+//
+//		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
+//		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
 
 		solver.free();
 	}
@@ -190,7 +190,7 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(true);
 		opt.setRunDecomposed(false);
@@ -206,16 +206,16 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
-		inst = (TemporalInstance) solution.next().instance();
-		e1 = new Evaluator(inst);
-		for (int i = 0; i < inst.prefixLength() + 3; i++) {
-			Evaluator e2 = new Evaluator(inst.state(i));
-			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
-			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
-		}
-
-		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
-		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
+//		inst = (TemporalInstance) solution.next().instance();
+//		e1 = new Evaluator(inst);
+//		for (int i = 0; i < inst.prefixLength() + 3; i++) {
+//			Evaluator e2 = new Evaluator(inst.state(i));
+//			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+//			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
+//		}
+//
+//		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
+//		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
 
 		solver.free();
 	}
@@ -244,12 +244,12 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(10);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
@@ -271,6 +271,63 @@ public class InstanceExpansionTests {
 
 		assertTrue("formula should hold", e1.evaluate(((a.eq(a.prime()).not())).always(),0));
 		assertFalse("formula should not hold", e1.evaluate(((a.eq(a.prime()))).always(),0));
+
+		solver.free();
+	}
+	
+	@Test
+	public void testTmp4SAT() {
+		int n = 3;
+
+		Relation a = Relation.unary_variable("a");
+
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		Formula formula = Formula.and(a.no(),a.eq(a.prime()).not().always());
+
+		ExtendedOptions opt = new ExtendedOptions();
+
+//		opt.setReporter(new SLF4JReporter());
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(10);
+		opt.setSolver(SATFactory.MiniSat);
+		PardinusSolver solver = new PardinusSolver(opt);
+
+		Iterator<Solution> solution = solver.solveAll(formula, bounds);
+		TemporalInstance inst = (TemporalInstance) solution.next().instance();
+		Evaluator e1 = new Evaluator(inst);
+		for (int i = 0; i < inst.prefixLength(); i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
+			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			e2 = new Evaluator(inst.state(i+1));
+			assertEquals("expanded representation mistached with single state", e1.evaluate(a.prime(), i).toString(), e2.evaluate(a).toString());
+		}
+
+		inst = (TemporalInstance) solution.next().instance();
+		e1 = new Evaluator(inst);
+		for (int i = 0; i < inst.prefixLength(); i++) {
+			Evaluator e2 = new Evaluator(inst.state(i));
+			assertEquals("expanded representation mistached with single state", e1.evaluate(a, i).toString(), e2.evaluate(a).toString());
+			e2 = new Evaluator(inst.state(i+1));
+			assertEquals("expanded representation mistached with single state", e1.evaluate(a.prime(), i).toString(), e2.evaluate(a).toString());
+		}
+
+		assertFalse("formula should not hold", e1.evaluate(a.some().before().once(),0));
+		assertFalse("formula should not hold", e1.evaluate(a.some().before().once().after(),0));
+		assertFalse("formula should not hold", e1.evaluate(a.some().before().once(),1));
+		assertTrue("formula should hold", e1.evaluate(a.some().before().once().after(),1));
+		assertTrue("formula should hold", e1.evaluate(a.some().before().once().after().after(),0));
+		assertTrue("formula should hold", e1.evaluate(a.some().before().once().eventually(),0));
 
 		solver.free();
 	}
@@ -302,11 +359,11 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(false);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 
 		Iterator<Solution> solution = solver.solveAll(formula, bounds);
@@ -350,14 +407,14 @@ public class InstanceExpansionTests {
 
 		ExtendedOptions opt = new ExtendedOptions();
 
-		opt.setReporter(new SLF4JReporter());
+//		opt.setReporter(new SLF4JReporter());
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		opt.setRunDecomposed(false);
-		opt.setSolver(SATFactory.DefaultSAT4J);
+		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 
-		Iterator<Solution> solution = solver.solveAll(formula, bounds);
+		Explorer<Solution> solution = solver.solveAll(formula, bounds);
 		TemporalInstance inst = (TemporalInstance) solution.next().instance();
 		Evaluator e1 = new Evaluator(inst);
 		for (int i = 0; i < inst.prefixLength() + 3; i++) {
@@ -366,7 +423,7 @@ public class InstanceExpansionTests {
 			assertEquals("expanded representation mistached with single state", e1.evaluate(r, i).toString(), e2.evaluate(r).toString());
 		}
 
-		inst = (TemporalInstance) solution.next().instance();
+		inst = (TemporalInstance) solution.nextC().instance();
 		e1 = new Evaluator(inst);
 		for (int i = 0; i < inst.prefixLength() + 2; i++) {
 			Evaluator e2 = new Evaluator(inst.state(i));

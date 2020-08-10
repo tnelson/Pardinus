@@ -24,20 +24,15 @@ package kodkod.engine;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
-import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.engine.config.ExtendedOptions;
@@ -72,11 +67,12 @@ import kodkod.instance.TemporalInstance;
  * restarting the solver.
  * </p>
  * 
+ * As or Pardinus 1.2, SMV iteration is disabled due to issues on the backends.
+ * 
  * @author Nuno Macedo // [HASLab] unbounded temporal model finding
  */
 public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
-		TemporalSolver<ExtendedOptions>,
-		IterableSolver<PardinusBounds, ExtendedOptions> {
+		TemporalSolver<ExtendedOptions> {
 
 	private final ExtendedOptions options;
 
@@ -105,52 +101,96 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 	 */
 	public Solution solve(Formula formula, PardinusBounds bounds)
 			throws InvalidUnboundedProblem, InvalidUnboundedSolution {
-		return ElectrodSolver.go(formula,bounds,options);
+		return go(formula,bounds,options);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
-		return new SolutionIterator(formula, bounds, options);
-	}
+//	/**
+//	 * {@inheritDoc}
+//	 */
+//	public Iterator<Solution> solveAll(Formula formula, PardinusBounds bounds) {
+//		return new SolutionIterator(formula, bounds, options);
+//	}
+//
+//	private final static class SolutionIterator implements Iterator<Solution> {
+//	
+//		private Formula formula;
+//		private final PardinusBounds bounds;
+//		private Map<Object,Expression> reifs;
+//		private ExtendedOptions options;
+//		
+//		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
+//			this.formula = formula;
+//			this.reifs = new HashMap<Object,Expression>();
+//			this.bounds = bounds;
+//			this.options = options;
+//		}
+//			
+//		/**
+//		 * {@inheritDoc}
+//		 */
+//		@Override
+//		public boolean hasNext() {
+//			return false;
+//		}
+//	
+//		/**
+//		 * {@inheritDoc}
+//		 */
+//		@Override
+//		public Solution next() {
 
-	private final static class SolutionIterator implements Iterator<Solution> {
-	
-		private Formula formula;
-		private final PardinusBounds bounds;
-		private Map<Object,Expression> reifs;
-		private ExtendedOptions options;
-		
-		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
-			this.formula = formula;
-			this.reifs = new HashMap<Object,Expression>();
-			this.bounds = bounds;
-			this.options = options;
-		}
-			
-		@Override
-		public boolean hasNext() {
-			return formula != null;
-		}
-	
-		@Override
-		public Solution next() {
-				
-			Solution s = go(formula,bounds,options);
-	
-			if (s.sat()) {
-				Formula trns = s.instance().formulate(bounds,reifs,formula).not();
-				options.reporter().debug("Reified instance: "+trns);
-				formula = formula.and(trns);
-			}
-			else 
-				formula = null;
-	
-			return s;
-		}
-	
-	}
+			// currently disabled due to issues on backends
+//			if (prev != null) {
+//				explorations.replaceAll((k, v) -> k > -1 ? Formula.TRUE : v);
+//				Formula trns = prev.formulate(bounds,reifs,formula,false).not();
+//				options.reporter().debug("Reified instance: "+trns);
+//				explorations.put(-1, (explorations.containsKey(-1)?explorations.get(-1):Formula.TRUE).and(trns));
+//			}
+//				
+//			if (s.sat())
+//				prev = (TemporalInstance) s.instance();
+//			else {
+//				prev = null;
+//				formula = null;
+//			}
+//			return go(formula,bounds,options);
+//		}
+//
+//		TemporalInstance prev;
+//		Map<Integer,Formula> explorations = new HashMap<Integer,Formula>();
+//		
+//		/**
+//		 * {@inheritDoc}
+//		 */
+//		@Override
+//		public Solution nextS(int state, int steps, Set<Relation> force) {
+//
+//			if (steps != 1 && steps != -1)
+//				throw new InvalidSolverParamException("Electrod only supports step or infinite iteration.");
+//			if (prev == null)
+//				throw new InvalidSolverParamException("Cannot iterate without previous solution.");
+//			
+//			explorations.replaceAll((k, v) -> k > state ? Formula.TRUE : v);
+//			
+//
+//			Formula change = prev.formulate(bounds, reifs, formula, state, state+steps-1,false).not();
+//			options.reporter().debug("Force change: "+change);
+//			explorations.put(state, (explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(change));
+//
+//			Formula fix = prev.formulate(bounds, reifs, formula, -1, state-1,false);
+//			options.reporter().debug("Preserve prefix: "+fix);
+//
+//			explorations.put(state, explorations.get(state).and(change));
+//
+//			Solution s = go(formula.and(explorations.containsKey(state)?explorations.get(state):Formula.TRUE).and(fix),bounds,options);
+//			
+//			if (s.sat())
+//				prev = (TemporalInstance) s.instance();
+//	
+//			return s;
+//		}
+//		
+//	}
 
 	/**
 	 * Effectively launches an Electrod process. Used at single solve and at
@@ -176,32 +216,37 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 		String file = dir.toString()+File.separatorChar+String.format("%05d", bounds.integration);
 		PrintWriter writer;
 		try {
-			if (!Options.isDebug())
+			if (!Options.isDebug()) {
 				new File(file+".elo").deleteOnExit();
+			}
 			writer = new PrintWriter(file+".elo");
 			String electrod = ElectrodPrinter.print(formula, bounds, rep);
 			writer.println(electrod);
 			writer.close();
 			rep.debug("New Electrod problem at "+dir+".");
-		} catch (FileNotFoundException e) {
+		} catch (Exception e) {
+			rep.debug(e.getMessage());
 			throw new AbortedException("Electrod problem generation failed.", e);
 		}
 		ProcessBuilder builder;
 		List<String> args = new ArrayList<String>();
 		args.add(((ExternalSolver) options.solver().instance()).executable);
 		args.addAll(Arrays.asList(((ExternalSolver) options.solver().instance()).options));
-		args.add(Options.isDebug()?"-v":"--");
+		if (!options.unbounded()) {
+			if (options.minTraceLength() != 1) throw new InvalidSolverParamException("Electrod bounded model checking must start at length 1.");
+			args.add("--bmc"); args.add(options.maxTraceLength()+"");
+		}
+		if (Options.isDebug())
+			args.add("-v");
 		args.add(file+".elo");
 				
 		builder = new ProcessBuilder(args);
-		
-		builder.environment().put("PATH", builder.environment().get("PATH")+":/usr/local/bin:.");
+		builder.environment().put("PATH", builder.environment().get("PATH"));
 		builder.redirectErrorStream(true);
 		int ret = -1;
 		final Process p;
 		try {
-			options.reporter().solvingCNF(-1, -1, -1);
-
+			options.reporter().solvingCNF(-1, -1, -1, -1);
 			p = builder.start();
 			// stores the pid so that it can be correctly terminated
 			Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -209,13 +254,18 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 				public void run() {
 					if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
 						try {
-							Field f = p.getClass().getDeclaredField("pid");
-							f.setAccessible(true);
-							Runtime.getRuntime().exec("kill -SIGTERM " + f.get(p));
-						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException
-								| IllegalAccessException | IOException e) {
+							if (p.isAlive()) {
+								Field f = p.getClass().getDeclaredField("pid");
+								f.setAccessible(true);
+	//							p.destroy();
+	//							System.out.println(f.get(p));
+	//							new ProcessBuilder("kill",f.get(p).toString()).start();
+								Process x = Runtime.getRuntime().exec("kill " + f.get(p));
+							}
+						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | IOException
+								 e) {
 							// TODO Auto-generated catch block
-							e.printStackTrace();
+							 e.printStackTrace();
 						}
 					else
 						p.destroy();

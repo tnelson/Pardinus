@@ -4,18 +4,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
-import org.junit.runners.model.TestTimedOutException;
 
 import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.temporal.HotelT;
 import kodkod.examples.pardinus.temporal.HotelT.Variant;
 import kodkod.instance.PardinusBounds;
 
+/**
+ * More complex temporal model finding tests based on existing examples.
+ * 
+ * @author Nuno Macedo
+ */
 public class ExampleTests {
 	
 	public final ExtendedOptions options;
@@ -25,11 +28,11 @@ public class ExampleTests {
 		options.setRunTemporal(true);
 		options.setRunDecomposed(false);
 		options.setMaxTraceLength(10);
-		options.setReporter(new SLF4JReporter());
 	}
 	
 	@Rule
     public Timeout globalTimeout = Timeout.seconds(60);
+
 	@Rule
     public final ExpectedException thrown = ExpectedException.none();
 	
@@ -70,13 +73,11 @@ public class ExampleTests {
 		assert(!sol.sat());
 	}
 	
-	// NuSMV times out
-	@Test(expected = TestTimedOutException.class)
+	@Test
 	public void testSATComplete() {
-		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
-		options.setSolver(SATFactory.electrod("-t","NuSMV"));
-		HotelT model = new HotelT(new String[] {"1",Variant.INTERVENES.toString()} );
+		options.setSolver(SATFactory.electrod("-t","nuXmv"));
+		HotelT model = new HotelT(new String[] {"2",Variant.INTERVENES.toString()} );
 		Formula formula = model.formula();
 		PardinusBounds bounds = model.bounds();
 		PardinusSolver solver = new PardinusSolver(options);
@@ -84,10 +85,8 @@ public class ExampleTests {
 		assert(sol.sat());
 	}
 
-	// NuSMV times out
-	@Test(expected = TestTimedOutException.class)
+	@Test
 	public void testUNSATFormulaComplete() {
-		thrown.expect(TestTimedOutException.class);
 		options.setRunUnbounded(true);
 		options.setSolver(SATFactory.electrod("-t","NuSMV"));
 		HotelT model = new HotelT(new String[] {"1",Variant.NOINTERVENES.toString()} );

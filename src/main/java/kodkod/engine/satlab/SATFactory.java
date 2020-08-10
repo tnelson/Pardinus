@@ -203,7 +203,7 @@ public abstract class SATFactory {
 		
 		final String executable = findStaticLibrary("plingeling");
 		return externalFactory(executable==null ? "plingeling" : executable, 
-				null, false, opts.toArray(new String[opts.size()]));
+				null, false, false, opts.toArray(new String[opts.size()]));
 	
 	}
 	
@@ -216,38 +216,38 @@ public abstract class SATFactory {
 	public static final SATFactory syrup() {
 		final String executable = findStaticLibrary("glucose-syrup");
 		return externalFactory(executable==null ? "glucose-syrup" : executable, 
-				null, false, "-verb=0");
+				null, false, false, "-verb=0");
 	}
 
 	// [HASLab]
 	public static final SATFactory electrod(String ...opts) {
 		final String executable = findStaticLibrary("electrod");
 		return externalFactory(executable==null ? "electrod" : executable, 
-				null, true, opts);
+				null, true, true, opts);
 	}
 
-	/**
-	 * The factory that produces instances of the yices solver.
-	 */
-	// [HASLab]
-	public static final SATFactory Yices = new SATFactory() {
-		public SATSolver instance() {
-			return new Yices();
-		}
-		public String toString() { return "Yices"; }
-	};
-
-	/**
-	 * The factory that produces instances of the default PMax-SAT yices solver.
-	 */
-	// [HASLab]	
-	public static final SATFactory PMaxYices = new SATFactory() {
-		public SATSolver instance() {
-			return new PMaxYicesNative();
-		}
-		public boolean maxsat() { return true; }
-		public String toString() { return "PMaxYicesNative"; }
-	};
+//	/**
+//	 * The factory that produces instances of the yices solver.
+//	 */
+//	// [HASLab]
+//	public static final SATFactory Yices = new SATFactory() {
+//		public SATSolver instance() {
+//			return new Yices();
+//		}
+//		public String toString() { return "Yices"; }
+//	};
+//
+//	/**
+//	 * The factory that produces instances of the default PMax-SAT yices solver.
+//	 */
+//	// [HASLab]	
+//	public static final SATFactory PMaxYices = new SATFactory() {
+//		public SATSolver instance() {
+//			return new PMaxYicesNative();
+//		}
+//		public boolean maxsat() { return true; }
+//		public String toString() { return "PMaxYicesNative"; }
+//	};
 
 	/**
 	 * The factory that produces instances of the default PMax-SAT yices solver
@@ -312,7 +312,7 @@ public abstract class SATFactory {
 	 * SAT solver
 	 */
 	// [HASLab] unbounded info
-	public static final SATFactory externalFactory(final String executable, final String cnf, final boolean unbounded, final String... options) {
+	public static final SATFactory externalFactory(final String executable, final String cnf, final boolean incremental, final boolean unbounded, final String... options) {
 		return new SATFactory() {
 
 			@Override
@@ -332,7 +332,7 @@ public abstract class SATFactory {
 			
 			@Override
 			public boolean incremental() {
-				return false;
+				return incremental; // [HASLab]
 			}
 			
 			@Override

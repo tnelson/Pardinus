@@ -29,6 +29,7 @@ Export-Package: \
 	org.sat4j.maxsat,\
 	org.sat4j.pb,\
 	slf4j.api,\
+	slf4j.simple,\
 	org.alloytools.kodkod.nativesat.util;version=latest,\
 	org.alloytools.kodkod.nativesat.amd64-linux;version=latest,\
 	org.alloytools.kodkod.nativesat.x86-linux;version=latest,\

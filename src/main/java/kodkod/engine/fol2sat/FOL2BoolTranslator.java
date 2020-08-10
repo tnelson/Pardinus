@@ -1101,7 +1101,7 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		Formula f;
 		if (temporalFormula.op() == TemporalOperator.UNTIL)
 			f = temporalFormula.right();
-		else if (temporalFormula.op() == TemporalOperator.RELEASE)
+		else if (temporalFormula.op() == TemporalOperator.RELEASES)
 			f = temporalFormula.left().or(temporalFormula.right());
 		else
 			f = temporalFormula.left();

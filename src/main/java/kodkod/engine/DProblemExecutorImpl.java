@@ -23,6 +23,7 @@
 package kodkod.engine;
 
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -30,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import kodkod.ast.Formula;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.Options;
 import kodkod.engine.config.Reporter;
 import kodkod.engine.decomp.DMonitorImpl;
 import kodkod.engine.decomp.DProblem;
@@ -53,14 +53,16 @@ import kodkod.instance.PardinusBounds;
 public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, ExtendedOptions>>
 		extends DProblemExecutor<S> {
 
+	final static public int BATCH_SIZE = 20;
+
 	/** a buffer for solutions, popped by the hasNext test */
-	private Solution buffer;
+	private Entry<Solution,Iterator<Solution>> buffer;
 
 	/** the number of effectively running solvers */
 	private final AtomicInteger running = new AtomicInteger(0);
 
 	/** the queue of found SAT solutions (or poison) */
-	private final BlockingQueue<Solution> solution_queue = new LinkedBlockingQueue<Solution>(2);
+	private final BlockingQueue<Entry<Solution,Iterator<Solution>>> solution_queue;
 
 	/** whether the amalgamated problem will be launched */
 	private final boolean hybrid;
@@ -94,6 +96,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 			PardinusBounds bounds, ExtendedSolver solver1,
 			S solver2, int n, boolean hybrid) {
 		super(new DMonitorImpl(rep), formula, bounds, solver1, solver2, n);
+		this.solution_queue = new LinkedBlockingQueue<Entry<Solution,Iterator<Solution>>>(BATCH_SIZE+1);
 		this.hybrid = hybrid;
 	}
 
@@ -105,59 +108,55 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		if (Thread.currentThread().isInterrupted())
 			return;
 		try {
+			monitor.newSolution(sol);
 			// if the amalgamated terminates...
 			if (!(sol instanceof IProblem)) {
 				// store the sat or unsat solution
-				solution_queue.put(sol.getSolution());
+				solution_queue.put(sol.getSolutions());
 //				running.set(1);
 				monitor.amalgamatedWon();
 //				 terminate the integrated problems
-//				if (!executor.isTerminated())
-//					terminate();
-				// if sat, iterate and launch
-				if (sol.sat()) {
-					amalgamated = sol.next();
-					executor.execute(amalgamated);
-				} else {
-					running.decrementAndGet();
-				}
+				if (!executor.isTerminated())
+					terminate();
+				running.decrementAndGet();
 			}
 			// if an integrated terminates...
 			else {
 				// if it is sat...
-				if (sol.sat()) {
+				if (sol.getSolutions().getKey().sat()) {
+
 					// store the sat solution
-					solution_queue.put(sol.getSolution());
+					solution_queue.put(sol.getSolutions());
 					// terminate the amalgamated problem
 					if (hybrid && amalgamated.isAlive() && !monitor.isAmalgamated()) {
 						amalgamated.interrupt();
-						running.decrementAndGet();
 					}
-					// iterate and launch
-					if (sol.hasNext() && !monitor.isAmalgamated())
-						executor.execute(sol.next());
-					else
-						running.decrementAndGet();
+
+					if (running.get() == 1 && !monitor.isAmalgamated())
+						if (monitor.isConfigsDone()) {
+							solution_queue.put(poison(null));
+						}
+					running.decrementAndGet();
+
 				}
 				// if it is unsat...
 				else {
 					running.decrementAndGet();
 					// if last running integrated...
-					if (running.get() == 0 && !monitor.isAmalgamated()) {
+					if ((running.get() == 0 && !hybrid) || (running.get() == 1 && hybrid))
 						if (monitor.isConfigsDone())
 							// store the unsat solution
-							solution_queue.put(sol.getSolution());
-						else 
-							launchBatch(false);
-					}
+							solution_queue.put(sol.getSolutions());
+						else
+							launchBatch(true);
 				}
 			}
-			monitor.newSolution(sol);
 		} catch (InterruptedException | IllegalThreadStateException e1) {
-			e1.printStackTrace();
 			// was interrupted in the meantime
+			e1.printStackTrace();
 		} catch (RejectedExecutionException e) {
 			// was shutdown in the meantime
+			e.printStackTrace();
 		}
 	}
 
@@ -168,15 +167,14 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	@Override
 	public void failed(Throwable e) {
 		solver_partial.options().reporter().warning("Integrated solver failed.");
-		if (Options.isDebug())
-			solver_partial.options().reporter().debug(e.getLocalizedMessage());
+		solver_partial.options().reporter().debug(e.getStackTrace().toString());
 		running.decrementAndGet();
 		// if last running integrated...
 		if (monitor.isConfigsDone()
 				&& (running.get() == 0 || (amalgamated != null && running
 						.get() == 1))) {
 			try {
-				solution_queue.put(poison());
+				solution_queue.put(poison(null));
 				terminate();
 			} catch (InterruptedException e1) {
 				// was interrupted in the meantime
@@ -201,16 +199,15 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 		launchBatch(true);
 	}
 	Iterator<Solution> configs = solver_partial.solveAll(formula, bounds);
+
+	private Entry<Solution,Iterator<Solution>> last_sol;
 	
-	void launchBatch(boolean first) {
-		int size = 50;
+	synchronized void launchBatch(boolean first) {
 		
-		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(size);
-
+		BlockingQueue<DProblem<S>> problem_queue = new LinkedBlockingQueue<DProblem<S>>(BATCH_SIZE);
 		// collects a batch of configurations
-		while (configs.hasNext() && problem_queue.size() < size) {
+		while (configs.hasNext() && problem_queue.size() < BATCH_SIZE) {
 			Solution config = configs.next();
-
 			if (config.unsat()) {
 				// when there is no configuration no solver will ever
 				// callback so it must be terminated here
@@ -218,13 +215,14 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 					try {
 						// get the stats from the unsat
 						monitor.newConfig(config);
-						terminate();
-						solution_queue.put(config);
+//						terminate();
+						solution_queue.put(poison(config));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 			} else {
 				monitor.newConfig(config);
+
 				DProblem<S> problem = new IProblem<S>(config, this);
 				problem_queue.add(problem);
 			}
@@ -237,6 +235,7 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 				executor.execute(problem);
 			} catch (RejectedExecutionException e) {
 				// if it was shutdown in the meantime
+				e.printStackTrace();
 			}
 			running.incrementAndGet();
 		}
@@ -247,19 +246,18 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Solution next() throws InterruptedException {
-		Solution sol;
+	public Entry<Solution,Iterator<Solution>> next() throws InterruptedException {
 		if (buffer != null) {
-			sol = buffer;
+			last_sol = buffer;
 			buffer = null;
 		} else {
-			sol = solution_queue.take();
+			last_sol = solution_queue.take();
 		}
 		monitor.gotNext(false);
 		// if UNSAT, terminate execution
-		if (!sol.sat())
+		if (last_sol.getValue() == null || !last_sol.getValue().hasNext())
 			terminate();
-		return sol;
+		return last_sol;
 	}
 
 	/**
@@ -267,18 +265,18 @@ public class DProblemExecutorImpl<S extends AbstractSolver<PardinusBounds, Exten
 	 */
 	@Override
 	public boolean hasNext() throws InterruptedException {
-		// buffer is needed because hasNext can't test for emptyness, must wait
-		// for an output
-		if (buffer != null)
-			return true;
-		if (!executor.isShutdown() && running.get() == 0 && !monitor.isConfigsDone() && !monitor.isAmalgamated())
-			launchBatch(false);
-			
-		if (monitor.isConfigsDone() && running.get() == 0)
-			return !solution_queue.isEmpty();
+		synchronized (this) {
+			// buffer is needed because hasNext can't test for emptyness, must wait
+			// for an output
+			if (buffer != null)
+				return true;
+			if (monitor.isConfigsDone() && running.get() == 0)
+				return !solution_queue.isEmpty();
+		}
 		// if there are integrated problems still running, can't just test for
 		// emptyness must wait for the next output
 		buffer = solution_queue.take();
 		return true;
 	}
+
 }

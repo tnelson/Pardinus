@@ -63,6 +63,8 @@ public class RingT extends DModel {
 	// partition 2 relations
 	private Relation toSend, elected;
 
+	private Universe u;
+	
 	public RingT(String args[]) {
 		this.n_ps = Integer.valueOf(args[0]);
 		this.variant = Variant1.valueOf(args[1]);
@@ -74,7 +76,7 @@ public class RingT extends DModel {
 		plast = Relation.unary("plast");
 		pord = Relation.binary("pord");
 
-		id = Relation.binary("id");
+		id = Relation.binary("id_");
 		Id = Relation.unary("Id");
 
 		toSend = Relation.binary_variable("toSend");
@@ -210,14 +212,14 @@ public class RingT extends DModel {
 			// (p.join(id)).in(p.join(toSend).join(t).difference(p.join(toSend).join(t.join(tord.transpose()))));
 			// {p: Process | (after { p.id in p.toSend }) and p.id not in
 			// p.toSend} }
-			c = (p.join(id)).in(p.join(toSend)).next().and(p.join(id).in(p.join(toSend)).not());/*
+			c = (p.join(id)).in(p.join(toSend)).after().and(p.join(id).in(p.join(toSend)).not());/*
 																								 * TEMPORAL
 																								 * OP
 																								 */
 		else
 			// c =
 			// p.in(p.join(toSend).join(t).difference(p.join(toSend).join(t.join(tord.transpose()))));
-			c = p.in(p.join(toSend)).next().and((p.in(p.join(toSend))).not());/*
+			c = p.in(p.join(toSend)).after().and((p.in(p.join(toSend))).not());/*
 																			 * TEMPORAL
 																			 * OP
 																			 */
@@ -354,7 +356,7 @@ public class RingT extends DModel {
 				atoms.add("Id" + i);
 		}
 
-		Universe u = new Universe(atoms);
+		u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 
 		final PardinusBounds b = new PardinusBounds(u);
@@ -382,20 +384,6 @@ public class RingT extends DModel {
 
 	public Bounds bounds2() {
 
-		final List<String> atoms = new ArrayList<String>(n_ps);
-
-		// add the process atoms
-		for (int i = 0; i < n_ps; i++)
-			atoms.add("Process" + i);
-
-		// if variable processes, must consider Ids as a workaround to
-		// totalorder
-		if (variable == Variant2.VARIABLE) {
-			for (int i = 0; i < n_ps; i++)
-				atoms.add("Id" + i);
-		}
-
-		Universe u = new Universe(atoms);
 		final TupleFactory f = u.factory();
 
 		final Bounds b = new Bounds(u);

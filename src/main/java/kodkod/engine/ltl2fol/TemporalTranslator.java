@@ -22,8 +22,10 @@
  */
 package kodkod.engine.ltl2fol;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import kodkod.ast.BinaryExpression;
 import kodkod.ast.BinaryFormula;
@@ -110,12 +112,6 @@ public class TemporalTranslator {
 
 	public static final String STATE_SEP = "_";
 
-	/**
-	 * The constraint forcing the time trace to be infinite. Forces the loop to
-	 * exist.
-	 */
-//	public static final Formula INFINITE = LOOP.one();
-
 	public static final Expression START = L_FIRST.product(FIRST).union(L_FIRST.join(L_PREFIX.closure()).product(LOOP));
 
 	/** The original temporal formula. */
@@ -124,9 +120,9 @@ public class TemporalTranslator {
 	public final PardinusBounds bounds;
 	/** The past operator depth. */
 	public final int past_depth;
-//	/** Whether the formula has an "alaways" operator. */
-//	private boolean has_always;
-
+	/** Map logging the translation of temporal formulas, from resulting formula to original one. **/
+	public final Map<Formula,Formula> tempTransLog = new HashMap<Formula,Formula>();
+	
 	/**
 	 * Constructs a new temporal translator to expand temporal formulas and variable
 	 * bounds.
@@ -154,10 +150,9 @@ public class TemporalTranslator {
 
 		formula = formula.and(symbForm);
 		
-		this.formula = formula; // NNFReplacer.nnf(form);
+		this.formula = formula;
 		this.bounds = bounds;
 		this.past_depth = countHeight(formula);
-//		this.has_always = hasAlways(formula);
 	}
 
 	/**
@@ -192,7 +187,8 @@ public class TemporalTranslator {
 	 * @return the static version of the temporal formula.
 	 */
 	public Formula translate() {
-		return LTL2FOLTranslator.translate(formula, 0, past_depth > 1);
+		tempTransLog.clear();
+		return LTL2FOLTranslator.translate(formula, 0, past_depth > 1, tempTransLog);
 	}
 
 	/**
@@ -251,7 +247,7 @@ public class TemporalTranslator {
 	}
 
 	/** Count the depth of past operators of the given AST tree. */
-	private static int countHeight(Node node) {
+	public static int countHeight(Node node) {
 		ReturnVisitor<Integer, Integer, Integer, Integer> vis = new ReturnVisitor<Integer, Integer, Integer, Integer>() {
 			private int max(int a, int b) {
 				return (a >= b) ? a : b;
@@ -288,7 +284,7 @@ public class TemporalTranslator {
 			public Integer visit(UnaryTempFormula x) {
 				int n = 0;
 				if (x.op().equals(TemporalOperator.ONCE) || x.op().equals(TemporalOperator.HISTORICALLY)
-						|| x.op().equals(TemporalOperator.PREVIOUS))
+						|| x.op().equals(TemporalOperator.BEFORE))
 					n = 1;
 				int l = x.formula().accept(this);
 				return n + l;
@@ -336,7 +332,7 @@ public class TemporalTranslator {
 
 			public Integer visit(BinaryTempFormula x) {
 				int n = 0;
-				if (x.op().equals(TemporalOperator.SINCE) || x.op().equals(TemporalOperator.TRIGGER))
+				if (x.op().equals(TemporalOperator.SINCE) || x.op().equals(TemporalOperator.TRIGGERED))
 					n = 1;
 				int l = max(x.left().accept(this), x.right().accept(this));
 				return n + l;

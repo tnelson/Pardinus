@@ -5,12 +5,12 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	BaseTests.class,
-	SlicerUnitTesting.class,
-	SymmetryTests.class,
-	HotelTests.class,
-	RedBlackTests.class,
-	RingTests.class,
+//	BaseTests.class,
+//	SlicerUnitTesting.class,
+//	SymmetryTests.class,
+//	HotelTests.class,
+//	RedBlackTests.class,
+//	RingTests.class,
 })
 
 public class AllDecompTests {}

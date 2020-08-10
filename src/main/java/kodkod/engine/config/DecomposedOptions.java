@@ -67,7 +67,7 @@ public interface DecomposedOptions extends PardinusOptions {
 	public void setDecomposedMode(DMode mode);
 
 	public enum DMode {
-		PARALLEL, HYBRID, INCREMENTAL, EXHAUSTIVE;
+		PARALLEL, HYBRID, INCREMENTAL;
 	}
 
 	/**

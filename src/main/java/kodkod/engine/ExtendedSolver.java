@@ -92,6 +92,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
 	 * @author Emina Torlak
 	 */
+	// [HASLab]
 	public final static class SolutionIterator implements Iterator<Solution> {
 		private Translation.Whole translation;
 		private long translTime;
@@ -197,7 +198,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				catch(IllegalStateException e) { }
 	
 			}
-			opt.reporter().solvingCNF(primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
+			opt.reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
 			
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();
@@ -300,7 +301,8 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 			this.weights = weights;
 			return next();
 		}
-	}	
+
+}	
 	
 	// [HASLab]
 	@Override
