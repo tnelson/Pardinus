@@ -28,8 +28,6 @@ import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.Solution.Outcome;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
-import kodkod.engine.config.Reporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
@@ -51,10 +49,6 @@ import org.junit.Test;
  */
 public class BaseTests {
 	
-	static {
-	    System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "trace");
-	}
-	
 	private static PardinusSolver dsolver;
 	private static ExtendedOptions opt;
 
@@ -63,16 +57,16 @@ public class BaseTests {
 		opt = new ExtendedOptions();
 		opt.setSymmetryBreaking(20);
 		opt.setRunDecomposed(false);
-//		opt.setReporter(new SLF4JReporter());
 	}
 
 	@Test
-	public void testSAT() {
+	public void testSatSAT() {
 		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
 		dsolver = new PardinusSolver(opt);
 		opt.setMinTraceLength(2);
+		opt.setMaxTraceLength(10);
 
 		int n = 2;
 
@@ -104,7 +98,7 @@ public class BaseTests {
 	}
 	
 	@Test
-	public void testBug() {
+	public void testUnsatSAT() {
 		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
@@ -113,7 +107,8 @@ public class BaseTests {
 		int n = 2;
 
 		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary_variable("b");
+		Relation b = Relation.unary("b");
+		Relation r = Relation.binary_variable("r");
 
 		Object[] atoms = new Object[n * 2];
 		for (int i = 0; i < n; i++)
@@ -129,18 +124,17 @@ public class BaseTests {
 		PardinusBounds bounds = new PardinusBounds(uni);
 		bounds.bound(a, as);
 		bounds.bound(b, bs);
-		Formula p = a.some();
-		Formula q = b.some();
-		Formula formula = ((p.releases(q)).after()).iff((p.after()).releases(q.after()));
+		bounds.bound(r, a.product(b));
+		Formula formula = ((a.eq(a.prime()).not())).and(r.some()).always();
+		Formula run = r.no().eventually();
 		
-		Solution sol = dsolver.solveAll(formula.not(), bounds).next();
+		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
 		
-		assertFalse("problem should be unsat", sol.sat());
+		assertFalse("base problem should be unsat",sol.sat());
 	}
 	
-	
 	@Test
-	public void testSATLen() {
+	public void testSatSATLength() {
 		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
@@ -178,7 +172,7 @@ public class BaseTests {
 	}
 	
 	@Test
-	public void testUNSATLen() {
+	public void testUnsatSATLength() {
 		opt.setSolver(SATFactory.MiniSat);
 		opt.setRunTemporal(true);
 		opt.setRunUnbounded(false);
@@ -216,43 +210,7 @@ public class BaseTests {
 	}
 	
 	@Test
-	public void testUNSAT() {
-		opt.setSolver(SATFactory.MiniSat);
-		opt.setRunTemporal(true);
-		opt.setRunUnbounded(false);
-		dsolver = new PardinusSolver(opt);
-
-		int n = 2;
-
-		Relation a = Relation.unary_variable("a");
-		Relation b = Relation.unary("b");
-		Relation r = Relation.binary_variable("r");
-
-		Object[] atoms = new Object[n * 2];
-		for (int i = 0; i < n; i++)
-			atoms[i] = "A" + i;
-		for (int i = 0; i < n; i++)
-			atoms[n + i] = "B" + i;
-
-		Universe uni = new Universe(atoms);
-		TupleFactory f = uni.factory();
-		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
-		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
-
-		PardinusBounds bounds = new PardinusBounds(uni);
-		bounds.bound(a, as);
-		bounds.bound(b, bs);
-		bounds.bound(r, a.product(b));
-		Formula formula = ((a.eq(a.prime()).not())).and(r.some()).always();
-		Formula run = r.no().eventually();
-		
-		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
-		
-		assertFalse("base problem should be unsat",sol.sat());
-	}
-	
-	@Test
-	public void testSATU() {
+	public void testSatSMV() {
 		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
 		opt.setRunTemporal(true);
@@ -288,7 +246,7 @@ public class BaseTests {
 	}
 	
 	@Test
-	public void testUNSATU() {
+	public void testUnsatSMV() {
 		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
 		opt.setRunUnbounded(true);
 		opt.setRunTemporal(true);
@@ -321,6 +279,82 @@ public class BaseTests {
 		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
 		
 		assertFalse("base problem should be unsat",sol.sat());
+	}
+	
+	@Test
+	public void testSatSMVComplete() {
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(true);
+		opt.setMinTraceLength(1);
+		opt.setMaxTraceLength(2);
+		dsolver = new PardinusSolver(opt);
+
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary("b");
+		Relation r = Relation.binary_variable("r");
+
+		Object[] atoms = new Object[n * 2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+		for (int i = 0; i < n; i++)
+			atoms[n + i] = "B" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, bs);
+		bounds.bound(r, a.product(b));
+		Formula formula = ((a.eq(a.prime()).not())).and(r.lone()).always();
+		Formula run = a.no().eventually();
+		
+		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
+		
+		assertTrue("base problem should be sat for this trace length", sol.sat());
+	}
+	
+	@Test
+	public void testUnsatSMVLength() {
+		opt.setSolver(SATFactory.electrod("-t", "NuSMV"));
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		opt.setMinTraceLength(1);
+		opt.setMaxTraceLength(1);
+		dsolver = new PardinusSolver(opt);
+
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary("b");
+		Relation r = Relation.binary_variable("r");
+
+		Object[] atoms = new Object[n * 2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+		for (int i = 0; i < n; i++)
+			atoms[n + i] = "B" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, bs);
+		bounds.bound(r, a.product(b));
+		Formula formula = ((a.eq(a.prime()).not())).and(r.lone()).always();
+		Formula run = a.no().eventually();
+		
+		Solution sol = dsolver.solveAll(formula.and(run), bounds).next();
+		
+		assertFalse("base problem should not be sat for this trace length", sol.sat());
 	}
 	
 	@Test
@@ -428,7 +462,6 @@ public class BaseTests {
 		} catch (AssertionError e) {}
 	}
 
-
 	@Test
 	public void testInvalid2() {
 		try {
@@ -458,7 +491,43 @@ public class BaseTests {
 			opt.setRunTemporal(true);
 			opt.setRunUnbounded(true);
 			dsolver = new PardinusSolver(opt);
-			fail("must select unbounded solver for unbounded run");
+			fail("must select complete solver for unbounded run");
 		} catch (AssertionError e) {}
+	}
+
+	// Regression test, releases bug
+	@Test
+	public void testBug() {
+		opt.setSolver(SATFactory.MiniSat);
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		dsolver = new PardinusSolver(opt);
+
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+
+		Object[] atoms = new Object[n * 2];
+		for (int i = 0; i < n; i++)
+			atoms[i] = "A" + i;
+		for (int i = 0; i < n; i++)
+			atoms[n + i] = "B" + i;
+
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A" + (n - 1)));
+		TupleSet bs = f.range(f.tuple("B0"), f.tuple("B" + (n - 1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, bs);
+		Formula p = a.some();
+		Formula q = b.some();
+		Formula formula = ((p.releases(q)).after()).iff((p.after()).releases(q.after()));
+		
+		Solution sol = dsolver.solveAll(formula.not(), bounds).next();
+		
+		assertFalse("problem should be sat", sol.sat());
 	}
 }

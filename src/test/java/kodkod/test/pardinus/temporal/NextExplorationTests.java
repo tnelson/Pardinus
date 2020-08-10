@@ -29,7 +29,6 @@ import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.decomp.SymmetryP;
 import kodkod.instance.PardinusBounds;

@@ -6,6 +6,7 @@ package kodkod.examples.pardinus.temporal;
 import java.util.ArrayList;
 import java.util.List;
 
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
@@ -42,7 +43,7 @@ public class BasicTemporal {
 	
 	public final Formula check() {
 		Variable x = Variable.unary("x");
-		return Formula.and(decls(),axioms(),vr.some().not());
+		return Formula.and(decls(),axioms(),vr.some().not(),x.in(st1.join(vr)).not().after().forSome(x.oneOf(st2)));
 	}
 
 	/**

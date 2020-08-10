@@ -36,8 +36,9 @@ import kodkod.instance.PardinusBounds;
 import kodkod.util.nodes.Nodes;
 
 /**
- * Tests the unsat core functionality.
+ * Tests the unsat core functionality for temporal formulas.
  * @author Emina Torlak
+ * @modified: Nuno Macedo // [HASLab] temporal model finding
  */
 public final class UCoreTest  {
 	

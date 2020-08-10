@@ -19,9 +19,7 @@ import kodkod.engine.Evaluator;
 import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.TemporalPardinusSolver;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.examples.pardinus.temporal.HotelT;
 import kodkod.instance.PardinusBounds;
@@ -32,7 +30,9 @@ import kodkod.instance.Universe;
 /**
  * Tests full path iterations (in contrast to branch iteration).
  * 
- * @author nmm
+ * As of Pardinus 1.2, non-incremental iteration is non supported.
+ * 
+ * @author Nuno Macedo
  */
 public class TemporalPathIterationTests {
 
@@ -1039,7 +1039,6 @@ public class TemporalPathIterationTests {
 
 		System.out.println("------");
 
-		TemporalPardinusSolver.SATOPTITERATION = true;
 		alls = new ArrayList<List<List<Long>>>();
 		for (int tr = 0; tr < ty; tr++) {
 			List<List<Long>> times = new ArrayList<List<Long>>(nn);
@@ -1088,8 +1087,6 @@ public class TemporalPathIterationTests {
 
 					Iterator<Solution> sols = solver.solveAll(formula, bounds);
 
-//			System.out.println(bounds);
-//			System.out.println(formula);
 
 					for (int j = 0; sols.hasNext() && j < 200; j++) {
 						long then = System.currentTimeMillis();
@@ -1097,7 +1094,6 @@ public class TemporalPathIterationTests {
 						long now = System.currentTimeMillis() - then;
 
 						if (sol.sat()) {
-//							System.out.println(j);
 							times.get(0).add(now);
 						}
 

@@ -4,7 +4,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.Timeout;
-import org.junit.runners.model.TestTimedOutException;
 
 import kodkod.ast.Formula;
 import kodkod.engine.PardinusSolver;
@@ -15,6 +14,11 @@ import kodkod.examples.pardinus.temporal.HotelT;
 import kodkod.examples.pardinus.temporal.HotelT.Variant;
 import kodkod.instance.PardinusBounds;
 
+/**
+ * More complex temporal model finding tests based on existing examples.
+ * 
+ * @author Nuno Macedo
+ */
 public class ExampleTests {
 	
 	public final ExtendedOptions options;
@@ -24,7 +28,6 @@ public class ExampleTests {
 		options.setRunTemporal(true);
 		options.setRunDecomposed(false);
 		options.setMaxTraceLength(10);
-//		options.setReporter(new SLF4JReporter());
 	}
 	
 	@Rule

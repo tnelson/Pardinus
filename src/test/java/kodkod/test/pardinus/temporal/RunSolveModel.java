@@ -15,20 +15,22 @@ import kodkod.engine.IncrementalSolver;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
 import kodkod.engine.TemporalPardinusSolver;
-import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.DecomposedOptions.DMode;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.SLF4JReporter;
 import kodkod.engine.decomp.DModel;
 import kodkod.engine.decomp.DMonitor;
 import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.PardinusBounds;
-import kodkod.instance.TemporalInstance;
 import kodkod.instance.Universe;
-import kodkod.test.pardinus.decomp.RunTests.Solvers;
+import kodkod.test.pardinus.temporal.RunTests.Solvers;
 
+/**
+ * CLI interface to run solving benchmarks.
+ * 
+ * @author Nuno Macedo
+ */
 public final class RunSolveModel {
 
     static PardinusSolver psolver;
@@ -86,8 +88,7 @@ public final class RunSolveModel {
 		
 		writer = new PrintWriter(new FileWriter("pkklog.txt", true));
 
-//		for (int i = 0; i< 200; i++)
-			run_tests();
+		run_tests();
 
 		// guarantees that every running thread is terminated.
 		System.exit(0);
@@ -180,16 +181,6 @@ public final class RunSolveModel {
 
 		long t2 = System.currentTimeMillis();
 
-//		solution = solutions.next();
-		
-//		for (int i = 0; i<10; i++)
-//			solutions.next();
-		
-//		long t3 = System.currentTimeMillis();
-//		
-//		log.append((t3 - t2));
-//		log.append("\t");
-		
 		if (selected_mode == DMode.PARALLEL || selected_mode == DMode.HYBRID) {
 			log.append((t2 - t1));
 			log.append("\t");
@@ -197,14 +188,11 @@ public final class RunSolveModel {
 			log.append("\t");
 			log.append(getConfigNum(psolver));
 			log.append("\t");
-//			log.append(getGenTime(psolver));
-//			log.append(psolution.getSolution().instance());
 		}
 		else {
 			log.append((t2 - t1));
 			log.append("\t");
 			log.append(solution.sat() ? "S" : "U");
-//			log.append(solution);
 		}
 		log.append("\t");
 		flush();
@@ -224,7 +212,6 @@ public final class RunSolveModel {
 	}
 
 	private static void flush() {
-//		System.out.print(log.toString());
 		writer.print(log.toString());
 		writer.flush();
 		log = new StringBuilder();
@@ -266,9 +253,6 @@ public final class RunSolveModel {
 		isolver.solve(f1, b3);
 		b3.relations().clear();
 		return isolver.solve(f2, b3);
-
-		// isolver.solve(f1,b1);
-		// return isolver.solve(f2,b2);
 	}
 
 	

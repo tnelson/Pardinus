@@ -31,6 +31,12 @@ import kodkod.examples.pardinus.temporal.RingT2;
 import kodkod.examples.pardinus.temporal.SpanT;
 import kodkod.examples.pardinus.temporal.HotelT;
 
+/**
+ * CLI interface to run full benchmarks.
+ * 
+ * @author Nuno Macedo // Temporal, decomposed, unbounded, model finding and
+ *         iteration
+ */
 public final class RunTests {
 
 	final static Map<Integer,List<DProblem<ExtendedSolver>>> stats = new HashMap<Integer,List<DProblem<ExtendedSolver>>> ();
@@ -184,6 +190,7 @@ public final class RunTests {
 	    { 1, cached_timeouts_iteratec },
 	    { 2, cached_timeouts_iteratep }
 	}).collect(Collectors.toMap(data -> (Integer) data[0], data -> (Set<String>) data[1]));
+	
 	/**
 	 * Runs a model instance instance for the specified number of times.
 	 * @throws IOException 
