@@ -343,8 +343,8 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			if (delta < 1)
 				throw new IllegalArgumentException("Cannot iterate boundless with s != 0, breaks completeness.");
 
-			if (!hasNext())
-				throw new NoSuchElementException();
+			if (translation == null)
+				return Solution.triviallyUnsatisfiable(new Statistics(0, 0, 0, 0, 0), null);
 			try {
 				Set<Relation> fix = new HashSet<Relation>();
 				if (iteration_stage == 0) // only fix config once
