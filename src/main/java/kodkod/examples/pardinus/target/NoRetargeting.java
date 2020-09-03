@@ -65,7 +65,7 @@ public class NoRetargeting {
         eo.setBitwidth(1); // minimal
         eo.setRetargeter(new Retargeter() {
             @Override
-            public void retarget(TargetSATSolver tcnf, TargetOptions.TMode mode, Translation transl, int primaryVars) {
+            public void retarget(TargetSATSolver tcnf, ExtendedOptions opts, Translation transl) {
                 // Do nothing; keep initial target
             }
         });
@@ -75,15 +75,16 @@ public class NoRetargeting {
         // instance as close as possible to the initial target.
         // So instead, flip the goal. Target-mode doesn't matter here
         // since it's all about retargeting and we're providing a retargeter.
-        eo.setTargetMode(TargetOptions.TMode.CLOSE);
+        //eo.setTargetMode(TargetOptions.TMode.CLOSE);
 
+        // Don't do this if you want close
         // Flip initial target
         PardinusBounds origpb = pb.clone();
-        for(Relation rel : pb.targets().keySet()) {
+        /*for(Relation rel : pb.targets().keySet()) {
             TupleSet tuples = u.factory().allOf(rel.arity());
             tuples.removeAll(pb.targets().get(rel));
             pb.setTarget(rel, tuples);
-        }
+        }*/
         System.out.println("flipped target for p: "+pb.target(p));
         System.out.println("flipped target for q: "+pb.target(q));
         System.out.println("flipped target for r: "+pb.target(r));

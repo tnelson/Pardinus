@@ -1,5 +1,6 @@
 package kodkod.engine;
 
+import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.TargetOptions;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.satlab.TargetSATSolver;
@@ -10,5 +11,5 @@ import kodkod.engine.satlab.TargetSATSolver;
  * enable maximum flexibility for the caller.
  */
 public interface Retargeter {
-    void retarget(TargetSATSolver tcnf, TargetOptions.TMode mode, Translation transl, int primaryVars);
+    void retarget(TargetSATSolver tcnf, ExtendedOptions opts, Translation transl);
 }

@@ -155,12 +155,9 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 		private Solution nextNonTrivialSolution() {
 			final Translation.Whole transl = translation;
 			final SATSolver cnf = transl.cnf();
-			final int primaryVars = transl.numPrimaryVariables();
 			if (opt.targetoriented()) {
 				Retargeter retargeter =
 						(opt.retargeter() == null) ? new DefaultRetargeter() : opt.retargeter();
-				
-				final TMode mode = opt.targetMode();
 	
 				// [HASLab] add the targets to generate the following solution
 				// during solution iteration targets are added directly to the
@@ -169,16 +166,18 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				try {				
 					cnf.valueOf(1); // fails if no previous solution
 					TargetSATSolver tcnf = (TargetSATSolver) cnf;
-					retargeter.retarget(tcnf, mode, transl, primaryVars);
+					retargeter.retarget(tcnf, opt, transl);
 				} 
 				catch(IllegalStateException e) { }
 	
 			}
-			opt.reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
+			opt.reporter().solvingCNF(0, transl.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
 			
 			final long startSolve = System.currentTimeMillis();
 			final boolean isSat = cnf.solve();
 			final long endSolve = System.currentTimeMillis();
+
+			int primaryVars = transl.numPrimaryVariables();
 
 			final Statistics stats = new Statistics(transl, translTime, endSolve - startSolve);
 			final Solution sol;
@@ -281,7 +280,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 		private class DefaultRetargeter implements Retargeter {
 
 			@Override
-			public void retarget(TargetSATSolver tcnf, TMode mode, Translation transl, int primaryVars) {
+			public void retarget(TargetSATSolver tcnf, ExtendedOptions opts, Translation transl) {
 
 				tcnf.clearTargets();
 				// [HASLab] if there are weights must iterate through the relations to find the literal's owner
@@ -296,18 +295,18 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 							while (is.hasNext()) {
 								int i = is.next();
 								// [HASLab] add current model as weighted target
-								if (mode == TMode.CLOSE) wcnf.addWeight(tcnf.valueOf(i) ? i : -i,w);
-								if (mode == TMode.FAR) wcnf.addWeight(tcnf.valueOf(i) ? -i : i,w);
+								if (opts.targetMode() == TMode.CLOSE) wcnf.addWeight(tcnf.valueOf(i) ? i : -i,w);
+								if (opts.targetMode() == TMode.FAR) wcnf.addWeight(tcnf.valueOf(i) ? -i : i,w);
 							}
 						}
 					}
 				}
 				// [HASLab] if there are no weights may simply iterate literals
 				else {
-					for(int i = 1; i <= primaryVars; i++) {
+					for(int i = 1; i <= transl.numPrimaryVariables(); i++) {
 						// [HASLab] add current model as target
-						if (mode == TMode.CLOSE) tcnf.addTarget(tcnf.valueOf(i) ? i : -i);
-						if (mode == TMode.FAR) tcnf.addTarget(tcnf.valueOf(i) ? -i : i);
+						if (opts.targetMode() == TMode.CLOSE) tcnf.addTarget(tcnf.valueOf(i) ? i : -i);
+						if (opts.targetMode() == TMode.FAR) tcnf.addTarget(tcnf.valueOf(i) ? -i : i);
 					}
 				}
 			}
