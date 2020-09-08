@@ -55,7 +55,7 @@ public class VarIntegerTests {
 		opt.setNoOverflow(false);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		assertTrue(solver.solve(formula, bounds).sat());
+		assertTrue("expected sat", solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
@@ -99,7 +99,7 @@ public class VarIntegerTests {
 		opt.setNoOverflow(false);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		assertTrue(solver.solve(formula, bounds).sat());
+		assertTrue("expected sat", solver.solve(formula, bounds).sat());
 
 		Iterator<Solution> sols = solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
@@ -144,7 +144,7 @@ public class VarIntegerTests {
 //		opt.setReporter(new ConsoleReporter());
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		assertFalse("Should be unsat with forbid overflow "+opt.noOverflow(), solver.solve(formula, bounds).sat());
+		assertFalse("expected unsat", solver.solve(formula, bounds).sat());
 	}
 	
 	@Test
@@ -174,7 +174,7 @@ public class VarIntegerTests {
 		opt.setNoOverflow(false);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		assertTrue(solver.solve(formula, bounds).sat());
+		assertTrue("expected sat", solver.solve(formula, bounds).sat());
 
 		Solution sol = solver.solveAll(formula, bounds).next();
 
