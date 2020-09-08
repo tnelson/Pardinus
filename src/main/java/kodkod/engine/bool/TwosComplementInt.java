@@ -228,6 +228,7 @@ final class TwosComplementInt extends Int {
 	// [AM]
 	public final BooleanValue eq(Int other, Environment env) {
 		BooleanValue ret = eqWithoutOverflow(other);
+    	System.out.println(("eq "+other+": "+ret).substring(0, Math.min(("eq "+other+": "+ret).length(), 500)));
 		return ensureNoOverflow(env, ret, this, other);
 	}
 	

@@ -67,11 +67,13 @@ public class DefCond {
             return value;
         List<DefCond> univQuantInts = new ArrayList<DefCond>(dcs.length);
         List<DefCond> extQuantInts = new ArrayList<DefCond>(dcs.length);
+        String db = "";
         for (DefCond e : dcs) {
             if (isUnivQuant(env, e))
                 univQuantInts.add(e);
             else
                 extQuantInts.add(e);
+            db += e.isOverflowFlag+"="+e.overflow+". ";
         }
         BooleanValue ret = value; 
         if (!env.isNegated()) {
@@ -81,7 +83,10 @@ public class DefCond {
             for (DefCond e : extQuantInts) ret = factory.or(ret, e.getAccumOverflow());
             for (DefCond e : univQuantInts) ret = factory.and(ret, factory.not(e.getAccumOverflow()));
         }
-        System.out.println(("ensure of: "+ret).substring(0, Math.min(("ensure of: "+ret).length(), 50)));
+        if ((ret+"").equals("F") || (ret+"").equals("T")) {
+        	System.out.println(("ensure of ds: "+db).substring(0, Math.min(("ensure of ds: "+db).length(), 500)));
+        	System.out.println(("ensure of rt: "+ret).substring(0, Math.min(("ensure of rt: "+ret).length(), 50)));
+        }
         return ret;
     }
     
