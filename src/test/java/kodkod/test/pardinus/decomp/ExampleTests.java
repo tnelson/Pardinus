@@ -57,7 +57,7 @@ public class ExampleTests {
 		opt.setThreads(4);
 		opt2 = new ExtendedOptions(opt);
 		opt2.setRunTarget(false);
-		opt2.setSolver(SATFactory.MiniSat);
+		opt2.setSolver(SATFactory.Glucose);
 		opt.setConfigOptions(opt2);
 		
 		Reporter rep = new AbstractReporter() {
@@ -435,7 +435,7 @@ public class ExampleTests {
 	@Test 
 	public void testUNSAT3Hotel() throws InterruptedException {
 		int n = 3;
-		int t = 20;
+		int t = 10;
 		HotelP.Variant v1 = HotelP.Variant.NOINTERVENES;
 		
 		String[] args = new String[]{n+"",t+"",v1.name()};
