@@ -100,7 +100,7 @@ public class ExampleTests {
 		
 		Solution solution = psolver.solve(f1.and(f2), new PardinusBounds(b1, b2));
 		assertTrue(model.shortName()+": SAT", solution.sat());
-		assertEquals(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs(), 40);
+		assertTrue(model.shortName()+": #Configs", ((DecomposedPardinusSolver<ExtendedSolver>) psolver.solver).executor().monitor.getNumConfigs() % DProblemExecutorImpl.BATCH_SIZE == 0);
 	}
 	
 
