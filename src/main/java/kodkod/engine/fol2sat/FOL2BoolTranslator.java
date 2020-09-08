@@ -724,10 +724,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		BooleanValue ret = lookup(not);
 		if (ret != null)
 		    return ret;
-		System.out.println("in not, will negate env "+env.isNegated());
 		env.negate();
 		ret = cache(not, interpreter.factory().not(not.formula().accept(this)));
-		System.out.println("out not, will negate env "+env.isNegated());
 		env.negate();
 		return ret;
 	}

@@ -84,10 +84,9 @@ public final class Translator {
 	 * @throws UnboundLeafException  the expression refers to an undeclared variable or a relation not mapped by the instance
 	 * @throws HigherOrderDeclException  the expression contains a higher order declaration
 	 */
-	@SuppressWarnings("unchecked")
 	public static BooleanMatrix approximate(Expression expression, Bounds bounds, Options options) {
-		return FOL2BoolTranslator.approximate(annotate(expression), LeafInterpreter.overapproximating(bounds, options), Environment.EMPTY);
-	}
+        Environment<BooleanMatrix, Expression> emptyEnv = Environment.empty(); // [AM]
+        return FOL2BoolTranslator.approximate(annotate(expression), LeafInterpreter.overapproximating(bounds, options), emptyEnv);	}
 	
 	/**
 	 * Evaluates the given formula to a BooleanConstant using the provided instance and options.
@@ -448,7 +447,7 @@ public final class Translator {
 				if (options.decomposed() && pbounds.amalgamated() != null) { // to avoid entering for hybrid
 					Entry<Formula, Formula> slices = DecompFormulaSlicer.slice(originalFormula, pbounds);
 					Formula actual = pbounds.integrated()?slices.getValue():slices.getKey();
-					options.reporter().debug("Sliced formula: "+actual);
+					options.reporter().debug("sliced formula: "+actual);
 					actualAnnotated = logging ? annotateRoots(actual) : annotate(actual);
 					pbounds.amalgamated().relations().retainAll(originalAnnotated.relations());
 					if (!originalAnnotated.usesInts()) pbounds.amalgamated().ints().clear();

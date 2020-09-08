@@ -15,7 +15,6 @@ import kodkod.ast.Relation;
 import kodkod.engine.Evaluator;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
-import kodkod.engine.config.ConsoleReporter;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.instance.PardinusBounds;
 import kodkod.instance.TupleFactory;
@@ -142,7 +141,7 @@ public class VarIntegerTests {
 		opt.setRunDecomposed(false);
 		opt.setMaxTraceLength(3);
 		opt.setNoOverflow(true);
-		opt.setReporter(new ConsoleReporter());
+//		opt.setReporter(new ConsoleReporter());
 		PardinusSolver solver = new PardinusSolver(opt);
 		
 		assertFalse("Should be unsat with forbid overflow "+opt.noOverflow(), solver.solve(formula, bounds).sat());
