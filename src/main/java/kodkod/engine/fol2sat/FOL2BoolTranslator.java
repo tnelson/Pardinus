@@ -724,8 +724,10 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		BooleanValue ret = lookup(not);
 		if (ret != null)
 		    return ret;
+		System.out.println("in not, will negate env "+env.isNegated());
 		env.negate();
 		ret = cache(not, interpreter.factory().not(not.formula().accept(this)));
+		System.out.println("out not, will negate env "+env.isNegated());
 		env.negate();
 		return ret;
 	}
@@ -1085,7 +1087,6 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		default: 
 			throw new IllegalArgumentException("Unknown operator: " + intComp.op());
 		}
-		System.out.println(("visit "+env.isNegated()+": "+intComp +": "+ret).substring(0, Math.min(("visit "+env.isNegated()+": "+intComp +": "+ret).length(), 50)));
 		return cache(intComp, ret);
 	}
 	
