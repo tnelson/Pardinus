@@ -67,24 +67,28 @@ public class DefCond {
             return value;
         List<DefCond> univQuantInts = new ArrayList<DefCond>(dcs.length);
         List<DefCond> extQuantInts = new ArrayList<DefCond>(dcs.length);
-        String db = "";
         for (DefCond e : dcs) {
             if (isUnivQuant(env, e))
                 univQuantInts.add(e);
             else
                 extQuantInts.add(e);
-            db += e.isOverflowFlag+"="+e.overflow+". ";
         }
         BooleanValue ret = value; 
         if (!env.isNegated()) {
-        	for (DefCond e : univQuantInts) ret = factory.or(ret, e.getAccumOverflow());
-            for (DefCond e : extQuantInts) ret = factory.and(ret, factory.not(e.getAccumOverflow()));
+        	for (DefCond e : univQuantInts) {
+        		System.out.println(e.getAccumOverflow());
+        		ret = factory.or(ret, e.getAccumOverflow());
+        	}
+            for (DefCond e : extQuantInts) {
+        		System.out.println(factory.not(e.getAccumOverflow()));
+            	ret = factory.and(ret, factory.not(e.getAccumOverflow()));
+            }
         } else {
             for (DefCond e : extQuantInts) ret = factory.or(ret, e.getAccumOverflow());
             for (DefCond e : univQuantInts) ret = factory.and(ret, factory.not(e.getAccumOverflow()));
         }
         if ((ret+"").equals("F") || (ret+"").equals("T")) {
-        	System.out.println(("ensure of ds: "+db).substring(0, Math.min(("ensure of ds: "+db).length(), 500)));
+        	System.out.println(("ensure of vs: "+value+", "+env.isNegated()).substring(0, Math.min(("ensure of vs: "+value+", "+env.isNegated()).length(), 500)));
         	System.out.println(("ensure of rt: "+ret).substring(0, Math.min(("ensure of rt: "+ret).length(), 50)));
         }
         return ret;
