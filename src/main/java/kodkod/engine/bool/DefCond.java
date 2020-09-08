@@ -81,6 +81,7 @@ public class DefCond {
             for (DefCond e : extQuantInts) ret = factory.or(ret, e.getAccumOverflow());
             for (DefCond e : univQuantInts) ret = factory.and(ret, factory.not(e.getAccumOverflow()));
         }
+        System.out.println("ensure of: " + ret);
         return ret;
     }
     

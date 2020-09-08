@@ -1085,6 +1085,7 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		default: 
 			throw new IllegalArgumentException("Unknown operator: " + intComp.op());
 		}
+		System.out.println(intComp +": "+ret);
 		return cache(intComp, ret);
 	}
 	

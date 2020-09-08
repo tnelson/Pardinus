@@ -616,10 +616,9 @@ public final class Translator {
 			return toCNF((BooleanFormula)factory.accumulate(circuit), interpreter, log);
 		} else {
 			final BooleanValue circuit = (BooleanValue)FOL2BoolTranslator.translate(annotated, interpreter);
-			options.reporter().debug(annotated+"");
-			options.reporter().debug(circuit+"");
 			BooleanValue sbp = breaker.generateSBP(interpreter, options); // [HASLab] for Electrod we need symmetries even when trivial
 			if (circuit.op()==Operator.CONST) { 
+				options.reporter().debug("trivial boolean circuit: "+circuit);
 				return trivial((BooleanConstant)circuit, null, bounds.relations());
 			} 
 			return toCNF((BooleanFormula)factory.and(circuit, sbp), interpreter, null);
