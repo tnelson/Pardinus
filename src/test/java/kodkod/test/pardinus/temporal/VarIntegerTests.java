@@ -143,7 +143,7 @@ public class VarIntegerTests {
 		opt.setNoOverflow(true);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		assertFalse(solver.solve(formula, bounds).sat());
+		assertFalse("Should be unsat with forbid overflow "+opt.noOverflow(), solver.solve(formula, bounds).sat());
 	}
 	
 	@Test
