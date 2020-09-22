@@ -34,10 +34,12 @@ import java.util.Set;
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
+import kodkod.ast.IntConstant;
 import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.fol2sat.RelationCollector;
+import kodkod.examples.alloy.Lists;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
 import kodkod.util.ints.SparseSequence;
@@ -235,6 +237,10 @@ public class Instance implements Cloneable {
 		}
 	}
 	
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
+		return formulate(bounds,reif,formula,someDisj);
+	}
+	
 	/**
 	 * Converts an instance into a formula that exactly identifies it. Requires that
 	 * every relevant atom be reified into a singleton relation, which may be
@@ -250,8 +256,8 @@ public class Instance implements Cloneable {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
-
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj, boolean localUniv) {
+		
 		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
 		// reify atoms not yet reified
 		for (int i = 0; i < universe().size(); i++) {
@@ -261,13 +267,19 @@ public class Instance implements Cloneable {
 				if (reif.keySet().contains(universe().atom(i)))
 					r = reif.get(universe().atom(i));
 				else {
-					r = Relation.atom(universe().atom(i).toString());
+					if (someDisj) {
+						r = Variable.unary(universe().atom(i).toString());
+					} else {
+						r = Relation.atom(universe().atom(i).toString());
+					}
 					reif.put(universe().atom(i), r);
 				}
-				if (r instanceof Relation && !bounds.relations.contains(r))
+				if (!someDisj && !bounds.relations.contains(r))
 					bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(universe().atom(i)));
 			}
 		}
+
+		List<Expression> locals = new ArrayList<Expression>();
 
 		// create an equality for every relation
 		// a = A + ... && r = A -> B + ... 
@@ -284,6 +296,7 @@ public class Instance implements Cloneable {
 			if (it.hasNext()) {
 				Tuple u = it.next();
 				Expression r1 = reif.get(u.atom(0));
+				locals.add(r1);
 				for (int i = 1; i < u.arity(); i++)
 					r1 = r1.product(reif.get(u.atom(i)));
 				r = r1;
@@ -296,12 +309,26 @@ public class Instance implements Cloneable {
 			while (it.hasNext()) {
 				Tuple u = it.next();
 				Expression r1 = reif.get(u.atom(0));
+				locals.add(r1);
 				for (int i = 1; i < u.arity(); i++)
 					r1 = r1.product(reif.get(u.atom(i)));
 				r = r.union(r1);
 			}
 			res.add(rel.eq(r));
 		}
+		
+		if (someDisj && localUniv) {
+			Expression al = null;
+			for (Expression e : locals)
+				al = al == null? e : al.union(e);
+			for (int i = 0; i < universe().size(); i++)
+				if (universe().atom(i).toString().matches("-?\\d+")) {
+					Expression intexp = IntConstant.constant(Integer.valueOf(universe().atom(i).toString())).toExpression();
+					al = al == null ? intexp : al.union(intexp);
+				}
+			res.add(al.eq(Expression.UNIV));
+		}
+		
 		return NaryFormula.and(res);
 	}
 

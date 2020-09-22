@@ -245,7 +245,16 @@ public class TemporalInstance extends Instance {
 	// [HASLab]
 	@Override
 	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
-		return formulate(bounds, reif, formula, -1, null, someDisj);
+		return formulate(bounds, reif, formula, -1, null, someDisj, true);
+	}
+
+	@Override
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj, boolean localUniv) {
+		return formulate(bounds, reif, formula, -1, null, someDisj, localUniv);
+	}
+
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, int start, Integer end, boolean someDisj) {
+		return formulate(bounds, reif, formula, start, end, someDisj, true);
 	}
 
 	/**
@@ -275,7 +284,7 @@ public class TemporalInstance extends Instance {
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, int start, Integer end, boolean someDisj) {
+	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, int start, Integer end, boolean someDisj, boolean localUniv) {
 		if (start < -1)
 			throw new IllegalArgumentException("Segment start must be >= -1.");
 		if (end != null && end < start)
@@ -297,11 +306,10 @@ public class TemporalInstance extends Instance {
 				} else {
 					r = reif.get(sta_uni.atom(i));
 				}
-				if (!someDisj && !bounds.relations.contains((Relation) r))
+				if (!someDisj && !bounds.relations.contains(r))
 					bounds.boundExactly((Relation) r, bounds.universe().factory().setOf(sta_uni.atom(i)));
 			}
 		}
-
 
 		Set<Relation> staticss = new HashSet<Relation>();
 		for (Relation r : states.get(0).relations())
@@ -322,11 +330,11 @@ public class TemporalInstance extends Instance {
 			// TODO: the looping formula should also be offset in this case!
 			if (j == null)
 				j = Integer.max(start + (prefixLength() - 1) - loop, prefixLength() - 1);
-			if (j >= 0) {
+			if (j != null && j >= 0) {
 				// the state formulas, start from the end and accumulate afters
-				res = state(j--).formulate(bounds, reif, slcs.getValue(), someDisj);
+				res = state(j--).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv);
 				for (; j >= Integer.max(0, start); j--)
-					res = state(j).formulate(bounds, reif, slcs.getValue(), someDisj).and(res.after());
+					res = state(j).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv).and(res.after());
 				// after offset when start > 0
 				for (; j >= 0; j--)
 					res = res.after();
@@ -335,7 +343,7 @@ public class TemporalInstance extends Instance {
 
 			// the configuration formula, if start = -1
 			if (start < 0 && !slcs.getKey().equals(Formula.TRUE)) {
-				Formula sres = states.get(prefixLength() - 1).formulate(bounds, reif, slcs.getKey(), someDisj);
+				Formula sres = states.get(prefixLength() - 1).formulate(bounds, reif, slcs.getKey(), someDisj, false);
 				res = res.equals(Formula.TRUE) ? sres : sres.and(res);
 			}
 
@@ -344,14 +352,14 @@ public class TemporalInstance extends Instance {
 				// create the looping constraint
 				// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
 				// after^(end-loop) Sloop+1 && ...)
-				Formula rei = states.get(loop).formulate(bounds, reif, slcs.getValue(), someDisj);
+				Formula rei = states.get(loop).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv);
 				Formula rei2 = rei;
 				for (int i = loop; i < prefixLength(); i++)
 					rei2 = rei2.after();
 
 				Formula looping = rei.implies(rei2);
 				for (int i = loop + 1; i < prefixLength(); i++) {
-					rei = states.get(i).formulate(bounds, reif, slcs.getValue(), someDisj);
+					rei = states.get(i).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv);
 					rei2 = rei;
 					for (int k = loop; k < prefixLength(); k++)
 						rei2 = rei2.after();
@@ -379,7 +387,8 @@ public class TemporalInstance extends Instance {
 				for (int i = 0; i < sta_uni.size(); i++)
 					if (sta_uni.atom(i).toString().matches("-?\\d+"))
 						al = al.union(IntConstant.constant(Integer.valueOf(sta_uni.atom(i).toString())).toExpression());
-				res = (al.eq(Expression.UNIV)).and(res);
+				if (localUniv)
+					res = (al.eq(Expression.UNIV)).and(res);
 				res = res.forSome(decls);
 			}
 		}
