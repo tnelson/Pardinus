@@ -25,6 +25,7 @@ package kodkod.test.pardinus.temporal;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
+import kodkod.ast.Variable;
 import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
@@ -755,6 +756,67 @@ public class ExplorationQualityTests {
 		assertFalse(sol.sat());
 		assertFalse(sols.hasNextC());
 
+		solver.free();
+	}
+	
+	@Test
+	public void testStateWiseSB() {
+		int n = 3;
+
+		Relation file = Relation.unary_variable("F");
+		Relation trash = Relation.unary_variable("T");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(file, as);
+		bounds.bound(trash, as);
+
+		Formula type=trash.in(file).always();
+		Formula init=trash.no();
+		Variable vr=Variable.unary("f");
+		Formula delete=((vr.in(trash).not()).and(trash.prime().eq(trash.union(vr)))).and(file.prime().eq(file));
+		Formula retore=((vr.in(trash)).and(trash.prime().eq(trash.difference(vr)))).and(file.prime().eq(file));
+		Formula x15=(delete.or(retore)).forSome(vr.oneOf(file));
+		Formula empty=(trash.some().and(trash.prime().no())).and(file.prime().eq(file.difference(trash)));
+		Formula act=x15.or(empty);
+		Formula stutter = (file.prime().eq(file)).and(trash.prime().eq(trash));
+		Formula step=act.or(stutter).always();
+		Formula x55=file.eq(file);
+		Formula x56=trash.eq(trash);
+		Formula formula=Formula.and(type, init, step, x55, x56);
+
+
+		ExtendedOptions opt = new ExtendedOptions();
+
+//		opt.setReporter(new SLF4JReporter());
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(4);
+		opt.setSolver(SATFactory.MiniSat);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Set<Relation> changes = new HashSet<Relation>();
+		changes.add(file);
+		changes.add(trash);
+		
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
+		Solution sol = sols.next();
+		System.out.println(sol.instance());
+		sol = sols.nextS(0, 1, changes);
+		System.out.println(sol.instance());
+		sol = sols.nextS(1, 1, changes);
+		System.out.println(sol.instance());
+		sol = sols.nextS(1, 1, changes);
+		assertFalse("returned two isomorphic instance, bad statewise sbp", sol.sat());
+		
 		solver.free();
 	}
 }
