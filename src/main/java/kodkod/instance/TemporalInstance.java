@@ -236,20 +236,20 @@ public class TemporalInstance extends Instance {
 	 * Will change <bounds> if not all atoms of the universe are present at <reif>.
 	 * 
 	 * @assumes reif != null
-	 * @param bounds  the declaration of the relations
 	 * @param reif    the previously reified atoms
 	 * @param formula formula used to identify the relevant relations
+	 * @param bounds  the declaration of the relations
 	 * @throws NullPointerException reif = null
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
 	@Override
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
+	public Formula formulate(Map<Object, Expression> reif, Formula formula, boolean someDisj, Bounds bounds) {
 		return formulate(bounds, reif, formula, -1, null, someDisj, true);
 	}
 
 	@Override
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj, boolean localUniv) {
+	public Formula formulate(Map<Object, Expression> reif, Formula formula, boolean someDisj, Bounds bounds, boolean localUniv) {
 		return formulate(bounds, reif, formula, -1, null, someDisj, localUniv);
 	}
 
@@ -332,9 +332,9 @@ public class TemporalInstance extends Instance {
 				j = Integer.max(start + (prefixLength() - 1) - loop, prefixLength() - 1);
 			if (j != null && j >= 0) {
 				// the state formulas, start from the end and accumulate afters
-				res = state(j--).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv);
+				res = state(j--).formulate(reif, slcs.getValue(), someDisj, bounds, !localUniv);
 				for (; j >= Integer.max(0, start); j--)
-					res = state(j).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv).and(res.after());
+					res = state(j).formulate(reif, slcs.getValue(), someDisj, bounds, !localUniv).and(res.after());
 				// after offset when start > 0
 				for (; j >= 0; j--)
 					res = res.after();
@@ -343,7 +343,7 @@ public class TemporalInstance extends Instance {
 
 			// the configuration formula, if start = -1
 			if (start < 0 && !slcs.getKey().equals(Formula.TRUE)) {
-				Formula sres = states.get(prefixLength() - 1).formulate(bounds, reif, slcs.getKey(), someDisj, false);
+				Formula sres = states.get(prefixLength() - 1).formulate(reif, slcs.getKey(), someDisj, bounds, false);
 				res = res.equals(Formula.TRUE) ? sres : sres.and(res);
 			}
 
@@ -352,14 +352,14 @@ public class TemporalInstance extends Instance {
 				// create the looping constraint
 				// after^loop always (Sloop => after^(end-loop) Sloop && Sloop+1 =>
 				// after^(end-loop) Sloop+1 && ...)
-				Formula rei = states.get(loop).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv);
+				Formula rei = states.get(loop).formulate(reif, slcs.getValue(), someDisj, bounds, !localUniv);
 				Formula rei2 = rei;
 				for (int i = loop; i < prefixLength(); i++)
 					rei2 = rei2.after();
 
 				Formula looping = rei.implies(rei2);
 				for (int i = loop + 1; i < prefixLength(); i++) {
-					rei = states.get(i).formulate(bounds, reif, slcs.getValue(), someDisj, !localUniv);
+					rei = states.get(i).formulate(reif, slcs.getValue(), someDisj, bounds, !localUniv);
 					rei2 = rei;
 					for (int k = loop; k < prefixLength(); k++)
 						rei2 = rei2.after();

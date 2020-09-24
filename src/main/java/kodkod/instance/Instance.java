@@ -39,7 +39,6 @@ import kodkod.ast.NaryFormula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.fol2sat.RelationCollector;
-import kodkod.examples.alloy.Lists;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
 import kodkod.util.ints.SparseSequence;
@@ -237,26 +236,52 @@ public class Instance implements Cloneable {
 		}
 	}
 	
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
-		return formulate(bounds,reif,formula,someDisj,false);
+
+	/**
+	 * Converts an instance into a formula that exactly identifies it. Requires that
+	 * every relevant atom be reified into a singleton relation or quantified in a
+	 * some-disj pattern, which may be re-used between calls. Relevant atoms are
+	 * determined from the provided formulas.
+	 * 
+	 * Will change <bounds> if not all atoms of the universe are present at <reif>
+	 * and <someDisj> false.
+	 * 
+	 * @assumes reif != null
+	 * @assumes !someDisj => bounds != null
+	 * @param reif the previously reified atoms, as relations or quantified vars depending on <someDisj>
+	 * @param formula a formula from which the relevant relations are identified
+	 * @param someDisj whether the formula will use atoms reified as relations or a some-disj pattern
+	 * @param bounds the problem's bounds, updated if !someDisj 
+	 * @throws NullPointerException reif = null
+	 * @throws NullPointerException !someDisj && bounds == null
+	 * @return the formula representing <this>
+	 */
+	public Formula formulate(Map<Object, Expression> reif, Formula formula, boolean someDisj, Bounds bounds) {
+		return formulate(reif,formula,someDisj,bounds,false);
 	}
 	
 	/**
 	 * Converts an instance into a formula that exactly identifies it. Requires that
-	 * every relevant atom be reified into a singleton relation, which may be
-	 * re-used between calls. Relevant atoms are determined from the provided formulas.
+	 * every relevant atom be reified into a singleton relation or quantified in a
+	 * some-disj pattern, which may be re-used between calls. Relevant atoms are
+	 * determined from the provided formulas.
 	 * 
-	 * Will change <bounds> if not all atoms of the universe are present at <reif>.
+	 * Will change <bounds> if not all atoms of the universe are present at <reif>
+	 * and <someDisj> false.
 	 * 
- 	 * @assumes reif != null
-	 * @param reif
-	 *            the previously reified atoms
-	 * @throws NullPointerException
-	 *             reif = null
+	 * @assumes reif != null
+	 * @assumes !someDisj => bounds != null
+	 * @param reif the previously reified atoms, as relations or quantified vars depending on <someDisj>
+	 * @param formula a formula from which the relevant relations are identified
+	 * @param someDisj whether the formula will use atoms reified as relations or a some-disj pattern
+	 * @param bounds the problem's bounds, updated if !someDisj 
+	 * @param localUniv whether to restrict the universe of atoms locally, only relevant if some-disj pattern
+	 * @throws NullPointerException reif = null
+	 * @throws NullPointerException !someDisj && bounds == null
 	 * @return the formula representing <this>
 	 */
 	// [HASLab]
-	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj, boolean localUniv) {
+	public Formula formulate(Map<Object, Expression> reif, Formula formula, boolean someDisj, Bounds bounds, boolean localUniv) {
 		
 		Set<Relation> relevants = formula.accept(new RelationCollector(new HashSet<>()));
 		// reify atoms not yet reified
