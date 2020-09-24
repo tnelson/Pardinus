@@ -23,9 +23,11 @@
 
 package kodkod.test.pardinus.temporal;
 
+import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
+import kodkod.engine.Evaluator;
 import kodkod.engine.Explorer;
 import kodkod.engine.PardinusSolver;
 import kodkod.engine.Solution;
@@ -816,6 +818,56 @@ public class ExplorationQualityTests {
 		System.out.println(sol.instance());
 		sol = sols.nextS(1, 1, changes);
 		assertFalse("returned two isomorphic instance, bad statewise sbp", sol.sat());
+		
+		solver.free();
+	}
+	
+	@Test
+	public void testStateWiseSB2() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		Relation b = Relation.unary_variable("b");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+		bounds.bound(b, as);
+
+		Formula f1 = a.eq(a.prime()).not().always();
+		Formula f2 = b.eq(b.prime()).not().always();
+		Formula f3 = a.eq(Expression.UNIV);
+		Formula formula=Formula.and(f1, f2, f3);
+
+
+		ExtendedOptions opt = new ExtendedOptions();
+
+//		opt.setReporter(new SLF4JReporter());
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(2);
+		opt.setSolver(SATFactory.MiniSat);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Set<Relation> changes = new HashSet<Relation>();
+		changes.add(a);
+		changes.add(b);
+		
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
+		Solution sol = sols.next();
+		while (sols.hasNext()) {
+			Evaluator eval = new Evaluator(sol.instance());
+			assertFalse("symmetry not broken statewise", eval.evaluate(b).toString().equals("[[A0]]"));
+			sol = sols.nextP();
+		}
 		
 		solver.free();
 	}
