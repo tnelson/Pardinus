@@ -532,7 +532,7 @@ public class ReificationTests {
 
 //		relations: {a=[[A2]], b=[[B2]]}
 
-		assertEquals("((a = $$A2$$) and (b = $$B2$$))", inst.formulate(bounds.clone(), x, formula, true).toString());
+		assertEquals("((a = A2) and (b = B2))", inst.formulate(bounds.clone(), x, formula, true).toString());
 
 		formula = formula.and(inst.formulate(bounds, x, formula, true).not());
 
@@ -546,7 +546,7 @@ public class ReificationTests {
 
 //		relations: {a=[[A1], [A2]], b=[[B1], [B2]], $$A2$$=[[A2]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$A1$$=[[A1]], $$B0$$=[[B0]], $$B1$$=[[B1]]}
 
-		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = ($$B1$$ + $$B2$$)))",
+		assertEquals("((a = (A1 + A2)) and (b = (B1 + B2)))",
 				inst.formulate(bounds.clone(), x, formula, true).toString());
 
 		formula = formula.and(inst.formulate(bounds, x, formula, true).not());
@@ -561,7 +561,7 @@ public class ReificationTests {
 
 //		relations: {a=[[A1], [A2]], b=[[B2]], $$A1$$=[[A1]], $$A2$$=[[A2]], $$B1$$=[[B1]], $$B2$$=[[B2]], $$A0$$=[[A0]], $$B0$$=[[B0]]}
 
-		assertEquals("((a = ($$A1$$ + $$A2$$)) and (b = $$B2$$))",
+		assertEquals("((a = (A1 + A2)) and (b = B2))",
 				inst.formulate(bounds.clone(), x, formula, true).toString());
 
 	}
