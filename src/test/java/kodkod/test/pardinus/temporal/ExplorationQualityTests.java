@@ -857,10 +857,6 @@ public class ExplorationQualityTests {
 		opt.setSolver(SATFactory.MiniSat);
 		PardinusSolver solver = new PardinusSolver(opt);
 		
-		Set<Relation> changes = new HashSet<Relation>();
-		changes.add(a);
-		changes.add(b);
-		
 		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
 		while (sols.hasNext()) {
@@ -868,6 +864,47 @@ public class ExplorationQualityTests {
 			assertFalse("symmetry not broken statewise", eval.evaluate(b).toString().equals("[[A0]]"));
 			sol = sols.nextP();
 		}
+		
+		solver.free();
+	}
+	
+	@Test
+	public void testConfigNoConfigs() {
+		int n = 2;
+
+		Relation a = Relation.unary_variable("a");
+		
+		Object[] atoms = new Object[n];
+		for (int i = 0; i < n; i ++)
+			atoms[i] = "A"+i;
+		
+		Universe uni = new Universe(atoms);
+		TupleFactory f = uni.factory();
+		TupleSet as = f.range(f.tuple("A0"), f.tuple("A"+(n-1)));
+
+		PardinusBounds bounds = new PardinusBounds(uni);
+		bounds.bound(a, as);
+
+		Formula formula = a.eq(a.prime()).not().always();
+
+		ExtendedOptions opt = new ExtendedOptions();
+
+//		opt.setReporter(new SLF4JReporter());
+		opt.setRunTemporal(true);
+		opt.setRunUnbounded(false);
+		opt.setRunDecomposed(false);
+		opt.setMaxTraceLength(2);
+		opt.setSolver(SATFactory.MiniSat);
+		PardinusSolver solver = new PardinusSolver(opt);
+		
+		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
+		int c = 0;
+		while (sols.hasNextC()) {
+			sols.nextC();
+			c++;
+		}
+		
+		assertEquals("nothing to change, should not have iterated",1,c);
 		
 		solver.free();
 	}
