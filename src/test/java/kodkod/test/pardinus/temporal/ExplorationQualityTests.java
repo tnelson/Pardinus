@@ -811,11 +811,8 @@ public class ExplorationQualityTests {
 		
 		Explorer<Solution> sols = (Explorer<Solution>) solver.solveAll(formula, bounds);
 		Solution sol = sols.next();
-		System.out.println(sol.instance());
 		sol = sols.nextS(0, 1, changes);
-		System.out.println(sol.instance());
 		sol = sols.nextS(1, 1, changes);
-		System.out.println(sol.instance());
 		sol = sols.nextS(1, 1, changes);
 		assertFalse("returned two isomorphic instance, bad statewise sbp", sol.sat());
 		

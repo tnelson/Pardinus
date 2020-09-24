@@ -238,7 +238,7 @@ public class Instance implements Cloneable {
 	}
 	
 	public Formula formulate(Bounds bounds, Map<Object, Expression> reif, Formula formula, boolean someDisj) {
-		return formulate(bounds,reif,formula,someDisj);
+		return formulate(bounds,reif,formula,someDisj,false);
 	}
 	
 	/**
