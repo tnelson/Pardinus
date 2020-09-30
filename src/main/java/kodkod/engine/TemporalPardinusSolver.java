@@ -371,10 +371,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		}
 
 		public Solution nextP() {
-			if (iteration_stage == 2)
-				throw new IllegalArgumentException(
-						"Cannot iterate boundless after segment iteration, breaks completeness.");
-
 			if (!hasNext())
 				throw new NoSuchElementException();
 			try {
@@ -386,10 +382,18 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				Set<Relation> change = tmptrans.bounds.relations().stream().filter(r -> r.isVariable())
 						.collect(Collectors.toSet());
 
+				// if coming back from segment mode beyond state 0, restart the process
+				// this will force the re-generation of the solver at minimal length
+				if (iteration_stage == 2 && last_segment > 0) {
+					previousSols.removeIf(s -> s.start >= 0);
+					current_trace = opt.minTraceLength();
+					translation = null;
+				}
+				
 				if (previousSol != null)
 					iteration_stage = 1;
 
-				return translation.trivial() ? nextTrivialSolution() : nextNonTrivialSolution(0, -1, fix, change);
+				return (translation != null && translation.trivial()) ? nextTrivialSolution() : nextNonTrivialSolution(0, -1, fix, change);
 			} catch (SATAbortedException sae) {
 				translation.cnf().free();
 				throw new AbortedException(sae);
@@ -622,6 +626,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			
 			final Statistics stats = new Statistics(0, 0, 0, 0, 0);
 
+			transl = translation;
 			while (!isSat && current_trace <= opt.maxTraceLength()) {
 				if (translation == null) {
 
