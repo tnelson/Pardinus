@@ -592,11 +592,10 @@ public class ExplorationQualityTests {
 		opt.reporter().debug(sol.instance().toString());
 		assertEquals(2, ((TemporalInstance) sol.instance()).prefixLength());	
 
-		sol = sols.nextP();
-		assertTrue(sol.sat());
-		assertTrue(sols.hasNext());
-		opt.reporter().debug(sol.instance().toString());
-		assertEquals(2, ((TemporalInstance) sol.instance()).prefixLength());	
+		try {
+			sol = sols.nextP();
+			assertFalse(true);
+		} catch (Exception e) {}
 
 		sol = sols.nextS(0,2,Collections.singleton(a));
 		assertTrue(sol.sat());
