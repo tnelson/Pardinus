@@ -92,6 +92,9 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 	}
 
 	@Override
+	/**
+	 * See {@link Retargeter}.
+	 */
 	public void setRetargeter(Retargeter r) {
 		this.retargeter = r;
 	}
