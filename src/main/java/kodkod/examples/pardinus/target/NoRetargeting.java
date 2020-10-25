@@ -1,36 +1,47 @@
 package kodkod.examples.pardinus.target;
-/*
-  Experimenting with Pardinus
-  Tim Nelson, August 2020
-
-  Sets up a target-oriented model-finding problem
-  with 2 atoms and 3 unary relations: p, q, and r.
-
-  Target for p: both atoms.
-  Target for q: no atoms.
-  Target for r: (absent).
-
-  Constraint: all 3 relations are non-empty.
- */
 
 import kodkod.ast.*;
 import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
-import kodkod.engine.config.TargetOptions;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.instance.*;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ *   The {@link NoRetargeting} class demonstrates the Retargeter interface of Pardinus.
+ *   Concretely, a Retargeter allows a caller to control target-oriented
+ *   model-finding's retargeting pattern from the default (target
+ *   the last found instance) to any pattern desired. Here, we show just
+ *   the empty retargeter, which keeps the target constant, resulting
+ *   in an enumeration of instances that are of monotonically non-decreasing
+ *   distance from the target.
+
+ *   The demo sets up a target-oriented model-finding problem
+ *   with 2 atoms and 3 unary relations: p, q, and r.
+ *
+ *   Target for p: both atoms present.
+ *   Target for q: no atoms present.
+ *   Target for r: (no target).
+ *
+ *   Constraint: all 3 relations are non-empty.
+ *
+ * @author Tim Nelson
+ */
 public class NoRetargeting {
 
     public static void main(String[] args) {
         Relation p = Relation.unary("P");
         Relation q = Relation.unary("Q");
         Relation r = Relation.unary("R");
+
+        // If an arg is passed, find *far* from target, rather than close.
+        boolean findFar = (args.length > 0);
+        System.out.println(Arrays.toString(args));
 
         Set<Object> atoms = new HashSet<>();
         int NATOMS = 2;
@@ -62,7 +73,7 @@ public class NoRetargeting {
         eo.setSolver(SATFactory.PMaxSAT4J);
         eo.setSymmetryBreaking(20);
         eo.setLogTranslation(0);
-        eo.setBitwidth(1); // minimal
+        eo.setBitwidth(1); // minimal bitwidth allowed
         eo.setRetargeter(new Retargeter() {
             @Override
             public void retarget(TargetSATSolver tcnf, ExtendedOptions opts, Translation transl) {
@@ -73,28 +84,29 @@ public class NoRetargeting {
         // We want to enumerate instances of maximal distance from
         // the target. But Pardinus will always produce a *first*
         // instance as close as possible to the initial target.
-        // So instead, flip the goal. Target-mode doesn't matter here
-        // since it's all about retargeting and we're providing a retargeter.
+        // So instead, flip the bits of the target.
+
+        // (Target-mode in options doesn't matter here)
         //eo.setTargetMode(TargetOptions.TMode.CLOSE);
 
-        // Don't do this if you want close
-        // Flip initial target
-        PardinusBounds origpb = pb.clone();
-        /*for(Relation rel : pb.targets().keySet()) {
-            TupleSet tuples = u.factory().allOf(rel.arity());
-            tuples.removeAll(pb.targets().get(rel));
-            pb.setTarget(rel, tuples);
-        }*/
-        System.out.println("flipped target for p: "+pb.target(p));
-        System.out.println("flipped target for q: "+pb.target(q));
-        System.out.println("flipped target for r: "+pb.target(r));
+        PardinusBounds origBounds = pb.clone(); // for displaying distance
+        if(findFar) {
+            // Flip initial target
+            for(Relation rel : pb.targets().keySet()) {
+                TupleSet tuples = u.factory().allOf(rel.arity());
+                tuples.removeAll(pb.targets().get(rel));
+                pb.setTarget(rel, tuples);
+            }
+            System.out.println("flipped target for p: " + pb.target(p));
+            System.out.println("flipped target for q: " + pb.target(q));
+            System.out.println("flipped target for r: " + pb.target(r));
+        }
 
-        // Break with good interface use
         PardinusSolver s = new PardinusSolver(eo);
 
         ///////////////////////////////////////////////////
 
-        // Note: new "Explorer" iterator.
+        // Note: new "Explorer" iterator vs. Kodkod
         Explorer<Solution> sols =  s.solveAll(f, pb);
         int count = 0;
         while(sols.hasNext()) {
@@ -103,14 +115,14 @@ public class NoRetargeting {
             if(sol.sat()) {
                 System.out.println("-------------------");
                 System.out.println(sol.instance().relationTuples());
-                System.out.println("dist from target = "+computeDist(origpb, sol.instance()));
+                System.out.println("dist from target = "+computeDist(origBounds, sol.instance()));
             }
         }
         System.out.println("total number of instances: "+count);
     }
 
     /**
-     * Compute Hamming dist between target and instance
+     * Compute Hamming distance between target and instance given
      * Relations not in target aren't counted.
      *
      * @param pb

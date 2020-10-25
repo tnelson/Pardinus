@@ -49,6 +49,7 @@ import kodkod.util.ints.IntIterator;
  * @modified Nuno Macedo // [HASLab] model finding hierarchy
  * @modified Nuno Macedo // [HASLab] decomposed model finding
  * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
+ * @modified Tim Nelson (Retargeter, DefaultRetargeter)
  */
 public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,ExtendedOptions> implements
 		TargetOrientedSolver<ExtendedOptions>,
@@ -277,6 +278,10 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 			return next();
 		}
 
+		/**
+		 * Implements the default behavior of retargeting to the last instance found.
+		 * Uses the options' targetMode to decide whether to seek far from or close to the target.
+		 */
 		private class DefaultRetargeter implements Retargeter {
 
 			@Override
