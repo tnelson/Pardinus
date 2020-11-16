@@ -3,7 +3,7 @@ Pardinus
 
 Pardinus is Kodkod's (slightly bulkier) Iberian cousin. 
 
-[![Build Status](https://travis-ci.com/haslab/Pardinus.svg?branch=master)](https://travis-ci.com/haslab/Pardinus)
+<a href=https://travis-ci.com/haslab/Pardinus"><img align="right" alt="Build Status" src="(https://travis-ci.com/haslab/Pardinus.svg?branch=master"/></a>
 
 This repository includes the source code for the Pardinus solver, an extension to the [Kodkod](http://alloy.mit.edu/kodkod/index.html) solver for relational logic. It extends Kodkod with the following functionalities:
 * Target-oriented and weighted-target oriented model finding
