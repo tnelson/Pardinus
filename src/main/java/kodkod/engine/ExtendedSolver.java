@@ -166,8 +166,9 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				// reconstructed at each step
 				try {				
 					cnf.valueOf(1); // fails if no previous solution
-					TargetSATSolver tcnf = (TargetSATSolver) cnf;
-					retargeter.retarget(opt, transl);
+					assert(opt == transl.options()); // assume: opts unmodified
+					retargeter.retarget(transl);
+
 				} 
 				catch(IllegalStateException e) { }
 	
@@ -285,9 +286,11 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 		private class DefaultRetargeter implements Retargeter {
 
 			@Override
-			public void retarget(ExtendedOptions opts, Translation transl) {
+			public void retarget(Translation transl) {
 				assert(transl.cnf() instanceof TargetSATSolver);
 				TargetSATSolver tcnf = (TargetSATSolver)transl.cnf();
+				assert(transl.options() instanceof ExtendedOptions);
+				ExtendedOptions opts = (ExtendedOptions) transl.options();
 				tcnf.clearTargets();
 				// [HASLab] if there are weights must iterate through the relations to find the literal's owner
 				if (weights != null) {

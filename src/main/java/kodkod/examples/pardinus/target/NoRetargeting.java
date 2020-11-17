@@ -76,7 +76,7 @@ public class NoRetargeting {
         eo.setBitwidth(1); // minimal bitwidth allowed
         eo.setRetargeter(new Retargeter() {
             @Override
-            public void retarget(ExtendedOptions opts, Translation transl) {
+            public void retarget(Translation transl) {
                 // Do nothing; keep initial target
             }
         });

@@ -2,7 +2,6 @@ package kodkod.engine;
 
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.fol2sat.Translation;
-import kodkod.engine.satlab.TargetSATSolver;
 
 /**
  * A {@link Retargeter} describes a re-targeting strategy for target-oriented
@@ -20,8 +19,9 @@ public interface Retargeter {
      * enumeration (with no retargeting); the solver will always issue a new clause
      * to exclude repeat instances regardless of retargeting strategy.
      *
-     * @param opts The options used by the solver
+     * Note that the TargetSATSolver instance is transl.cnf()
+     *       and the ExtendedOptions instance is transl.options()
      * @param transl The current boolean Translation (for retrieving primary variables, etc.)
      */
-    void retarget(ExtendedOptions opts, Translation transl);
+    void retarget(Translation transl);
 }
