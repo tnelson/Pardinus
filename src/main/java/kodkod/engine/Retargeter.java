@@ -15,14 +15,13 @@ import kodkod.engine.satlab.TargetSATSolver;
  */
 public interface Retargeter {
     /**
-     * The retarget method exposes the TargetSATSolver, Translation, etc. to enable maximum
+     * The retarget method exposes the Translation, etc. to enable maximum
      * flexibility for the caller; an empty retargeting method will implement standard
      * enumeration (with no retargeting); the solver will always issue a new clause
      * to exclude repeat instances regardless of retargeting strategy.
      *
-     * @param tcnf The underlying TargetSATSolver instance, for adding new clauses, changing target, etc.
      * @param opts The options used by the solver
      * @param transl The current boolean Translation (for retrieving primary variables, etc.)
      */
-    void retarget(TargetSATSolver tcnf, ExtendedOptions opts, Translation transl);
+    void retarget(ExtendedOptions opts, Translation transl);
 }
