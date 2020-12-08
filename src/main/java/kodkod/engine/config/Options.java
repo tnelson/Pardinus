@@ -22,6 +22,8 @@
  */
 package kodkod.engine.config;
 
+//import kodkod.engine.bddlab.BDDSolverFactory;
+import kodkod.engine.config.Options.SolverType;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.util.ints.IntRange;
 import kodkod.util.ints.Ints;
@@ -51,7 +53,10 @@ import kodkod.util.ints.Ints;
 // [HASLab] model finding hierarchy, copy constructor
 public class Options implements Cloneable, BoundedOptions { 
 	private Reporter reporter = new AbstractReporter(){};
-	private SATFactory solver = SATFactory.DefaultSAT4J;
+	private SATFactory satSolver = SATFactory.DefaultSAT4J;
+	//private BDDSolverFactory bddSolver = null;
+	private boolean bddDistinctPathSols = false;
+	private SolverType solverType = SolverType.SAT;
 	private int symmetryBreaking = 20;
 	private IntEncoding intEncoding = IntEncoding.TWOSCOMPLEMENT;
 	private int bitwidth = 4;
@@ -60,6 +65,7 @@ public class Options implements Cloneable, BoundedOptions {
 	private int skolemDepth = 0;
 	private int logTranslation = 0;
 	private int coreGranularity = 0;
+
 
 	//[AM]
 	public static boolean isDebug() {
@@ -83,12 +89,42 @@ public class Options implements Cloneable, BoundedOptions {
 	public Options() {}
 	
 	/**
+	 * Returns the value of the satSolver options.
+	 * The default is SATSolver.DefaultSAT4J.
+	 * @return this.satSolver
+	 */
+	public SATFactory satSolver() {
+		return satSolver;
+	}
+	
+//	/**
+//	 * Returns the value of the bddSolver options.
+//	 * The default is null - by default, SAT solver is used instead.
+//	 * @return this.bddSolver
+//	 */
+//	public BDDSolverFactory bddSolver() {
+//		return bddSolver;
+//	}
+	
+	
+	/**
+	 * Returns whether the bdd solver is being used.
+	 * @return true when BDD solver is set, false if SAT solver is set.
+	 */
+	public SolverType solverType() {
+		return solverType;
+	}
+	
+	
+	
+	/**
 	 * Constructs an Options object by copy.
 	 * @param options the options to be copied.
 	 */
 	// [HASLab]
 	public Options(Options options) {
-		this.setSolver(options.solver());
+		this.setSatSolver(options.satSolver());
+		
 		this.setReporter(options.reporter());
 		this.setBitwidth(options.bitwidth());
 		this.setIntEncoding(options.intEncoding());
@@ -99,25 +135,67 @@ public class Options implements Cloneable, BoundedOptions {
 		this.setCoreGranularity(options.coreGranularity());		
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 * The default is SATSolver.DefaultSAT4J.
-	 * @return this.solver
-	 */
-	public SATFactory solver() {
-		return solver;
-	}
+//	/**
+//	 * {@inheritDoc}
+//	 * The default is SATSolver.DefaultSAT4J.
+//	 * @return this.solver
+//	 */
+//	public SATFactory solver() {
+//		return solver;
+//	}
+	
+
+
 	
 	/**
 	 * {@inheritDoc}
 	 * @ensures this.solver' = solver
 	 * @throws NullPointerException  solver = null
 	 */
-	public void setSolver(SATFactory solver) {
+	public void setSatSolver(SATFactory solver) {
 		if (solver==null)
 			throw new NullPointerException();
-		this.solver = solver;
+		//this.bddSolver = null;
+		this.solverType = SolverType.SAT;
+		this.satSolver = solver;
+		
 	}
+	
+//	/**
+//	 * Sets the bdd solver option to the given value.
+//	 * @ensures this.satSolver' = null
+//	 * @ensures this.bddSolver = solver
+//	 * @ensures this.solverType = BDD
+//	 * @throws NullPointerException solver = null
+//	 */
+//	public void setBddSolver(BDDSolverFactory solver, boolean distinctPathSolutions) {
+//		if (solver == null) {
+//			throw new NullPointerException();
+//		}
+//		// Both bdd and sat solver can't be set at the same time
+//		this.satSolver = null;
+//		this.solverType = SolverType.BDD;
+//		//this.bddSolver = solver;
+//		this.bddDistinctPathSols = distinctPathSolutions;
+//	}
+	
+//	/**
+//	 * Same as {@link #setBddSolver(BDDSolverFactory, boolean)} where it sets distinctPathSols
+//	 * to false by default. In other words, by default, the solver will enumerate every solution,
+//	 * not just ones with distinct paths.
+//	 */
+//	public void setBddSolver(BDDSolverFactory solver) {
+//		setBddSolver(solver, false);
+//	}
+
+	/**
+	 * Tells whether the solver will only return a single solution for each distinct path in the bdd.
+	 * Returns true when using a bdd-based solver and bddDistinctPathSols is set to true.
+	 */
+	public boolean usingDistinctPathSols() {
+		return (solverType == SolverType.BDD) && bddDistinctPathSols;
+	}
+	
 	
 	/**
 	 * {@inheritDoc}
@@ -307,7 +385,7 @@ public class Options implements Cloneable, BoundedOptions {
 	 */
 	public Options clone() {
 		final Options c = new Options();
-		c.setSolver(solver);
+		c.setSatSolver(satSolver);
 		c.setReporter(reporter);
 		c.setBitwidth(bitwidth);
 		c.setIntEncoding(intEncoding);
@@ -329,7 +407,7 @@ public class Options implements Cloneable, BoundedOptions {
 		StringBuilder b = new StringBuilder();
 		b.append("Options:");
 		b.append("\n solver: ");
-		b.append(solver);
+		b.append(satSolver);
 		b.append("\n reporter: ");
 		b.append(reporter);
 		b.append("\n intEncoding: ");
@@ -388,6 +466,16 @@ public class Options implements Cloneable, BoundedOptions {
 		 */
 		abstract IntRange range(int bitwidth) ;
 	}
+	
+	
+	/**
+	 * Enum for determining solver type
+	 */
+	public enum SolverType {
+		SAT,
+		BDD
+	}
+	
 
 	/**
 	 * {@inheritDoc}
@@ -420,5 +508,19 @@ public class Options implements Cloneable, BoundedOptions {
 	 */
 	// [HASLab] 
 	public boolean targetoriented() { return false; }
+
+	@Override
+	public SATFactory solver() {
+		// TODO Auto-generated method stub
+		return this.satSolver;
+	}
+
+	@Override
+	public void setSolver(SATFactory solver) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+
 	
 }

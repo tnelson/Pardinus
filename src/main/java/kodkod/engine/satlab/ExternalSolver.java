@@ -220,7 +220,6 @@ final public class ExternalSolver implements SATSolver {
 				new Thread(drain(p.getErrorStream())).start();
 				out = outputReader(p);
 				String line = null;
-//				System.out.println(out);
 //				System.out.println("("+out.read()+")");
 				while((line = out.readLine()) != null) {
 //					System.out.println("2.0");
