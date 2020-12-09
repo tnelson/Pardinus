@@ -1127,6 +1127,9 @@ public class KodkodParser extends BaseParser<Object> {
     final Rule CLEAR = Keyword("clear");
     final Rule EXIT = Keyword("exit");
 
+    
+    
+    
     final Rule UNIV = Keyword("univ");
     final Rule NONE = Keyword("none");
     final Rule IDEN = Keyword("iden");
