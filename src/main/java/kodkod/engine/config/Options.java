@@ -53,7 +53,7 @@ import kodkod.util.ints.Ints;
 // [HASLab] model finding hierarchy, copy constructor
 public class Options implements Cloneable, BoundedOptions { 
 	private Reporter reporter = new AbstractReporter(){};
-	private SATFactory satSolver = SATFactory.DefaultSAT4J;
+	private SATFactory solver = SATFactory.DefaultSAT4J;
 	//private BDDSolverFactory bddSolver = null;
 	private boolean bddDistinctPathSols = false;
 	private SolverType solverType = SolverType.SAT;
@@ -94,7 +94,7 @@ public class Options implements Cloneable, BoundedOptions {
 	 * @return this.satSolver
 	 */
 	public SATFactory satSolver() {
-		return satSolver;
+		return solver;
 	}
 	
 //	/**
@@ -123,7 +123,7 @@ public class Options implements Cloneable, BoundedOptions {
 	 */
 	// [HASLab]
 	public Options(Options options) {
-		this.setSatSolver(options.satSolver());
+		this.setSolver(options.solver());
 		
 		this.setReporter(options.reporter());
 		this.setBitwidth(options.bitwidth());
@@ -147,19 +147,7 @@ public class Options implements Cloneable, BoundedOptions {
 
 
 	
-	/**
-	 * {@inheritDoc}
-	 * @ensures this.solver' = solver
-	 * @throws NullPointerException  solver = null
-	 */
-	public void setSatSolver(SATFactory solver) {
-		if (solver==null)
-			throw new NullPointerException();
-		//this.bddSolver = null;
-		this.solverType = SolverType.SAT;
-		this.satSolver = solver;
-		
-	}
+
 	
 //	/**
 //	 * Sets the bdd solver option to the given value.
@@ -385,7 +373,7 @@ public class Options implements Cloneable, BoundedOptions {
 	 */
 	public Options clone() {
 		final Options c = new Options();
-		c.setSatSolver(satSolver);
+		c.setSolver(solver);
 		c.setReporter(reporter);
 		c.setBitwidth(bitwidth);
 		c.setIntEncoding(intEncoding);
@@ -407,7 +395,7 @@ public class Options implements Cloneable, BoundedOptions {
 		StringBuilder b = new StringBuilder();
 		b.append("Options:");
 		b.append("\n solver: ");
-		b.append(satSolver);
+		b.append(solver);
 		b.append("\n reporter: ");
 		b.append(reporter);
 		b.append("\n intEncoding: ");
@@ -512,12 +500,17 @@ public class Options implements Cloneable, BoundedOptions {
 	@Override
 	public SATFactory solver() {
 		// TODO Auto-generated method stub
-		return this.satSolver;
+		return this.solver;
 	}
 
 	@Override
 	public void setSolver(SATFactory solver) {
 		// TODO Auto-generated method stub
+		if (solver==null)
+			throw new NullPointerException();
+		//this.bddSolver = null;
+		this.solverType = SolverType.SAT;
+		this.solver = solver;
 		
 	}
 	

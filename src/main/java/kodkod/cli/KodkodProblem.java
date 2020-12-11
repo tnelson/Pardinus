@@ -501,9 +501,9 @@ public abstract class KodkodProblem {
 	 * @requires no this.prev
 	 * @ensures this.options.solver' = solver Changed for Pardinus
 	 */
-	boolean setSatSolver(SATFactory solver) {
+	boolean setSolver(SATFactory solver) {
 		if (SATFactory.available(solver)) {
-			options.setSatSolver(solver);
+			options.setSolver(solver);
 			return true;
 		} else {
 			throw new ActionException(solver.toString() + " is not available on this system. Searched "
@@ -537,7 +537,7 @@ public abstract class KodkodProblem {
 				options.setLogTranslation(1);
 				options.setCoreGranularity(0);
 				// Changed for Pardinus
-				options.setSatSolver(SATFactory.MiniSatProver);
+				options.setSolver(SATFactory.MiniSatProver);
 			} else {
 				options.setLogTranslation(0);
 				options.setCoreGranularity(0);
@@ -1116,11 +1116,11 @@ public abstract class KodkodProblem {
 		}
 
 		// Changed for Pardinus
-		boolean setSatSolver(SATFactory solver) {
+		boolean setSolver(SATFactory solver) {
 			if (!solver.incremental())
 				throw new ActionException(
 						"Cannot use a non-incremental SAT solver (" + solver + ") for incremental solving.");
-			return super.setSatSolver(solver);
+			return super.setSolver(solver);
 		}
 
 	}
@@ -1186,7 +1186,7 @@ public abstract class KodkodProblem {
 		}
 
 		// Changed for Pardinus
-		boolean setSatSolver(SATFactory solver) {
+		boolean setSolver(SATFactory solver) {
 			throw new ActionException(cannot("re-configure the solver"));
 		}
 

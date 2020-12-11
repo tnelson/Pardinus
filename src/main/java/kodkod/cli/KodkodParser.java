@@ -233,7 +233,7 @@ public class KodkodParser extends BaseParser<Object> {
 	Rule Configure() {
 		return ZeroOrMore(LPAR, CONFIG,
 				OneOrMore(":",
-						FirstOf(Sequence(Keyword("solver"), SatSolver(), problem.setSatSolver((SATFactory) pop())),
+						FirstOf(Sequence(Keyword("solver"), SatSolver(), problem.setSolver((SATFactory) pop())),
 								Sequence(Keyword("bitwidth"), NatLiteral(), problem.setBitwidth(popInt())),
 								// Sequence(Keyword("produce-cores"), BoolLiteral(),
 								// problem.setCoreExtraction(popBool())),
