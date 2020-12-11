@@ -488,6 +488,7 @@ public class KodkodParser extends BaseParser<Object> {
 						AfterConstraint(), // Electrum Constraints
 						TempConstraint(UNTIL, TemporalOperator.UNTIL), // Electrum Constraints
 						TempConstraint(RELEASES, TemporalOperator.RELEASES), // Electrum Constraints
+						TempConstraint(PRIME,TemporalOperator.PRIME), //Electrum Constraint
 
 						NaryConstraint(AND, FormulaOperator.AND), NaryConstraint(OR, FormulaOperator.OR),
 						NaryConstraint(IMPLIES, FormulaOperator.IMPLIES), NaryConstraint(IFF, FormulaOperator.IFF),
@@ -1002,6 +1003,7 @@ public class KodkodParser extends BaseParser<Object> {
 	final Rule TILDE = Terminal("~");
 	final Rule HAT = Terminal("^");
 	final Rule STAR = Terminal("*");
+	final Rule PRIME = Terminal("'");
 	final Rule DIV = Terminal("/");
 	final Rule MOD = Terminal("%");
 	final Rule BAR = Terminal("|");

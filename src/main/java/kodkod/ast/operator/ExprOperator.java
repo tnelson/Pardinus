@@ -45,6 +45,7 @@ public enum ExprOperator {
     CLOSURE 			{ public String toString() { return "^";} },
     /** Reflexive transitive closure (*) operator. */
     REFLEXIVE_CLOSURE 	{ public String toString() { return "*";} };
+
   	
     static final int unary = TRANSPOSE.index() | CLOSURE.index() | REFLEXIVE_CLOSURE.index();
     
