@@ -22,6 +22,7 @@
  */
 package kodkod.ast;
 
+import kodkod.ast.operator.ExprOperator;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
@@ -103,4 +104,6 @@ public final class TempExpression extends Expression {
     public String toString() {
     	return expression.toString()+op.toString();
     }   
+    
+
 }

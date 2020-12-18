@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import kodkod.ast.TempExpression;
 import kodkod.ast.Decl;
 import kodkod.ast.Decls;
 import kodkod.ast.Expression;
@@ -488,7 +489,6 @@ public class KodkodParser extends BaseParser<Object> {
 						AfterConstraint(), // Electrum Constraints
 						TempConstraint(UNTIL, TemporalOperator.UNTIL), // Electrum Constraints
 						TempConstraint(RELEASES, TemporalOperator.RELEASES), // Electrum Constraints
-						TempConstraint(PRIME,TemporalOperator.PRIME), //Electrum Constraint
 
 						NaryConstraint(AND, FormulaOperator.AND), NaryConstraint(OR, FormulaOperator.OR),
 						NaryConstraint(IMPLIES, FormulaOperator.IMPLIES), NaryConstraint(IFF, FormulaOperator.IFF),
@@ -698,6 +698,7 @@ public class KodkodParser extends BaseParser<Object> {
 						NaryExpr(PLUS, ExprOperator.UNION), NaryExpr(AMP, ExprOperator.INTERSECTION),
 						NaryExpr(ARROW, ExprOperator.PRODUCT), NaryExpr(MINUS, ExprOperator.DIFFERENCE),
 						UnaryExpr(TILDE, ExprOperator.TRANSPOSE), UnaryExpr(HAT, ExprOperator.CLOSURE),
+						UnaryExprTemp(PRIME,TemporalOperator.PRIME), //Electrum
 						UnaryExpr(STAR, ExprOperator.REFLEXIVE_CLOSURE), IntToExprCast(SET, IntCastOperator.BITSETCAST),
 						IntToExprCast(LONE, IntCastOperator.INTCAST), IfExpr(), Let(Expr()), Projection()), RPAR),
 				SetComprehension());
@@ -724,9 +725,18 @@ public class KodkodParser extends BaseParser<Object> {
 	@Cached
 	/** @return opRule Expr */
 	Rule UnaryExpr(Rule opRule, ExprOperator op) {
+
 		return Sequence(opRule, Expr(), push(compose(op, Collections.singletonList(popExpr()))));
 	}
 
+	@Cached
+	/** @return opRule Expr (TemporalOperators) */ //Electrum
+	Rule UnaryExprTemp(Rule opRule, TemporalOperator op) {
+	
+		return Sequence(opRule, Expr(), push(compose(op, Collections.singletonList(popExpr()))));
+
+	}
+	
 	@Cached
 	/** @return castRule IntExpr */
 	Rule IntToExprCast(Rule castRule, IntCastOperator castOp) {
@@ -1093,6 +1103,7 @@ public class KodkodParser extends BaseParser<Object> {
 		return (Expression) pop();
 	}
 
+	
 	final IntExpression popIntExpr() {
 		return (IntExpression) pop();
 	}
@@ -1156,3 +1167,5 @@ public class KodkodParser extends BaseParser<Object> {
 		return problem.env();
 	}
 }
+
+

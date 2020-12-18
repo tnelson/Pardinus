@@ -40,6 +40,7 @@ import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.operator.IntOperator;
 import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.TemporalOperator;
+import kodkod.ast.TempExpression;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.instance.Bounds;
@@ -383,6 +384,20 @@ public final class KodkodFactory {
 			throw new ActionException(ex.getMessage(), ex); // wrap
 		}
 	}
+	
+	public static final Expression compose(TemporalOperator op, List<Expression> args) {
+		try {
+				assert op.unary() && args.size()==1;
+				return args.get(0).apply(op);
+			
+		} catch (RuntimeException ex) {
+			throw new ActionException(ex.getMessage(), ex); // wrap
+		}
+	}
+	
+
+	
+	
 	/**
 	 * Returns the set comprehension over the given formula and declarations.
 	 * @ensures formula.comprehension(decls)
