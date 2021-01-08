@@ -384,6 +384,7 @@ public final class KodkodFactory {
 			throw new ActionException(ex.getMessage(), ex); // wrap
 		}
 	}
+<<<<<<< HEAD
 	
 	public static final Expression compose(TemporalOperator op, List<Expression> args) {
 		try {
@@ -398,6 +399,16 @@ public final class KodkodFactory {
 
 	
 	
+=======
+
+	/**
+	 * Like the ExprOperator version, but just for prime
+	 */
+	public static final Expression compose(TemporalOperator op, List<Expression> args) {
+		return args.get(0).apply(op);
+	}
+
+>>>>>>> fix prime in cli parser
 	/**
 	 * Returns the set comprehension over the given formula and declarations.
 	 * @ensures formula.comprehension(decls)

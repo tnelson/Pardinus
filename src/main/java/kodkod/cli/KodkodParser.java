@@ -698,7 +698,11 @@ public class KodkodParser extends BaseParser<Object> {
 						NaryExpr(PLUS, ExprOperator.UNION), NaryExpr(AMP, ExprOperator.INTERSECTION),
 						NaryExpr(ARROW, ExprOperator.PRODUCT), NaryExpr(MINUS, ExprOperator.DIFFERENCE),
 						UnaryExpr(TILDE, ExprOperator.TRANSPOSE), UnaryExpr(HAT, ExprOperator.CLOSURE),
+<<<<<<< HEAD
 						UnaryExprTemp(PRIME,TemporalOperator.PRIME), //Electrum
+=======
+						UnaryExpr(PRIME, TemporalOperator.PRIME),
+>>>>>>> fix prime in cli parser
 						UnaryExpr(STAR, ExprOperator.REFLEXIVE_CLOSURE), IntToExprCast(SET, IntCastOperator.BITSETCAST),
 						IntToExprCast(LONE, IntCastOperator.INTCAST), IfExpr(), Let(Expr()), Projection()), RPAR),
 				SetComprehension());
@@ -726,6 +730,9 @@ public class KodkodParser extends BaseParser<Object> {
 	/** @return opRule Expr */
 	Rule UnaryExpr(Rule opRule, ExprOperator op) {
 
+		return Sequence(opRule, Expr(), push(compose(op, Collections.singletonList(popExpr()))));
+	}
+	Rule UnaryExpr(Rule opRule, TemporalOperator op) {
 		return Sequence(opRule, Expr(), push(compose(op, Collections.singletonList(popExpr()))));
 	}
 
@@ -1013,7 +1020,7 @@ public class KodkodParser extends BaseParser<Object> {
 	final Rule TILDE = Terminal("~");
 	final Rule HAT = Terminal("^");
 	final Rule STAR = Terminal("*");
-	final Rule PRIME = Terminal("'");
+	final Rule PRIME = Terminal("prime");
 	final Rule DIV = Terminal("/");
 	final Rule MOD = Terminal("%");
 	final Rule BAR = Terminal("|");
