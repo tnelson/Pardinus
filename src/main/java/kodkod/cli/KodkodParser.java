@@ -698,11 +698,7 @@ public class KodkodParser extends BaseParser<Object> {
 						NaryExpr(PLUS, ExprOperator.UNION), NaryExpr(AMP, ExprOperator.INTERSECTION),
 						NaryExpr(ARROW, ExprOperator.PRODUCT), NaryExpr(MINUS, ExprOperator.DIFFERENCE),
 						UnaryExpr(TILDE, ExprOperator.TRANSPOSE), UnaryExpr(HAT, ExprOperator.CLOSURE),
-<<<<<<< HEAD
-						UnaryExprTemp(PRIME,TemporalOperator.PRIME), //Electrum
-=======
 						UnaryExpr(PRIME, TemporalOperator.PRIME),
->>>>>>> fix prime in cli parser
 						UnaryExpr(STAR, ExprOperator.REFLEXIVE_CLOSURE), IntToExprCast(SET, IntCastOperator.BITSETCAST),
 						IntToExprCast(LONE, IntCastOperator.INTCAST), IfExpr(), Let(Expr()), Projection()), RPAR),
 				SetComprehension());
@@ -734,14 +730,6 @@ public class KodkodParser extends BaseParser<Object> {
 	}
 	Rule UnaryExpr(Rule opRule, TemporalOperator op) {
 		return Sequence(opRule, Expr(), push(compose(op, Collections.singletonList(popExpr()))));
-	}
-
-	@Cached
-	/** @return opRule Expr (TemporalOperators) */ //Electrum
-	Rule UnaryExprTemp(Rule opRule, TemporalOperator op) {
-	
-		return Sequence(opRule, Expr(), push(compose(op, Collections.singletonList(popExpr()))));
-
 	}
 	
 	@Cached
