@@ -939,25 +939,49 @@ public abstract class KodkodProblem {
 
 		private static final class TargetOriented extends Stepper {
 
+			String target_type = "close";
 			boolean flip_target = false;
 
 			TargetOriented() {
 				super(true);
 				options().setRunTarget(true);
 
-				// Fix so that pardinus doesn't move target around.
-				options().setRetargeter(new Retargeter() {
-					public void retarget(TargetSATSolver targetSATSolver, TargetOptions.TMode tMode,
-							Translation translation, int i) {
-						// DO NOTHING! Keep the initial target
-					}
+				switch (target_type) {
+					case "far":
+						flip_target = true;
+					case "close":
+						// Fix so that Pardinus doesn't move target around.
+						options().setRetargeter(new Retargeter() {
+							@Override public void retarget(Translation transl) {}
+						});
+						break;
+					case "cover":
+						options().setRetargeter(new Retargeter() {
+							boolean firstInstance = true;
+							@Override
+							public void retarget(Translation transl) {
+								assert(transl.cnf() instanceof TargetSATSolver);
+								TargetSATSolver tcnf = (TargetSATSolver)transl.cnf();
+								assert(transl.options() instanceof ExtendedOptions);
 
-					@Override
-					public void retarget(Translation transl) {
-						// TODO Auto-generated method stub
+								if(firstInstance) {
+									tcnf.clearTargets(); // stop targeting initial instance
+								}
+								firstInstance = false;
 
-					}
-				});
+								// Anti-target the current instance
+								// Crucially, do not clear prior targets, since we want
+								//   to build up a field of pressure away from instances seen
+								for(int i = 1; i <= transl.numPrimaryVariables(); i++) {
+									int tgt = tcnf.valueOf(i) ? -i : i;
+									tcnf.addTarget(tgt);
+								}
+							}
+						});
+						break;
+					default:
+						throw new ActionException("Bad choice for target type: " + target_type);
+				}
 
 				// Unnecessary?
 				// options().setConfigOptions(options());
@@ -971,13 +995,7 @@ public abstract class KodkodProblem {
 			@Override
 			boolean setTargetType(String target_type) {
 				assert super.solver instanceof ExtendedSolver;
-				if (target_type == "close") {
-					flip_target = false;
-				} else if (target_type == "far") {
-					flip_target = true;
-				} else {
-					throw new ActionException("Bad choice for target type: " + target_type);
-				}
+				this.target_type = target_type;
 				return true;
 			}
 

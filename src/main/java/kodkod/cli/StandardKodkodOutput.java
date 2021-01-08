@@ -87,7 +87,12 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 */
 	@SuppressWarnings("unchecked")
 	public void writeSolution(Solution sol, KodkodProblem problem) {
-		if (sol.sat()) 	writeInstance(sol.instance(), (StringDefs<Relation>) problem.env().defs('r'));
+		if (sol.sat()) 	{
+			// var relations (x) and normal relations (r) are stored separately
+			StringDefs<Relation> rdefns = (StringDefs<Relation>) problem.env().defs('r');
+			StringDefs<Relation> xdefns = (StringDefs<Relation>) problem.env().defs('x');
+			writeInstance(sol.instance(), rdefns, xdefns);
+		}
 		else			System.out.println("(no-more-instances)");
 		writeStats(problem, sol);
 	}
@@ -98,12 +103,20 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 * Writes the instance s-expression to standard out.
 	 * @requires all r: defs.def[int] | inst.tuples(r) != null
 	 **/
-	public void writeInstance(Instance inst, StringDefs<Relation> defs) {
+	public void writeInstance(Instance inst, StringDefs<Relation> rdefs, StringDefs<Relation> xdefs) {
 		final StringBuilder str = new StringBuilder();
 		Set<Relation> written = new HashSet<>();
 		str.append("(sat :model (");
-		for (String name : defs.keys()) {
-			final Relation r = defs.use(name);
+		for (String name : rdefs.keys()) {
+			final Relation r = rdefs.use(name);
+			if (r==null) continue;
+			final TupleSet ts = inst.tuples(r);
+			assert ts != null;
+			appendRelation(r, ts, str);
+			written.add(r);
+		}
+		for (String name : xdefs.keys()) {
+			final Relation r = xdefs.use(name);
 			if (r==null) continue;
 			final TupleSet ts = inst.tuples(r);
 			assert ts != null;
