@@ -154,9 +154,10 @@ public final class StandardKodkodOutput implements KodkodOutput {
 				written.add(r);
 			}
 		}
-		str.append(")");
+		str.append(")"); // end of model
 
 		writeStats(problem, sol, str);
+		str.append(")"); // end of sat
 		System.out.println(str);
 	}
 
