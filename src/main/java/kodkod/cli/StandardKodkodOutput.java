@@ -120,13 +120,11 @@ public final class StandardKodkodOutput implements KodkodOutput {
 
 		for (String name : xdefs.keys()) {
 			final Relation r = xdefs.use(name);
-			System.out.println("xdefs: "+r);
 			if (r==null) continue;
 			// Don't index by relation here, because the relation r
 			// is the pre-state-addition relation; use the name instead.
 			final TupleSet ts = inst.tuples(r.name());
 			assert ts != null;
-			System.out.println("ts: "+ts);
 			appendRelation(r, ts, str);
 			written.add(r);
 		}
