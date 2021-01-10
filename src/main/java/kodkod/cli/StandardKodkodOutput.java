@@ -88,8 +88,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 				sol.proof().minimize(new HybridStrategy(sol.proof().log()));
 		}
 
-        writeCore(sol.proof(), (StringDefs<Formula>) problem.env().defs('f'));
-        writeStats(problem, sol);
+        writeCore(sol, problem, (StringDefs<Formula>) problem.env().defs('f'));
     }
 
 	/**
@@ -104,10 +103,9 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			StringDefs<Relation> xdefns = (StringDefs<Relation>) problem.env().defs('x');
 			//
 			Set<String> origAtoms = problem.env().defs('a').keys();
-			writeInstance(sol.instance(), rdefns, xdefns, origAtoms);
+			writeInstance(problem, sol, rdefns, xdefns, origAtoms);
 		}
 		else			System.out.println("(no-more-instances)");
-		writeStats(problem, sol);
 	}
 
 
@@ -116,8 +114,9 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 * Writes the instance s-expression to standard out.
 	 * @requires all r: defs.def[int] | inst.tuples(r) != null
 	 **/
-	public void writeInstance(Instance inst, StringDefs<Relation> rdefs, StringDefs<Relation> xdefs, Set<String> origAtoms) {
+	public void writeInstance(KodkodProblem problem, Solution sol, StringDefs<Relation> rdefs, StringDefs<Relation> xdefs, Set<String> origAtoms) {
 		final StringBuilder str = new StringBuilder();
+		final Instance inst = sol.instance();
 		Set<Relation> written = new HashSet<>();
 		str.append("(sat :model (");
 		for (String name : rdefs.keys()) {
@@ -155,7 +154,9 @@ public final class StandardKodkodOutput implements KodkodOutput {
 				written.add(r);
 			}
 		}
-		str.append("))");
+		str.append(")");
+
+		writeStats(problem, sol, str);
 		System.out.println(str);
 	}
 
@@ -182,13 +183,12 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 * Writes the core s-expression to standard out.
 	 * @requires proof.highLevelCore().values() in defs.def[int]
 	 **/
-	public void writeCore(Proof proof, StringDefs<Formula> defs) {
+	public void writeCore(Solution sol,  KodkodProblem problem, StringDefs<Formula> defs) {
 		final StringBuilder str = new StringBuilder();
+		final Proof proof = sol.proof();
 		str.append("(unsat");
 
-        if (proof == null){
-            str.append(")");
-        } else {
+        if (proof != null){
             str.append(" :core ( ");
             for (Node form : proof.highLevelCore().values()) {
                 str.append("\"");
@@ -201,9 +201,12 @@ public final class StandardKodkodOutput implements KodkodOutput {
 				}
                 str.append("\" ");
             }
-            str.append("))");
+            str.append(")");
         }
 
+		writeStats(problem, sol, str);
+
+		str.append(")");
         System.out.println(str.toString());
     }
     // ...
@@ -237,32 +240,31 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	/**
 	 * Logs the given solution and problem statistics to {@code this.logger} as info messages.
 	 */
-	void writeStats(KodkodProblem problem, Solution sol) {
+	void writeStats(KodkodProblem problem, Solution sol, StringBuilder str) {
 		final Statistics stats = sol.stats();
 		if (stats != null) {
-			writeStat("problem size",
-					  String.format("variables = %s, clauses = %s, state = %s bits",
-									stats.variables(), stats.clauses(), stats.primaryVariables()));
+			str.append(" :stats (");
+			writeStat("size-variables", stats.variables(), str);
+			writeStat("size-clauses", stats.clauses(), str);
+			writeStat("size-primary", stats.primaryVariables(), str);
 
 			final long pt = problem.buildTimeMillis(), ct = problem.coreTimeMillis(),
 					tt = stats.translationTime(), st = stats.solvingTime();
 
-			if (ct >= 0)
-				writeStat("solving time (ms)",
-						  String.format("total = %s, parsing = %s, translation = %s, SAT = %s, core = %s",
-										pt + tt + st + ct, pt, tt, st, ct));
-			else
-				writeStat("solving time (ms)",
-						  String.format("total = %s, parsing = %s, translation = %s, SAT = %s",
-										pt + tt + st, pt, tt, st));
+			writeStat("time-translation", Long.max(tt, 0), str);
+			writeStat("time-solving", Long.max(st, 0), str);
+			writeStat("time-building", Long.max(pt, 0), str);
+			if (sol.unsat()) writeStat("time-core", Long.max(ct, 0), str);
+
+			str.append(")");
 		}
 	}
 
 	/**
 	 * Logs the given statistic and its value to {@code this.logger} as an info message.
 	 */
-	void writeStat(String stat, Object value) {
-		logger.info(String.format("%s: %s\n", stat, value));
+	void writeStat(String stat, Object value, StringBuilder str) {
+		str.append(String.format(" (%s %s)", stat, value));
 	}
 
 //	static final void printMemInfo() {
