@@ -31,6 +31,8 @@ import kodkod.ast.Relation;
 import kodkod.engine.Proof;
 import kodkod.engine.Solution;
 import kodkod.engine.Statistics;
+import kodkod.engine.ucore.HybridStrategy;
+import kodkod.engine.ucore.RCEStrategy;
 import kodkod.instance.Instance;
 import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
@@ -79,6 +81,13 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	StandardKodkodOutput() {  this(Logger.getGlobal()); }
 
     public void writeUnsat(Solution sol, KodkodProblem problem) {
+		if(sol.proof() != null) {
+			if("rce".equalsIgnoreCase(problem.coreMinimization))
+				sol.proof().minimize(new RCEStrategy(sol.proof().log()));
+			else if("hybrid".equalsIgnoreCase(problem.coreMinimization))
+				sol.proof().minimize(new HybridStrategy(sol.proof().log()));
+		}
+
         writeCore(sol.proof(), (StringDefs<Formula>) problem.env().defs('f'));
         writeStats(problem, sol);
     }
@@ -93,7 +102,9 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			// var relations (x) and normal relations (r) are stored separately
 			StringDefs<Relation> rdefns = (StringDefs<Relation>) problem.env().defs('r');
 			StringDefs<Relation> xdefns = (StringDefs<Relation>) problem.env().defs('x');
-			writeInstance(sol.instance(), rdefns, xdefns);
+			//
+			Set<String> origAtoms = problem.env().defs('a').keys();
+			writeInstance(sol.instance(), rdefns, xdefns, origAtoms);
 		}
 		else			System.out.println("(no-more-instances)");
 		writeStats(problem, sol);
@@ -105,7 +116,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 * Writes the instance s-expression to standard out.
 	 * @requires all r: defs.def[int] | inst.tuples(r) != null
 	 **/
-	public void writeInstance(Instance inst, StringDefs<Relation> rdefs, StringDefs<Relation> xdefs) {
+	public void writeInstance(Instance inst, StringDefs<Relation> rdefs, StringDefs<Relation> xdefs, Set<String> origAtoms) {
 		final StringBuilder str = new StringBuilder();
 		Set<Relation> written = new HashSet<>();
 		str.append("(sat :model (");
@@ -114,7 +125,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			if (r==null) continue;
 			final TupleSet ts = inst.tuples(r);
 			assert ts != null;
-			appendRelation(r, ts, str);
+			appendRelation(r, ts, str, origAtoms);
 			written.add(r);
 		}
 
@@ -125,7 +136,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			// is the pre-state-addition relation; use the name instead.
 			final TupleSet ts = inst.tuples(r.name());
 			assert ts != null;
-			appendRelation(r, ts, str);
+			appendRelation(r, ts, str, origAtoms);
 			written.add(r);
 		}
 		// Write out Skolem relations as well. Client will need to be ready for non-numeric label.
@@ -133,27 +144,34 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			if(!written.contains(r) && r.name().startsWith("$")) {
 				final TupleSet ts = inst.tuples(r);
 				assert ts != null;
-				appendRelation(r, ts, str);
+				appendRelation(r, ts, str, origAtoms);
+				written.add(r);
 			}
 			// Also provide the state indices
 			if(r.name().equals("Time")) {
 				final TupleSet ts = inst.tuples(r);
 				assert ts != null;
-				appendRelation(r, ts, str);
+				appendRelation(r, ts, str, origAtoms);
+				written.add(r);
 			}
 		}
 		str.append("))");
 		System.out.println(str);
 	}
 
-	private void appendRelation(Relation r, TupleSet ts, StringBuilder str) {
+	private void appendRelation(Relation r, TupleSet ts, StringBuilder str, Set<String> origAtoms) {
 		str.append("[").append(r).append(" {");
 		final int arity = ts.arity();
+		// This code previously used t.atomIndex, rather than t.atom
+		// Pardinus (temporal) will create new atoms at 0-based indexes
+		//   which meant the previous approach was unsafe. Now send back
+		//   new atom names instead of forcing caller to increment everything
+		// If needed, origAtoms parameter can be used to identify new atoms
 		for(Tuple t : ts) {
 			str.append("(");
-			str.append(t.atomIndex(0));
+			str.append(t.atom(0));
 			for(int idx = 1; idx < arity; idx++) {
-				str.append(" ").append(t.atomIndex(idx));
+				str.append(" ").append(t.atom(idx));
 			}
 			str.append(")");
 		}
@@ -174,7 +192,13 @@ public final class StandardKodkodOutput implements KodkodOutput {
             str.append(" :core ( ");
             for (Node form : proof.highLevelCore().values()) {
                 str.append("\"");
-                str.append(form);
+                if(form instanceof Formula && defs.canReverse((Formula)form)) {
+					str.append("f:"+defs.reverse((Formula) form));
+				} else {
+                	// If core granularity is high, Kodkod may produce
+					//  formulas that don't correspond to top-level constraints
+					str.append(form);
+				}
                 str.append("\" ");
             }
             str.append("))");

@@ -245,6 +245,7 @@ public class KodkodParser extends BaseParser<Object> {
 								// problem.setCoreExtraction(popBool())),
 								Sequence(Keyword("log-trans"), NatLiteral(), problem.setLogTranslation(popInt())),
 								Sequence(Keyword("core-gran"), NatLiteral(), problem.setCoreGranularity(popInt())),
+								Sequence(Keyword("core-minimization"), StringLiteral(), problem.setCoreMinimization(popString())),
 								Sequence(Keyword("verbosity"), NatLiteral(), problem.setVerbosity(level(popInt()))),
 								Sequence(Keyword("sb"), NatLiteral(), problem.setSB(popInt())),
 								Sequence(Keyword("max-trace-length"), NatLiteral(), problem.setMaxTraceLength(popInt())),

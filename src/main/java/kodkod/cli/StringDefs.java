@@ -23,6 +23,7 @@ package kodkod.cli;
 
 import java.util.*;
 
+import kodkod.ast.Node;
 import org.parboiled.errors.ActionException;
 
 /**
@@ -44,18 +45,24 @@ import org.parboiled.errors.ActionException;
 final class StringDefs<V>  {
     private final Map<String, V> def;
     private final char prefix;
+    /**
+     * reverses the definition map
+     * behavior is undefined if the map is not surjective
+     */
+    private final Map<V, String> reverse;
 
     @SuppressWarnings("unchecked")
-    private StringDefs(char prefix, Map<?, ?> def) {
+   private StringDefs(char prefix, Map<?, ?> def, Map<?,?> reverse) {
         assert Character.isLetter(prefix);
         this.def = (Map<String, V>) def;
+        this.reverse = (Map<V, String>) reverse;
         this.prefix = prefix;
     }
     /**
      * Creates a new empty definition register.
      * @ensures no this.def' && this.prefix' = prefix
      */
-    public StringDefs(char prefix) { this(prefix, new HashMap<>()); }
+    public StringDefs(char prefix) { this(prefix, new HashMap<>(), new HashMap<>()); }
 
     /**
      * Constructs an empty, unmodifiable definition register with the given prefix.
@@ -63,7 +70,8 @@ final class StringDefs<V>  {
      */
     @SuppressWarnings("unchecked")
     public static <V> StringDefs<V> empty(char prefix) {
-        return new StringDefs<V>(prefix, new HashMap<String, V>());
+        return new StringDefs<V>(prefix, new HashMap<String, V>(),
+                new HashMap<V, String>());
     }
 
     /**
@@ -148,6 +156,7 @@ final class StringDefs<V>  {
             throw new ActionException("Duplicate definition for " + name + ".");
         } else {
             def.put(name, val);
+            reverse.put(val, name);
             return true;
         }
     }
@@ -158,5 +167,13 @@ final class StringDefs<V>  {
      */
     public String toString() {
         return prefix + "" + def.keySet();
+    }
+
+    public boolean canReverse(V v) {
+        return reverse.containsKey(v);
+    }
+
+    public String reverse(V v) {
+        return reverse.getOrDefault(v, null);
     }
 }

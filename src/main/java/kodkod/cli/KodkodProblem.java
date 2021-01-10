@@ -589,6 +589,10 @@ public abstract class KodkodProblem {
 			for (int i = 0; i < size; i++) {
 				atoms.add(i);
 				env.def('a', Integer.toString(i), Relation.unary("atom " + i));
+				// Note: Pardinus in temporal mode will add "Time" atoms.
+				//  these will generally appear at the beginning of the indexing
+				//  and thus tuple.atomIndex cannot be relied upon as a ref. to atom name.
+				//  Instead, recognize new atoms by their absence in the 'a' registry keys
 			}
 			final Universe universe = new Universe(atoms);
 			bounds = new PardinusBounds(universe);
@@ -817,6 +821,12 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
+	String coreMinimization = "none";
+	public boolean setCoreMinimization(String coreMinimization) {
+		this.coreMinimization = coreMinimization;
+		return true;
+	}
+
 	// TODO: allow multiple Stepper problems.
 	// possibly by having Solve() return a new Stepper? or maybe after clear...
 
@@ -851,6 +861,7 @@ public abstract class KodkodProblem {
 			this.issolved = true;
 			this.solutions = solutions;
 			this.bounds = prototype.bounds();
+			this.coreMinimization = prototype.coreMinimization;
 			assert (this.iteration == -1);
 		}
 
