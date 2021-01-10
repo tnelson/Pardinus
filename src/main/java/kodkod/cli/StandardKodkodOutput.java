@@ -135,6 +135,12 @@ public final class StandardKodkodOutput implements KodkodOutput {
 				assert ts != null;
 				appendRelation(r, ts, str);
 			}
+			// Also provide the state indices
+			if(r.name().equals("Time")) {
+				final TupleSet ts = inst.tuples(r);
+				assert ts != null;
+				appendRelation(r, ts, str);
+			}
 		}
 		str.append("))");
 		System.out.println(str);

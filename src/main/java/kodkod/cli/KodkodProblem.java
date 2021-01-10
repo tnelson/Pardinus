@@ -806,6 +806,16 @@ public abstract class KodkodProblem {
 		}
 		return true;
 	}
+	public boolean setMinTraceLength(Integer popInt)
+	{
+		try {
+			options.setMinTraceLength(popInt);
+			options.setRunTemporal(true);
+		} catch (IllegalArgumentException ex) {
+			throw new ActionException(ex.getMessage(), ex); // wrap
+		}
+		return true;
+	}
 
 	// TODO: allow multiple Stepper problems.
 	// possibly by having Solve() return a new Stepper? or maybe after clear...

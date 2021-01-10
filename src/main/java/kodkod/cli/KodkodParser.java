@@ -248,6 +248,7 @@ public class KodkodParser extends BaseParser<Object> {
 								Sequence(Keyword("verbosity"), NatLiteral(), problem.setVerbosity(level(popInt()))),
 								Sequence(Keyword("sb"), NatLiteral(), problem.setSB(popInt())),
 								Sequence(Keyword("max-trace-length"), NatLiteral(), problem.setMaxTraceLength(popInt())),
+								Sequence(Keyword("min-trace-length"), NatLiteral(), problem.setMinTraceLength(popInt())),
 								Sequence(Keyword("skolem-depth"), NatLiteral(), problem.setSkolemDepth(popInt())),
 								Sequence(Keyword("max-solutions"), NatLiteral(), problem.setMaxSolutions(popInt())))),
 				RPAR);
