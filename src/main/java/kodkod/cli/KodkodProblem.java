@@ -34,7 +34,6 @@ import kodkod.ast.Relation;
 import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
-import kodkod.engine.config.TargetOptions;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.TargetSATSolver;
@@ -131,6 +130,14 @@ public abstract class KodkodProblem {
 		this.env = env;
 		this.bounds = bounds;
 		this.options = options;
+
+		// TODO: hack, should clean up
+		// The problem is that the super() constructor of the subclasses
+		// needs to be called before the subclass constructor can set
+		// these options itself. Perhaps subclassing is wrong idea here
+		if(isTargetOriented()) options().setRunTarget(true);
+		if(isTemporal()) options().setRunTemporal(true);
+
 		// this.options.setSymmetryBreaking(20);
 		this.asserts = new ArrayList<>();
 		this.maxSolutions = maxSolutions;
@@ -177,14 +184,24 @@ public abstract class KodkodProblem {
 	 * Returns a new Stepper problem!
 	 */
 	public static KodkodProblem stepper() {
+		//System.exit(200);
+		//System.out.println("stepper:"+Logger.getGlobal());
+		//System.err.println("stepper:"+Logger.getGlobal());
 		return new KodkodProblem.Stepper();
+	}
+
+	/**
+	 * Returns a new Target Oriented problem
+	 */
+	public static KodkodProblem targetOriented() {
+		return new KodkodProblem.Stepper.TargetOriented();
 	}
 
 	/**
 	 * Returns a new Target Oriented problem!
 	 */
-	public static KodkodProblem targetOriented() {
-		return new KodkodProblem.Stepper.TargetOriented();
+	public static KodkodProblem temporal() {
+		return new KodkodProblem.Stepper.Temporal();
 	}
 
 	/**
@@ -270,7 +287,7 @@ public abstract class KodkodProblem {
 	 * 
 	 * @return this.bounds
 	 */
-	public final Bounds bounds() {
+	public final PardinusBounds bounds() {
 		return bounds;
 	}
 
@@ -361,6 +378,10 @@ public abstract class KodkodProblem {
 	 * @return some this.prev
 	 */
 	public boolean isTargetOriented() {
+		return false;
+	}
+
+	public boolean isTemporal() {
 		return false;
 	}
 
@@ -775,6 +796,17 @@ public abstract class KodkodProblem {
 		out.writeUnsat(sol, this);
 	}
 
+	public boolean setMaxTraceLength(Integer popInt)
+	{
+		try {
+			options.setMaxTraceLength(popInt);
+			options.setRunTemporal(true);
+		} catch (IllegalArgumentException ex) {
+			throw new ActionException(ex.getMessage(), ex); // wrap
+		}
+		return true;
+	}
+
 	// TODO: allow multiple Stepper problems.
 	// possibly by having Solve() return a new Stepper? or maybe after clear...
 
@@ -785,29 +817,20 @@ public abstract class KodkodProblem {
 	// new objects when we transition to a solved stepper. A solved stepper can
 	// return itself.
 	private static class Stepper extends KodkodProblem {
-		private final AbstractKodkodSolver solver;
+		private final PardinusSolver solver;
 		private boolean issolved = false;
 		private Solution lastSol;
 		private int iteration = -1;
 		private boolean unsat = false;
 		private Evaluator evaluator = null;
-		private Bounds bounds = null;
+		private PardinusBounds bounds = null;
 
 		// Used to print new solutions from the first solved model.
 		private Iterator<Solution> solutions;
 
 		Stepper() {
-			this.solver = new Solver(super.options);
+			this.solver = new PardinusSolver(super.options);
 			super.maxSolutions = -1; // maxSolutions has no meaning for Steppers.
-		}
-
-		Stepper(boolean extended) {
-			if (extended) {
-				this.solver = new ExtendedSolver(super.options);
-			} else {
-				this.solver = new Solver(super.options);
-			}
-			super.maxSolutions = -1;
 		}
 
 		// makes a solved stepper with the given solutions.
@@ -852,6 +875,7 @@ public abstract class KodkodProblem {
 		}
 
 		public KodkodProblem solve(KodkodOutput out) {
+			//System.err.println("solver is pardinus: "+solver.solver.getClass());
 			if (isSolved()) {
 				assert (this.iteration >= 0);
 				this.iteration++;
@@ -876,16 +900,14 @@ public abstract class KodkodProblem {
 						// Add helper relations to instance
 						Instance instance = sol.instance().clone();
 						for (String atom : env().keys('a')) {
+							// need to use instance.universe() here, not bounds.universe()
 							instance.add(env().use('a', atom),
-									setOf(tuple(bounds.universe().factory(), Arrays.asList(Integer.parseInt(atom)))));
+									setOf(tuple(instance.universe().factory(), Arrays.asList(Integer.parseInt(atom)))));
 						}
-
 						evaluator = new Evaluator(instance); // TODO: add options
 						// evaluator = new Evaluator(sol.instance());
-
 						write(out, sol);
 						lastSol = sol;
-
 						return this;
 					}
 				}
@@ -939,32 +961,49 @@ public abstract class KodkodProblem {
 
 		private static final class TargetOriented extends Stepper {
 
-			String target_type = "close";
+			String target_type;
+			boolean initialized = false;
 			boolean flip_target = false;
 
-			TargetOriented() {
-				super(true);
+			boolean setTargetType(String target_type) {
+				if (initialized)
+					throw new IllegalStateException("Target type was already set");
+				this.initialized = true;
+
+				this.target_type = target_type;
 				options().setRunTarget(true);
 
+				// These names are likely to change with further dev.
+				// TODO: enum?
+				// More names also need adding to Parser
 				switch (target_type) {
+					case "far_retarget":
+						flip_target = true;
+					case "close_retarget":
+						break;
+
 					case "far":
 						flip_target = true;
 					case "close":
 						// Fix so that Pardinus doesn't move target around.
 						options().setRetargeter(new Retargeter() {
-							@Override public void retarget(Translation transl) {}
+							@Override
+							public void retarget(Translation transl) {
+							}
 						});
 						break;
+
 					case "cover":
 						options().setRetargeter(new Retargeter() {
 							boolean firstInstance = true;
+
 							@Override
 							public void retarget(Translation transl) {
-								assert(transl.cnf() instanceof TargetSATSolver);
-								TargetSATSolver tcnf = (TargetSATSolver)transl.cnf();
-								assert(transl.options() instanceof ExtendedOptions);
+								assert (transl.cnf() instanceof TargetSATSolver);
+								TargetSATSolver tcnf = (TargetSATSolver) transl.cnf();
+								assert (transl.options() instanceof ExtendedOptions);
 
-								if(firstInstance) {
+								if (firstInstance) {
 									tcnf.clearTargets(); // stop targeting initial instance
 								}
 								firstInstance = false;
@@ -972,7 +1011,7 @@ public abstract class KodkodProblem {
 								// Anti-target the current instance
 								// Crucially, do not clear prior targets, since we want
 								//   to build up a field of pressure away from instances seen
-								for(int i = 1; i <= transl.numPrimaryVariables(); i++) {
+								for (int i = 1; i <= transl.numPrimaryVariables(); i++) {
 									int tgt = tcnf.valueOf(i) ? -i : i;
 									tcnf.addTarget(tgt);
 								}
@@ -982,6 +1021,13 @@ public abstract class KodkodProblem {
 					default:
 						throw new ActionException("Bad choice for target type: " + target_type);
 				}
+
+				return true;
+			}
+
+			TargetOriented() {
+				super();
+				initialized = false;
 
 				// Unnecessary?
 				// options().setConfigOptions(options());
@@ -993,16 +1039,9 @@ public abstract class KodkodProblem {
 			}
 
 			@Override
-			boolean setTargetType(String target_type) {
-				assert super.solver instanceof ExtendedSolver;
-				this.target_type = target_type;
-				return true;
-			}
-
-			@Override
 			public KodkodProblem solve(KodkodOutput out) {
 				if (!isSolved() && flip_target) {
-					PardinusBounds pb = (PardinusBounds) bounds();
+					PardinusBounds pb = bounds();
 
 					for (Relation rel : pb.targets().keySet()) {
 						TupleSet tuples = pb.upperBound(rel).clone();
@@ -1015,9 +1054,26 @@ public abstract class KodkodProblem {
 				return super.solve(out);
 			}
 		}
+
+		private static final class Temporal extends Stepper {
+
+			Temporal() {
+				super();
+				// trace lengths configured at parse time
+				options().setRunTemporal(true);
+
+				// Unnecessary?
+				// options().setConfigOptions(options());
+			}
+
+			@Override
+			public boolean isTemporal() {
+				return true;
+			}
+		}
 	}
 
-	/**
+/**
 	 * Implements a complete specification of a Kodkod problem.
 	 * 
 	 * @author Emina Torlak

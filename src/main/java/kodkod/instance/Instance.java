@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import kodkod.ast.ConstantExpression;
 import kodkod.ast.Expression;
@@ -140,8 +141,10 @@ public class Instance implements Cloneable {
 	 * @throws UnsupportedOperationException  this is an unmodifiable instance
 	 */
 	public void add(final Relation relation, TupleSet s) {
-		if (!s.universe().equals(universe))
+		if (!s.universe().equals(universe)) {
+			new Exception().printStackTrace();
 			throw new IllegalArgumentException("s.universe!=this.universe");
+		}
 		if (relation.arity()!=s.arity())
 			throw new IllegalArgumentException("relation.arity!=s.arity");
 		tuples.put(relation, s.clone().unmodifiableView());

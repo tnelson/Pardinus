@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import kodkod.ast.Decls;
 import kodkod.ast.Expression;
@@ -498,8 +499,9 @@ public class TemporalInstance extends Instance {
 	 * @throws UnsupportedOperationException this is an unmodifiable instance
 	 */
 	public void add(final Relation relation, TupleSet s) {
-		if (!s.universe().equals(universe()) && !s.universe().equals(staticUniverse()))
-			throw new IllegalArgumentException("s.universe!=this.universe");
+		if (!s.universe().equals(universe()) && !s.universe().equals(staticUniverse())) {
+			throw new IllegalArgumentException("s.universe!=this.universe && s.universe!=this.staticUniverse");
+		}
 		if (relation.arity() != s.arity())
 			throw new IllegalArgumentException("relation.arity!=s.arity");
 

@@ -21,6 +21,7 @@
  */
 package kodkod.cli;
 
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -31,6 +32,7 @@ import kodkod.engine.Proof;
 import kodkod.engine.Solution;
 import kodkod.engine.Statistics;
 import kodkod.instance.Instance;
+import kodkod.instance.TemporalInstance;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
 
@@ -115,11 +117,16 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			appendRelation(r, ts, str);
 			written.add(r);
 		}
+
 		for (String name : xdefs.keys()) {
 			final Relation r = xdefs.use(name);
+			System.out.println("xdefs: "+r);
 			if (r==null) continue;
-			final TupleSet ts = inst.tuples(r);
+			// Don't index by relation here, because the relation r
+			// is the pre-state-addition relation; use the name instead.
+			final TupleSet ts = inst.tuples(r.name());
 			assert ts != null;
+			System.out.println("ts: "+ts);
 			appendRelation(r, ts, str);
 			written.add(r);
 		}

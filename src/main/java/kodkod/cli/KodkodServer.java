@@ -28,6 +28,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -95,6 +98,9 @@ import kodkod.ast.Formula;
  */
 public final class KodkodServer {
 
+	public enum MODE {STEPPER, INCREMENTAL, COMPLETE}
+	public enum FEATURE {TARGET_ORIENTED, TEMPORAL}
+
 	static { // set up log handling
 		final Logger global = Logger.getGlobal();
 		global.setUseParentHandlers(false);
@@ -127,23 +133,32 @@ public final class KodkodServer {
 	 * report detailed parsing errors. The {@code errorOut} parameter, if not false, specifies the name of
 	 * the file to which to dump error-causing input, if any, before exiting.
 	 */
-	KodkodServer(boolean incremental, boolean stepper, boolean targetOriented, boolean fastParsing, KodkodOutput out, String errorOut) {
-		if (stepper && incremental){
-			System.err.println("The -incremental and -stepper options are mutually exclusive.");
-			System.err.println("This is because Kodkod Incremental solvers do not support retrieval of the next sat solution.");
+	KodkodServer(MODE mode, Set<FEATURE> features,
+				 boolean fastParsing, KodkodOutput out, String errorOut) {
+
+		/* Note well: PardinusSolver decides which solver to run based on options given
+		   at instantiation time. Since KodkodProblem creates the solver at its own
+		   instantiation time, this means that options that dictate which variety
+		   of solver to use MUST BE PROVIDED AS COMMAND LINE ARGUMENTS, not via (configure ...)
+		   since by the time the parser runs the problem has been instantiated.
+		 */
+
+		if (features.contains(FEATURE.TARGET_ORIENTED) && !MODE.STEPPER.equals(mode)) {
+			System.err.println("Target orientation requires stepper mode.");
+			System.exit(1);
+		}
+		if (features.contains(FEATURE.TEMPORAL) && !MODE.STEPPER.equals(mode)) {
+			System.err.println("Temporal solver requires stepper mode.");
 			System.exit(1);
 		}
 
-		if (targetOriented && !stepper) {
-			System.err.println("The -targetOriented option requires the -stepper option.");
-			System.exit(1);
-		}
-
-		if (targetOriented) {
+		if (features.contains(FEATURE.TARGET_ORIENTED)) {
 			this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.targetOriented(), out);
-		} else if (stepper){
+		} else if (features.contains(FEATURE.TEMPORAL)) {
+			this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.temporal(), out);
+		} else if (MODE.STEPPER.equals(mode)){
 			this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.stepper(), out);
-		} else if (incremental){
+		} else if (MODE.INCREMENTAL.equals(mode)){
 		 	this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.incremental(), out);
 		} else {
 		 	this.parser = Parboiled.createParser(KodkodParser.class,  KodkodProblem.complete(), out);
@@ -164,8 +179,9 @@ public final class KodkodServer {
 	 * report detailed parsing errors.  The {@code errorOut} parameter, if not false, specifies the name of
 	 * the file to which to dump error-causing input, if any, before exiting.
 	 */
-	public KodkodServer(boolean incremental, boolean stepper, boolean targetOriented, boolean fastParsing, String errorOut) {
-		this(incremental, stepper, targetOriented, fastParsing, new StandardKodkodOutput(), errorOut);
+
+	public KodkodServer(MODE mode, Set<FEATURE> features, boolean fastParsing, String errorOut) {
+		this(mode, features, fastParsing, new StandardKodkodOutput(), errorOut);
 	}
 
 	/**
@@ -216,68 +232,13 @@ public final class KodkodServer {
 			if (errorOut != null) {
 				try(FileWriter fw = new FileWriter(new File(errorOut))) {
 					fw.write(InputBufferUtils.collectContent(batch));
-				} catch (IOException e) { }
+				} catch (IOException e) {
+					Logger.getGlobal().severe(Arrays.toString(e.getStackTrace()));
+				}
 			}
 			System.exit(1);
 		}
 	}
-
-// LOL jk kodkodserver only gets one problem in its lifetime.
-	// /**
-	// * Like serve(InputBuffer), except we keep the problem alive until we're really done with it.
-	// * This modification has to be made at this level (the server level) because
-	// * each EOI causes a new InputBuffer to be read, and serve() only reads one InputBuffer.
-	// *
-	// * But we need to be able to continue running the problem AFTER an EOI, since each (solve)
-	// * must be accompanied by an EOI.
-	// *
-	// * Right. We can't make any new problems in this mode, we can run only one problem.
-	// * When we're done with it, kodkod-cli exits. serve() can handle many problems,
-	// * and can handle many EOI inputs, but can only handle one EOI per problem.
-	// */
-	// public void serveStepper() {
-	// 	final KodkodProblem problem = parser.problem;
-	//
-	// 	assert(problem.isStepper());
-	// 	final Rule rule = parser.StepperProblem()
-	//
-	// 	try(InputStreamReader ir = new InputStreamReader(System.in, "UTF-8")) {
-	//
-	// 		while (true){
-	// 			final InputBuffer batch = read(ir);
-	//
-	// 			final ParsingResult<Object> result;
-	// 			if (fastParsing) {
-	// 				result = (new BasicParseRunner<Object>(rule)).run(batch);
-	// 			} else {
-	// 				result = (new ErrorLocatingParseRunner<Object>(rule)).run(batch);
-	// 			}
-	//
-	// 			if (!result.matched) {
-	// 				if (result.hasErrors()) {
-	// 					final Logger logger = Logger.getGlobal();
-	// 					for(ParseError err : result.parseErrors) {
-	// 						logger.severe(ErrorUtils.printParseError(err));
-	// 					}
-	// 				} else {
-	// 					Logger.getGlobal().severe(	"Error in the input problem.  "+
-	// 												"To see the source of the error, re-run a new instance of KodkodServer on this problem " +
-	// 												"without -fast-parsing and, optionally, with -error-out <filename>.");
-	// 				}
-	// 				if (errorOut != null) {
-	// 					try(FileWriter fw = new FileWriter(new File(errorOut))) {
-	// 						fw.write(InputBufferUtils.collectContent(batch));
-	// 					} catch (IOException e) { }
-	// 				}
-	// 				System.exit(1);
-	// 			}
-	// 		}
-	// 	} catch (IOException e) {
-	// 		Logger.getGlobal().severe(e.getMessage());
-	// 	}
-	// }
-
-
 
 	/**
 	 * Parses and executes the problems specified in the given file.
@@ -302,6 +263,7 @@ public final class KodkodServer {
 			}
 		} catch (IOException e) {
 			Logger.getGlobal().severe(e.getMessage());
+			Logger.getGlobal().severe(Arrays.toString(e.getStackTrace()));
 		}
 	}
 
@@ -361,17 +323,21 @@ public final class KodkodServer {
 	 * {@code java kodkod.cli.KodkodServer -help} for usage options.
 	 */
 	public static void main(String[] args) {
-		boolean incremental = false, fastParsing = false, stepper = false, targetOriented = false;
+		boolean incremental = false, fastParsing = false,
+				stepper = false, targetOriented = false,
+				temporal = false;
 		String errorOut = null;
 
 		// Parse options until we reach an unrecognized option, which must be a filename.
 		for(int i = 0, len = args.length; i < len; i++) {
-
+			// Don't silently override modes;
+			// fail noisily in next method if called inappropriately
 			switch(args[i]) {
 			case "-help" 		: usage(0);
 			case "-version"		: version(); System.exit(0);
 			case "-incremental"	: incremental = true; break;
 			case "-target-oriented" : targetOriented = true; break;
+			case "-temporal" : temporal = true; break;
 			case "-fast-parsing": fastParsing = true; break;
 			case "-stepper"		: stepper = true; break;
 			case "-error-out"   :
@@ -387,20 +353,23 @@ public final class KodkodServer {
 					usage(1);
 				} else {
 					// Can't use a stepper problem when running kodkod on a file.
-					(new KodkodServer(incremental, stepper, targetOriented, fastParsing, errorOut)).serve(new File(args[i]));
+					(new KodkodServer(MODE.COMPLETE, new HashSet<>(), fastParsing, errorOut)).serve(new File(args[i]));
 					System.exit(0);
 				}
 			}
 		}
-        // try {
-        //     System.loadLibrary("minisatprover");
-        // } catch (Exception e){
-        //     e.printStackTrace();
-        // }
-        //
-        // System.err.println("Hey, no minisatprover error!");
 
-		KodkodServer server = new KodkodServer(incremental, stepper, targetOriented, fastParsing, errorOut);
+		if(incremental && stepper) {
+			System.err.println("Incremental and stepper modes are mutually exclusive.");
+			System.exit(1);
+		}
+		MODE mode = incremental ? MODE.INCREMENTAL :
+				(stepper ? MODE.STEPPER : MODE.COMPLETE);
+		Set<FEATURE> features = new HashSet<>();
+		if(temporal) features.add(FEATURE.TEMPORAL);
+		if(targetOriented) features.add(FEATURE.TARGET_ORIENTED);
+
+		KodkodServer server = new KodkodServer(mode, features, fastParsing, errorOut);
 		server.serve();
 	}
 }

@@ -197,7 +197,12 @@ public class KodkodParser extends BaseParser<Object> {
 	public Rule TargetMode() {
 		final Var<String> target_mode = new Var<>();
 		return Sequence(String("target-mode"), Space(),
-				FirstOf(Sequence(CLOSE, target_mode.set("close")), Sequence(FAR, target_mode.set("far"))),
+				FirstOf(Sequence(CLOSE, target_mode.set("close_retarget")),
+						Sequence(FAR, target_mode.set("far_retarget")),
+						Sequence(FAR, target_mode.set("close")),
+						Sequence(FAR, target_mode.set("far")),
+						Sequence(FAR, target_mode.set("cover"))
+				),
 				problem.setTargetType(target_mode.get()));
 	}
 
@@ -242,6 +247,7 @@ public class KodkodParser extends BaseParser<Object> {
 								Sequence(Keyword("core-gran"), NatLiteral(), problem.setCoreGranularity(popInt())),
 								Sequence(Keyword("verbosity"), NatLiteral(), problem.setVerbosity(level(popInt()))),
 								Sequence(Keyword("sb"), NatLiteral(), problem.setSB(popInt())),
+								Sequence(Keyword("max-trace-length"), NatLiteral(), problem.setMaxTraceLength(popInt())),
 								Sequence(Keyword("skolem-depth"), NatLiteral(), problem.setSkolemDepth(popInt())),
 								Sequence(Keyword("max-solutions"), NatLiteral(), problem.setMaxSolutions(popInt())))),
 				RPAR);

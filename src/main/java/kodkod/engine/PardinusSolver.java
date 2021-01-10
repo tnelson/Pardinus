@@ -25,6 +25,7 @@ package kodkod.engine;
 import java.io.File;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -153,10 +154,12 @@ public class PardinusSolver implements
 
 			if (options.temporal()) {
 				TemporalSolver<ExtendedOptions> solver;
-				if (options.solver().toString().equals("electrod"))
+				if (options.solver().toString().equals("electrod")) {
 					solver = new ElectrodSolver(options);
-				else 
+				}
+				else {
 					solver = new TemporalPardinusSolver(options);
+				}
 				return solver;
 			} else {
 				ExtendedSolver solver = new ExtendedSolver(options);
