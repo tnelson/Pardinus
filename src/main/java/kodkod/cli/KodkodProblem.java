@@ -958,9 +958,11 @@ public abstract class KodkodProblem {
 			str.append("{");
 			for (Tuple t : ts) {
 				str.append("(");
-				str.append(t.atomIndex(0));
+				// Previously used atomIndex, but now use atom
+				// to allow for hidden atoms added by Electrum
+				str.append(t.atom(0));
 				for (int idx = 1; idx < ts.arity(); idx++) {
-					str.append(" ").append(t.atomIndex(idx));
+					str.append(" ").append(t.atom(idx));
 				}
 				str.append(")");
 			}

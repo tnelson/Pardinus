@@ -122,12 +122,14 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			}
 			str.append(")"); // end of instance list
 			writeStats(problem, sol, str);
+			str.append(":metadata (");
 			if(sol.instance() instanceof TemporalInstance) {
-				str.append(":metadata ((prefixLength " +
+				str.append("(prefixLength " +
 						((TemporalInstance)sol.instance()).prefixLength() +
 						") (loop " +
-						((TemporalInstance)sol.instance()).loop + "))");
+						((TemporalInstance)sol.instance()).loop + ")");
 			}
+			str.append(")"); // end of metadata
 			str.append(")"); // end of sat
 			System.out.println(str);
 		}
