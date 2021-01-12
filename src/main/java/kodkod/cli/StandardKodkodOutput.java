@@ -101,9 +101,35 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			// var relations (x) and normal relations (r) are stored separately
 			StringDefs<Relation> rdefns = (StringDefs<Relation>) problem.env().defs('r');
 			StringDefs<Relation> xdefns = (StringDefs<Relation>) problem.env().defs('x');
-			//
 			Set<String> origAtoms = problem.env().defs('a').keys();
-			writeInstance(problem, sol, rdefns, xdefns, origAtoms);
+			final StringBuilder str = new StringBuilder();
+			str.append("(sat :model (");
+
+			// Temporal problem will have a TemporalInstance to break down
+			// But isTemporal stops being trustworthy
+			//if(problem.isTemporal()) {
+			if(sol.instance() instanceof TemporalInstance) {
+				TemporalInstance tinst = (TemporalInstance) sol.instance();
+				int prefixLength = tinst.prefixLength();
+				int loopTo = tinst.loop;
+				for(int i=0;i<prefixLength;i++) {
+					Instance iinst = tinst.state(i);
+					writeInstance(str, problem, iinst, rdefns, xdefns, origAtoms);
+				}
+
+			} else {
+				writeInstance(str, problem, sol.instance(), rdefns, xdefns, origAtoms);
+			}
+			str.append(")"); // end of instance list
+			writeStats(problem, sol, str);
+			if(sol.instance() instanceof TemporalInstance) {
+				str.append(":metadata ((prefixLength " +
+						((TemporalInstance)sol.instance()).prefixLength() +
+						") (loop " +
+						((TemporalInstance)sol.instance()).loop + "))");
+			}
+			str.append(")"); // end of sat
+			System.out.println(str);
 		}
 		else			System.out.println("(no-more-instances)");
 	}
@@ -114,11 +140,9 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 * Writes the instance s-expression to standard out.
 	 * @requires all r: defs.def[int] | inst.tuples(r) != null
 	 **/
-	public void writeInstance(KodkodProblem problem, Solution sol, StringDefs<Relation> rdefs, StringDefs<Relation> xdefs, Set<String> origAtoms) {
-		final StringBuilder str = new StringBuilder();
-		final Instance inst = sol.instance();
+	public void writeInstance(StringBuilder str, KodkodProblem problem, Instance inst, StringDefs<Relation> rdefs, StringDefs<Relation> xdefs, Set<String> origAtoms) {
 		Set<Relation> written = new HashSet<>();
-		str.append("(sat :model (");
+		str.append("("); // start model expression
 		for (String name : rdefs.keys()) {
 			final Relation r = rdefs.use(name);
 			if (r==null) continue;
@@ -147,18 +171,16 @@ public final class StandardKodkodOutput implements KodkodOutput {
 				written.add(r);
 			}
 			// Also provide the state indices
-			if(r.name().equals("Time")) {
+			//   ^ Not anymore, now we're passing a sequence of instances back
+			/*if(r.name().equals("Time")) {
 				final TupleSet ts = inst.tuples(r);
 				assert ts != null;
 				appendRelation(r, ts, str, origAtoms);
 				written.add(r);
-			}
+			}*/
 		}
-		str.append(")"); // end of model
 
-		writeStats(problem, sol, str);
-		str.append(")"); // end of sat
-		System.out.println(str);
+		str.append(")"); // end of model
 	}
 
 	private void appendRelation(Relation r, TupleSet ts, StringBuilder str, Set<String> origAtoms) {
