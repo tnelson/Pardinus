@@ -439,8 +439,10 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @return LPAR EVALUATE Use('e') | Use('i') | Use('f') RPAR
 	 */
 	Rule Evaluate() {
-		return Sequence(LPAR, EVALUATE, FirstOf(Sequence(Use('e'), problem.evaluate(popExpr())),
-				Sequence(Use('i'), problem.evaluate(popIntExpr())), Sequence(Use('f'), problem.evaluate(popFormula()))),
+		return Sequence(LPAR, EVALUATE, FirstOf(
+				Sequence(Use('e'), problem.evaluate(popExpr())),
+				Sequence(Use('i'), problem.evaluate(popIntExpr())),
+				Sequence(Use('f'), problem.evaluate(popFormula()))),
 				RPAR);
 	}
 

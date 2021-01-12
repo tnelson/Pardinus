@@ -21,6 +21,9 @@
  */
 package kodkod.cli;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -35,6 +38,7 @@ import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.Translation;
+import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.ucore.RCEStrategy;
@@ -952,8 +956,32 @@ public abstract class KodkodProblem {
 		}
 
 		public boolean evaluate(kodkod.ast.Expression expression) {
-//			Logger.getGlobal().severe("Evaluating " + expression);
+			//Logger.getGlobal().severe("Evaluating " + expression);
+
+			//TupleSet ts = null;
+
 			TupleSet ts = evaluator.evaluate(expression);
+			// Kludge here to write the issue to file
+			// TODO should move this to happen on any exception
+			// Keeping for reference
+			/*try {
+				ts = evaluator.evaluate(expression);
+			} catch(UnboundLeafException e) {
+				java.awt.Toolkit.getDefaultToolkit().beep();
+				try {
+					File f = File.createTempFile("baz", "foo");
+					PrintWriter pr = new PrintWriter(f);
+					e.printStackTrace(pr);
+					pr.println();
+					pr.println(evaluator.instance() instanceof TemporalInstance);
+					//pr.println(((TemporalInstance)evaluator.instance()).state(0));
+					//pr.println(((TemporalInstance)evaluator.instance()).state(0).relations().contains(expression));
+					//pr.println(((TemporalInstance)evaluator.instance()).relations().contains(expression));
+					pr.flush();
+					pr.close();
+				} catch (Exception e2) { }
+			}*/
+
 			StringBuilder str = new StringBuilder();
 			str.append("{");
 			for (Tuple t : ts) {

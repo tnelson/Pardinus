@@ -546,4 +546,9 @@ public class TemporalInstance extends Instance {
 	public TemporalInstance unmodifiableView() {
 		return new TemporalInstance(Collections.unmodifiableList(states), loop, unrolls);
 	}
+
+	@Override
+	public TemporalInstance clone() {
+		return new TemporalInstance(this.states, this.loop, this.unrolls);
+	}
 }
