@@ -932,8 +932,9 @@ public abstract class KodkodProblem {
 							}
 							evaluator = new Evaluator(instance); // TODO: add options
 							// evaluator = new Evaluator(sol.instance());
+						} else {
+							evaluator = null;
 						}
-						evaluator = null;
 
 						write(out, sol);
 						lastSol = sol;
