@@ -922,15 +922,19 @@ public abstract class KodkodProblem {
 						writeUnsat(out, lastSol);
 						return this;
 					} else {
-						// Add helper relations to instance
-						Instance instance = sol.instance().clone();
-						for (String atom : env().keys('a')) {
-							// need to use instance.universe() here, not bounds.universe()
-							instance.add(env().use('a', atom),
-									setOf(tuple(instance.universe().factory(), Arrays.asList(Integer.parseInt(atom)))));
+						if(sol.sat()) {
+							// Add helper relations to instance
+							Instance instance = sol.instance().clone();
+							for (String atom : env().keys('a')) {
+								// need to use instance.universe() here, not bounds.universe()
+								instance.add(env().use('a', atom),
+										setOf(tuple(instance.universe().factory(), Arrays.asList(Integer.parseInt(atom)))));
+							}
+							evaluator = new Evaluator(instance); // TODO: add options
+							// evaluator = new Evaluator(sol.instance());
 						}
-						evaluator = new Evaluator(instance); // TODO: add options
-						// evaluator = new Evaluator(sol.instance());
+						evaluator = null;
+
 						write(out, sol);
 						lastSol = sol;
 						return this;
@@ -957,6 +961,10 @@ public abstract class KodkodProblem {
 
 		public boolean evaluate(kodkod.ast.Expression expression) {
 			//Logger.getGlobal().severe("Evaluating " + expression);
+			if(evaluator == null) {
+				System.out.println("(unsat)");
+				return true;
+			}
 
 			//TupleSet ts = null;
 
@@ -1001,11 +1009,19 @@ public abstract class KodkodProblem {
 		}
 
 		public boolean evaluate(kodkod.ast.IntExpression expression) {
+			if(evaluator == null) {
+				System.out.println("(unsat)");
+				return true;
+			}
 			System.out.println("(evaluated :int-expression " + evaluator.evaluate(expression) + ")");
 			return true;
 		}
 
 		public boolean evaluate(Formula formula) {
+			if(evaluator == null) {
+				System.out.println("(unsat)");
+				return true;
+			}
 			System.out.println("(evaluated :formula " + evaluator.evaluate(formula) + ")");
 			return true;
 		}
