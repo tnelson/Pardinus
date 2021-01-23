@@ -21,9 +21,6 @@
  */
 package kodkod.cli;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -118,7 +115,7 @@ import static kodkod.cli.KodkodFactory.tuple;
  */
 public abstract class KodkodProblem {
 	private long buildTimeMillis = -1, coreTimeMillis = -1, maxSolutions = 1;
-	private ExtendedOptions options;
+	protected ExtendedOptions options; // allow subclasses to manipulate
 	private final StringDefEnv env;
 	private final List<Formula> asserts;
 	private PardinusBounds bounds;
@@ -864,6 +861,7 @@ public abstract class KodkodProblem {
 			this.solver = null;
 			this.issolved = true;
 			this.solutions = solutions;
+			this.options = prototype.options();
 			this.bounds = prototype.bounds();
 			this.coreMinimization = prototype.coreMinimization;
 			assert (this.iteration == -1);
@@ -930,8 +928,7 @@ public abstract class KodkodProblem {
 								instance.add(env().use('a', atom),
 										setOf(tuple(instance.universe().factory(), Arrays.asList(Integer.parseInt(atom)))));
 							}
-							evaluator = new Evaluator(instance); // TODO: add options
-							// evaluator = new Evaluator(sol.instance());
+							evaluator = new Evaluator(instance, options());
 						} else {
 							evaluator = null;
 						}
