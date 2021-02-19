@@ -696,6 +696,24 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
+	/**
+	 * Used to allow forced references to concrete atoms in expressions; useful for concrete test cases without chains
+	 * of quantifiers to build characteristic formulas.
+	 * */
+	final boolean boundForcedAtomIfNeeded(char varPrefix, String atom) {
+		if(varPrefix != 'a') return true; // only try to register atom
+
+		Relation atomRelation = (Relation) env.defs('a').use(atom.toString());
+//		Logger.getGlobal().severe("boundForcedAtomIfNeeded: atom="+atom+" " + atom.getClass()+"; atomRelation="+atomRelation);
+
+		if(bounds.upperBound(atomRelation) == null) {
+			Tuple tup = bounds.universe().factory().tuple(Integer.parseInt(atom));
+			TupleSet ts = bounds.universe().factory().setOf(tup);
+			bounds.bound(atomRelation, ts, ts);
+		} // otherwise, already bounded
+		return true;
+	}
+
 	boolean setTarget(List<Relation> rels, TupleSet tuple) {
 		if (!this.isTargetOriented()) {
 			throw new ActionException("Cannot set target for non-target oriented problem.");

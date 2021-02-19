@@ -421,8 +421,12 @@ public class KodkodParser extends BaseParser<Object> {
 	@Cached
 	/** @return Identifier(varPrefix) */
 	Rule Use(char varPrefix) {
-		return Sequence(Identifier(varPrefix), push(env().use(varPrefix, popString())));
+		return Sequence(
+				Identifier(varPrefix),
+				problem.boundForcedAtomIfNeeded(varPrefix, peekString()),
+				push(env().use(varPrefix, popString())));
 	}
+
 
 	// -------------------------------------------------------------------------
 	// Assertions and commands
@@ -741,7 +745,7 @@ public class KodkodParser extends BaseParser<Object> {
 	Rule UnaryExpr(Rule opRule, TemporalOperator op) {
 		return Sequence(opRule, Expr(), push(compose(op, Collections.singletonList(popExpr()))));
 	}
-	
+
 	@Cached
 	/** @return castRule IntExpr */
 	Rule IntToExprCast(Rule castRule, IntCastOperator castOp) {
@@ -1026,6 +1030,8 @@ public class KodkodParser extends BaseParser<Object> {
 	final Rule SHR = Terminal(">>>");
 	final Rule SHA = Terminal(">>", Ch('>'));
 
+	final Rule ATOM = Terminal("atom");
+
 	final Rule CLOSE = Terminal("close");
 	final Rule FAR = Terminal("far");
 
@@ -1082,6 +1088,9 @@ public class KodkodParser extends BaseParser<Object> {
 
 	final String popString() {
 		return (String) pop();
+	}
+	final String peekString() {
+		return (String) peek();
 	}
 
 	final Boolean popBool() {
