@@ -702,6 +702,7 @@ public abstract class KodkodProblem {
 	 * */
 	final boolean boundForcedAtomIfNeeded(char varPrefix, String atom) {
 		if(varPrefix != 'a') return true; // only try to register atom
+		if(bounds == null) return true; // no bounds = in evaluator, atoms already registered
 
 		Relation atomRelation = (Relation) env.defs('a').use(atom.toString());
 //		Logger.getGlobal().severe("boundForcedAtomIfNeeded: atom="+atom+" " + atom.getClass()+"; atomRelation="+atomRelation);
@@ -943,8 +944,10 @@ public abstract class KodkodProblem {
 							Instance instance = sol.instance().clone();
 							for (String atom : env().keys('a')) {
 								// need to use instance.universe() here, not bounds.universe()
-								instance.add(env().use('a', atom),
-										setOf(tuple(instance.universe().factory(), Arrays.asList(Integer.parseInt(atom)))));
+								if(!(instance.relations().contains(env().use('a', atom)))) {
+									instance.add(env().use('a', atom),
+											setOf(tuple(instance.universe().factory(), Arrays.asList(Integer.parseInt(atom)))));
+								}
 							}
 							evaluator = new Evaluator(instance, options());
 						} else {
