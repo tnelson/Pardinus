@@ -501,8 +501,13 @@ public class KodkodParser extends BaseParser<Object> {
 						AlwaysConstraint(), // Electrum Constraint
 						EventuallyConstraint(), // Electrum Constraint
 						AfterConstraint(), // Electrum Constraints
+						HistoricallyConstraint(), // Electrum Constraint
+						OnceConstraint(), // Electrum Constraint
+						BeforeConstraint(), // Electrum Constraints
 						TempConstraint(UNTIL, TemporalOperator.UNTIL), // Electrum Constraints
 						TempConstraint(RELEASES, TemporalOperator.RELEASES), // Electrum Constraints
+						TempConstraint(TRIGGERS, TemporalOperator.TRIGGERED), // Electrum Constraints
+						TempConstraint(SINCE, TemporalOperator.SINCE), // Electrum Constraints
 
 						NaryConstraint(AND, FormulaOperator.AND), NaryConstraint(OR, FormulaOperator.OR),
 						NaryConstraint(IMPLIES, FormulaOperator.IMPLIES), NaryConstraint(IFF, FormulaOperator.IFF),
@@ -564,28 +569,24 @@ public class KodkodParser extends BaseParser<Object> {
 		return Sequence(NOT, Constraint(), push(popFormula().not()));
 	}
 
-	// Electrum constraints ///////////////////////////////// 
-	/**
-	 * @return Always Constraint (Electrum)
-	 */
+	// Electrum unary constraints /////////////////////////////////
 	Rule AlwaysConstraint() {
 		return Sequence(ALWAYS, Constraint(), push(popFormula().always()));
 	}
-
-	/**
-	 * @return Eventually Constraint (Electrum)
-	 */
 	Rule EventuallyConstraint() {
 		return Sequence(EVENTUALLY, Constraint(), push(popFormula().eventually()));
 	}
-
-	/**
-	 * @return After Constraint (Electrum)
-	 */
 	Rule AfterConstraint() {
 		return Sequence(AFTER, Constraint(), push(popFormula().after()));
 	}
-	
+	Rule HistoricallyConstraint() { return Sequence(HISTORICALLY, Constraint(), push(popFormula().historically())); }
+	Rule OnceConstraint() {
+		return Sequence(ONCE, Constraint(), push(popFormula().once()));
+	}
+	Rule BeforeConstraint() {
+		return Sequence(BEFORE, Constraint(), push(popFormula().before()));
+	}
+
 	
 	@Cached
 	/** @return Temporal Rule Constraint+ */
@@ -984,8 +985,13 @@ public class KodkodParser extends BaseParser<Object> {
 	final Rule AFTER = Keyword("after");
 	final Rule EVENTUALLY = Keyword("eventually");
 	final Rule ONCE = Keyword("once");
+	final Rule HISTORICALLY = Keyword("historically");
+	final Rule BEFORE = Keyword("before");
 	final Rule UNTIL = Keyword("until");
 	final Rule RELEASES = Keyword("releases");
+	final Rule SINCE = Keyword("until");
+	final Rule TRIGGERS = Keyword("triggers");
+
 
 	final Rule IN = Keyword("in");
 	final Rule ITE = Keyword("ite");
