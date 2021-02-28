@@ -989,7 +989,7 @@ public class KodkodParser extends BaseParser<Object> {
 	final Rule BEFORE = Keyword("before");
 	final Rule UNTIL = Keyword("until");
 	final Rule RELEASES = Keyword("releases");
-	final Rule SINCE = Keyword("until");
+	final Rule SINCE = Keyword("since");
 	final Rule TRIGGERS = Keyword("triggers");
 
 
