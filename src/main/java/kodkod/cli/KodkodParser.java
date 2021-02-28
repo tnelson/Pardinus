@@ -506,7 +506,7 @@ public class KodkodParser extends BaseParser<Object> {
 						BeforeConstraint(), // Electrum Constraints
 						TempConstraint(UNTIL, TemporalOperator.UNTIL), // Electrum Constraints
 						TempConstraint(RELEASES, TemporalOperator.RELEASES), // Electrum Constraints
-						TempConstraint(TRIGGERS, TemporalOperator.TRIGGERED), // Electrum Constraints
+						TempConstraint(TRIGGERED, TemporalOperator.TRIGGERED), // Electrum Constraints
 						TempConstraint(SINCE, TemporalOperator.SINCE), // Electrum Constraints
 
 						NaryConstraint(AND, FormulaOperator.AND), NaryConstraint(OR, FormulaOperator.OR),
@@ -990,7 +990,7 @@ public class KodkodParser extends BaseParser<Object> {
 	final Rule UNTIL = Keyword("until");
 	final Rule RELEASES = Keyword("releases");
 	final Rule SINCE = Keyword("since");
-	final Rule TRIGGERS = Keyword("triggers");
+	final Rule TRIGGERED = Keyword("triggered");
 
 
 	final Rule IN = Keyword("in");
