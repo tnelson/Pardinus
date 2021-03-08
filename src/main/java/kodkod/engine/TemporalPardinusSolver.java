@@ -428,29 +428,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		 * @see java.util.Iterator#next()
 		 */
 		public Solution next() {
-			// TN experiment for Electrum with a single instance stream: allow anything to vary.
-			// This is suboptimal, but sound.
-			//return nextP();
-
-			try {
-				Set<Relation> fix = new HashSet<>();               // fix nothing
-				Set<Relation> change = originalBounds.relations(); // change any
-
-				// if coming back from other mode, restart the process
-				// this will force the re-generation of the solver at minimal length
-				/*if (iteration_stage != 0) {
-					previousSols.removeIf(s -> s.start >= 0);
-					current_trace = opt.minTraceLength();
-					translation = null;
-				}*/
-
-				iteration_stage = 0;
-
-				return (translation != null && translation.trivial()) ? nextTrivialSolution() : nextNonTrivialSolution(-1, 0, fix, change);
-			} catch (SATAbortedException sae) {
-				translation.cnf().free();
-				throw new AbortedException(sae);
-			}
+			return nextP();
 		}
 
 		/** @throws UnsupportedOperationException */
