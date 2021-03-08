@@ -462,7 +462,9 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @ensures setProblem(this.problem.solve ())
 	 **/
 	Rule Solve() {
-		return Sequence(LPAR, SOLVE, RPAR, setProblem(problem.solve(out)));
+		//return Sequence(LPAR, SOLVE, RPAR, setProblem(problem.solve(out)));
+		return Sequence(LPAR, SOLVE, Optional(StringLiteral()), RPAR,
+				setProblem(problem.solve(out, getContext().getValueStack().isEmpty() ? "" : popString())));
 	}
 
 	/**

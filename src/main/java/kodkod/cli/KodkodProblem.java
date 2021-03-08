@@ -250,7 +250,9 @@ public abstract class KodkodProblem {
 	 * @return !this.isIncremental() => this.clear() else this.extend()
 	 * @throws ActionException any solving pre-conditions are violated
 	 **/
-	public abstract KodkodProblem solve(KodkodOutput out);
+	public abstract KodkodProblem solve(KodkodOutput out, String params);
+
+	// TN TODO: shouldn't be a String, but need to prototype multiple exploration types before better representation
 
 	// public final KodkodProblem solveNext(KodkodOutput out){
 	// if (!KodkodServer.lastModelAvailable){
@@ -866,7 +868,7 @@ public abstract class KodkodProblem {
 		private PardinusBounds bounds = null;
 
 		// Used to print new solutions from the first solved model.
-		private Iterator<Solution> solutions;
+		private Explorer<Solution> solutions;
 
 		Stepper() {
 			this.solver = new PardinusSolver(super.options);
@@ -874,7 +876,7 @@ public abstract class KodkodProblem {
 		}
 
 		// makes a solved stepper with the given solutions.
-		private Stepper(Stepper prototype, Iterator<Solution> solutions) {
+		private Stepper(Stepper prototype, Explorer<Solution> solutions) {
 			super(prototype.env(), null, null, -1);
 			assert (solutions != null);
 			this.solver = null;
@@ -916,7 +918,7 @@ public abstract class KodkodProblem {
 			return new Stepper();
 		}
 
-		public KodkodProblem solve(KodkodOutput out) {
+		public KodkodProblem solve(KodkodOutput out, String params) {
 			//System.err.println("solver is pardinus: "+solver.solver.getClass());
 			if (isSolved()) {
 				assert (this.iteration >= 0);
@@ -928,8 +930,21 @@ public abstract class KodkodProblem {
 					return this;
 				}
 
-				if (solutions.hasNext()) {
-					Solution sol = solutions.next();
+				// TODO: again shouldn't be a string, but need to experiment with enough exploration variants to improve
+				// Ideally, we'd have a factory that would produce a strategy
+				boolean hasNext = false;
+				switch(params) {
+					case "C": hasNext = solutions.hasNextC(); break;
+					case "P": hasNext = solutions.hasNextP(); break;
+					default: hasNext = solutions.hasNext();
+				}
+				if (hasNext) {
+					Solution sol;
+					switch(params) {
+						case "C": sol = solutions.nextC(); break;
+						case "P": sol = solutions.nextP(); break;
+						default: sol = solutions.next();
+					}
 
 					// If our first solution is also our last, then the spec
 					// is unsatisfiable, and we say so.
@@ -961,8 +976,7 @@ public abstract class KodkodProblem {
 				}
 
 				// If we finished our list of solutions, we just keep repeating the last
-				// solutions
-				// found, which will be no-more-instances.
+				// solutions found, which will be no-more-instances.
 				else {
 					assert (lastSol != null);
 					write(out, lastSol);
@@ -971,8 +985,8 @@ public abstract class KodkodProblem {
 			}
 
 			try {
-				Iterator<Solution> solved = solver.solveAll(asserts(), bounds());
-				return new Stepper(this, solved).solve(out);
+				Explorer<Solution> solved = solver.solveAll(asserts(), bounds());
+				return new Stepper(this, solved).solve(out, params);
 			} catch (RuntimeException ex) {
 				throw new ActionException(ex.getMessage(), ex);
 			}
@@ -1125,7 +1139,7 @@ public abstract class KodkodProblem {
 			}
 
 			@Override
-			public KodkodProblem solve(KodkodOutput out) {
+			public KodkodProblem solve(KodkodOutput out, String params) {
 				if (!isSolved() && flip_target) {
 					PardinusBounds pb = bounds();
 
@@ -1137,7 +1151,7 @@ public abstract class KodkodProblem {
 					}
 				}
 
-				return super.solve(out);
+				return super.solve(out, params);
 			}
 		}
 
@@ -1200,7 +1214,7 @@ public abstract class KodkodProblem {
 			return new Complete(this);
 		}
 
-		public KodkodProblem solve(KodkodOutput out) {
+		public KodkodProblem solve(KodkodOutput out, String paramsIgnored) {
 			try {
 				if (maxSolutions() == 1) {
 					write(out, solver.solve(asserts(), bounds()));
@@ -1257,7 +1271,7 @@ public abstract class KodkodProblem {
 			return new Incremental(new StringDefEnv(), null, options(), maxSolutions(), null);
 		}
 
-		public final KodkodProblem solve(KodkodOutput out) {
+		public final KodkodProblem solve(KodkodOutput out, String paramsIgnored) {
 			try {
 				if (solver == null)
 					solver = IncrementalSolver.solver(options());
