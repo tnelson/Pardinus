@@ -932,17 +932,18 @@ public abstract class KodkodProblem {
 
 				// TODO: again shouldn't be a string, but need to experiment with enough exploration variants to improve
 				// Ideally, we'd have a factory that would produce a strategy
+				// Don't try to use the temporal next buttons if they are unavailable
 				boolean hasNext = false;
 				switch(params) {
-					case "C": hasNext = solutions.hasNextC(); break;
-					case "P": hasNext = solutions.hasNextP(); break;
+					case "C": hasNext = this.isTemporal() ? solutions.hasNextC() : solutions.hasNext(); break;
+					case "P": hasNext = this.isTemporal() ? solutions.hasNextP() : solutions.hasNext(); break;
 					default: hasNext = solutions.hasNext();
 				}
 				if (hasNext) {
 					Solution sol;
 					switch(params) {
-						case "C": sol = solutions.nextC(); break;
-						case "P": sol = solutions.nextP(); break;
+						case "C": sol = this.isTemporal() ? solutions.nextC() : solutions.next(); break;
+						case "P": sol = this.isTemporal() ? solutions.nextP() : solutions.next(); break;
 						default: sol = solutions.next();
 					}
 
