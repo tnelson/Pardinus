@@ -987,7 +987,10 @@ public abstract class KodkodProblem {
 
 			try {
 				Explorer<Solution> solved = solver.solveAll(asserts(), bounds());
-				return new Stepper(this, solved).solve(out, params);
+				this.solutions = solved;
+				this.issolved = true;
+				return this.solve(out, params);
+				//return new Stepper(this, solved).solve(out, params);
 			} catch (RuntimeException ex) {
 				throw new ActionException(ex.getMessage(), ex);
 			}
