@@ -20,3 +20,6 @@ hs_err_pid*
 .DS_Store?
 .lock-waf*
 /target/
+
+# External solver temporary file
+customSolver.temp

@@ -21,10 +21,7 @@
  */
 package kodkod.cli;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -986,8 +983,13 @@ public abstract class KodkodProblem {
 			}
 
 			try {
-				Explorer<Solution> solved = solver.solveAll(asserts(), bounds());
-				this.solutions = solved;
+				// In case the solver is not incremental, but Stepper is being used
+				//   (e.g. for Temporal or Target-oriented mode), mock enumeration.
+				if(options.solver().incremental()) {
+					this.solutions = solver.solveAll(asserts(), bounds());
+				} else {
+					this.solutions = new OneSolutionIterator(solver.solve(asserts(), bounds()));
+				}
 				this.issolved = true;
 				return this.solve(out, params);
 				//return new Stepper(this, solved).solve(out, params);
@@ -1375,5 +1377,55 @@ public abstract class KodkodProblem {
 		boolean declareInts(List<Integer> ints) {
 			throw new ActionException(cannot("re-declare integer atoms in the universe of"));
 		}
+	}
+}
+
+/*
+  Explorer to cover situation where only one solution can be enumerated
+  by the solver, but Stepper problem is being used. Returning an
+  UNSAT outcome after the first instance would be unsound. Instead,
+  repeat the same instance if asked for another. This allows (e.g.)
+  evaluator to function properly in this situation.
+ */
+class OneSolutionIterator implements Explorer<Solution> {
+
+	private final Solution s;
+	OneSolutionIterator(Solution s) {
+		this.s = s;
+	}
+
+	@Override
+	public Solution nextC() {
+		return s;
+	}
+
+	@Override
+	public Solution nextP() {
+		return s;
+	}
+
+	@Override
+	public Solution nextS(int state, int delta, Set<Relation> change) {
+		return s;
+	}
+
+	@Override
+	public boolean hasNextC() {
+		return true;
+	}
+
+	@Override
+	public boolean hasNextP() {
+		return true;
+	}
+
+	@Override
+	public boolean hasNext() {
+		return true;
+	}
+
+	@Override
+	public Solution next() {
+		return s;
 	}
 }
