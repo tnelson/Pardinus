@@ -266,7 +266,8 @@ public class KodkodParser extends BaseParser<Object> {
 				Sequence(Keyword("Glucose"), push(SATFactory.Glucose)),
 				Sequence(Keyword("Lingeling"), push(SATFactory.Lingeling)),
 				Sequence(Keyword("SAT4J"), push(SATFactory.DefaultSAT4J)),
-				Sequence(Keyword("TargetSATSolver"), push(SATFactory.PMaxSAT4J)), // )); //),
+				Sequence(Keyword("TargetSATSolver"), push(SATFactory.PMaxSAT4J)),
+				Sequence(Keyword("PMaxSAT4J"), push(SATFactory.PMaxSAT4J)),
 				Sequence(Sequence(FilePathLiteral(), Space()),
 						push(SATFactory.externalFactory(popString(), "customSolver.temp", false, false)))); // Removed
 																											// for
@@ -1042,9 +1043,9 @@ public class KodkodParser extends BaseParser<Object> {
 
 	final Rule CLOSE = Terminal("close");
 	final Rule FAR = Terminal("far");
-        final Rule CLOSE_NORETARGET = Terminal("close-noretarget")
-        final Rule FAR_NORETARGET = Terminal("far-noretarget")
-        final Rule COVER = Terminal("hamming-cover")
+	final Rule CLOSE_NORETARGET = Terminal("close_noretarget");
+	final Rule FAR_NORETARGET = Terminal("far_noretarget");
+	final Rule COVER = Terminal("hamming_cover");
 
 	// -------------------------------------------------------------------------
 	// Keywords and terminals

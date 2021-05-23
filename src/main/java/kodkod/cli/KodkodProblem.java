@@ -856,7 +856,7 @@ public abstract class KodkodProblem {
 	// new objects when we transition to a solved stepper. A solved stepper can
 	// return itself.
 	private static class Stepper extends KodkodProblem {
-		private final PardinusSolver solver;
+		private PardinusSolver solver;
 		private boolean issolved = false;
 		private Solution lastSol;
 		private int iteration = -1;
@@ -868,7 +868,8 @@ public abstract class KodkodProblem {
 		private Explorer<Solution> solutions;
 
 		Stepper() {
-			this.solver = new PardinusSolver(super.options);
+			// Do not create the solver yet. Options have yet to be set!
+			//this.solver = new PardinusSolver(super.options);
 			super.maxSolutions = -1; // maxSolutions has no meaning for Steppers.
 		}
 
@@ -916,6 +917,10 @@ public abstract class KodkodProblem {
 		}
 
 		public KodkodProblem solve(KodkodOutput out, String params) {
+			if(this.solver == null) {
+				// Create solver only when needed; at this point all options should be set.
+				this.solver = new PardinusSolver(super.options);
+			}
 			//System.err.println("solver is pardinus: "+solver.solver.getClass());
 			if (isSolved()) {
 				assert (this.iteration >= 0);
@@ -1069,7 +1074,8 @@ public abstract class KodkodProblem {
 
 			String target_type;
 			boolean initialized = false;
-			boolean flip_target = false;
+			enum FLIP {yes, no, custom};
+			FLIP flip_target = FLIP.no;
 
 			boolean setTargetType(String target_type) {
 				if (initialized)
@@ -1084,12 +1090,15 @@ public abstract class KodkodProblem {
 				// More names also need adding to Parser
 				switch (target_type) {
 					case "far_retarget":
-						flip_target = true;
+						flip_target = FLIP.yes;
+						break; // default retargeting
 					case "close_retarget":
-						break;
+						flip_target = FLIP.no;
+						break; // default retargeting
 
 					case "far":
-						flip_target = true;
+						flip_target = FLIP.yes;
+						// NOTE NO BREAK -- fall through
 					case "close":
 						// Fix so that Pardinus doesn't move target around.
 						options().setRetargeter(new Retargeter() {
@@ -1100,6 +1109,7 @@ public abstract class KodkodProblem {
 						break;
 
 					case "cover":
+						flip_target = FLIP.custom;
 						options().setRetargeter(new Retargeter() {
 							boolean firstInstance = true;
 
@@ -1146,7 +1156,9 @@ public abstract class KodkodProblem {
 
 			@Override
 			public KodkodProblem solve(KodkodOutput out, String params) {
-				if (!isSolved() && flip_target) {
+				// Invert the initial target if this is one of the
+				// two "FAR" modes (with or without retargeting per result)
+				if (!isSolved() && flip_target == FLIP.yes) {
 					PardinusBounds pb = bounds();
 
 					for (Relation rel : pb.targets().keySet()) {
