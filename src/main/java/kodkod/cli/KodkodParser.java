@@ -197,8 +197,8 @@ public class KodkodParser extends BaseParser<Object> {
 	public Rule TargetMode() {
 		final Var<String> target_mode = new Var<>();
 		return Sequence(String("target-mode"), Space(),
-				FirstOf(Sequence(CLOSE, target_mode.set("close_retarget")),
-						Sequence(FAR, target_mode.set("far_retarget")),
+				FirstOf(Sequence(CLOSE_RETARGET, target_mode.set("close_retarget")),
+						Sequence(FAR_RETARGET, target_mode.set("far_retarget")),
 						Sequence(CLOSE_NORETARGET, target_mode.set("close")),
 						Sequence(FAR_NORETARGET, target_mode.set("far")),
 						Sequence(COVER, target_mode.set("cover"))
@@ -1041,8 +1041,8 @@ public class KodkodParser extends BaseParser<Object> {
 
 	final Rule ATOM = Terminal("atom");
 
-	final Rule CLOSE = Terminal("close");
-	final Rule FAR = Terminal("far");
+	final Rule CLOSE_RETARGET = Terminal("close_retarget");
+	final Rule FAR_RETARGET = Terminal("far_retarget");
 	final Rule CLOSE_NORETARGET = Terminal("close_noretarget");
 	final Rule FAR_NORETARGET = Terminal("far_noretarget");
 	final Rule COVER = Terminal("hamming_cover");
