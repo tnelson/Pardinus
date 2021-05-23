@@ -199,9 +199,9 @@ public class KodkodParser extends BaseParser<Object> {
 		return Sequence(String("target-mode"), Space(),
 				FirstOf(Sequence(CLOSE, target_mode.set("close_retarget")),
 						Sequence(FAR, target_mode.set("far_retarget")),
-						Sequence(FAR, target_mode.set("close")),
-						Sequence(FAR, target_mode.set("far")),
-						Sequence(FAR, target_mode.set("cover"))
+						Sequence(CLOSE_NORETARGET, target_mode.set("close")),
+						Sequence(FAR_NORETARGET, target_mode.set("far")),
+						Sequence(COVER, target_mode.set("cover"))
 				),
 				problem.setTargetType(target_mode.get()));
 	}
@@ -1042,6 +1042,9 @@ public class KodkodParser extends BaseParser<Object> {
 
 	final Rule CLOSE = Terminal("close");
 	final Rule FAR = Terminal("far");
+        final Rule CLOSE_NORETARGET = Terminal("close-noretarget")
+        final Rule FAR_NORETARGET = Terminal("far-noretarget")
+        final Rule COVER = Terminal("hamming-cover")
 
 	// -------------------------------------------------------------------------
 	// Keywords and terminals
