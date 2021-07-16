@@ -44,7 +44,7 @@ import kodkod.ast.visitor.VoidVisitor;
  * @specfield arity: int
  * @invariant no children
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public class Relation extends LeafExpression {
 	/**

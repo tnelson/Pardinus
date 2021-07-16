@@ -27,7 +27,7 @@ import kodkod.instance.PardinusBounds;
 
 /**
  * An interface for relational constraint solvers with symbolic bounds. Pardinus
- * {@link bounds PardinusBounds} are expected, as these support symbolic
+ * {@link PardinusBounds bounds} are expected, as these support symbolic
  * relation bounds. No specific configurations are required.
  * 
  * @author Nuno Macedo // [HASLab] model finding hierarchy

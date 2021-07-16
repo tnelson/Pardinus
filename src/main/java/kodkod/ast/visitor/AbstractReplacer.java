@@ -72,7 +72,7 @@ import kodkod.ast.operator.Multiplicity;
  * @specfield cache: Node ->lone Node
  * @invariant cached in cache.Node
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractReplacer implements ReturnVisitor<Expression, Formula, Decls, IntExpression> {
 	protected final Map<Node,Node> cache;

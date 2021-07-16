@@ -75,7 +75,7 @@ import kodkod.ast.Variable;
  * @specfield cache: Node -> lone Set<T>
  * @specfield cached in cache.Node
  * @author Emina Torlak
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractCollector<T> implements
 		ReturnVisitor<Set<T>, Set<T>, Set<T>, Set<T>> {

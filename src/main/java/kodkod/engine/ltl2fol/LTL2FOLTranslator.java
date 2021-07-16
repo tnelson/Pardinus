@@ -183,8 +183,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 *            the concrete state on which to evaluate the expression.
 	 * @param has_past
 	 *            whether the formula has past operators.
-	 * @param has_loop
-	 *            whether the formula is known to force a loop.
 	 * @return the resulting static expression.
 	 */
 	public static Expression translate(Expression expr, int state, boolean has_past) {
@@ -209,8 +207,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	 *            the concrete state on which to evaluate the expression.
 	 * @param has_past
 	 *            whether the formula has past operators.
-	 * @param has_loop
-	 *            whether the formula is known to force a loop.
 	 * @return the resulting static expression.
 	 */
 	public static IntExpression translate(IntExpression expr, int state, boolean has_past) {

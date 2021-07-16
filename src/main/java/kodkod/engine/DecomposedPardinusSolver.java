@@ -93,22 +93,18 @@ public class DecomposedPardinusSolver<S extends AbstractSolver<PardinusBounds, E
 	}
 
 	/**
-	 * Solves a decomposed model finding problem, comprised by a pair of
-	 * {@link kodkod.ast.Formula formulas} and a pair of
+	 * Solves a decomposed model finding problem, comprised by a
+	 * {@link kodkod.ast.Formula formula} and
 	 * {@link kodkod.instance.Bounds bounds}. Essentially launches an
 	 * {@link kodkod.engine.DProblemExecutor executor} to handle the
 	 * decomposed problem in parallel, given the defined
-	 * {@link kodkod.pardinus.decomp.DOptions options}.
-	 * @param f1
-	 *            the partial problem formula.
-	 * @param f2
-	 *            the remainder problem formula.
-	 * @param b1
-	 *            the partial problem bounds.
-	 * @param b2
-	 *            the remainder problem bounds.
+	 * {@link kodkod.engine.config.DecomposedOptions options}.
+	 * @param formula
+	 *            the problem formula.
+	 * @param bounds
+	 *            the problem bounds.
 	 * 
-	 * @requires f1 to be defined over b1 and f2 over b2.
+	 * @requires formula to be defined over bounds.
 	 * @return a decomposed solution.
 	 * @throws InterruptedException
 	 *             if the solving process is interrupted.

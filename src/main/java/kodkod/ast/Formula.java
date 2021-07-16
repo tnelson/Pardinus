@@ -54,7 +54,7 @@ import kodkod.util.collections.Containers;
  * all methods in this class throw a NullPointerException when given
  * null arguments.
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class Formula extends Node {
 	

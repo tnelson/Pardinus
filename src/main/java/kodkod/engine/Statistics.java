@@ -29,7 +29,7 @@ import kodkod.engine.fol2sat.Translation;
  * @specfield formula: Formula // the formula being solved
  * @specfield bounds: Bounds // the bounds on the formula
  * 
- * @modified Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 public final class Statistics {
 	

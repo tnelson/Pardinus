@@ -37,8 +37,8 @@ import org.sat4j.minisat.SolverFactory;
  * and the <a href="http://www.cs.chalmers.se/Cs/Research/FormalMethods/MiniSat/">MiniSat</a> 
  * solver by Niklas E&eacute;n and Niklas S&ouml;rensson.
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] syrup
- * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
+ * @author Nuno Macedo // [HASLab] syrup
+ * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 public abstract class SATFactory { 
 	

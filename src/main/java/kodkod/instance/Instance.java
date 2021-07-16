@@ -56,7 +56,7 @@ import kodkod.util.ints.TreeSequence;
  * @invariant all i: tuples.TupleSet & int | ints[i].arity = 1 && ints[i].size() = 1 
  * 
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 // [HASLab] removed final
 public class Instance implements Cloneable {
@@ -246,8 +246,8 @@ public class Instance implements Cloneable {
 	 * Will change <bounds> if not all atoms of the universe are present at <reif>
 	 * and <someDisj> false.
 	 * 
-	 * @assumes reif != null
-	 * @assumes !someDisj => bounds != null
+	 * @requires reif != null
+	 * @requires !someDisj => bounds != null
 	 * @param reif the previously reified atoms, as relations or quantified vars depending on <someDisj>
 	 * @param formula a formula from which the relevant relations are identified
 	 * @param someDisj whether the formula will use atoms reified as relations or a some-disj pattern
@@ -272,8 +272,8 @@ public class Instance implements Cloneable {
  	 * NOTE: the <bounds> representing the instance contain a universe that is not
 	 * the one of the original problem; thus, local universe restrictions will only
 	 * consider those atoms.
-	 * @assumes reif != null
-	 * @assumes !someDisj => bounds != null
+	 * @requires reif != null
+	 * @requires !someDisj => bounds != null
 	 * @param reif the previously reified atoms, as relations or quantified vars depending on <someDisj>
 	 * @param formula a formula from which the relevant relations are identified
 	 * @param someDisj whether the formula will use atoms reified as relations or a some-disj pattern

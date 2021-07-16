@@ -46,10 +46,10 @@ import kodkod.util.ints.IntIterator;
  * 
  * @specfield options: Options 
  * @author Emina Torlak 
- * @modified Nuno Macedo // [HASLab] model finding hierarchy
- * @modified Nuno Macedo // [HASLab] decomposed model finding
- * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
- * @modified Tim Nelson (Retargeter, DefaultRetargeter)
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
+ * @author Nuno Macedo // [HASLab] decomposed model finding
+ * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
+ * @author Tim Nelson (Retargeter, DefaultRetargeter)
  */
 public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,ExtendedOptions> implements
 		TargetOrientedSolver<ExtendedOptions>,
@@ -262,7 +262,6 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 		
 		/**
 		 * Calculates the next TO solutions with weights.
-		 * @param i the TO mode
 		 * @param weights the signature weights
 		 */
 		// [HASLab]

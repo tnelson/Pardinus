@@ -36,8 +36,8 @@ import kodkod.engine.ltl2fol.TemporalTranslator;
 import kodkod.instance.PardinusBounds;
 
 /**
- * The main Pardinus solver. Depending on the define {@link options
- * MainPardinusOptions}, will choose the appropriate concrete solver, that can
+ * The main Pardinus solver. Depending on the defines {@link
+ * ExtendedOptions options}, will choose the appropriate concrete solver, that can
  * be decomposed, bounded or unbounded, temporal, target-oriented or have
  * symbolic bounds.
  * 
@@ -50,7 +50,8 @@ public class PardinusSolver implements
 		DecomposedSolver<ExtendedOptions>,
 		TemporalSolver<ExtendedOptions>,
 		BoundedSolver<PardinusBounds, ExtendedOptions>,
-		UnboundedSolver<ExtendedOptions> {
+		UnboundedSolver<ExtendedOptions>,
+        IterableSolver<PardinusBounds,ExtendedOptions> {
 
 	private final ExtendedOptions options;
 	public final AbstractSolver<PardinusBounds,ExtendedOptions> solver;

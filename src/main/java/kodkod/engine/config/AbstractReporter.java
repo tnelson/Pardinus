@@ -39,7 +39,7 @@ import kodkod.util.ints.IntSet;
  * A skeleton implementation of the {@link Reporter} interface.
  * The default implementation for each method has an empty body.s
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] additional reporting
+ * @author Nuno Macedo // [HASLab] additional reporting
  */
 public abstract class AbstractReporter implements Reporter {
 
@@ -72,7 +72,7 @@ public abstract class AbstractReporter implements Reporter {
 	public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
 
 	/**
-	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
+	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int, int)
 	 */
 	// [HASLab]
 	public void solvingCNF(int step, int primaryVars, int vars, int clauses) {}
@@ -111,7 +111,7 @@ public abstract class AbstractReporter implements Reporter {
 	public void warning(String warning){}
 
 	/**
-	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
+	 * @see kodkod.engine.config.Reporter#reportConfigs(int, int, int, int)
 	 */
 	// [HASLab]
 	public void reportConfigs(int configs, int primaryVars, int vars, int clauses){}

@@ -58,7 +58,7 @@ import kodkod.ast.Variable;
  * A visitor that visits every node in the AST.
  *
  * @author Emina Torlak  
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public interface VoidVisitor {
 

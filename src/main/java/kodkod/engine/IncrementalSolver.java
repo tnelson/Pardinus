@@ -101,7 +101,7 @@ import kodkod.instance.Universe;
  * @see Translator#translateIncremental(Formula, Bounds, kodkod.engine.fol2sat.Translation.Incremental)
  * 
  * @author Emina Torlak 
- * @modified Nuno Macedo // [HASLab] model finding hierarchy
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  */
 // [HASLab] solver hierarchy
 public final class IncrementalSolver implements BoundedSolver<Bounds,Options> {

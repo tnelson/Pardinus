@@ -79,7 +79,7 @@ import kodkod.util.collections.Stack;
  *                                            // which they were derived by some transformation process
  *                                            // (e.g. skolemization, predicate inlining)                                     
  * @author Emina Torlak
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */ 
 public final class AnnotatedNode<N extends Node> {
 	private final N node;

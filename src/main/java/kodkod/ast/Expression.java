@@ -62,7 +62,7 @@ import kodkod.util.collections.Containers;
  * @invariant arity > 0
  *
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class Expression extends Node {
 	

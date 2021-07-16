@@ -75,7 +75,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * Skolemizes existential quantifiers, up to a given
  * number of nestings (within universal quantifiers).
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 abstract class Skolemizer extends AbstractReplacer {
 

@@ -59,7 +59,7 @@ import kodkod.util.ints.TreeSequence;
  * is discovered through translation alone.
  *  
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 final class TrivialProof extends Proof {
 	private Map<Formula,Node> coreRoots;

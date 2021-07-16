@@ -64,7 +64,7 @@ import kodkod.util.nodes.AnnotatedNode;
  * by breaking up universally quantifier formulas whenever possible.
  * 
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 // [HASLab] public
 final public class FormulaFlattener extends AbstractVoidVisitor {

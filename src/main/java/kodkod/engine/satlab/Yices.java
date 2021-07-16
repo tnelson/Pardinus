@@ -54,7 +54,7 @@ final public class Yices extends NativeSolver {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.engine.satlab.NativeSolver#free(int)
+	 * @see NativeSolver#free(long)
 	 */
 	void free(long peer){
 		if(array!=0){		
@@ -68,7 +68,7 @@ final public class Yices extends NativeSolver {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.engine.satlab.NativeSolver#addVariables(int, int)
+	 * @see NativeSolver#addVariables(long, int)
 	 */
 	void addVariables(long peer, int numVariables){
 		//System.out.println(peer);
@@ -79,7 +79,7 @@ final public class Yices extends NativeSolver {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.engine.satlab.NativeSolver#addClause(int, int[])
+	 * @see NativeSolver#addClause(long, int[])
 	 */
 	boolean addClause(long peer, int[] lits){
 		boolean res = natAddClause(peer,lits,makearray, array);
@@ -91,13 +91,13 @@ final public class Yices extends NativeSolver {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.engine.satlab.NativeSolver#solve(int)
+	 * @see NativeSolver#solve(long)
 	 */
 	native boolean solve(long peer);
 
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.engine.satlab.NativeSolver#valueOf(int, int)
+	 * @see NativeSolver#valueOf(long, int)
 	 */
 	native boolean valueOf(long peer, int literal);
 	

@@ -69,7 +69,7 @@ import kodkod.util.ints.Ints;
  * @specfield symmetries: set IntSet 
  * @specfield broken: set RelationPredicate 
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] decomposed model finding
+ * @author Nuno Macedo // [HASLab] decomposed model finding
  */
 final class SymmetryBreaker {
 	private final Bounds stage_bounds; // [HASLab]

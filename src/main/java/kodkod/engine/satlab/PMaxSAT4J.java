@@ -87,7 +87,7 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#numberOfTargets()
+	 * @see TargetSATSolver#numberOfTargets()
 	 */
 	public int numberOfTargets() {
 		return softclauses.size();
@@ -119,7 +119,7 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#addTarget(int)
+	 * @see TargetSATSolver#addTarget(int)
 	 */
 	public boolean addTarget(int lit) {
 		return addWeight(lit, 1);
@@ -127,7 +127,7 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#addWeight(int,int)
+	 * @see WTargetSATSolver#addWeight(int, int)
 	 */	
 	public boolean addWeight(int lit, int weight) {
 		softclauses.put(lit,weight);
@@ -408,7 +408,7 @@ final public class PMaxSAT4J implements WTargetSATSolver {
 	
 	/**
 	 * {@inheritDoc}
-	 * @see kodkod.pardinus.target.TargetOrientedSATSolver#clearTargets(int)
+	 * @see TargetSATSolver#clearTargets()
 	 */	
 	public boolean clearTargets() {
 		clauses = clauses - numberOfTargets();

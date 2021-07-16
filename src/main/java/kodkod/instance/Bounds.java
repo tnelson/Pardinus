@@ -68,7 +68,7 @@ import kodkod.util.ints.TreeSequence;
  *            r.arity
  * @invariant all r: relations | lowerBound[r].tuples in upperBound[r].tuples
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] model finding hierarchy
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  **/
 //[HASLab] removed final
 public class Bounds implements Cloneable {

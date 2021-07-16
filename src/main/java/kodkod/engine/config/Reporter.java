@@ -48,7 +48,7 @@ import kodkod.util.ints.IntSet;
  * Some of these stages may not be executed, depending on the 
  * {@link Options options} used for analysis.  
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] additional reporting
+ * @author Nuno Macedo // [HASLab] additional reporting
  */
 public interface Reporter {
 

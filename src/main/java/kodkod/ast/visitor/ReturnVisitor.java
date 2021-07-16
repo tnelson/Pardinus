@@ -64,7 +64,7 @@ import kodkod.ast.Variable;
  * return values of types E, F, D, and I respectively. 
  *
  * @author Emina Torlak  
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public interface ReturnVisitor<E, F, D, I> {
     

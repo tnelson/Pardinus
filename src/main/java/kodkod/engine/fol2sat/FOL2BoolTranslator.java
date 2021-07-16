@@ -90,7 +90,7 @@ import kodkod.util.nodes.Nodes;
  * @specfield interpreter: LeafInterpreter // the interpreter used for translation	 
  * @specfield env: Environment<BooleanMatrix> // current environment
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, BooleanValue, Object, Int> {
 	

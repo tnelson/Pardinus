@@ -47,7 +47,7 @@ import kodkod.util.ints.IndexedEntry;
 /**
  * Represents a temporal instance of a temporal relational problem containing
  * {@link kodkod.ast.VarRelation variable relations} in the
- * {@link kodkod.instance.TemporalBounds temporal bounds}.
+ * {@link kodkod.instance.PardinusBounds temporal bounds}.
  * 
  * As of Pardinus 1.2, a looping state is always assumed to exist (i.e., they
  * always represent an infinite path).
@@ -75,8 +75,8 @@ public class TemporalInstance extends Instance {
 	 * 
 	 * As of Pardinus 1.2, loops are assumed to always exist.
 	 * 
-	 * @assumes 0 >= loop >= instances.length
-	 * @assumes all s,s': instance | s.universe = s'.universe && s.intTuples =
+	 * @requires 0 >= loop >= instances.length
+	 * @requires all s,s': instance | s.universe = s'.universe && s.intTuples =
 	 *          s'.intTuples
 	 * @param instances the states of the temporal instance.
 	 * @param loop      the looping state.
@@ -168,10 +168,9 @@ public class TemporalInstance extends Instance {
 	 * original variable relations (prior to expansion) are also considered since
 	 * they contain information regarding their temporal properties.
 	 * 
-	 * @assumes some instance.loop
+	 * @requires some instance.loop
 	 * @param instance the expanded static solution to the problem
-	 * @param tmptrans temporal translation information, including original variable
-	 *                 relations
+	 * @param extbounds the temporal bounds expanded into static representation
 	 * @throws IllegalArgumentException no instance.loop
 	 */
 	public TemporalInstance(Instance instance, PardinusBounds extbounds) {
@@ -235,7 +234,7 @@ public class TemporalInstance extends Instance {
 	 * 
 	 * Will change <bounds> if not all atoms of the universe are present at <reif>.
 	 * 
-	 * @assumes reif != null
+	 * @requires reif != null
 	 * @param reif    the previously reified atoms
 	 * @param formula formula used to identify the relevant relations
 	 * @param bounds  the declaration of the relations
@@ -276,9 +275,9 @@ public class TemporalInstance extends Instance {
 	 * the one of the original problem; thus, local universe restrictions will only
 	 * consider those atoms.
 	 * 
-	 * @assumes reif != null
-	 * @assumes start >= -1
-	 * @assumes end >= start or end == null
+	 * @requires reif != null
+	 * @requires start >= -1
+	 * @requires end >= start or end == null
 	 * @param bounds  the declaration of the relations
 	 * @param reif    the previously reified atoms
 	 * @param formula formula used to identify the relevant relations
@@ -448,7 +447,7 @@ public class TemporalInstance extends Instance {
 	 * The length of the prefix of this temporal instance, i.e., the number of
 	 * unique states prior to looping.
 	 * 
-	 * @return
+	 * @return length of trace prefix
 	 */
 	public int prefixLength() {
 		return states.size();
@@ -459,7 +458,7 @@ public class TemporalInstance extends Instance {
 	 * indices after looping.
 	 * 
 	 * @param i
-	 * @return
+	 * @return i-th state of trace
 	 */
 	public Instance state(int i) {
 		return states.get(normalizedIndex(i));
@@ -470,7 +469,7 @@ public class TemporalInstance extends Instance {
 	 * states.
 	 * 
 	 * @param i
-	 * @return
+	 * @return i normalized in the current trace
 	 */
 	public int normalizedIndex(int i) {
 		int loopsize = prefixLength() - loop;

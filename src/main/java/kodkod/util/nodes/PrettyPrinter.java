@@ -74,7 +74,7 @@ import kodkod.ast.visitor.VoidVisitor;
  * Pretty-prints Kodkod nodes.
  * 
  * @author Emina Torlak
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public final class PrettyPrinter {
 

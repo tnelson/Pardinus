@@ -840,7 +840,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 	}
 
 	/**
-	 * A target-oriented iterator over all solutions of a model, adapted from {@link SolutionIterator}.
+	 * A target-oriented iterator over all solutions of a model, adapted from {@link AbstractKodkodSolver.SolutionIterator}.
 	 * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented, temporal model finding
 	 */
 	public static class TSolutionIterator implements Explorer<Solution> {
@@ -1043,8 +1043,6 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		/**
 		 * Calculates the next TO solutions with weights.
 		 * 
-		 * @param i
-		 *            the TO mode
 		 * @param weights
 		 *            the signature weights
 		 */

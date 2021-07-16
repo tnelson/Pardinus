@@ -51,7 +51,7 @@ import kodkod.instance.Instance;
  * 
  * @specfield options: Options 
  * @author Emina Torlak 
- * @modified Nuno Macedo // [HASLab] model finding hierarchy
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  */
 // [HASLab] solver hierarchy
 public final class Solver extends AbstractKodkodSolver<Bounds,Options> { 

@@ -57,7 +57,7 @@ import kodkod.instance.TupleSet;
  * @specfield options: Options
  * @specfield instance: Instance
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] temporal model finding
+ * @author Nuno Macedo // [HASLab] temporal model finding
  */
 public final class Evaluator {
 	private final Instance instance;
@@ -125,7 +125,7 @@ public final class Evaluator {
 	 * Evaluates the specified formula at a given instant with respect to the 
 	 * relation-tuple mappings given by this.instance and using this.options.
 	 * 
-	 * @assumes this.instance instanceof TemporalInstance
+	 * @requires this.instance instanceof TemporalInstance
 	 * @return true if formula is true at this instant with respect to this.instance 
 	 *         and this.options; otherwise returns false
 	 * @throws kodkod.engine.fol2sat.HigherOrderDeclException
@@ -184,7 +184,7 @@ public final class Evaluator {
 	 * relation-tuple mappings given by this.instance and using this.options. The
 	 * result is built over the static universe.
 	 * 
-	 * @assumes this.instance instanceof TemporalInstance
+	 * @requires this.instance instanceof TemporalInstance
 	 * @return {@link kodkod.instance.TupleSet set} of tuples to which the
 	 *         expression evaluates at the instant given the mappings in
 	 *         this.instance and the options in this.options.

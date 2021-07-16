@@ -34,15 +34,14 @@ public abstract class DModel {
 	/**
 	 * Bounds of the first partition.
 	 * 
-	 * @return
+	 * @return the partial problem bounds
 	 */
 	abstract public PardinusBounds bounds1();
 
 	/**
 	 * Bounds of the second partition.
 	 * 
-	 * @requires bounds1().relations() & bounds2.requires() = empty
-	 * @return
+	 * @return the remainder problem bounds
 	 */
 	abstract public Bounds bounds2();
 
@@ -52,15 +51,14 @@ public abstract class DModel {
 	 * Formula for the first partition. Formula must refer to every relation in
 	 * bounds1().
 	 * 
-	 * @requires partition1().relations() = bounds1().relations()
-	 * @return
+     * @return the first partition formula
 	 */
 	abstract public Formula partition1();
 
 	/**
 	 * Formula for the second partition.
 	 * 
-	 * @return
+	 * @return the second partition formula
 	 */
 	abstract public Formula partition2();
 
@@ -69,9 +67,7 @@ public abstract class DModel {
 	/**
 	 * The bits required to encode the model.
 	 * 
-	 * @requires partition2().relations() in bounds1().relations() +
-	 *           bounds2().relations()
-	 * @return
+	 * @return the required bitwidth
 	 */
 	abstract public int getBitwidth();
 

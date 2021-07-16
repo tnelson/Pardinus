@@ -62,7 +62,7 @@ import kodkod.ast.Variable;
  * Implements a depth first traversal of the kodkod AST.  
  *
  * @author Emina Torlak 
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractVoidVisitor implements VoidVisitor {
 	

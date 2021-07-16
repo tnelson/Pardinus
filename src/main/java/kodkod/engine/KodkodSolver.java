@@ -53,7 +53,7 @@ import kodkod.instance.Instance;
  * 
  * @specfield options: Options 
  * @author Emina Torlak 
- * @modified Nuno Macedo // [HASLab] model finding hierarchy
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  */
 // [HASLab] bounded solver
 public interface KodkodSolver<B extends Bounds, O extends Options> extends BoundedSolver<B,O>, IterableSolver<B,O> {

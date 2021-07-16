@@ -127,10 +127,12 @@ public class TemporalTranslator {
 	 * Constructs a new temporal translator to expand temporal formulas and variable
 	 * bounds.
 	 * 
-	 * @param form
+	 * @param formula
 	 *            the original temporal formula.
-	 * @param bnds
+	 * @param bounds
 	 *            the original variable bounds.
+	 * @param options 
+	 *            solving options
 	 */
 	public TemporalTranslator(Formula formula, PardinusBounds bounds, Options options) {
 		bounds = bounds.clone();

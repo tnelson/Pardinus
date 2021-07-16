@@ -51,7 +51,7 @@ import kodkod.util.ints.Ints;
  * <code>{ s0, ..., sn }</code>. 
  * 
  * @author Emina Torlak
- * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
+ * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 public final class SymmetryDetector {
 	private final Bounds bounds;

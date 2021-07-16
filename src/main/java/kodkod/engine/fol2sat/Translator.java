@@ -70,8 +70,8 @@ import kodkod.util.nodes.AnnotatedNode;
  * respect to given {@link Bounds bounds} (or {@link Instance instances}) and {@link Options}.
  * 
  * @author Emina Torlak 
- * @modified Nuno Macedo // [HASLab] decomposed model finding, symbolic model finding
- * @modified Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
+ * @author Nuno Macedo // [HASLab] decomposed model finding, symbolic model finding
+ * @author Tiago Guimarães, Nuno Macedo // [HASLab] target-oriented model finding
  */
 public final class Translator {
 	

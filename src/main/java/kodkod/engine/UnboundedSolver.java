@@ -30,7 +30,7 @@ import kodkod.instance.PardinusBounds;
 
 /**
  * An interface for unbounded relational constraint solvers. Pardinus
- * {@link bounds PardinusBounds} are expected, as these contain information
+ * {@link PardinusBounds bounds} are expected, as these contain information
  * regarding unbounded problems. Options are required to specify unbounded
  * configurations.
  * 

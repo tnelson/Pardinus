@@ -73,7 +73,7 @@ import kodkod.ast.Variable;
  * @specfield cache: Node -> lone Boolean
  * @specfield cached in cache.Node
  * @author Emina Torlak
- * @modified Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
+ * @author Eduardo Pessoa, Nuno Macedo // [HASLab] temporal model finding
  */
 public abstract class AbstractDetector implements ReturnVisitor<Boolean, Boolean, Boolean, Boolean> {
 	protected final Map<Node, Boolean> cache;

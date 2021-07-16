@@ -41,7 +41,7 @@ import kodkod.util.ints.IntSet;
  * An implementation of the reporter interface that prints messages
  * to the standard output stream.
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] additional reporting
+ * @author Nuno Macedo // [HASLab] additional reporting
  */
 public final class FileReporter implements Reporter {
 	
@@ -73,7 +73,7 @@ public final class FileReporter implements Reporter {
 	public void skolemizing(Decl decl, Relation skolem, List<Decl> context) {}
 
 	/**
-	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int)
+	 * @see kodkod.engine.config.Reporter#solvingCNF(int, int, int, int)
 	 */
 	// [HASLab]
 	public void solvingCNF(int step, int primaryVars, int vars, int clauses) {
@@ -133,7 +133,7 @@ public final class FileReporter implements Reporter {
 	}
 
 	/**
-	 * @see kodkod.engine.config.Reporter#reportConfigs(int)
+	 * @see kodkod.engine.config.Reporter#reportConfigs(int, int, int, int)
 	 */
 	// [HASLab]
 	public void reportConfigs(int permuted, int vars, int pvars, int clauses) {}

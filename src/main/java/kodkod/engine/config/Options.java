@@ -46,7 +46,7 @@ import kodkod.util.ints.Ints;
  * @specfield coreGranularity: [0..3] // unsat core granularity, default is 0
  *            (only top-level conjuncts are considered)
  * @author Emina Torlak
- * @modified Nuno Macedo // [HASLab] model finding hierarchy
+ * @author Nuno Macedo // [HASLab] model finding hierarchy
  */
 // [HASLab] model finding hierarchy, copy constructor
 public class Options implements Cloneable, BoundedOptions { 
