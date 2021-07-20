@@ -114,7 +114,7 @@ public interface Reporter {
 
 	/**
 	 * Reports information regarding partial problem solving (i.e., configurations).
-	 * Only called when a running in decomposed mode (see {@link DecomposedOptions).
+	 * Only called when a running in decomposed mode (see {@link DecomposedOptions}).
 	 */
 	// [pardinus]
 	public void reportConfigs(int configs, int primaryVars, int vars, int clauses);
