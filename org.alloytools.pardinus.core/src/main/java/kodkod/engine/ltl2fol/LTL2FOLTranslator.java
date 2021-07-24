@@ -348,8 +348,7 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 		nfleft = right.and(nfleft);
 
-		return nfleft
-				.forSome(r.oneOf(prev_l.join(PREFIX.transpose().reflexiveClosure())));
+		return nfleft.forSome(r.oneOf(prev_l.join(PREFIX.transpose().reflexiveClosure())));
 	}
 
 	private Formula getQuantifierRelease(Formula always, Formula left, Formula right) {
