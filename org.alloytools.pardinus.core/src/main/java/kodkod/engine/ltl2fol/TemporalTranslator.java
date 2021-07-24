@@ -89,8 +89,6 @@ import kodkod.instance.Tuple;
  */
 public class TemporalTranslator {
 	
-	public static final boolean ExplicitUnrolls = true;
-
 	/** The name assigned to {@link #STATE state} atoms. */
 	public static final String STATEATOM = "Time";
 
@@ -105,14 +103,7 @@ public class TemporalTranslator {
 	public static final Relation LAST_ = Relation.unary("S/last_"); 			// ExplicitUnrolls = true
 	public static final Relation UNROLL_MAP = Relation.binary("unroll_map"); 	// ExplicitUnrolls = true
 
-	public static final Relation LEVEL = Relation.unary("Level"); 				// ExplicitUnrolls = false
-	public static final Relation L_FIRST = Relation.unary("L/first"); 			// ExplicitUnrolls = false
-	public static final Relation L_LAST = Relation.unary("L/last"); 			// ExplicitUnrolls = false
-	public static final Relation L_PREFIX = Relation.binary("L/next"); 			// ExplicitUnrolls = false
-
 	public static final String STATE_SEP = "_";
-
-	public static final Expression START = L_FIRST.product(FIRST).union(L_FIRST.join(L_PREFIX.closure()).product(LOOP));
 
 	/** The original temporal formula. */
 	private final Formula formula;

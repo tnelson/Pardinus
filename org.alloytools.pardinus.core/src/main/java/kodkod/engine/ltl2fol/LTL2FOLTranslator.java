@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import kodkod.ast.BinaryTempFormula;
 import kodkod.ast.ConstantExpression;
@@ -43,10 +42,6 @@ import kodkod.ast.Variable;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.ast.visitor.AbstractReplacer;
 
-import static kodkod.engine.ltl2fol.TemporalTranslator.L_FIRST;
-import static kodkod.engine.ltl2fol.TemporalTranslator.L_LAST;
-import static kodkod.engine.ltl2fol.TemporalTranslator.L_PREFIX;
-import static kodkod.engine.ltl2fol.TemporalTranslator.LEVEL;
 import static kodkod.engine.ltl2fol.TemporalTranslator.FIRST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.LAST;
 import static kodkod.engine.ltl2fol.TemporalTranslator.LAST_;
@@ -55,7 +50,6 @@ import static kodkod.engine.ltl2fol.TemporalTranslator.PREFIX;
 import static kodkod.engine.ltl2fol.TemporalTranslator.STATE;
 import static kodkod.engine.ltl2fol.TemporalTranslator.TRACE;
 import static kodkod.engine.ltl2fol.TemporalTranslator.UNROLL_MAP;
-import static kodkod.engine.ltl2fol.TemporalTranslator.START;
 
 /**
  * Translates an LTL temporal formula into its standard Kodkod FOL
@@ -72,7 +66,6 @@ import static kodkod.engine.ltl2fol.TemporalTranslator.START;
  */
 public class LTL2FOLTranslator extends AbstractReplacer {
 
-	private Set<Relation> vars_found;
 	private Map<Formula,Formula> inv_cache = new HashMap<>();
 
 	/** Pre-computed information about the formula, allows optimizations. */
@@ -90,7 +83,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	private LTL2FOLTranslator(boolean has_past) {
 		super(new HashSet<Node>());
 		this.has_past = has_past;
-		this.vars_found = new HashSet<Relation>();
 	}
 	
 	@Override
@@ -126,49 +118,29 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 		Formula f;
 		
-		if (TemporalTranslator.ExplicitUnrolls) {
-
-			Variable v = Variable.unary("v");
-			Formula order_unr_trace1 = v.join(PREFIX).one().forAll(v.oneOf(STATE.difference(LAST)));
-			Formula order_unr_trace2 = PREFIX.join(v).one().forAll(v.oneOf(STATE.difference(FIRST)));
-			Formula order_unr_trace3 = FIRST.join(PREFIX.reflexiveClosure()).eq(STATE);
-			Formula order_unr_trace4 = PREFIX.in(STATE.product(STATE));
-			
-			if (has_past) {
-				Variable v1 = Variable.unary("v1");
-				// all s0, s1
-				order_unr_trace3 = order_unr_trace3.and((v.join(UNROLL_MAP).eq(v1.join(UNROLL_MAP)).implies(v.join(TRACE).join(UNROLL_MAP).eq(v1.join(TRACE).join(UNROLL_MAP)))).forAll(v1.oneOf(LAST_.join(TRACE.reflexiveClosure()))).forAll(v.oneOf(LAST_.join(TRACE.reflexiveClosure()))));
-			}
-
-			Formula loopDecl_unr = LOOP.one();
-			
-			f = Formula.and(order_unr_trace1, order_unr_trace2, order_unr_trace3, order_unr_trace4, loopDecl_unr);
-		} else {
-			// TotalOrder(S/Next,State,S/First,S/Last)
-			Formula st = PREFIX.totalOrder(STATE, FIRST, LAST);
-			// TotalOrder(L/Next,Level,L/First,L/Last)
-			Formula lv = L_PREFIX.totalOrder(LEVEL, L_FIRST, L_LAST);
-			
-			Formula loopDecl_unr = LOOP.one();
-			
-			f = Formula.and(st,lv,loopDecl_unr);
-		}
+		Variable v = Variable.unary("v");
+		Formula order_unr_trace1 = v.join(PREFIX).one().forAll(v.oneOf(STATE.difference(LAST)));
+		Formula order_unr_trace2 = PREFIX.join(v).one().forAll(v.oneOf(STATE.difference(FIRST)));
+		Formula order_unr_trace3 = FIRST.join(PREFIX.reflexiveClosure()).eq(STATE);
+		Formula order_unr_trace4 = PREFIX.in(STATE.product(STATE));
 		
-		translator.pushLevel();
+		if (has_past) {
+			Variable v1 = Variable.unary("v1");
+			// all s0, s1
+			order_unr_trace3 = order_unr_trace3.and((v.join(UNROLL_MAP).eq(v1.join(UNROLL_MAP)).implies(v.join(TRACE).join(UNROLL_MAP).eq(v1.join(TRACE).join(UNROLL_MAP)))).forAll(v1.oneOf(LAST_.join(TRACE.reflexiveClosure()))).forAll(v.oneOf(LAST_.join(TRACE.reflexiveClosure()))));
+		}
+
+		Formula loopDecl_unr = LOOP.one();
+		
+		f = Formula.and(order_unr_trace1, order_unr_trace2, order_unr_trace3, order_unr_trace4, loopDecl_unr);
+		
 		translator.pushVariable(state);
 
 		// log translation of formulas
 		Formula tfrm =form.accept(translator);
 		tempTransLog.putAll(translator.inv_cache);
 		
-		Formula hack = Formula.TRUE;
-		if (!TemporalTranslator.ExplicitUnrolls) {
-			for (Relation r : translator.vars_found)
-				// r.(loop.prev) = r.last
-				hack = hack.and(r.join(LOOP.join(PREFIX.transpose())).eq(r.join(LAST)));
-		}
-		
-		return Formula.and(f,tfrm,hack);
+		return Formula.and(f,tfrm);
 	}
 
 	/**
@@ -237,10 +209,9 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	public Expression visit(Relation relation) {
 		final Expression res;
 		if (relation.isVariable()) {
-			if (has_past && TemporalTranslator.ExplicitUnrolls)
+			if (has_past)
 				res = relation.getExpansion().join(getVariable().join(UNROLL_MAP));
 			else {
-				if (has_past) vars_found.add(relation.getExpansion());
 				res = relation.getExpansion().join(getVariable());
 			}
 		} else
@@ -261,7 +232,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	@Override
 	public Formula visit(UnaryTempFormula unaryTempFormula) {
 		pushOperator(unaryTempFormula.op());
-		pushLevel();
 		pushVariable();
 		Formula e = unaryTempFormula.formula().accept(this);
 		Formula rt = getQuantifier(getOperator(), e);
@@ -274,7 +244,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	@Override
 	public Formula visit(BinaryTempFormula binaryTempFormula) {
 		pushOperator(binaryTempFormula.op());
-		pushLevel();
 		pushVariable();
 		Formula rt, left, right;
 		switch (binaryTempFormula.op()) {
@@ -296,7 +265,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			Formula rightAlways = binaryTempFormula.right().accept(this);
 			pushVariable();
 			left = binaryTempFormula.left().accept(this);
-			pushLevel();
 			pushVariable();
 			right = binaryTempFormula.right().accept(this);
 			rt = getQuantifierRelease(rightAlways, left, right);
@@ -308,7 +276,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			rightAlways = binaryTempFormula.right().accept(this);
 			pushVariable();
 			left = binaryTempFormula.left().accept(this);
-			pushLevel();
 			pushVariable();
 			right = binaryTempFormula.right().accept(this);
 			rt = getQuantifierTrigger(rightAlways, left, right);
@@ -338,80 +305,26 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 	private Formula getQuantifier(TemporalOperator op, Formula e) {
 		Variable s1;
 		Expression s0 = getVariablePrevQuant();
-		if (TemporalTranslator.ExplicitUnrolls) {
-			switch (op) {
-			case ALWAYS:
-				s1 = (Variable) getVariable();
-				return e.forAll(s1.oneOf(s0.join(TRACE.reflexiveClosure())));
-			case EVENTUALLY:
-				s1 = (Variable) getVariable();
-				return e.forSome(s1.oneOf(s0.join(TRACE.reflexiveClosure())));
-			case HISTORICALLY:
-				s1 = (Variable) getVariable();
-				return e.forAll(s1.oneOf(s0.join(PREFIX.transpose().reflexiveClosure())));
-			case ONCE:
-				s1 = (Variable) getVariable();
-				return e.forSome(s1.oneOf(s0.join(PREFIX.transpose().reflexiveClosure())));
-			case BEFORE:
-				Expression v2 = getVariable();
-				e = v2.some().and(e);
-				return e;
-			default:
-				return e;
-			} 
-		} else {
-			Variable l1;
-			Expression l0 = getLevelPrevQuant();
-			switch (op) {
-			case ALWAYS:
-				s1 = (Variable) getVariable();
-				l1 = (Variable) getLevel();
-				Expression rng;
-				// (l1 = l0 && l1 != last) => s0.*next else State
-				rng = (l1.eq(l0).and(l1.eq(L_LAST).not())).thenElse(s0.join(PREFIX.reflexiveClosure()),STATE);
-				// l1.start.*trace & ((l1 = l0 || l1 = last) => s0.*next else State)
-				rng = rng.intersection(l1.join(START).join(PREFIX.reflexiveClosure()));
-				// all l1 : l0.*next, s1 : (l1.start.*next & ((l1 = l0 || l1 = last) => s0.*next else State)) | e
-				return e.forAll(s1.oneOf(rng)).forAll(l1.oneOf(l0.join(L_PREFIX.reflexiveClosure())));
-			case EVENTUALLY:
-				s1 = (Variable) getVariable();
-				l1 = (Variable) getLevel();
-				// (l1 = l0 && l1 != last) => s0.*next else State
-				rng = (l1.eq(l0).and(l1.eq(L_LAST).not())).thenElse(s0.join(PREFIX.reflexiveClosure()),STATE);
-				// l1.start.*trace & ((l1 = l0 || l1 = last) => s0.*next else State)
-				rng = rng.intersection(l1.join(START).join(PREFIX.reflexiveClosure()));
-				// some l1 : l0.*next, s1 : (l1.start.*next & ((l1 = l0 || l1 = last) => s0.*next else State)) | e
-				return e.forSome(s1.oneOf(rng)).forSome(l1.oneOf(l0.join(L_PREFIX.reflexiveClosure())));
-			case HISTORICALLY:
-				s1 = (Variable) getVariable();
-				l1 = (Variable) getLevel();
-				// l1 = l0 => s0.*prev else State
-				rng = l1.eq(l0).thenElse(s0.join(PREFIX.transpose().reflexiveClosure()),STATE);
-				// l1.start.*prev & (l1 = l0 => s0.*prev else State)
-				rng = rng.intersection(l1.join(START).join(PREFIX.reflexiveClosure()));
-				// all l1 : l0.*prev, s1 : l1.start.*prev & (l1 = l0 => s0.*prev else State) | e
-				return e.forAll(s1.oneOf(rng)).forAll(l1.oneOf(l0.join(L_PREFIX.transpose().reflexiveClosure())));
-			case ONCE:
-				s1 = (Variable) getVariable();
-				l1 = (Variable) getLevel();
-				// l1 = l0 => s0.*prev else State
-				rng = l1.eq(l0).thenElse(s0.join(PREFIX.transpose().reflexiveClosure()),STATE);
-				// l1.start.*prev & (l1 = l0 => s0.*prev else State)
-				rng = rng.intersection(l1.join(START).join(PREFIX.reflexiveClosure()));
-				// some l1 : l0.*prev, s1 : l1.start.*prev & (l1 = l0 => s0.*prev else State) | e
-				return e.forSome(s1.oneOf(rng)).forSome(l1.oneOf(l0.join(L_PREFIX.transpose().reflexiveClosure())));
-			case BEFORE:
-				// (s0 = loop && l0 != first) => last else s0.prev
-				Expression s0n = getVariable();
-				// (s0 = loop && l0 != first) => l0.prev else l0
-				Expression l0n = getLevel();
-				// some (s0 = loop && l0 != first) => last else s0.prev && e
-				e = s0n.some().and(e);
-				return e;
-			default:
-				return e;
-			}
-		}
+		switch (op) {
+		case ALWAYS:
+			s1 = (Variable) getVariable();
+			return e.forAll(s1.oneOf(s0.join(TRACE.reflexiveClosure())));
+		case EVENTUALLY:
+			s1 = (Variable) getVariable();
+			return e.forSome(s1.oneOf(s0.join(TRACE.reflexiveClosure())));
+		case HISTORICALLY:
+			s1 = (Variable) getVariable();
+			return e.forAll(s1.oneOf(s0.join(PREFIX.transpose().reflexiveClosure())));
+		case ONCE:
+			s1 = (Variable) getVariable();
+			return e.forSome(s1.oneOf(s0.join(PREFIX.transpose().reflexiveClosure())));
+		case BEFORE:
+			Expression v2 = getVariable();
+			e = v2.some().and(e);
+			return e;
+		default:
+			return e;
+		} 
 	}
 
 	private Formula getQuantifierUntil(Formula left, Formula right) {
@@ -419,60 +332,24 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Variable r = getVariableUntil(true);
 		Variable l = getVariableUntil(false);
 		Expression prev_l = getVariablePrevQuantUntil(false);
-		if (TemporalTranslator.ExplicitUnrolls) {
-			Formula nfleft = left.forAll(l.oneOf(upTo(prev_l, r, false)));
-			
-			nfleft = right.and(nfleft);
-			
-			return nfleft.forSome(r.oneOf(prev_l.join(TRACE.reflexiveClosure())));
-		}
-		else {
-			Variable vl = getLevelUntil();
-			Expression prev_vl = getLevelPrevQuantUntil();
-
-			Expression rng1 = (vl.eq(prev_vl.join(L_PREFIX))).thenElse(r.join(PREFIX.transpose().closure()), STATE);
-			Expression rng0 = (vl.eq(prev_vl)).thenElse(upTo(prev_l, r, false),prev_l.join(PREFIX.reflexiveClosure()).union((vl.join(START).join(PREFIX.reflexiveClosure()).intersection(rng1))));
-			
-			Formula nfleft = left.forAll(l.oneOf(rng0));
-			
-			nfleft = right.and(nfleft);
-			
-			Expression rng = vl.eq(prev_vl).thenElse(prev_l.join(PREFIX.reflexiveClosure()),STATE);
-
-			return nfleft.forSome(r.oneOf(rng.intersection(vl.join(START).join(TRACE.reflexiveClosure())))).forSome(vl.oneOf(prev_vl.join(L_PREFIX.reflexiveClosure())));
-		}
+		Formula nfleft = left.forAll(l.oneOf(upTo(prev_l, r, false)));
+		
+		nfleft = right.and(nfleft);
+		
+		return nfleft.forSome(r.oneOf(prev_l.join(TRACE.reflexiveClosure())));
 	}
 
 	private Formula getQuantifierSince(Formula left, Formula right) {
 		Variable r = getVariableUntil(true);
 		Variable l = getVariableUntil(false);
 		Expression prev_l = getVariablePrevQuantUntil(false);
-		
-		if (TemporalTranslator.ExplicitUnrolls) {
 
-			Formula nfleft = left.forAll(l.oneOf(downTo(prev_l, r, false)));
-	
-			nfleft = right.and(nfleft);
-	
-			return nfleft
-					.forSome(r.oneOf(prev_l.join(PREFIX.transpose().reflexiveClosure())));
-		} else {
+		Formula nfleft = left.forAll(l.oneOf(downTo(prev_l, r, false)));
 
-			Variable vl = getLevelUntil();
-			Expression prev_vl = getLevelPrevQuantUntil();
+		nfleft = right.and(nfleft);
 
-			
-			Expression rng1 = (prev_vl.eq(vl.join(L_PREFIX))).thenElse(prev_l.join(PREFIX.transpose().reflexiveClosure()), STATE);
-			Expression rng0 = (vl.eq(prev_vl)).thenElse(downTo(prev_l, r, false),r.join(PREFIX.closure()).union((prev_vl.join(START).join(PREFIX.reflexiveClosure()).intersection(rng1))));
-			
-			Formula nfleft = left.forAll(l.oneOf(rng0));
-			
-			nfleft = right.and(nfleft);
-			
-			Expression rng = vl.eq(prev_vl).thenElse(prev_l.join(PREFIX.transpose().reflexiveClosure()),STATE);
-
-			return nfleft.forSome(r.oneOf(rng.intersection(vl.join(START).join(PREFIX.reflexiveClosure())))).forSome(vl.oneOf(prev_vl.join(L_PREFIX.transpose().reflexiveClosure())));
-		}
+		return nfleft
+				.forSome(r.oneOf(prev_l.join(PREFIX.transpose().reflexiveClosure())));
 	}
 
 	private Formula getQuantifierRelease(Formula always, Formula left, Formula right) {
@@ -483,19 +360,16 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfleft;
 		Formula nfright;
 	
-		if (TemporalTranslator.ExplicitUnrolls) {
-			alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
-		
-			nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true)));
-		
-			nfright = left.and(nfleft);
-		
-			nfright = nfright
-					.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
-		
-			return alw.or(nfright); }
-		else 
-			throw new UnsupportedOperationException("Releases for alterative past encoding.");
+		alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
+	
+		nfleft = right.forAll(l.oneOf(upTo(getVariablePrevQuantRelease(false, true), r, true)));
+	
+		nfright = left.and(nfleft);
+	
+		nfright = nfright
+				.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(TRACE.reflexiveClosure())));
+	
+		return alw.or(nfright);
 	}
 	
 	private Formula getQuantifierTrigger(Formula always, Formula left, Formula right) {
@@ -506,20 +380,16 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula nfleft;
 		Formula nfright;
 	
-		if (TemporalTranslator.ExplicitUnrolls) {
-			alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().reflexiveClosure())));
-		
-			nfleft = right.forAll(l.oneOf(downTo(getVariablePrevQuantRelease(false, true), r, true)));
-		
-			nfright = left.and(nfleft);
-		
-			nfright = nfright
-					.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().reflexiveClosure())));
-		
-			return alw.or(nfright);
-		}
-		else 
-			throw new UnsupportedOperationException("Triggered for alterative past encoding.");
+		alw = always.forAll(v.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().reflexiveClosure())));
+	
+		nfleft = right.forAll(l.oneOf(downTo(getVariablePrevQuantRelease(false, true), r, true)));
+	
+		nfright = left.and(nfleft);
+	
+		nfright = nfright
+				.forSome(r.oneOf(getVariablePrevQuantRelease(false, true).join(PREFIX.transpose().reflexiveClosure())));
+	
+		return alw.or(nfright);
 	}
 	
 	/**
@@ -588,45 +458,15 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		switch (getOperator()) {
 		case AFTER:
 		case PRIME:
-			if (TemporalTranslator.ExplicitUnrolls)
-				variables.add(getVariable().join(TRACE));
-			else 
-				// s0.trace
-				variables.add(getVariable().join(TRACE));
+			variables.add(getVariable().join(TRACE));
 			break;
 		case BEFORE:
-			if (TemporalTranslator.ExplicitUnrolls)
-				variables.add(getVariable().join(PREFIX.transpose()));
-			else 
-				// (s0 = loop && l0 != first) => last else s0.prev
-				variables.add((getVariable().eq(LOOP).and(getLevelPrevQuant().eq(L_FIRST).not())).thenElse(LAST,getVariable().join(PREFIX.transpose())));
+			variables.add(getVariable().join(PREFIX.transpose()));
 			break;
 		default:
 			Variable v = Variable.unary("t" + vars);
 			variables.add(v);
 			vars++;
-		}
-	}
-
-	private void pushLevel() {
-		if (variables_lvl.isEmpty()) {
-			variables_lvl.add(L_FIRST);
-			return;
-		}
-
-		switch (getOperator()) {
-		case AFTER:
-		case PRIME:
-			// (s0 = last && l0 != last) => l0.next else l0
-			variables_lvl.add((getVariable().eq(LAST).and(getLevel().eq(L_LAST).not())).thenElse(getLevel().join(L_PREFIX),getLevel()));
-			break;
-		case BEFORE:
-			// (s0 = loop && l0 != first) => l0.prev else l0
-			variables_lvl.add((getVariable().eq(LOOP).and(getLevel().eq(L_FIRST).not())).thenElse(getLevel().join(L_PREFIX.transpose()),getLevel()));
-			break;
-		default:
-			Variable v = Variable.unary("l" + vars);
-			variables_lvl.add(v);
 		}
 	}
 
@@ -658,16 +498,8 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		return variables.get(variables.size() - 1);
 	}
 
-	private Expression getLevel() {
-		return variables_lvl.get(variables_lvl.size() - 1);
-	}
-
 	private Expression getVariablePrevQuant() {
 		return variables.get(variables.size() - 2);
-	}
-
-	private Expression getLevelPrevQuant() {
-		return variables_lvl.get(variables_lvl.size() - 2);
 	}
 
 	private Variable getVariableUntil(boolean sideIsRight) {
@@ -678,10 +510,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		}
 	}
 	
-	private Variable getLevelUntil() {
-		return (Variable) variables_lvl.get(variables_lvl.size() - 1);
-	}
-
 	private Variable getVariableRelease(boolean sideIsRight, boolean isAlways) {
 		if (isAlways) {
 			return (Variable) variables.get(variables.size() - 3);
@@ -702,10 +530,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		}
 	}
 	
-	private Expression getLevelPrevQuantUntil() {
-		return variables_lvl.get(variables_lvl.size() - 2);
-	}
-
 	private Expression getVariablePrevQuantRelease(boolean sideIsRight, boolean isAlways) {
 		if (isAlways) {
 			return variables.get(variables.size() - 4);
