@@ -27,9 +27,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
@@ -251,7 +253,21 @@ public class ElectrodSolver implements UnboundedSolver<ExtendedOptions>,
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 				@Override
 				public void run() {
-					p.destroy();
+					if (!System.getProperty("os.name").toLowerCase(Locale.US).startsWith("windows"))
+						try {
+							if (p.isAlive()) {
+								// this is needed to effectively kill the electrod child processes (SMV solvers)
+								// TODO: check whether java 9 ProcessHandlers could solve this
+								Field f = p.getClass().getDeclaredField("pid");
+								f.setAccessible(true);
+								Runtime.getRuntime().exec("kill " + f.get(p));
+							}
+						} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IOException | IllegalAccessException
+								 e) {
+							 e.printStackTrace();
+						}
+					else
+						p.destroy();
 				}
 			});
 			
