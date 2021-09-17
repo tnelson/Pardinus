@@ -41,11 +41,6 @@ public class TemporalTranslatorTests {
 
 	public TemporalTranslatorTests() {}
 	
-	@BeforeClass
-	public static void rightEnc() {
-		assert TemporalTranslator.ExplicitUnrolls;
-	}
-	
 	/* Declarations */
 	@Test
 	public final void test() {

@@ -237,7 +237,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 		Formula rt = getQuantifier(getOperator(), e);
 		popOperator();
 		popVariable();
-		popLevel();
 		return cache(unaryTempFormula,rt);
 	}
 
@@ -269,7 +268,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			right = binaryTempFormula.right().accept(this);
 			rt = getQuantifierRelease(rightAlways, left, right);
 			popVariable();
-			popLevel();
 			popVariable();
 			break;
 		case TRIGGERED:
@@ -280,14 +278,12 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 			right = binaryTempFormula.right().accept(this);
 			rt = getQuantifierTrigger(rightAlways, left, right);
 			popVariable();
-			popLevel();
 			popVariable();
 			break;
 		default:
 			throw new UnsupportedOperationException("Unsupported binary temporal operator:" + binaryTempFormula.op());
 		}
 		popVariable();
-		popLevel();
 		popOperator();
 		return cache(binaryTempFormula,rt);
 	}
@@ -445,7 +441,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	/* Variables */
 	private List<Expression> variables = new ArrayList<Expression>();
-	private List<Expression> variables_lvl = new ArrayList<Expression>();
 	private int vars = 0;
 
 	private void pushVariable() {
@@ -487,10 +482,6 @@ public class LTL2FOLTranslator extends AbstractReplacer {
 
 	private void popVariable() {
 		variables.remove(variables.size() - 1);
-	}
-
-	private void popLevel() {
-		variables_lvl.remove(variables_lvl.size() - 1);
 	}
 
 	private Expression getVariable() {
