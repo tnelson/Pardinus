@@ -49,10 +49,12 @@ import kodkod.util.ints.IntTreeSet;
  * 
  * @author Emina Torlak
  */
-final class ResolutionBasedProof extends Proof {
-	private SATProver solver;
-	private RecordFilter coreFilter;
-	private Map<Formula,Node> coreRoots;
+// TN HACK: public
+public final class ResolutionBasedProof extends Proof {
+	// TN HACK: public (was private)
+	public SATProver solver;
+	public RecordFilter coreFilter;
+	public Map<Formula,Node> coreRoots;
 	
 	/**
 	 * Constructs a new ResolutionRefutation that will extract the 
