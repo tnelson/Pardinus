@@ -121,5 +121,15 @@ public class Decls extends Node implements Iterable<Decl> {
     public String toString() {
         return Arrays.toString(decls);
     }
-    
+
+    // swetabhch: add equals
+    @Override
+    public boolean equals(Object comp) {
+      if (!(comp instanceof Decls)) {
+        return false;
+      }
+
+      Decls compDecls = (Decls) comp;
+      return Arrays.equals(this.decls, compDecls.decls);
+    }
 }

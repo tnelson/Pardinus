@@ -99,4 +99,16 @@ public final class QuantifiedFormula extends Formula  {
         return "(" + quantifier + " " + decls + " | " + formula + ")";
     }
 
+    // swetabhch: add equals
+    @Override
+    public boolean equals(Object comp) {
+      if (!(comp instanceof Formula)) {
+        return false;
+      }
+
+      QuantifiedFormula compFormula = (QuantifiedFormula) comp;
+      return ((this.quantifier() == compFormula.quantifier()) &&
+          this.formula().equals(compFormula.formula()) &&
+          this.decls().equals(compFormula.decls()));
+    }
 }

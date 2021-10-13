@@ -105,5 +105,17 @@ public final class Decl extends Decls {
      * @see kodkod.ast.Node#toString()
      */
     public String toString() { return variable + ": " + mult + " " + expression; }
-   
+
+    // swetabhch: add equals that checks equality of variable and multiplicity
+
+    @Override
+    public boolean equals(Object comp) {
+        if (!(comp instanceof Decl)) {
+            return false;
+        }
+
+        Decl compDecl = (Decl) comp;
+        return ((this.multiplicity() == compDecl.multiplicity()) &&
+            (this.variable().equals(compDecl.variable())));
+    }
 }

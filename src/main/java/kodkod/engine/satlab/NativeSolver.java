@@ -22,6 +22,7 @@
 package kodkod.engine.satlab;
 
 import java.io.File;
+import java.lang.System;
 
 /**
  * A skeleton implementation of a wrapper for a sat solver

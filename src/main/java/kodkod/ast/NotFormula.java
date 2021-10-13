@@ -76,4 +76,16 @@ public final class NotFormula extends Formula {
     public String toString() {
         return "!" + formula;
     }
+
+    // swetabhch: add equals
+
+    @Override
+    public boolean equals(Object comp) {
+      if (!(comp instanceof NotFormula)) {
+        return false;
+      }
+      
+      NotFormula compFormula = (NotFormula) comp;
+      return this.formula().equals(compFormula.formula());
+    }
 }

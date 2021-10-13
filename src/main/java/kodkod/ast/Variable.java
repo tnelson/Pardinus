@@ -148,4 +148,14 @@ public final class Variable extends LeafExpression {
 		visitor.visit(this);
 	}
 
+	// swetabhch: add equals that checks variable names
+	@Override
+	public boolean equals(Object comp) {
+		if (!(comp instanceof Variable)) {
+			return false;
+		}
+
+		Variable compVariable = (Variable) comp;
+		return (this.name().equals(compVariable.name()));
+	}
 }

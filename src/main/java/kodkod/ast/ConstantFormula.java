@@ -70,5 +70,17 @@ public abstract class ConstantFormula extends Formula {
 	public String toString() {
 		return String.valueOf(booleanValue());
 	}
+
+	// swetabhch: add equals
+
+	@Override
+	public boolean equals(Object comp) {
+		if (!(comp instanceof ConstantFormula)) {
+			return false;
+		}
+
+		ConstantFormula compFormula = (ConstantFormula) comp;
+		return this.booleanValue() == compFormula.booleanValue();
+	}
 }
 

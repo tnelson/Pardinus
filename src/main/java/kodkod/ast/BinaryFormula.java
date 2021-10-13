@@ -94,4 +94,16 @@ public final class BinaryFormula extends Formula {
         return "(" + left + " " + op + " " + right + ")";
     }
 
+    // swetabhch: add equals
+    @Override
+    public boolean equals(Object comp) {
+      if (!(comp instanceof BinaryFormula)) {
+        return false;
+      }
+
+      BinaryFormula compFormula = (BinaryFormula) comp;
+      return (this.left().equals(compFormula.left()) &&
+          this.right().equals(compFormula.right()) &&
+          this.op() == compFormula.op());
+    }
 }

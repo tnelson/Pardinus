@@ -21,6 +21,7 @@
  */
 package kodkod.ast;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import kodkod.ast.operator.FormulaOperator;
@@ -82,6 +83,18 @@ public final class NaryFormula extends Formula implements Iterable<Formula> {
 	 * in the increasing order of indices.
 	 */
 	public Iterator<Formula> iterator() { return Containers.iterate(children); }
+
+	// swetabhch: add function that returns defensive copy of children array
+
+	/**
+	 * Returns a defensive copy of an array containing this
+	 * formula's children.
+	 * @return A defensive copy of an array containing this
+	 * formula's children.
+	 */
+	public Formula[] getChildren() {
+		return Arrays.copyOf(children, children.length);
+	}
     
 	/**
 	 * {@inheritDoc}
@@ -119,4 +132,17 @@ public final class NaryFormula extends Formula implements Iterable<Formula> {
 		return s.toString();
 	}
 
+	// swetabhch: add equals
+
+
+	@Override
+	public boolean equals(Object comp) {
+		if (!(comp instanceof NaryFormula)) {
+			return false;
+		}
+
+		NaryFormula compFormula = (NaryFormula) comp;
+		return ((this.op() == compFormula.op()) &&
+				Arrays.equals(this.getChildren(), compFormula.getChildren()));
+	}
 }
