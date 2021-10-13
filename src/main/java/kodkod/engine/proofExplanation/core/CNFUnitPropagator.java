@@ -1,9 +1,6 @@
 package kodkod.engine.proofExplanation.core;
 
-import kodkod.ast.BinaryFormula;
-import kodkod.ast.Formula;
-import kodkod.ast.Node;
-import kodkod.ast.NotFormula;
+import kodkod.ast.*;
 import kodkod.ast.operator.FormulaOperator;
 import kodkod.ast.visitor.AbstractReplacer;
 import kodkod.engine.satlab.Clause;
@@ -33,13 +30,22 @@ public class CNFUnitPropagator extends AbstractReplacer {
    */
   public static Set<Formula> propagateOnConjunctionIter(Iterator<Formula> conjunctionIter, Formula propLiteral) {
     Set<Formula> returnSet = new HashSet<>();
-    Formula negationCompFmla;
+
+    // TODO: simpler check that converts some to no and vice-versa instead of using not
+
+
+    Formula negationCompFmla = propLiteral;
+    if (propLiteral instanceof MultiplicityFormula) {
+      negationCompFmla = ((MultiplicityFormula) propLiteral).getNegation();
+    }
+    /*
     if (propLiteral instanceof NotFormula) {
       NotFormula notLiteral = (NotFormula) propLiteral;
       negationCompFmla = notLiteral.formula();
     } else {
       negationCompFmla = propLiteral.not();
-    }
+    }*/
+
     // HACK TO DEBUG
     //negationCompFmla = propLiteral.
     System.out.println(negationCompFmla);
@@ -47,16 +53,32 @@ public class CNFUnitPropagator extends AbstractReplacer {
     while (conjunctionIter.hasNext()) {
       Formula conjunction = conjunctionIter.next();
       Set<Formula> literalSet = convertConjunctionToLiteralSet(conjunction);
+      System.out.println("Literals:");
+      for (Formula literal : literalSet) {
+        System.out.print(literal + "; ");
+      }
+      System.out.println();
 
-      if (!literalSet.contains(propLiteral) && literalSet.contains(negationCompFmla)) {
+      boolean literalsHaveNegation = false;
+      for (Formula literal : literalSet) {
+        System.out.println(literal.getClass());
+        if (negationCompFmla.equals(literal)) {
+          literalsHaveNegation = true;
+          break;
+        }
+      }
+      if (!literalSet.contains(propLiteral) && literalsHaveNegation) {
         literalSet.remove(negationCompFmla);
         Formula newConjunction = Formula.compose(FormulaOperator.OR, literalSet.toArray(new Formula[0]));
         returnSet.add(newConjunction);
+      } else {
+        returnSet.add(conjunction);
       }
       System.out.println("Set so far: ");
       for (Formula f : returnSet) {
         System.out.print(f + "; ");
       }
+      System.out.println();
     }
     return returnSet;
   }

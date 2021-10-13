@@ -107,6 +107,7 @@ public final class QuantifiedFormula extends Formula  {
       }
 
       QuantifiedFormula compFormula = (QuantifiedFormula) comp;
+      System.out.println("FROM QuantifiedFormula EQUALS: " + compFormula);
       return ((this.quantifier() == compFormula.quantifier()) &&
           this.formula().equals(compFormula.formula()) &&
           this.decls().equals(compFormula.decls()));

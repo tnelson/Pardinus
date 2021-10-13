@@ -435,4 +435,20 @@ public abstract class Expression extends Node {
      * @see kodkod.ast.Node#accept(kodkod.ast.visitor.ReturnVisitor)
      */
     public abstract <E, F, D, I> E accept(ReturnVisitor<E, F, D, I> visitor);
- }
+
+    @Override
+    public boolean equals(Object comp) {
+      if (!(comp instanceof Expression)) {
+        return false;
+      }
+      Expression compExpr = (Expression) comp;
+      if (compExpr instanceof LeafExpression) {
+        LeafExpression thisLeafExpr = (LeafExpression) this;
+        LeafExpression compLeafExpr = (LeafExpression) compExpr;
+        return thisLeafExpr.equals(compLeafExpr);
+      } else {
+        // TODO: fix this default
+        return false;
+      }
+    }
+}

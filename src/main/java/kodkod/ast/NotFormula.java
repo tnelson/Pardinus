@@ -82,10 +82,16 @@ public final class NotFormula extends Formula {
     @Override
     public boolean equals(Object comp) {
       if (!(comp instanceof NotFormula)) {
+        System.out.println("Entered false for NotFormula!");
         return false;
       }
       
       NotFormula compFormula = (NotFormula) comp;
+      // TODO: complete some to no conversion
+      Formula nottedFormula = compFormula.formula();
+      if (nottedFormula instanceof QuantifiedFormula) {
+        System.out.println("From equals of NotFormula: " + nottedFormula);
+      }
       return this.formula().equals(compFormula.formula());
     }
 }

@@ -79,4 +79,12 @@ public abstract class LeafExpression extends Expression {
 		return name;
 	}
 
+	@Override
+	public boolean equals(Object comp) {
+		if (!(comp instanceof LeafExpression)) {
+			return false;
+		}
+		LeafExpression compLeafExpr = (LeafExpression) comp;
+		return this.name().equals(compLeafExpr.name());
+	}
 }

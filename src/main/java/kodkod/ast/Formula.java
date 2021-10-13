@@ -119,6 +119,7 @@ public abstract class Formula extends Node {
     }
     
     /**
+     *
      * Returns the composition of this and the specified formula using the
      * given binary temporal operator.
      * @return {f: Formula | f.left = this and f.right = formula and f.op = op }

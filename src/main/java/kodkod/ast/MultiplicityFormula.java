@@ -26,7 +26,6 @@ import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.visitor.ReturnVisitor;
 import kodkod.ast.visitor.VoidVisitor;
 
-
 /** 
  * A multiplicity formula, e.g. some x
  * 
@@ -87,5 +86,34 @@ public final class MultiplicityFormula extends Formula {
       */
     public String toString() {
         return multiplicity + " " + expression;
+    }
+
+    // swetabhch: add negate
+    // TODO: extend negate to include one, lone
+
+    /**
+     * Enables negation for `some` and `no`, converting each to the other.
+     */
+    public MultiplicityFormula getNegation() {
+        if (this.multiplicity == Multiplicity.SOME) {
+          return new MultiplicityFormula(Multiplicity.NO, this.expression);
+        }
+        if (this.multiplicity == Multiplicity.NO) {
+          return new MultiplicityFormula(Multiplicity.SOME, this.expression);
+        }
+        return new MultiplicityFormula(this.multiplicity, this.expression);
+    }
+
+    // swetabhch: add equals
+    @Override
+    public boolean equals(Object comp) {
+      if (!(comp instanceof MultiplicityFormula)) {
+        return false;
+      }
+
+      MultiplicityFormula compMultFmla = (MultiplicityFormula) comp;
+      return ((this.multiplicity == compMultFmla.multiplicity()) &&
+          (this.expression().equals(compMultFmla.expression())));
+
     }
 }
