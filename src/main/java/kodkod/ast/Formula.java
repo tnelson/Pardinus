@@ -434,7 +434,7 @@ public abstract class Formula extends Node {
   /** swetabhch: adding formula equality
    * currently only checks for equality of Binary, Nary, Not, Constant formulae
    */
-
+/*
     @Override
     public boolean equals(Object comp) {
       if (!(comp instanceof Formula)) {
@@ -471,4 +471,6 @@ public abstract class Formula extends Node {
       }
 
   }
+
+ */
 }

@@ -78,7 +78,7 @@ public final class NotFormula extends Formula {
     }
 
     // swetabhch: add equals
-
+/*
     @Override
     public boolean equals(Object comp) {
       if (!(comp instanceof NotFormula)) {
@@ -94,4 +94,6 @@ public final class NotFormula extends Formula {
       }
       return this.formula().equals(compFormula.formula());
     }
+
+ */
 }

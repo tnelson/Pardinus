@@ -604,8 +604,9 @@ public final class Hotel {
 	 * Usage: java examples.Hotel [scope]
 	 */
 	public static void main(String[] args) {
-		if (args.length < 1)
+		if (args.length < 1) {
 			usage();
+		}
 		
 		try {
 			final int n = Integer.parseInt(args[0]);
@@ -619,12 +620,12 @@ public final class Hotel {
 			final Formula f = model.checkNoBadEntry();
 			final Bounds b = model.bounds(n);
 	
-//			System.out.println(PrettyPrinter.print(f, 2, 100));
+			//System.out.println(PrettyPrinter.print(f, 2, 100));
 			
 			final Solution sol = solver.solve(f, b);
 			System.out.println(sol);
 		
-			if (sol.instance()==null) { 
+			if (sol.instance()==null) {
 				final Proof proof = sol.proof();
 				System.out.println("top-level formulas: " + proof.log().roots().size());
 				System.out.println("initial core: " + proof.highLevelCore().size());
@@ -643,6 +644,7 @@ public final class Hotel {
 				System.out.println(sol);
 			}
 		} catch (NumberFormatException nfe) {
+			System.out.println("Number format exception!");
 			usage();
 		}
 	}

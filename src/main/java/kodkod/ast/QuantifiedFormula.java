@@ -100,6 +100,7 @@ public final class QuantifiedFormula extends Formula  {
     }
 
     // swetabhch: add equals
+  /*
     @Override
     public boolean equals(Object comp) {
       if (!(comp instanceof Formula)) {
@@ -112,4 +113,6 @@ public final class QuantifiedFormula extends Formula  {
           this.formula().equals(compFormula.formula()) &&
           this.decls().equals(compFormula.decls()));
     }
+
+   */
 }

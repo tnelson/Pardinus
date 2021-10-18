@@ -112,8 +112,10 @@ public final class MultiplicityFormula extends Formula {
       }
 
       MultiplicityFormula compMultFmla = (MultiplicityFormula) comp;
-      return ((this.multiplicity == compMultFmla.multiplicity()) &&
+      boolean ansBool =  ((this.multiplicity == compMultFmla.multiplicity()) &&
           (this.expression().equals(compMultFmla.expression())));
+      System.out.println("MultiplicityFormula equality: " + ansBool);
+      return ansBool;
 
     }
 }

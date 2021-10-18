@@ -134,7 +134,7 @@ public final class NaryFormula extends Formula implements Iterable<Formula> {
 
 	// swetabhch: add equals
 
-
+/*
 	@Override
 	public boolean equals(Object comp) {
 		if (!(comp instanceof NaryFormula)) {
@@ -145,4 +145,6 @@ public final class NaryFormula extends Formula implements Iterable<Formula> {
 		return ((this.op() == compFormula.op()) &&
 				Arrays.equals(this.getChildren(), compFormula.getChildren()));
 	}
+
+ */
 }

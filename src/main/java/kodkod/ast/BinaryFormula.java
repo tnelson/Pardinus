@@ -95,6 +95,7 @@ public final class BinaryFormula extends Formula {
     }
 
     // swetabhch: add equals
+  /*
     @Override
     public boolean equals(Object comp) {
       if (!(comp instanceof BinaryFormula)) {
@@ -106,4 +107,5 @@ public final class BinaryFormula extends Formula {
           this.right().equals(compFormula.right()) &&
           this.op() == compFormula.op());
     }
+   */
 }

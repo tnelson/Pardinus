@@ -72,7 +72,7 @@ public abstract class ConstantFormula extends Formula {
 	}
 
 	// swetabhch: add equals
-
+/*
 	@Override
 	public boolean equals(Object comp) {
 		if (!(comp instanceof ConstantFormula)) {
@@ -82,5 +82,7 @@ public abstract class ConstantFormula extends Formula {
 		ConstantFormula compFormula = (ConstantFormula) comp;
 		return this.booleanValue() == compFormula.booleanValue();
 	}
+
+ */
 }
 
