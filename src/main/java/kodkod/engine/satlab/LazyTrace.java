@@ -37,7 +37,8 @@ import kodkod.util.ints.Ints;
  * 
  * @author Emina Torlak
  */
-final class LazyTrace implements ResolutionTrace {
+// swetabhch: added `public`
+public final class LazyTrace implements ResolutionTrace {
 	/* The trace array encodes the resolution trace as follows.
 	 * The first <tt>axioms</tt> entries in the trace array contain
 	 * the literals of the clauses added to the prover, in the order
@@ -73,7 +74,8 @@ final class LazyTrace implements ResolutionTrace {
      * <p><b>Note: </b> the given array's contents must not be modified while
      * in use by this resolution trace object.</p>
 	 */
-	LazyTrace(int[][] trace, int axioms) {
+	// swetabhch: added `public`
+	public LazyTrace(int[][] trace, int axioms) {
 		this.axioms = axioms;
 		
 		// find all the clauses that are reachable from the conflict
@@ -366,8 +368,9 @@ final class LazyTrace implements ResolutionTrace {
 		if (index>=0 && index<trace.length) {
 			if (axiom(index)) { // return a self-contained clause
 				return new Clause() {
-					final int[] literals = trace[index];
-					final int hashCode = Ints.superFastHash(literals);
+					// swetabhch: removing `final` markers and make them public
+					public int[] literals = trace[index];
+					public int hashCode = Ints.superFastHash(literals);
 					public Iterator<Clause> antecedents() { return Containers.emptyIterator(); }
 					public IntIterator literals() { return new IntArrayIterator(literals,0,literals.length); }
 					public int maxVariable() { return StrictMath.abs(literals[literals.length-1]); }

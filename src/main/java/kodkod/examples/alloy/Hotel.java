@@ -460,6 +460,23 @@ public final class Hotel {
 		
 		return occs.some().implies(e.join(guest).in(occs)).forAll(e.oneOf(Enter));
 	}
+
+	// swetabhch: added noDoubleIssue
+	/**
+	 * Returns NoDoubleIssue formula.
+	 * i.e. all e1, e2: Checkin | e1.card.k2 != e2.card.k2
+	 * @return NoBadEntry formula.
+	 */
+	public Formula noDoubleIssue() {
+		final List<Formula> invs = new ArrayList<Formula>();
+		final Variable e1 = Variable.unary("e1");
+		final Variable e2 = Variable.unary("e2");
+		final Formula f0 = (e1.join(card).join(k2)).eq(e2.join(card).join(k2)).not();
+		final Formula f1 = f0.forAll(e1.oneOf(Checkin));
+		invs.add(f1.forAll(e2.oneOf(Checkin)));
+
+		return Formula.and(invs);
+	}
 	
 	/**
 	 * Returns the conjunction of all invariants.
@@ -484,6 +501,8 @@ public final class Hotel {
 		invs.add( enterInvariants() );
 		invs.add( normalEnterInvariants() );
 		invs.add( recodeEnterInvariants() );
+		// swetabhch: added noDoubleIssue
+		invs.add( noDoubleIssue() );
 		
 		invs.add( invsForCheckout() );
 		

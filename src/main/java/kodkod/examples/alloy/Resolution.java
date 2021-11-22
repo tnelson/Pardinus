@@ -21,25 +21,21 @@
  */
 package kodkod.examples.alloy;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import kodkod.ast.Expression;
 import kodkod.ast.Formula;
 import kodkod.ast.Relation;
 import kodkod.ast.Variable;
 import kodkod.engine.Proof;
+import kodkod.engine.ResolutionBasedProof;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.satlab.Clause;
+import kodkod.engine.satlab.ResolutionTrace;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.ucore.RCEStrategy;
-import kodkod.instance.Bounds;
-import kodkod.instance.PardinusBounds;
-import kodkod.instance.TupleFactory;
-import kodkod.instance.Universe;
+import kodkod.instance.*;
 import kodkod.util.nodes.Nodes;
 import kodkod.util.nodes.PrettyPrinter;
 
@@ -100,8 +96,8 @@ public final class Resolution {
    */
   public Formula oneNegPerLiteral() {
     final Variable l = Variable.unary("l");
-    return (l.join(neg).one()).forAll(l.oneOf(Literal))
-        .and(Literal.join(neg).eq(Literal));
+    return (l.join(neg).one()).forAll(l.oneOf(Literal));
+        //.and(Literal.join(neg).eq(Literal));
   }
 
   /**
@@ -165,7 +161,7 @@ public final class Resolution {
     final Variable x = Variable.unary("x");
     final Formula f0 = r.join(lits).eq((c1.join(lits).union(c2.join(lits)))
         .difference(x.union(x.join(neg))));
-    invs.add(f0.forAll(x.oneOf(c1.join(lits).intersection(c2.join(lits).join(neg)))));
+    invs.add(f0.forSome(x.oneOf(c1.join(lits).intersection(c2.join(lits).join(neg)))));
 
     return Formula.and(invs);
   }
@@ -183,18 +179,20 @@ public final class Resolution {
     final Variable n2 = Variable.unary("n2");
     final Variable res = Variable.unary("res");
 
-    final Formula f0 = r.join(sources).some().and((r.join(sources).intersection(Conflict)).no());
+    final Formula f0 = r.join(sources).some()
+        .and(r.join(sources).in(Clause.difference(Conflict)));
     invs.add(f0.forAll(r.oneOf(Refutation)));
 
-    final Formula f1 = r.join(edges).eq((r.join(sources).union(r.join(resolvents)))
-        .product(r.join(resolvents)));
+    final Formula f1 = r.join(edges)
+        .in((r.join(sources).union(r.join(resolvents))).product(r.join(resolvents)));
     invs.add(f1.forAll(r.oneOf(Refutation)));
 
-    final Formula f2 = ((Expression.IDEN).intersection(r.join(edges).reflexiveClosure())).no();
+    final Formula f2 = ((Expression.IDEN).intersection((r.join(edges)).closure())).no();
     invs.add(f2.forAll(r.oneOf(Refutation)));
 
-    final Formula f30 = (r.join(edges).join(res)).no();
-    final Formula f31 = f30.comprehension(res.oneOf(r.join(resolvents))).no();
+    final Formula f30 = (r.join(edges).join(res)).some();
+    final Formula f31 = f30.forAll(res.oneOf(r.join(resolvents)));
+    //f30.comprehension(res.oneOf(r.join(resolvents))).no();
     invs.add(f31.forAll(r.oneOf(Refutation)));
 
     final Formula f40 = c.in(r.join(resolvents));
@@ -204,8 +202,8 @@ public final class Resolution {
     final Formula f50 = (n1.union(n2)).product(res).in(r.join(edges))
         .iff(resolve(n1, n2, res));
     final Formula f51 = f50.forAll(res.oneOf(r.join(resolvents)));
-    final Formula f52 = f51.forAll(res.oneOf(r.join(sources).union(r.join(resolvents))));
-    final Formula f53 = f52.forAll(res.oneOf(r.join(sources).union(r.join(resolvents))));
+    final Formula f52 = f51.forAll(n2.oneOf(r.join(sources).union(r.join(resolvents))));
+    final Formula f53 = f52.forAll(n1.oneOf(r.join(sources).union(r.join(resolvents))));
     invs.add(f53.forAll(r.oneOf(Refutation)));
 
     return Formula.and(invs);
@@ -219,19 +217,21 @@ public final class Resolution {
   public Formula instanceWellFormedness() {
     final List<Formula> invs = new ArrayList<Formula>();
     final Variable i = Variable.unary("i");
+    final Variable l = Variable.unary("l");
     final Variable c = Variable.unary("c");
     final Variable lit = Variable.unary("lit");
 
     final Formula f1 = i.join(clauses).some();
     invs.add(f1.forAll(i.oneOf(Instance)));
 
-    final Formula f2 = Literal.join(i.join(assign)).lone();
-    invs.add(f2.forAll(i.oneOf(Instance)));
+    final Formula f2 = l.join(i.join(assign)).lone();
+    final Formula f21 = f2.forAll(l.oneOf(Literal));
+    invs.add(f21.forAll(i.oneOf(Instance)));
 
-    final Formula f30 = i.join(lit.join(assign))
-        .eq(Boolean_.difference(i.join((lit.join(neg)).join(assign))));
+    final Formula f30 = lit.join(i.join(assign))
+        .eq(Boolean_.difference(lit.join(neg).join(i.join(assign))));
     final Formula f301 = f30.forAll(lit.oneOf(i.join(clauses).join(lits)));
-    final Formula f31 = True.in(i.join(c.join(lits)).join(assign));
+    final Formula f31 = True.in(c.join(lits).join(i.join(assign))); //True.in(i.join((c.join(lits)).join(assign)));
     final Formula f311 = f31.forAll(c.oneOf(i.join(clauses)));
     final Formula f32 = f301.and(f311);
     invs.add(f32.forAll(i.oneOf(Instance)));
@@ -239,12 +239,33 @@ public final class Resolution {
     return Formula.and(invs);
   }
 
+  public Formula torlakCheckNegation() {
+    final Variable i = Variable.unary("i");
+    final Variable ref = Variable.unary("ref");
+
+    final Formula f1 = ref.join(sources).eq(i.join(clauses));
+    final Formula f2 = f1.forSome(ref.oneOf(Refutation)).not();
+    final Formula f3 = f2.forAll(i.oneOf(Instance));
+
+    return f3.not();
+  }
+
+  // swetabhch: filled this out
   /**
    * Returns the conjunction of all invariants.
    * @return conjunction of all invariants.
    */
   public Formula invariants() {
     final List<Formula> invs = new ArrayList<Formula>();
+    invs.add(this.negationIsSymmetricAndIrreflexive());
+    invs.add(this.refutationWellFormedness());
+    invs.add(this.conflictWellformedness());
+    invs.add(this.instanceWellFormedness());
+    invs.add(this.oneSigEnforcement());
+    invs.add(this.nonConflictClausesAreNonEmpty());
+    invs.add(this.noClauseHasLiteralAndNegation());
+    invs.add(this.oneNegPerLiteral());
+    invs.add(this.torlakCheckNegation());
 
     return Formula.and(invs);
   }
@@ -263,6 +284,8 @@ public final class Resolution {
       for(int j = 0, scope = scopes[i]; j < scope; j++)
         atoms.add(top.name() + j);
     }
+    atoms.add("True0");
+    atoms.add("False0");
 
     final Universe u = new Universe(atoms);
     final TupleFactory f = u.factory();
@@ -273,6 +296,9 @@ public final class Resolution {
       b.bound(top, f.range(f.tuple(top.name()+0), f.tuple(top.name()+(scopes[i]-1))));
     }
 
+    b.boundExactly(Boolean_, f.setOf("True0", "False0"));
+    b.boundExactly(True, f.setOf("True0"));
+    b.boundExactly(False, f.setOf("False0"));
     b.bound(neg, b.upperBound(Literal).product(b.upperBound(Literal)));
     b.bound(lits, b.upperBound(Clause).product(b.upperBound(Literal)));
     b.bound(sources, b.upperBound(Refutation).product(b.upperBound(Clause)));
@@ -285,12 +311,52 @@ public final class Resolution {
 
     return b;
   }
+
   /**
    * Returns bounds for the given scope.
    * @return bounds for the given scope.
    */
   public PardinusBounds bounds(int n) {
     return bounds(n, n, n, n);
+  }
+
+  // swetabhch: add specific bounds method for a given partial instance, just for prototyping
+  public PardinusBounds specificBounds() {
+    final List<String> atoms = new ArrayList<String>(
+        Arrays.asList("LiteralP", "LiteralNotP",
+            "Conflict0", "ClauseP", "ClauseNotP",
+            "Refutation0",
+            "Instance0", "Instance1", "True0", "False0"));
+
+    final Universe u = new Universe(atoms);
+    final TupleFactory f = u.factory();
+    final PardinusBounds b = new PardinusBounds(u);
+    b.boundExactly(Literal, f.setOf(f.tuple("LiteralP"), f.tuple("LiteralNotP")));
+    b.boundExactly(Clause, f.setOf(f.tuple("Conflict0"), f.tuple("ClauseNotP")));
+    // this line is suspicious
+    b.boundExactly(Refutation, f.setOf("Refutation0"));
+    b.boundExactly(Conflict, f.setOf("Conflict0"));
+    b.boundExactly(lits, f.setOf(f.tuple("ClauseP").product(f.tuple("LiteralP")),
+        f.tuple("ClauseNotP").product(f.tuple("LiteralNotP"))));
+    b.boundExactly(neg, f.setOf(f.tuple("LiteralP").product(f.tuple("LiteralNotP")),
+        f.tuple("LiteralNotP").product(f.tuple("LiteralP"))));
+    b.boundExactly(sources, f.setOf(f.tuple("Refutation0").product(f.tuple("ClauseP")),
+        f.tuple("Refutation0").product(f.tuple("ClauseNotP"))));
+    b.boundExactly(resolvents, f.setOf(f.tuple("Refutation0").product(f.tuple("Conflict0"))));
+
+    // general bounds
+
+    b.bound(edges, b.upperBound(Refutation).product(b.upperBound(Clause)).product(b.upperBound(Clause)));
+    b.bound(Instance, f.setOf("Instance0", "Instance1"));
+    b.boundExactly(Boolean_, f.setOf("True0", "False0"));
+    b.boundExactly(True, f.setOf("True0"));
+    b.boundExactly(False, f.setOf("False0"));
+
+    b.bound(assign, b.upperBound(Instance).product(b.upperBound(Literal)).product(b.upperBound(Boolean_)));
+    b.bound(clauses, b.upperBound(Instance).product(b.upperBound(Clause)));
+
+    return b;
+
   }
 
   private static void usage() {
@@ -341,13 +407,16 @@ public final class Resolution {
       final int n = Integer.parseInt(args[0]);
       if (n < 1)
         usage();
-      final Hotel model = new Hotel();
+      final Resolution model = new Resolution();
       final Solver solver = new Solver();
       solver.options().setSolver(SATFactory.MiniSatProver);
       solver.options().setLogTranslation(1);
 
-      final Formula f = model.checkNoBadEntry();
+      // swetabhch: modifying bounds to simulate partial instance
       final Bounds b = model.bounds(n);
+      //final Bounds b = model.specificBounds();
+      final Formula f = model.invariants();
+
 
       //System.out.println(PrettyPrinter.print(f, 2, 100));
 
@@ -356,6 +425,9 @@ public final class Resolution {
 
       if (sol.instance()==null) {
         final Proof proof = sol.proof();
+        ResolutionBasedProof rbf = (ResolutionBasedProof) sol.proof();
+        ResolutionTrace trace = rbf.solver.proof();
+
         System.out.println("top-level formulas: " + proof.log().roots().size());
         System.out.println("initial core: " + proof.highLevelCore().size());
         System.out.print("\nminimizing core ... ");
@@ -369,6 +441,22 @@ public final class Resolution {
           System.out.println(PrettyPrinter.print(u, 2, 100));
         }
         checkMinimal(core, b);
+
+        /*
+        System.out.println("Printing trace: ");
+        Iterator<Clause> it = trace.iterator();
+
+        while (it.hasNext()) { // top level clauses
+            Clause c = it.next();
+            System.out.println(c);
+            System.out.println("  antes=");
+            Iterator<Clause> it2 = c.antecedents();
+            while(it2.hasNext()) {
+                System.out.println("    " + it2.next());
+            }
+        }
+         */
+
       } else {
         System.out.println(sol);
       }

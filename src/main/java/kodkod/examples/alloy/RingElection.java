@@ -1,14 +1,14 @@
 package kodkod.examples.alloy;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-import kodkod.ast.Expression;
-import kodkod.ast.Formula;
-import kodkod.ast.Relation;
-import kodkod.ast.Variable;
+import kodkod.ast.*;
+import kodkod.engine.ResolutionBasedProof;
 import kodkod.engine.Solution;
 import kodkod.engine.Solver;
+import kodkod.engine.proofExplanation.core.CNFUnitPropagator;
+import kodkod.engine.satlab.Clause;
+import kodkod.engine.satlab.ResolutionTrace;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Bounds;
 import kodkod.instance.TupleFactory;
@@ -96,7 +96,7 @@ public final class RingElection {
 	 *  succ: Process, 
 	 *  toSend: Process -> Time, 
 	 *  elected: set Time }
-	 * </pre> 
+	 * </pre>
 	 */
 	public Formula declarations() {
 		final Formula ordTime = tord.totalOrder(Time, tfirst, tlast);
@@ -324,6 +324,13 @@ public final class RingElection {
 			System.out.println("*****check AtMostOneElected for " + p +" Process, "+ t + " Time*****");
 			Solution sol1 = solver.solve(checkAtMostOneElected, boundspt);
 			System.out.println(sol1);
+
+			/*
+			System.out.println(sol1.proof());
+			Map<Formula, Node> core = sol1.proof().highLevelCore();
+			for (Formula c : core.keySet()) {
+				System.out.println(c);
+			}*/
 	
 //			// run looplessPath for 13 Time, 3 Process
 //			final Formula runLooplessPath = model.declsAndFacts();//.and(model.looplessPath());
