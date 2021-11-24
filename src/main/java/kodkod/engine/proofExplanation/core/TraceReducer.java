@@ -6,8 +6,7 @@ import kodkod.engine.satlab.LazyTrace;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A class meant to encapsulate trace and core reducing behavior.
@@ -20,51 +19,123 @@ public class TraceReducer {
   // > option: getting the trace, seeing the ints corresponding to literals, and then propagating?
   //   - but in this case, meaning is lost in translation and would be hard for user to discern
 
-  public ResolutionTrace reduce(ResolutionTrace trace, IntSet assumps) {
+  /**
+   * Takes in a {@linkplain ResolutionTrace} and an {@linkplain IntSet} representing
+   * a set of assumptions and produces a "reduced" trace. A "reduced" trace is one where
+   * the involved axioms are modified by unit propagating all assumptions on them, and
+   * resolvents are re-established by resolving the modified clauses together.
+   * The current draft of this function works to modify the {@linkplain ResolutionTrace} in-place.
+   * @param trace The {@linkplain ResolutionTrace} to reduce.
+   * @param assumps The {@linkplain IntSet} to propagate on the trace.
+   */
+  public void reduce(ResolutionTrace trace, IntSet assumps) {
     // need functionality to:
     // - unit propagate
     // - topological sort
     // - set! clauses
+    // - resolve updated clauses
 
-    // TODO: topological sort on edges
-    IntSet axiomIndices = trace.axioms();
-    Set<Clause> axiomClauses = new HashSet<>();
-    IntIterator axiomIndicesIt = axiomIndices.iterator();
-    while (axiomIndicesIt.hasNext()) {
-      // note that as is, clauses returned by `.get` are guaranteed to be immutable.
-      // swetabhch: changed literals, hashCode in Clause to public
-      Clause axiom = trace.get(axiomIndicesIt.next());
-      axiomClauses.add(axiom);
+    // TODO: need a map from old clauses to new clauses if we're building a new trace
+    //List<Clause> newTrace = new ArrayList<Clause>();
+
+    // if we are operating on Clauses, then trace.iterator() gives us the Clauses
+    // of the trace "in order", i.e. in a topologically sorted order
+    Iterator<Clause> edgePlanIterator = trace.iterator();
+
+    // note that on first pass of edgePlanIterator, we can also tell which Clauses
+    // are axioms, and can integrate the unit propagation step in that pass
+    while (edgePlanIterator.hasNext()) {
+      Clause currClause = edgePlanIterator.next();
+      boolean isAxiom = (currClause.numberOfAntecedents() == 0);
+      if (isAxiom) {
+        // TODO: unit propagation step
+        boolean clauseBecomesTrue = unitPropagateAllAndReturnFlag(currClause, assumps);
+        if (clauseBecomesTrue) {
+          edgePlanIterator.remove();
+        }
+      } else {
+        // TODO: new resolution + push step
+        Iterator<Clause> antes = currClause.antecedents();
+        // modify the current clause's set of literals
+      }
     }
 
+    // TODO: if we're working in-place, we also need a pruning step for the rest of the
+    //  - trace, and an elaborate function to modify the trace matrix
 
-
-    int[][] retTrace = {};
-    return new LazyTrace(retTrace, 0);
+    //int[][] retTrace = {};
+    //return new LazyTrace(retTrace, 0);
   }
 
   /**
+   * Propagates a literal on a copy of a clause, which gets a modified set of literals,
+   * and returns an {@linkplain Optional} representing the result. The result has no
+   * value present if the clause reduces to true.
+   * @param clause The clause on which propagation is to be done.
+   * @param assump An integer referring to the index of the literal (from the
+   *               trace) that is to be propagated.
+   * @return An optional containing the new clause, if the clause does not reduce to true.
+   */
+  /*
+  public Optional<Clause> unitPropagate(Clause clause, int assump) {
+    // look at the clause's set of literals
+    // if an index is the same as the assump index, then the clause becomes true
+
+    IntIterator literalIterator = clause.literals();
+    while (literalIterator.hasNext()) {
+      int nextLiteral = literalIterator.next();
+      if (assump == -1 * nextLiteral) {
+        literalIterator.remove();
+      }
+      if (assump == nextLiteral) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+   */
+
+  /**
    * Propagates a set of literals on a clause, thus modifying the clause's set
-   * of literals in-place.
-   * @param trace The resolution trace from which the given clause is drawn.
+   * of literals in-place, and returns a flag indicating if the clause returns to true.
    * @param clause The clause on which propagation is to be done.
    * @param assumps A set of integers referring to the indices of the literals
    *                (from the trace) that are to be propagated.
+   * @return A boolean indicating whether the clause reduces to true.
    */
-  public static void unitPropagateAll(ResolutionTrace trace, Clause clause, IntSet assumps) {
-
+  public boolean unitPropagateAllAndReturnFlag(Clause clause, IntSet assumps) {
+    IntIterator assumpsIterator = assumps.iterator();
+    while (assumpsIterator.hasNext()) {
+      if (unitPropagateAndReturnFlag(clause, assumpsIterator.next())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
    * Propagates a literal on a clause, thus modifying the clause's set of
-   * literals in-place.
-   * @param trace The resolution trace from which the given clause is drawn.
+   * literals in-place, and returns a flag that indicates if the clause reduces to true.
    * @param clause The clause on which propagation is to be done.
    * @param assump An integer referring to the index of the literal (from the
    *               trace) that is to be propagated.
+   * @return A boolean indicating whether the clause reduces to true.
    */
-  public static void unitPropagate(ResolutionTrace trace, Clause clause, int assump) {
-    
+  public boolean unitPropagateAndReturnFlag(Clause clause, int assump) {
+    // look at the clause's set of literals
+    // if an index is the same as the assump index, then the clause becomes true
+    IntIterator literalIterator = clause.literals();
+    while (literalIterator.hasNext()) {
+      int nextLiteral = literalIterator.next();
+      if (assump == -1 * nextLiteral) {
+        literalIterator.remove();
+      }
+      if (assump == nextLiteral) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

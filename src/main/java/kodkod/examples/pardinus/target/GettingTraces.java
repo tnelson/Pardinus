@@ -102,17 +102,18 @@ public class GettingTraces {
                     coreClauses.add(nextClause);
                 }*/
 
+                /*
                 Iterator<Formula> coreIt = ohno.highLevelCore().keySet().iterator();
                 Set<Formula> unitProppedFmla = CNFUnitPropagator.propagateOnConjunctionIter(coreIt, p.some());
                 for (Formula fmla : unitProppedFmla) {
                     System.out.println(fmla);
-                }
+                }*/
 
                 //System.out.println(trace);
                 //System.out.println(trace.getClass());
                 Iterator<Clause> it = trace.iterator();
 
-                /*
+
                 while (it.hasNext()) { // top level clauses
                     Clause c = it.next();
                     System.out.println(c);
@@ -121,7 +122,7 @@ public class GettingTraces {
                     while(it2.hasNext()) {
                         System.out.println("    " + it2.next());
                     }
-                }*/
+                }
 
                 // swetabhch: iterate over and print unsat core elements
                 /*
@@ -129,13 +130,14 @@ public class GettingTraces {
                     System.out.println(c);
                 }*/
 
+                /*
                 while (coreIt.hasNext()) {
                     Formula fmla = coreIt.next();
                     System.out.println(fmla);
                     BinaryFormula binFmla = (BinaryFormula) fmla;
                     System.out.println("left = " + binFmla.left());
                     System.out.println("right = " + binFmla.right());
-                }
+                }*/
 
             }
 

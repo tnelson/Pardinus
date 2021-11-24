@@ -598,7 +598,8 @@ public final class LazyTrace implements ResolutionTrace {
 	 * A mutable implementation of the Clause interface.
 	 * @author Emina Torlak
 	 */
-	private class ClauseView extends Clause {
+	// swetabhch: private->public
+	public class ClauseView extends Clause {
 		private int[] clause;
 		private int litOffset, index;
 		
@@ -669,7 +670,8 @@ public final class LazyTrace implements ResolutionTrace {
 	 * A clause iterator wrapper for an int iterator.
 	 * @author Emina Torlak
 	 */
-	private final class ClauseIterator extends ClauseView implements Iterator<Clause> {
+	// swetabhch: private->public
+	public final class ClauseIterator extends ClauseView implements Iterator<Clause> {
 		private final IntIterator itr;
 		/**
 		 * Constructs a clause iterator that will iterate over the clauses in this.trace
