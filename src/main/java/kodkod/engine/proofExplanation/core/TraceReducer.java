@@ -48,14 +48,17 @@ public class TraceReducer {
       Clause currClause = edgePlanIterator.next();
       boolean isAxiom = (currClause.numberOfAntecedents() == 0);
       if (isAxiom) {
-        // TODO: unit propagation step
-        boolean clauseBecomesTrue = unitPropagateAllAndReturnFlag(currClause, assumps);
+        // performs unit propagation on the clause, removing literals from it in place
+        // returns true if the clause contains the assumption literal, in which case the
+        // clause is removed from the literal entirely
+        boolean clauseBecomesTrue = unitPropagateAllAndReturnFlag(trace, currClause, assumps);
         if (clauseBecomesTrue) {
           edgePlanIterator.remove();
         }
       } else {
         // TODO: new resolution + push step
         Iterator<Clause> antes = currClause.antecedents();
+        // can use LazyTrace's `resolve` method, given the index of the resolvent
         // modify the current clause's set of literals
       }
     }
@@ -104,10 +107,10 @@ public class TraceReducer {
    *                (from the trace) that are to be propagated.
    * @return A boolean indicating whether the clause reduces to true.
    */
-  public boolean unitPropagateAllAndReturnFlag(Clause clause, IntSet assumps) {
+  public boolean unitPropagateAllAndReturnFlag(ResolutionTrace origTrace, Clause clause, IntSet assumps) {
     IntIterator assumpsIterator = assumps.iterator();
     while (assumpsIterator.hasNext()) {
-      if (unitPropagateAndReturnFlag(clause, assumpsIterator.next())) {
+      if (unitPropagateAndReturnFlag(origTrace, clause, assumpsIterator.next())) {
         return true;
       }
     }
@@ -122,7 +125,7 @@ public class TraceReducer {
    *               trace) that is to be propagated.
    * @return A boolean indicating whether the clause reduces to true.
    */
-  public boolean unitPropagateAndReturnFlag(Clause clause, int assump) {
+  public boolean unitPropagateAndReturnFlag(ResolutionTrace origTrace, Clause clause, int assump) {
     // look at the clause's set of literals
     // if an index is the same as the assump index, then the clause becomes true
     IntIterator literalIterator = clause.literals();
@@ -130,6 +133,7 @@ public class TraceReducer {
       int nextLiteral = literalIterator.next();
       if (assump == -1 * nextLiteral) {
         literalIterator.remove();
+        // TODO: obtain the trace matrix from `origTrace`, remove `assump` from origTrace[clauseNum]
       }
       if (assump == nextLiteral) {
         return true;
@@ -137,5 +141,7 @@ public class TraceReducer {
     }
     return false;
   }
+
+  //public boolean resolve(Iterator<Clause>)
 
 }
