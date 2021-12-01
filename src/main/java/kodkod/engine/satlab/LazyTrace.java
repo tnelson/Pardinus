@@ -598,8 +598,7 @@ public final class LazyTrace implements ResolutionTrace {
 	 * A mutable implementation of the Clause interface.
 	 * @author Emina Torlak
 	 */
-	// swetabhch: private->public
-	public class ClauseView extends Clause {
+	private class ClauseView extends Clause {
 		private int[] clause;
 		private int litOffset, index;
 		

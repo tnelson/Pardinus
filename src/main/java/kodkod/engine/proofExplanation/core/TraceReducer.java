@@ -54,12 +54,14 @@ public class TraceReducer {
         boolean clauseBecomesTrue = unitPropagateAllAndReturnFlag(trace, currClause, assumps);
         if (clauseBecomesTrue) {
           edgePlanIterator.remove();
+          // TODO: remove clause from the int[][] trace OR
         }
       } else {
         // TODO: new resolution + push step
         Iterator<Clause> antes = currClause.antecedents();
         // can use LazyTrace's `resolve` method, given the index of the resolvent
         // modify the current clause's set of literals
+
       }
     }
 
