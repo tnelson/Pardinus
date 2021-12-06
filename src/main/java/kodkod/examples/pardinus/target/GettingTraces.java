@@ -6,9 +6,11 @@ import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.proofExplanation.core.CNFUnitPropagator;
+import kodkod.engine.proofExplanation.core.ReducedResolutionTrace;
 import kodkod.engine.satlab.*;
 import kodkod.engine.ucore.RCEStrategy;
 import kodkod.instance.*;
+import kodkod.util.ints.IntBitSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
 
@@ -43,17 +45,33 @@ public class GettingTraces {
         pb.bound(r, u.factory().allOf(1));
 
         // -- TN Formula
+        /*
         Formula f = p.some().or(q.some());
         f = f.and(p.some().or(q.no()));
         f = f.and(p.no().or(q.some()));
         f = f.and(p.no().or(q.no()));
         System.out.println("formula = "+f);
 
-        // additional formula for testing
+         */
+
+
+
+
+        // additional formula for testing: 1
         /*
         Formula f = p.some().or(r.no());
         f = f.and(q.some().or(r.some()).or(p.no()));
         */
+
+        // additional formula for testing: 2
+
+        Formula f = p.some().or(q.some());
+        f.and(p.some().or(q.no()));
+        f.and(q.no().or(r.some()));
+        f.and(p.no().or(r.no()));
+        f.and(q.some().or(r.no()));
+        f.and(q.some().or(p.no()));
+        f.and(q.no().or(r.no()));
 
         ///////////////////////////////////////////////////
 
@@ -86,8 +104,23 @@ public class GettingTraces {
                 // if slow, try HybridStrategy (not guaranteed min, but good effort)
                 sol.proof().minimize(new RCEStrategy(sol.proof().log()));
                 ResolutionBasedProof ohno = (ResolutionBasedProof) sol.proof();
-                ResolutionTrace trace = ohno.solver.proof();
-
+                ResolutionTrace origTrace = ohno.solver.proof();
+                IntIterator origAxioms = origTrace.axioms().iterator();
+                System.out.println("Original axioms: ");
+                while (origAxioms.hasNext()) {
+                    System.out.println(origTrace.get(origAxioms.next()));
+                }
+                // TODO: this construction w/ IntBitSet doesn't allow negations of literals
+                IntSet assumps = new IntBitSet(4);
+                assumps.add(3);
+                // TODO: currently seems like propagation works but resolution doesn't
+                ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
+                System.out.println("=====\nNew Axioms:");
+                IntIterator newAxioms = reducedTrace.axioms().iterator();
+                while (newAxioms.hasNext()) {
+                    System.out.println(reducedTrace.get(newAxioms.next()));
+                }
+                System.out.println("========");
                 // building set of clauses from unsat core
                 /*
                 IntSet coreClauseIndices = trace.core();
@@ -108,11 +141,14 @@ public class GettingTraces {
 
                 //System.out.println(trace);
                 //System.out.println(trace.getClass());
-                Iterator<Clause> it = trace.iterator();
+                Iterator<Clause> it = reducedTrace.iterator();
 
 
                 while (it.hasNext()) { // top level clauses
                     Clause c = it.next();
+                    if (c == null) {
+                        continue;
+                    }
                     System.out.println(c);
                     System.out.println("  antes=");
                     Iterator<Clause> it2 = c.antecedents();

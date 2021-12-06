@@ -670,8 +670,7 @@ public final class LazyTrace implements ResolutionTrace {
 	 * A clause iterator wrapper for an int iterator.
 	 * @author Emina Torlak
 	 */
-	// swetabhch: private->public
-	public final class ClauseIterator extends ClauseView implements Iterator<Clause> {
+	private final class ClauseIterator extends ClauseView implements Iterator<Clause> {
 		private final IntIterator itr;
 		/**
 		 * Constructs a clause iterator that will iterate over the clauses in this.trace

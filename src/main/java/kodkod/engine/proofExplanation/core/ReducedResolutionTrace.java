@@ -3,6 +3,8 @@ package kodkod.engine.proofExplanation.core;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +46,12 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
 
+        this.origTrace = origTrace;
+
         // if we are operating on Clauses, then trace.iterator() gives us the Clauses
         // of the trace "in order", i.e. in a topologically sorted order
         Iterator<Clause> origClauseIterator = origTrace.iterator();
+        reducedClauseMap = new HashMap<Clause, Clause>();
 
         // note that on first pass of edgePlanIterator, we can also tell which Clauses
         // are axioms, and can integrate the unit propagation step in that pass
@@ -64,7 +69,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 }
             } else {
                 try {
+                    System.out.println("Clause was previously: " + currClause);
+                    System.out.println("Original clause's antecedents: ");
+                    Iterator<Clause> origAntecedents = currClause.antecedents();
+                    while (origAntecedents.hasNext()) {
+                        System.out.println(origAntecedents.next());
+                    }
                     Clause resolvedClause = resolveAntecedents(origTrace, currClause);
+                    System.out.println("Clause is now: " + resolvedClause);
                     reducedClauseMap.put(currClause, resolvedClause);
                     // if literals is empty, we have reached UNSAT, and we stop adding clauses
                     // at that point
@@ -79,15 +91,36 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         }
 
         // fill in the reducedTrace array in order using reducedClauseMap
-        this.reducedTrace = new Clause[reducedClauseMap.size()];
+        this.reducedTrace = new Clause[reducedClauseMap.size() + 1];
         origClauseIterator = origTrace.iterator();
         int itIndex = 0;
         while (origClauseIterator.hasNext()) {
-            this.reducedTrace[itIndex] = reducedClauseMap.get(origClauseIterator.next());
-            itIndex++;
+            //this.reducedTrace[itIndex] = reducedClauseMap.get(origClauseIterator.next());
+            Clause updatedClauseOrNull = reducedClauseMap.get(origClauseIterator.next());
+            if (updatedClauseOrNull != null) {
+                this.reducedTrace[itIndex] = updatedClauseOrNull;
+                //System.out.println(updatedClauseOrNull);
+                itIndex++;
+            }
         }
+        
+        // asserting that each value in the reducedClauseMap is in the reducedTrace array
+        Collection<Clause> reducedClauses = new ArrayList<Clause>(reducedClauseMap.values());
+        for (Clause c : reducedTrace) {
+            if (reducedClauses.contains(c)) {
+                reducedClauses.remove(c);
+            }
+        }
+        assert reducedClauses.isEmpty();
 
-        this.origTrace = origTrace;
+        List<Integer> exampleList1 = new ArrayList<>();
+        List<Integer> exampleList2 = new ArrayList<>();
+        exampleList1.add(1);
+        exampleList1.add(2);
+        exampleList2.add(1);
+        exampleList1.add(-2);
+        System.out.println("Output of resolution example: ");
+        System.out.println(this.resolveTwoLiteralLists(exampleList1, exampleList2));
     }
 
     /**
@@ -186,9 +219,20 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             }
             literalLists.add(litList);
         }
+        // REMOVE THIS
+        System.out.println("Literal lists being resolved:");
+        for (List<Integer> ll : literalLists) {
+            for (int li : ll) {
+                System.out.print(li + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
         // resolve the literals lists together and return
         List<Integer> resolvedLiterals = resolveListofLiteralLists(literalLists);
-        return new ClauseView(newAntecedents, resolvedLiterals);
+        Clause returnClause =  new ClauseView(newAntecedents, resolvedLiterals);
+        return returnClause;
     }
 
     /**
@@ -261,14 +305,23 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         List<Integer> resolvedList = new ArrayList<Integer>();
         boolean resolved = false;
         for (int i : list1) {
+            System.out.println("List2: ");
+            for (int j : list2) {
+                System.out.print(j + ", ");
+            }
+            System.out.println();
             if (resolved || !list2.remove((Integer) (-1 * i))) {
+                System.out.println(i + " added");
                 resolvedList.add(i);
             } else {
+                System.out.println("At " + i + ", resolved");
                 resolved = true;
             }
         }
         if (resolved) {
             for (int i : list2) {
+                System.out.println("Adding because already resolved: " + i);
+                
                 resolvedList.add(i);
             }
             return Optional.of(resolvedList);
@@ -284,6 +337,9 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 
     @Override
     public Iterator<Clause> iterator() {
+        List<Clause> trace = Arrays.asList(reducedTrace);
+        return trace.iterator();
+        /*
         return new ClauseIterator(new IntIterator() {
 			int index = 0;
 			public boolean hasNext() { return index>=0 && index < reducedTrace.length; }
@@ -292,7 +348,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 				return index++;
 			}
 			public void remove() { throw new UnsupportedOperationException(); } 
-		});
+		});*/
     }
 
     /**
@@ -403,18 +459,24 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             this.literals = literals;
         }
 
-        
+        // TODO: change this so that it doesn't set the current index to that of 
+        //  - a clause that was erased in reduction
         /**
 		 * Sets the state of this clause view to represent
 		 * the ith clause in the trace and returns this.
 		 * @ensures sets the state of this clause view to represent
 		 * the ith clause in the trace
+         * @throws Exception when trying to access an index that has been removed in reduction.
 		 * @return this
 		 */
-		ClauseView set(int index) {
-            Clause ithClause = reducedTrace[index];
-            List<Clause> ithClauseAnteList = constructAntecedentsList(ithClause);
-            IntIterator ithClauseLitsIt = ithClause.literals();
+		ClauseView set(int index) throws Exception {
+            Clause origIthClause = origTrace.get(index);
+            Clause currIthClauseOrNull = reducedClauseMap.get(origIthClause);
+            if (currIthClauseOrNull == null) {
+                throw new Exception("Cannot access removed Clause.");
+            }
+            List<Clause> ithClauseAnteList = constructAntecedentsList(currIthClauseOrNull);
+            IntIterator ithClauseLitsIt = currIthClauseOrNull.literals();
             List<Integer> ithClauseLits = new ArrayList<Integer>();
             while (ithClauseLitsIt.hasNext()) {
                 ithClauseLits.add(ithClauseLitsIt.next());
@@ -479,7 +541,15 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 			this.itr = itr;
 		}
 		public boolean hasNext() { return itr.hasNext(); }
-		public Clause next() { return set(itr.next()); }
+		public Clause next() { 
+            try {
+                return set(itr.next()); 
+            } catch (NoSuchElementException ne) {
+                throw ne;
+            } catch (Exception e) {
+                return this.next();
+            }
+        }
 		public void remove() { throw new UnsupportedOperationException(); }
 	}
 
