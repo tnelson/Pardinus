@@ -6,10 +6,7 @@ import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.fol2sat.Translation;
 import kodkod.engine.fol2sat.TranslationRecord;
 import kodkod.engine.proofExplanation.core.CNFUnitPropagator;
-import kodkod.engine.satlab.Clause;
-import kodkod.engine.satlab.ResolutionTrace;
-import kodkod.engine.satlab.SATFactory;
-import kodkod.engine.satlab.TargetSATSolver;
+import kodkod.engine.satlab.*;
 import kodkod.engine.ucore.RCEStrategy;
 import kodkod.instance.*;
 import kodkod.util.ints.IntIterator;
@@ -149,6 +146,13 @@ public class GettingTraces {
 
         }
         System.out.println("total number of solutions iterated: "+count);
+
+        int[] resolveArr1 = { 1, 2, 3 };
+        int[] resolveArr2 = { -2, -3, 4 };
+        int[] resolveEx = LazyTrace.resolve(resolveArr1, true, resolveArr2, true);
+        for (int i : resolveEx) {
+            System.out.println(i);
+        }
 
 
     }

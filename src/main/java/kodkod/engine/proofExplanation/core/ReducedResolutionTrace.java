@@ -13,6 +13,7 @@ import java.util.stream.StreamSupport;
 
 import kodkod.engine.satlab.Clause;
 import kodkod.engine.satlab.ResolutionTrace;
+import kodkod.util.ints.IntBitSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
@@ -33,9 +34,13 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     // at any point.
     private Map<Clause, Clause> reducedClauseMap;
 
+    private ResolutionTrace origTrace;
     private Clause[] reducedTrace;
-    private IntSet core, resolved;
-    private int axioms;
+
+    // TODO: check this - do we need to map each Clause to its index in the original trace to be
+    //  - able to return core, resolved, axioms as IntSets?
+    //  - OR: can we get the original answers, check for which clauses end up in `reducedClauseMap`,
+    //  - and only keep the indices of the ones that do?
     
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
 
@@ -74,18 +79,15 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         }
 
         // fill in the reducedTrace array in order using reducedClauseMap
-        reducedTrace = new Clause[reducedClauseMap.size()];
+        this.reducedTrace = new Clause[reducedClauseMap.size()];
         origClauseIterator = origTrace.iterator();
         int itIndex = 0;
         while (origClauseIterator.hasNext()) {
-            reducedTrace[itIndex] = reducedClauseMap.get(origClauseIterator.next());
+            this.reducedTrace[itIndex] = reducedClauseMap.get(origClauseIterator.next());
             itIndex++;
         }
 
-        // TODO: will need to build in index handling again. The current construction handles building
-        //  - the Clause[] but has no solution for the .core(), .resolved(), .axioms() methods, since
-        //  - those return IntSets, not lists of Clauses
-
+        this.origTrace = origTrace;
     }
 
     /**
@@ -318,22 +320,41 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 		throw new IndexOutOfBoundsException("invalid indices: " + indices);
     }
 
+    /**
+     * Keeps only those indices from a list of indices that correspond to clauses
+     * in the reduced trace.
+     * @param origIndices The original {@linkplain IntSet} of indices.
+     * @return A IntSet representing the updated indices.
+     */
+    private IntSet getUpdatedIndices(IntSet origIndices) {
+        IntBitSet updatedIndices = new IntBitSet(origIndices.size());
+        IntIterator origIndicesIt = origIndices.iterator();
+        while (origIndicesIt.hasNext()) {
+            int origIndex = origIndicesIt.next();
+            Clause origClause = origTrace.get(origIndex);
+            if (reducedClauseMap.containsKey(origClause)) {
+                updatedIndices.add(origIndex);
+            }
+        }
+        return updatedIndices;
+    }
+
     @Override
     public IntSet core() {
-        // TODO: fill this in
-        return Ints.EMPTY_SET;
+        IntSet origCore = origTrace.core();
+        return getUpdatedIndices(origCore);
     }
 
     @Override
     public IntSet axioms() {
-        // TODO: fill this in
-        return Ints.EMPTY_SET;
+        IntSet origAxioms = origTrace.axioms();
+        return getUpdatedIndices(origAxioms);
     }
 
     @Override
     public IntSet resolvents() {
-        // TODO: fill this in
-        return Ints.EMPTY_SET;
+        IntSet origResolvents = origTrace.resolvents();
+        return getUpdatedIndices(origResolvents);
     }
 
     @Override
@@ -362,8 +383,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 
     @Override
     public Clause get(int index) {
-        // TODO: fill this in
-        return null;
+        return reducedClauseMap.get(origTrace.get(index));
     }
 
     /**
@@ -391,13 +411,20 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 		 * the ith clause in the trace
 		 * @return this
 		 */
-        /*
 		ClauseView set(int index) {
-			this.clauseIndex = index;
-            // TODO: does this need more?
+            Clause ithClause = reducedTrace[index];
+            List<Clause> ithClauseAnteList = constructAntecedentsList(ithClause);
+            IntIterator ithClauseLitsIt = ithClause.literals();
+            List<Integer> ithClauseLits = new ArrayList<Integer>();
+            while (ithClauseLitsIt.hasNext()) {
+                ithClauseLits.add(ithClauseLitsIt.next());
+            }
+
+            this.antecedents = ithClauseAnteList;
+            this.literals = ithClauseLits;
 			return this;
 		}
-        */
+        
 
         @Override
         public int size() {

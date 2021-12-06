@@ -243,7 +243,8 @@ public final class LazyTrace implements ResolutionTrace {
 	 * @return an array of integers representing the result of 
 	 * resolving the clauses c1 and c2, sorted in the increasing order of absolute values
 	 */
-	private static int[] resolve(int[] c1, boolean axiom1, int[] c2, boolean axiom2) {
+    // swetabhch: private -> public
+	public static int[] resolve(int[] c1, boolean axiom1, int[] c2, boolean axiom2) {
 		final int len1 = c1.length, len2 = c2.length;
 		int i = axiom1 ? 0 : c1[0] + 1;
 		int j = axiom2 ? 0 : c2[0] + 1;
