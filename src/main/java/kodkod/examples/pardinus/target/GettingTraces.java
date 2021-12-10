@@ -112,7 +112,7 @@ public class GettingTraces {
                 }
                 // TODO: this construction w/ IntBitSet doesn't allow negations of literals
                 IntSet assumps = new IntBitSet(4);
-                assumps.add(3);
+                assumps.add(1);
                 // TODO: currently seems like propagation works but resolution doesn't
                 ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
                 System.out.println("=====\nNew Axioms:");

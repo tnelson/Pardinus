@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     // be removed during reduction.
     // NOTE: this also means it's important to ensure that the key clauses aren't being mutated 
     // at any point.
-    private Map<Clause, Clause> reducedClauseMap;
+    private Map<Integer, Clause> reducedClauseMap;
 
     private ResolutionTrace origTrace;
     private Clause[] reducedTrace;
@@ -47,26 +48,38 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
 
         this.origTrace = origTrace;
+        this.reducedClauseMap = new HashMap<Integer, Clause>();
 
         // if we are operating on Clauses, then trace.iterator() gives us the Clauses
         // of the trace "in order", i.e. in a topologically sorted order
         Iterator<Clause> origClauseIterator = origTrace.iterator();
-        reducedClauseMap = new HashMap<Clause, Clause>();
 
+        int i = 0;
         // note that on first pass of edgePlanIterator, we can also tell which Clauses
         // are axioms, and can integrate the unit propagation step in that pass
+        Clause currClause, updatedClause;
+
         while (origClauseIterator.hasNext()) {
-            Clause currClause = origClauseIterator.next();
+            currClause = origClauseIterator.next();
+            // print reducedClauseMap keySet to debug
+            //System.out.println("VALUES AT BEGINNING OF ITERATION: ");
+            //for (Clause v : this.reducedClauseMap.values()) {
+            //    System.out.println(":: " + v);
+            //}
+            //System.out.println("~~~~");
             boolean isAxiom = (currClause.numberOfAntecedents() == 0);
             if (isAxiom) {
                 Optional<Clause> updatedClauseOpt = unitPropagateAllOpt(currClause, assumps);
                 // add mapping from old clause to updated clause if the former doesn't reduce to
                 // true upon updating. 
                 if (updatedClauseOpt.isPresent()) {
-                    reducedClauseMap.put(currClause, updatedClauseOpt.get());
-                } else {
-
+                    //System.out.println(reducedClauseMap.size());
+                    updatedClause = updatedClauseOpt.get();
+                    System.out.println("Key axiom: " + currClause);
+                    System.out.println("Updated axiom: " + updatedClause);
+                    reducedClauseMap.put(currClause.hashCode(), updatedClause);
                 }
+                // do nothing in the axiom case if not present
             } else {
                 try {
                     System.out.println("Clause was previously: " + currClause);
@@ -75,19 +88,26 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     while (origAntecedents.hasNext()) {
                         System.out.println(origAntecedents.next());
                     }
-                    Clause resolvedClause = resolveAntecedents(origTrace, currClause);
-                    System.out.println("Clause is now: " + resolvedClause);
-                    reducedClauseMap.put(currClause, resolvedClause);
-                    // if literals is empty, we have reached UNSAT, and we stop adding clauses
-                    // at that point
-                    // TODO: ^ is what we're doing in the UNSAT case the right thing?
-                    if (resolvedClause.size() == 0) {
-                        break;
+                    Optional<Clause> resolvedClauseOpt = resolveAntecedents(origTrace, currClause);
+                    System.out.println("resolvedClauseOpt: " + resolvedClauseOpt);
+                    if (resolvedClauseOpt.isPresent()) {
+                        Clause resolvedClause = resolvedClauseOpt.get();
+                        System.out.println("Clause is now: " + resolvedClause);
+                        reducedClauseMap.put(currClause.hashCode(), resolvedClause);
+                        // if literals is empty, we have reached UNSAT, and we stop adding clauses
+                        // at that point
+                        // TODO: ^ is what we're doing in the UNSAT case the right thing?
+                        if (resolvedClause.size() == 0) {
+                            break;
+                        }
                     }
+                    // if resolvedClauseOpt is empty, there are two possibilities:
+                    //  1. the updated antecedents of the new clause do not resolve, and thus 
                 } catch (Exception e) { // error occurs if none of the antecedents are in map
                     // do nothing in this case and move on.
                 }
             }
+            i++;
         }
 
         // fill in the reducedTrace array in order using reducedClauseMap
@@ -96,7 +116,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         int itIndex = 0;
         while (origClauseIterator.hasNext()) {
             //this.reducedTrace[itIndex] = reducedClauseMap.get(origClauseIterator.next());
-            Clause updatedClauseOrNull = reducedClauseMap.get(origClauseIterator.next());
+            Clause updatedClauseOrNull = reducedClauseMap.get(origClauseIterator.next().hashCode());
             if (updatedClauseOrNull != null) {
                 this.reducedTrace[itIndex] = updatedClauseOrNull;
                 //System.out.println(updatedClauseOrNull);
@@ -112,15 +132,20 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             }
         }
         assert reducedClauses.isEmpty();
-
+        
         List<Integer> exampleList1 = new ArrayList<>();
         List<Integer> exampleList2 = new ArrayList<>();
-        exampleList1.add(1);
+        List<Integer> exampleList3 = new ArrayList<>();
         exampleList1.add(2);
-        exampleList2.add(1);
-        exampleList1.add(-2);
+        exampleList2.add(3);
+        List<List<Integer>> lls = new ArrayList<>();
+        lls.add(exampleList1);
+        lls.add(exampleList2);
+        //lls.add(exampleList3);
+        
         System.out.println("Output of resolution example: ");
-        System.out.println(this.resolveTwoLiteralLists(exampleList1, exampleList2));
+        System.out.println(this.resolveListOfLiteralLists(lls));
+        
     }
 
     /**
@@ -194,20 +219,24 @@ public class ReducedResolutionTrace implements ResolutionTrace {
      * @return An Optional containing the resolved clause if it is non-empty and empty if it is.
      * @throws Exception if none of the input clause's antecedents were are present in the updated map.
      */
-    private Clause resolveAntecedents(ResolutionTrace origTrace, Clause clause) throws Exception {
+    private Optional<Clause> resolveAntecedents(ResolutionTrace origTrace, Clause clause) throws Exception {
         // get antecedents
         Iterator<Clause> origAntecedents = clause.antecedents();
         // get updated versions of antecedents
         List<Clause> newAntecedents = new ArrayList<Clause>();
         while (origAntecedents.hasNext()) {
             Clause currAntecedent = origAntecedents.next();
-            Clause updatedAntecedent = reducedClauseMap.get(currAntecedent);
+            System.out.println("Old Antecedent: " + currAntecedent);
+            Clause updatedAntecedent = reducedClauseMap.get(currAntecedent.hashCode());
             if (updatedAntecedent != null) {
                 newAntecedents.add(updatedAntecedent);
             }
         }
         if (newAntecedents.isEmpty()) {
             throw new Exception("All original antecedents were removed; cannot resolve.");
+        }
+        for (Clause newAnte : newAntecedents) {
+            System.out.println("New Antecedent: " + newAnte);
         }
         // get literal lists from antecedents
         List<List<Integer>> literalLists = new ArrayList<List<Integer>>();
@@ -230,9 +259,13 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         System.out.println();
 
         // resolve the literals lists together and return
-        List<Integer> resolvedLiterals = resolveListofLiteralLists(literalLists);
-        Clause returnClause =  new ClauseView(newAntecedents, resolvedLiterals);
-        return returnClause;
+        Optional<List<Integer>> resolvedLiteralsOpt = resolveListOfLiteralLists(literalLists);
+        if (resolvedLiteralsOpt.isPresent()) {
+            Clause returnClause = new ClauseView(newAntecedents, resolvedLiteralsOpt.get());
+            return Optional.of(returnClause);
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -242,18 +275,22 @@ public class ReducedResolutionTrace implements ResolutionTrace {
      * @param literalLists
      * @return
      */
-    private List<Integer> resolveListofLiteralLists(List<List<Integer>> literalLists) {
+    private Optional<List<Integer>> resolveListOfLiteralLists(List<List<Integer>> literalLists) {
         assert !literalLists.isEmpty();
         List<Integer> firstLits = literalLists.get(0);
         List<List<Integer>> listsToCheck = new ArrayList<List<Integer>>();
         for (int i = 1; i < literalLists.size(); i++) {
             listsToCheck.add(literalLists.get(i));
         }
+        // this intends to keep redundant resolutions like {2} -> {2} in lieu of not handling changing indices
+        if (literalLists.size() == 1) {
+            return Optional.of(literalLists.get(0));
+        }
         return runResolveTillFixedPoint(firstLits, listsToCheck, new ArrayList<List<Integer>>());
     }
 
     // TODO: document
-    private List<Integer> runResolveTillFixedPoint(List<Integer> litsToCompare,
+    private Optional<List<Integer>> runResolveTillFixedPoint(List<Integer> litsToCompare,
                                                    List<List<Integer>> listsToCheck,
                                                    List<List<Integer>> listsCompared) {
         // if no more lists to check, that means all lists have been compared without resolution in
@@ -267,8 +304,16 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     }
                 }
             }
-            return returnList;
+            // if litsToCompare is not empty, then all the entered lists do not resolve together.
+            // so, we return Optional.empty, resolution cannot return a meaningful, non-empty result
+            if (litsToCompare.isEmpty()) {
+                Collections.sort(returnList);
+                return Optional.of(returnList);
+            } else {
+                return Optional.empty();
+            }
         }
+
         Iterator<List<Integer>> listsToCheckIt = listsToCheck.iterator();
 
         // go over the lits lists that haven't been checked yet and compare the current lits with
@@ -279,6 +324,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             Optional<List<Integer>> currResolvedOpt = resolveTwoLiteralLists(litsToCompare, currLits);
             if (currResolvedOpt.isPresent()) {
                 List<Integer> currResolved = currResolvedOpt.get();
+               
                 listsToCheckIt.remove();
                 Iterable<List<Integer>> listsToCheckIterable = () -> listsToCheckIt;
                 List<List<Integer>> newListsToCheck = StreamSupport
@@ -305,24 +351,17 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         List<Integer> resolvedList = new ArrayList<Integer>();
         boolean resolved = false;
         for (int i : list1) {
-            System.out.println("List2: ");
-            for (int j : list2) {
-                System.out.print(j + ", ");
-            }
-            System.out.println();
             if (resolved || !list2.remove((Integer) (-1 * i))) {
-                System.out.println(i + " added");
                 resolvedList.add(i);
             } else {
-                System.out.println("At " + i + ", resolved");
                 resolved = true;
             }
         }
         if (resolved) {
             for (int i : list2) {
-                System.out.println("Adding because already resolved: " + i);
-                
-                resolvedList.add(i);
+                if (!resolvedList.contains((Integer) i)) {
+                    resolvedList.add(i);
+                }
             }
             return Optional.of(resolvedList);
         } else {

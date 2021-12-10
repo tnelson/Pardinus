@@ -143,6 +143,7 @@ public abstract class Clause {
 	 * this.antecedents (as returned by this.antecedents()).
 	 * @return hashcode for this clause
 	 */
+    
 	public int hashCode() {
 		int hash = size() + numberOfAntecedents();
 		for(IntIterator iter = literals(); iter.hasNext(); ) {
