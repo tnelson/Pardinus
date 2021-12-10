@@ -6,11 +6,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -36,6 +38,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     // NOTE: this also means it's important to ensure that the key clauses aren't being mutated 
     // at any point.
     private Map<Integer, Clause> reducedClauseMap;
+    //private Map<Set<Integer>, Clause> reducedClauseMap;
 
     private ResolutionTrace origTrace;
     private Clause[] reducedTrace;
@@ -48,6 +51,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
 
         this.origTrace = origTrace;
+        //this.reducedClauseMap = new HashMap<Integer, Clause>();
         this.reducedClauseMap = new HashMap<Integer, Clause>();
 
         // if we are operating on Clauses, then trace.iterator() gives us the Clauses
@@ -75,9 +79,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 if (updatedClauseOpt.isPresent()) {
                     //System.out.println(reducedClauseMap.size());
                     updatedClause = updatedClauseOpt.get();
-                    System.out.println("Key axiom: " + currClause);
-                    System.out.println("Updated axiom: " + updatedClause);
-                    reducedClauseMap.put(currClause.hashCode(), updatedClause);
+                    // building set of literals
+                    IntIterator litIterator = currClause.literals();
+                    Set<Integer> litSet = new HashSet<Integer>();
+                    while (litIterator.hasNext()) {
+                        litSet.add(litIterator.next());
+                    }
+                    //reducedClauseMap.put(currClause.hashCode(), updatedClause);
+                    reducedClauseMap.put(litSet.hashCode(), updatedClause);
                 }
                 // do nothing in the axiom case if not present
             } else {
@@ -93,7 +102,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     if (resolvedClauseOpt.isPresent()) {
                         Clause resolvedClause = resolvedClauseOpt.get();
                         System.out.println("Clause is now: " + resolvedClause);
-                        reducedClauseMap.put(currClause.hashCode(), resolvedClause);
+                        // building set of literals
+                        IntIterator litIterator = currClause.literals();
+                        Set<Integer> litSet = new HashSet<Integer>();
+                        while (litIterator.hasNext()) {
+                            litSet.add(litIterator.next());
+                        }
+                        //reducedClauseMap.put(currClause.hashCode(), resolvedClause);
+                        reducedClauseMap.put(litSet.hashCode(), resolvedClause);
                         // if literals is empty, we have reached UNSAT, and we stop adding clauses
                         // at that point
                         // TODO: ^ is what we're doing in the UNSAT case the right thing?
@@ -111,12 +127,19 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         }
 
         // fill in the reducedTrace array in order using reducedClauseMap
-        this.reducedTrace = new Clause[reducedClauseMap.size() + 1];
+        this.reducedTrace = new Clause[origTrace.size() + 1];
         origClauseIterator = origTrace.iterator();
         int itIndex = 0;
         while (origClauseIterator.hasNext()) {
             //this.reducedTrace[itIndex] = reducedClauseMap.get(origClauseIterator.next());
-            Clause updatedClauseOrNull = reducedClauseMap.get(origClauseIterator.next().hashCode());
+            Clause origClause = origClauseIterator.next();
+            // building set of literals
+            IntIterator litIterator = origClause.literals();
+            Set<Integer> litSet = new HashSet<Integer>();
+            while (litIterator.hasNext()) {
+                litSet.add(litIterator.next());
+            }
+            Clause updatedClauseOrNull = reducedClauseMap.get(litSet.hashCode());
             if (updatedClauseOrNull != null) {
                 this.reducedTrace[itIndex] = updatedClauseOrNull;
                 //System.out.println(updatedClauseOrNull);
@@ -136,8 +159,10 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         List<Integer> exampleList1 = new ArrayList<>();
         List<Integer> exampleList2 = new ArrayList<>();
         List<Integer> exampleList3 = new ArrayList<>();
+        exampleList1.add(-1);
         exampleList1.add(2);
-        exampleList2.add(3);
+        exampleList2.add(-1);
+        exampleList2.add(-2);
         List<List<Integer>> lls = new ArrayList<>();
         lls.add(exampleList1);
         lls.add(exampleList2);
@@ -227,7 +252,13 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         while (origAntecedents.hasNext()) {
             Clause currAntecedent = origAntecedents.next();
             System.out.println("Old Antecedent: " + currAntecedent);
-            Clause updatedAntecedent = reducedClauseMap.get(currAntecedent.hashCode());
+            // building set of literals
+            IntIterator litIterator = currAntecedent.literals();
+            Set<Integer> litSet = new HashSet<Integer>();
+            while (litIterator.hasNext()) {
+                litSet.add(litIterator.next());
+            }
+            Clause updatedAntecedent = reducedClauseMap.get(litSet.hashCode());
             if (updatedAntecedent != null) {
                 newAntecedents.add(updatedAntecedent);
             }
@@ -283,18 +314,19 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             listsToCheck.add(literalLists.get(i));
         }
         // this intends to keep redundant resolutions like {2} -> {2} in lieu of not handling changing indices
-        if (literalLists.size() == 1) {
-            return Optional.of(literalLists.get(0));
-        }
-        return runResolveTillFixedPoint(firstLits, listsToCheck, new ArrayList<List<Integer>>());
+        //if (literalLists.size() == 1) {
+        //    return Optional.of(literalLists.get(0));
+        //}
+        return runResolveTillFixedPoint(firstLits, listsToCheck, new ArrayList<List<Integer>>(), literalLists.size());
     }
 
     // TODO: document
     private Optional<List<Integer>> runResolveTillFixedPoint(List<Integer> litsToCompare,
                                                    List<List<Integer>> listsToCheck,
-                                                   List<List<Integer>> listsCompared) {
+                                                   List<List<Integer>> listsCompared, int totalNumLists) {
         // if no more lists to check, that means all lists have been compared without resolution in
-        // any comparison. this is equivalent to reaching fixed point, so the process can terminate here.                                               
+        // any comparison. this is equivalent to reaching fixed point, so the process can terminate here.
+        System.out.println("Lits to compare: " + litsToCompare);                                               
         if (listsToCheck.isEmpty()) {
             List<Integer> returnList = new ArrayList<Integer>();
             for (List<Integer> lits : listsCompared) {
@@ -304,14 +336,19 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     }
                 }
             }
-            // if litsToCompare is not empty, then all the entered lists do not resolve together.
-            // so, we return Optional.empty, resolution cannot return a meaningful, non-empty result
-            if (litsToCompare.isEmpty()) {
+            // end condition when no resolution occurs:
+            // listsToCheck is empty and there has been no change from the original in number of lists
+            if (listsCompared.size() == totalNumLists - 1) {
+                // no res => we return Optional.empty, since resolution cannot return a meaningful, non-empty result
+                return Optional.empty();
+            } else {
+                for (int lit : litsToCompare) {
+                    returnList.add(lit);
+                }
                 Collections.sort(returnList);
                 return Optional.of(returnList);
-            } else {
-                return Optional.empty();
             }
+            
         }
 
         Iterator<List<Integer>> listsToCheckIt = listsToCheck.iterator();
@@ -330,13 +367,13 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 List<List<Integer>> newListsToCheck = StreamSupport
                                                         .stream(listsToCheckIterable.spliterator(), false)
                                                         .collect(Collectors.toList());
-                return runResolveTillFixedPoint(currResolved, newListsToCheck, new ArrayList<List<Integer>>());
+                return runResolveTillFixedPoint(currResolved, newListsToCheck, new ArrayList<List<Integer>>(), totalNumLists);
             }
         }
         List<Integer> newFirst = listsToCheck.remove(0);
         // TODO: check if the in-place edits are causing problems
         listsCompared.add(litsToCompare);
-        return runResolveTillFixedPoint(newFirst, listsToCheck, listsCompared);
+        return runResolveTillFixedPoint(newFirst, listsToCheck, listsCompared, totalNumLists);
     }
 
     /**
@@ -478,7 +515,15 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 
     @Override
     public Clause get(int index) {
-        return reducedClauseMap.get(origTrace.get(index));
+        Clause currClause = origTrace.get(index);
+        // building set of literals
+        IntIterator litIterator = currClause.literals();
+        Set<Integer> litSet = new HashSet<Integer>();
+        while (litIterator.hasNext()) {
+            litSet.add(litIterator.next());
+        }
+        //return reducedClauseMap.get(origTrace.get(index));
+        return reducedClauseMap.get(litSet.hashCode());
     }
 
     /**
@@ -510,7 +555,13 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 		 */
 		ClauseView set(int index) throws Exception {
             Clause origIthClause = origTrace.get(index);
-            Clause currIthClauseOrNull = reducedClauseMap.get(origIthClause);
+            // building set of literals
+            IntIterator litIterator = origIthClause.literals();
+            Set<Integer> litSet = new HashSet<Integer>();
+            while (litIterator.hasNext()) {
+                litSet.add(litIterator.next());
+            }
+            Clause currIthClauseOrNull = reducedClauseMap.get(litSet.hashCode());
             if (currIthClauseOrNull == null) {
                 throw new Exception("Cannot access removed Clause.");
             }
