@@ -142,7 +142,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             }
             i++;
         }
-
+        
         // fill in the reducedTrace array in order using reducedClauseMap
         this.reducedTrace = new Clause[origTrace.size() + 1];
         origClauseIterator = origTrace.iterator();
