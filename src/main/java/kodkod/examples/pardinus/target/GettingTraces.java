@@ -51,7 +51,6 @@ public class GettingTraces {
         f = f.and(p.no().or(q.some()));
         f = f.and(p.no().or(q.no()));
         System.out.println("formula = "+f);
-
          */
 
 
@@ -64,7 +63,6 @@ public class GettingTraces {
         */
 
         // additional formula for testing: 2
-
         Formula f = p.some().or(q.some());
         f.and(p.some().or(q.no()));
         f.and(q.no().or(r.some()));
@@ -72,6 +70,21 @@ public class GettingTraces {
         f.and(q.some().or(r.no()));
         f.and(q.some().or(p.no()));
         f.and(q.no().or(r.no()));
+
+
+        // additional formula for testing: 3
+        /*
+        Formula f = p.some().or(q.some()).or(r.some());
+        f.and(p.some().or(q.no()).or(r.no()));
+        f.and(p.no().or(q.some()).or(r.no()));
+        f.and(p.no().or(q.no()).or(r.no()));
+        f.and(p.some().or(q.no()).or(r.some()));
+        f.and(p.some().or(q.no()).or(r.some()));
+        f.and(p.some().or(q.some()).or(r.no()));
+        f.and(p.no().or(q.no()).or(r.some()));
+
+         */
+
 
         ///////////////////////////////////////////////////
 
@@ -105,22 +118,40 @@ public class GettingTraces {
                 sol.proof().minimize(new RCEStrategy(sol.proof().log()));
                 ResolutionBasedProof ohno = (ResolutionBasedProof) sol.proof();
                 ResolutionTrace origTrace = ohno.solver.proof();
-                IntIterator origAxioms = origTrace.axioms().iterator();
-                System.out.println("Original axioms: ");
-                while (origAxioms.hasNext()) {
-                    System.out.println(origTrace.get(origAxioms.next()));
+                Iterator<Clause> coreIt = origTrace.iterator();
+                System.out.println("Original trace: ");
+                while (coreIt.hasNext()) { // top level clauses
+                    Clause c = coreIt.next();
+                    if (c == null) {
+                        continue;
+                    }
+                    System.out.println(c);
+                    System.out.println("  antes=");
+                    Iterator<Clause> it2 = c.antecedents();
+                    while(it2.hasNext()) {
+                        System.out.println("    " + it2.next());
+                    }
                 }
-                // TODO: this construction w/ IntBitSet doesn't allow negations of literals
+
+                // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
                 IntSet assumps = new IntBitSet(4);
                 assumps.add(1);
                 // TODO: currently seems like propagation works but resolution doesn't
                 ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
+                Iterator<Clause> reducedIt = reducedTrace.iterator();
+                /*
                 System.out.println("=====\nNew Axioms:");
                 IntIterator newAxioms = reducedTrace.axioms().iterator();
                 while (newAxioms.hasNext()) {
                     System.out.println(reducedTrace.get(newAxioms.next()));
                 }
                 System.out.println("========");
+                 */
+                while (reducedIt.hasNext()) {
+                    System.out.println(reducedIt.next());
+                }
+
+
                 // building set of clauses from unsat core
                 /*
                 IntSet coreClauseIndices = trace.core();
@@ -132,15 +163,10 @@ public class GettingTraces {
                     coreClauses.add(nextClause);
                 }*/
 
-                /*
-                Iterator<Formula> coreIt = ohno.highLevelCore().keySet().iterator();
-                Set<Formula> unitProppedFmla = CNFUnitPropagator.propagateOnConjunctionIter(coreIt, p.some());
-                for (Formula fmla : unitProppedFmla) {
-                    System.out.println(fmla);
-                }*/
 
                 //System.out.println(trace);
                 //System.out.println(trace.getClass());
+                /*
                 Iterator<Clause> it = reducedTrace.iterator();
 
 
@@ -157,11 +183,7 @@ public class GettingTraces {
                     }
                 }
 
-                // swetabhch: iterate over and print unsat core elements
-                /*
-                for (Clause c : coreClauses) {
-                    System.out.println(c);
-                }*/
+                 */
 
                 /*
                 while (coreIt.hasNext()) {
