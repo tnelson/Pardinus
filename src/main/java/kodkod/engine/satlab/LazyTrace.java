@@ -407,6 +407,22 @@ public final class LazyTrace implements ResolutionTrace {
 		}); 
 	}
 
+    /**
+	 * {@inheritDoc}
+	 * @see kodkod.engine.satlab.ResolutionTrace#reverseIterator()
+	 */
+	public Iterator<Clause> reverseIterator() { 
+		return new ClauseIterator(new IntIterator() {
+			int index = trace.length - 1;
+			public boolean hasNext() { return index>=0 && index < trace.length; }
+			public int next() { 
+				if (!hasNext()) throw new NoSuchElementException();
+				return index--;
+			}
+			public void remove() { throw new UnsupportedOperationException(); } 
+		}); 
+	}
+
 	/**
 	 * Returns true if indices.min() >= 0 && indices.max() < this.size()
 	 * @requires !indices.isEmpty()

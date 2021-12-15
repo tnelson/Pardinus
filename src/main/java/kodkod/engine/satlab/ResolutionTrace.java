@@ -78,6 +78,18 @@ public interface ResolutionTrace extends Iterable<Clause> {
 	 * @return an iterator over the elements in this trace in proper sequence.
 	 */
 	public abstract Iterator<Clause> iterator();
+
+    /**
+	 * Returns an iterator over the elements in this trace  in reverse sequence.
+	 * <p><b>Note:</b>The clause objects returned by the iterator are not 
+	 * required to be immutable. In particular, the state of a clause object 
+	 * returned by <tt>next()</tt> (as well as the state of any object obtained
+	 * through that clause's {@linkplain Clause#antecedents()} method) is guaranteed 
+	 * to remain the same only until the subsequent call to the <tt>next()</tt> method 
+	 * of the iterator instance.</p>
+	 * @return an iterator over the elements in this trace in severes sequence.
+	 */
+	public abstract Iterator<Clause> reverseIterator();
 	
 	/**
 	 * Returns an iterator over the elements at the given indices in this trace, in proper sequence.

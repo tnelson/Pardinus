@@ -8,14 +8,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javafx.util.Pair;
 import kodkod.engine.satlab.Clause;
 import kodkod.engine.satlab.ResolutionTrace;
 import kodkod.util.ints.IntBitSet;
@@ -32,161 +35,101 @@ import kodkod.util.ints.Ints;
  */
 public class ReducedResolutionTrace implements ResolutionTrace {
 
-    // contains a mapping from the old clauses to their updated versions in the reduced trace.
-    // this need not contain all the clauses from the original trace as keys, since some might
-    // be removed during reduction.
-    // NOTE: this also means it's important to ensure that the key clauses aren't being mutated 
-    // at any point.
-    private Map<Integer, Clause> reducedClauseMap;
-    // contains a mapping from old Clause hashCodes to new Clause hashCodes that is updated when 
-    // resolution does not happen in when building new clauses
-    private Map<Integer, Integer> hashCodeMap;
+    // ensure that you can either add or remove antecedents from ClauseView (currently going with add)
+    // so that we can build the tree structure of the trace as we move down.
 
-    private ResolutionTrace origTrace;
     private Clause[] reducedTrace;
+    private final ClauseView EMPTY_CLAUSE = new ClauseView(new ArrayList<>(), new ArrayList<>());
 
-    // TODO: check this - do we need to map each Clause to its index in the original trace to be
-    //  - able to return core, resolved, axioms as IntSets?
-    //  - OR: can we get the original answers, check for which clauses end up in `reducedClauseMap`,
-    //  - and only keep the indices of the ones that do?
-    
+    // traverses the trace breadth-first, starting from the empty clause, running our
+    // reduced trace construction algorithm.
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
+        Map<Integer, ClauseView> reducedTraceMap = new HashMap<>();        
+        Queue<ClauseView> bfsQueue = new LinkedList<>();
+        Set<ClauseView> visited = new HashSet<>();
 
-        this.origTrace = origTrace;
-        //this.reducedClauseMap = new HashMap<Integer, Clause>();
-        this.reducedClauseMap = new HashMap<Integer, Clause>();
-        this.hashCodeMap = new HashMap<Integer, Integer>();
+        Iterator<Clause> reverseOrigClauseIterator = origTrace.reverseIterator();
+        if (reverseOrigClauseIterator.hasNext()) {
+            Clause root = reverseOrigClauseIterator.next();
 
-        // if we are operating on Clauses, then trace.iterator() gives us the Clauses
-        // of the trace "in order", i.e. in a topologically sorted order
-        Iterator<Clause> origClauseIterator = origTrace.iterator();
+        }
+    }
 
-        int i = 0;
-        // note that on first pass of edgePlanIterator, we can also tell which Clauses
-        // are axioms, and can integrate the unit propagation step in that pass
-        Clause currClause, updatedClause;
+    // TODO: document
+    private Map<Integer, ClauseView> reductionProcess(Pair<Clause, Optional<Integer>> currPair, 
+        Queue<Pair<Clause, Optional<Integer>>> bfsQueue, Set<Clause> visited, Map<Integer, ClauseView> reducedTraceMap, IntSet assumps) {
 
-        while (origClauseIterator.hasNext()) {
-            currClause = origClauseIterator.next();
-            // print reducedClauseMap to debug
-            System.out.println("reducedClauseMap keys:");
-            for (int key : reducedClauseMap.keySet()) {
-                System.out.println(key + " : " + reducedClauseMap.get(key));
-            }
-            System.out.println("hashCodeMap keys:");
-            for (int key : hashCodeMap.keySet()) {
-                System.out.println(key + " : " + hashCodeMap.get(key));
-            }
-            System.out.println("~~~~");
-            boolean isAxiom = (currClause.numberOfAntecedents() == 0);
-            if (isAxiom) {
-                Optional<Clause> updatedClauseOpt = unitPropagateAllOpt(currClause, assumps);
-                // add mapping from old clause to updated clause if the former doesn't reduce to
-                // true upon updating. 
-                if (updatedClauseOpt.isPresent()) {
-                    //System.out.println(reducedClauseMap.size());
-                    updatedClause = updatedClauseOpt.get();
-                    // building set of literals
-                    /*
-                    IntIterator litIterator = currClause.literals();
-                    Set<Integer> litSet = new HashSet<Integer>();
-                    while (litIterator.hasNext()) {
-                        litSet.add(litIterator.next());
-                    }*/
-                    reducedClauseMap.put(currClause.hashCode(), updatedClause);
-                    //reducedClauseMap.put(litSet.hashCode(), updatedClause);
-                }
-                // do nothing in the axiom case if not present
-            } else {
-                try {
-                    System.out.println("Clause was previously: " + currClause);
-                    System.out.println("Original clause's antecedents: ");
-                    Iterator<Clause> origAntecedents = currClause.antecedents();
-                    while (origAntecedents.hasNext()) {
-                        System.out.println(origAntecedents.next());
+            Clause currClause = currPair.getKey();
+            Optional<Integer> parentHashOpt = currPair.getValue();
+            List<Integer> currLiterals = constructLiteralsList(currClause);
+            Clause treeClause = currClause;
+
+            // C == {} case:
+            //    if C is an empty clause {}, don't do anything on it and move straight to the queue
+            if (!currLiterals.isEmpty()) {
+                IntIterator assumpIterator = assumps.iterator();
+                while (assumpIterator.hasNext()) {
+                    int assump = assumpIterator.next();
+    
+                    // C contains A case:
+                    //    if C contains A for any assump A, we simply ignore it and move on
+                    if (currLiterals.contains(assump)) {
+                        break;
+                        // transition: move on to next item of queue
                     }
-                    Optional<Clause> resolvedClauseOpt = resolveAntecedents(origTrace, currClause);
-                    System.out.println("resolvedClauseOpt: " + resolvedClauseOpt);
-                    if (resolvedClauseOpt.isPresent()) {
-                        Clause resolvedClause = resolvedClauseOpt.get();
-                        System.out.println("Clause is now: " + resolvedClause);
-                        // building set of literals
-                        /*
-                        IntIterator litIterator = currClause.literals();
-                        Set<Integer> litSet = new HashSet<Integer>();
-                        while (litIterator.hasNext()) {
-                            litSet.add(litIterator.next());
+    
+                    // C == -A case:
+                    //    if C is -A for any assump A, throw away tree so far, throw away queue, and restart at empty clause
+                    //    and push on antecedents of C
+                    if ((currLiterals.size() == 1) && (currLiterals.get(0) == (-1 * assump))) {
+                        Iterator<Clause> anteIterator = currClause.antecedents();
+                        Queue<Pair<Clause, Optional<Integer>>> newBfsQueue = new LinkedList<>();
+                        while (anteIterator.hasNext()) {
+                            Pair<Clause, Optional<Integer>> newPair = new Pair<>(anteIterator.next(), Optional.of(currClause.hashCode()));
+                            newBfsQueue.add(newPair);
                         }
-                        */
-                        int updatedHashCode = 0;
-                        if (hashCodeMap.containsKey(resolvedClause.hashCode())) {
-                            updatedHashCode = hashCodeMap.get(resolvedClause.hashCode());
-                        } else {
-                            updatedHashCode = resolvedClause.hashCode();
-                        }
-                        //reducedClauseMap.put(currClause.hashCode(), resolvedClause);
-                        reducedClauseMap.put(updatedHashCode, resolvedClause);
-                        //reducedClauseMap.put(litSet.hashCode(), resolvedClause);
-                        // if literals is empty, we have reached UNSAT, and we stop adding clauses
-                        // at that point
-                        // TODO: ^ is what we're doing in the UNSAT case the right thing?
-                        if (resolvedClause.size() == 0) {
-                            break;
+                        Map<Integer, ClauseView> newReducedTraceMap = new HashMap<>();
+                        newReducedTraceMap.put(0, EMPTY_CLAUSE);
+                        return reductionProcess(new Pair(EMPTY_CLAUSE, Optional.empty()), newBfsQueue, visited, newReducedTraceMap, assumps);
+                    }
+
+                    // TODO: add visited check
+
+                    // C is other clause case:
+                    //     if C is any other clause, add unitProp(C, A) to the tree, and push antecedents of C to the queue
+                    Optional<Clause> unitProppedClauseOpt = unitPropagateAllOpt(currClause, assumps);
+                    // given our prior checks, this should always be true
+                    if (unitProppedClauseOpt.isPresent()) {
+                        Clause unitProppedClause = unitProppedClauseOpt.get();
+                        // TODO: fix
+                        reducedTraceMap.put(unitProppedClause.hashCode(), unitProppedClause);
+                        Iterator<Clause> anteIterator = currClause.antecedents();
+                        while (anteIterator.hasNext()) {
+                            // TODO: if we're dealing with hashCodes, what should currClause be replaced with, if anything?
+                            Pair<Clause, Optional<Integer>> newPair = new Pair<>(anteIterator.next(), Optional.of(currClause.hashCode()));
+                            bfsQueue.add(newPair);
                         }
                     }
-                    // if resolvedClauseOpt is empty, there are two possibilities:
-                    //  1. the updated antecedents of the new clause do not resolve, and thus 
-                } catch (Exception e) { // error occurs if none of the antecedents are in map
-                    // do nothing in this case and move on.
                 }
+    
             }
-            i++;
-        }
-        
-        // fill in the reducedTrace array in order using reducedClauseMap
-        this.reducedTrace = new Clause[origTrace.size() + 1];
-        origClauseIterator = origTrace.iterator();
-        int itIndex = 0;
-        while (origClauseIterator.hasNext()) {
-            //this.reducedTrace[itIndex] = reducedClauseMap.get(origClauseIterator.next());
-            Clause origClause = origClauseIterator.next();
-            // building set of literals
-            /*IntIterator litIterator = origClause.literals();
-            Set<Integer> litSet = new HashSet<Integer>();
-            while (litIterator.hasNext()) {
-                litSet.add(litIterator.next());
-            }*/
-            //Clause updatedClauseOrNull = reducedClauseMap.get(litSet.hashCode());
-            Clause updatedClauseOrNull = reducedClauseMap.get(origClause.hashCode());
-            if (updatedClauseOrNull != null) {
-                this.reducedTrace[itIndex] = updatedClauseOrNull;
-                //System.out.println(updatedClauseOrNull);
-                itIndex++;
+
+            
+            // if the bfsQueue is empty, then return the current tree
+            if (bfsQueue.isEmpty()) {
+                return reducedTraceMap;
             }
-        }
-        
-        // asserting that each value in the reducedClauseMap is in the reducedTrace array
-        Collection<Clause> reducedClauses = new ArrayList<Clause>(reducedClauseMap.values());
-        for (Clause c : reducedTrace) {
-            if (reducedClauses.contains(c)) {
-                reducedClauses.remove(c);
+
+            // if bfsQueue is not empty, move on to the next entry
+            Pair<Clause, Optional<Integer>> nextPair = bfsQueue.poll();
+            visited.add(currClause);
+            if (parentHashOpt.isPresent()) {
+                int parentHash = parentHashOpt.get();
+                ClauseView parentClauseView = reducedTraceMap.get(parentHash);
+                parentClauseView.addAntecedent(currClause);
             }
-        }
-        assert reducedClauses.isEmpty();
-        
-        List<Integer> exampleList1 = new ArrayList<>();
-        List<Integer> exampleList2 = new ArrayList<>();
-        List<Integer> exampleList3 = new ArrayList<>();
-        exampleList1.add(-1);
-        exampleList1.add(-2);
-        exampleList2.add(-1);
-        exampleList2.add(-2);
-        Clause c1 = new ClauseView(new ArrayList<Clause>(), exampleList1);
-        Clause c2 = new ClauseView(new ArrayList<Clause>(), exampleList2);
-        
-        System.out.println("Output of eq example: ");
-        System.out.println(clauseLiteralsEqual(c1, c2));
-        
+
+            return reductionProcess(nextPair, bfsQueue, visited, reducedTraceMap, assumps);
     }
 
     /**
@@ -247,338 +190,17 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         return antecedents;
     }
 
-    // TODO: consider switching back to arrays from lists; the next function is super inefficient
-
-    /**
-     * Given an original {@linkplain ResolutionTrace} and a {@linkplain Clause} from this original
-     * trace, this returns a new clause made by resolving the updated versions of the original clause's 
-     * antecedents. 
-     * NOTE: this assumes that at least one of the input {@linkplain Clause}'s original antecedents is
-     * in the reducedClauseMap.
-     * @param origTrace The original {@linkplain ResolutionTrace} in reference.
-     * @param clause The clause whose antecedents this function wishes to resolve.
-     * @return An Optional containing the resolved clause if it is non-empty and empty if it is.
-     * @throws Exception if none of the input clause's antecedents were are present in the updated map.
-     */
-    private Optional<Clause> resolveAntecedents(ResolutionTrace origTrace, Clause clause) throws Exception {
-        // get antecedents
-        Iterator<Clause> origAntecedents = clause.antecedents();
-        // get updated versions of antecedents
-        List<Clause> newAntecedents = new ArrayList<Clause>();
-        while (origAntecedents.hasNext()) {
-            Clause currAntecedent = origAntecedents.next();
-            System.out.println("Old Antecedent: " + currAntecedent);
-            // building set of literals
-            /*
-            IntIterator litIterator = currAntecedent.literals();
-            Set<Integer> litSet = new HashSet<Integer>();
-            while (litIterator.hasNext()) {
-                litSet.add(litIterator.next());
-            }*/
-            //Clause updatedAntecedent = reducedClauseMap.get(litSet.hashCode());
-            int updatedHashCode = 0;
-            System.out.println("Old hashcode: " + currAntecedent.hashCode());
-            if (hashCodeMap.containsKey(currAntecedent.hashCode())) {
-                updatedHashCode = hashCodeMap.get(currAntecedent.hashCode());
-            } else {
-                updatedHashCode = currAntecedent.hashCode();
-            }
-            System.out.println("Updated hashcode: " + updatedHashCode);
-            Clause updatedAntecedent = reducedClauseMap.get(updatedHashCode);
-            System.out.println("Updated antecedent: " + updatedAntecedent);
-            //Clause updatedAntecedent = reducedClauseMap.get(currAntecedent.hashCode());
-            if (updatedAntecedent != null) {
-                newAntecedents.add(updatedAntecedent);
-            }
+    // TODO: document + re-evaluate need for this function
+    private List<Integer> constructLiteralsList(Clause clause) {
+        IntIterator litIt = clause.literals();
+        List<Integer> lits = new ArrayList<>();
+        while (litIt.hasNext()) {
+            lits.add(litIt.next());
         }
-        if (newAntecedents.isEmpty()) {
-            throw new Exception("All original antecedents were removed; cannot resolve.");
-        }
-        for (Clause newAnte : newAntecedents) {
-            System.out.println("New Antecedent: " + newAnte);
-        }
-        
-        // REMOVE THIS
-        // get literal lists from antecedents
-        List<List<Integer>> literalLists = new ArrayList<List<Integer>>();
-        for (Clause ante : newAntecedents) {
-            IntIterator litIterator = ante.literals();
-            List<Integer> litList = new ArrayList<Integer>();
-            while (litIterator.hasNext()) {
-                litList.add(litIterator.next());
-            }
-            literalLists.add(litList);
-        }
-        System.out.println("Literal lists being resolved:");
-        for (List<Integer> ll : literalLists) {
-            for (int li : ll) {
-                System.out.print(li + ", ");
-            }
-            System.out.println();
-        }
-        System.out.println();
-
-        // ~~~~~~~~~~~~~
-        if (newAntecedents.size() == 1) {
-            Clause newAnte = newAntecedents.get(0);
-            // compare equality of old new ante and old resolvent
-            if (clauseLiteralsEqual(newAnte, clause)) {
-                System.out.println("Map from: " + clause + " : " + clause.hashCode());
-                System.out.println("Map to: " + newAnte + " : " + newAnte.hashCode());
-                hashCodeMap.put(clause.hashCode(), newAnte.hashCode());
-            }
-        }
-        // resolve the literals lists together and return
-        Optional<List<Integer>> resolvedLiteralsOpt = resolveListOfLiteralLists(literalLists);
-        if (resolvedLiteralsOpt.isPresent()) {
-            Clause returnClause = new ClauseView(newAntecedents, resolvedLiteralsOpt.get());
-            return Optional.of(returnClause);
-        } else {
-            return Optional.empty();
-        }
+        return lits;
     }
-
-    /**
-     * Given a list of lists of integers representing literals, this resolves all of the literal
-     * lists together and returns the resolved list.
-     * NOTE: This function assumes that the input list is not empty.
-     * @param literalLists
-     * @return
-     */
-    private Optional<List<Integer>> resolveListOfLiteralLists(List<List<Integer>> literalLists) {
-        assert !literalLists.isEmpty();
-        List<Integer> firstLits = literalLists.get(0);
-        List<List<Integer>> listsToCheck = new ArrayList<List<Integer>>();
-        for (int i = 1; i < literalLists.size(); i++) {
-            listsToCheck.add(literalLists.get(i));
-        }
-        // this intends to keep redundant resolutions like {2} -> {2} in lieu of not handling changing indices
-        //if (literalLists.size() == 1) {
-        //    return Optional.of(literalLists.get(0));
-        //}
-        return runResolveTillFixedPoint(firstLits, listsToCheck, new ArrayList<List<Integer>>(), literalLists.size());
-    }
-
-    // TODO: document
-    private Optional<List<Integer>> runResolveTillFixedPoint(List<Integer> litsToCompare,
-                                                   List<List<Integer>> listsToCheck,
-                                                   List<List<Integer>> listsCompared, int totalNumLists) {
-        // if no more lists to check, that means all lists have been compared without resolution in
-        // any comparison. this is equivalent to reaching fixed point, so the process can terminate here.
-        System.out.println("Lits to compare: " + litsToCompare);                                               
-        if (listsToCheck.isEmpty()) {
-            List<Integer> returnList = new ArrayList<Integer>();
-            for (List<Integer> lits : listsCompared) {
-                for (int lit : lits) {
-                    if (!returnList.contains(lit)) {
-                        returnList.add(lit);
-                    }
-                }
-            }
-            // end condition when no resolution occurs:
-            // listsToCheck is empty and there has been no change from the original in number of lists
-            if (listsCompared.size() == totalNumLists - 1) {
-                // no res => we return Optional.empty, since resolution cannot return a meaningful, non-empty result
-                return Optional.empty();
-            } else {
-                for (int lit : litsToCompare) {
-                    returnList.add(lit);
-                }
-                Collections.sort(returnList);
-                return Optional.of(returnList);
-            }
-            
-        }
-
-        Iterator<List<Integer>> listsToCheckIt = listsToCheck.iterator();
-
-        // go over the lits lists that haven't been checked yet and compare the current lits with
-        // them. if resolve happens, update list and rerun, else add check the rest of listsToCheck
-        // with what was previously its first element
-        while (listsToCheckIt.hasNext()) {
-            List<Integer> currLits = listsToCheckIt.next();
-            Optional<List<Integer>> currResolvedOpt = resolveTwoLiteralLists(litsToCompare, currLits);
-            if (currResolvedOpt.isPresent()) {
-                List<Integer> currResolved = currResolvedOpt.get();
-               
-                listsToCheckIt.remove();
-                Iterable<List<Integer>> listsToCheckIterable = () -> listsToCheckIt;
-                List<List<Integer>> newListsToCheck = StreamSupport
-                                                        .stream(listsToCheckIterable.spliterator(), false)
-                                                        .collect(Collectors.toList());
-                return runResolveTillFixedPoint(currResolved, newListsToCheck, new ArrayList<List<Integer>>(), totalNumLists);
-            }
-        }
-        List<Integer> newFirst = listsToCheck.remove(0);
-        // TODO: check if the in-place edits are causing problems
-        listsCompared.add(litsToCompare);
-        return runResolveTillFixedPoint(newFirst, listsToCheck, listsCompared, totalNumLists);
-    }
-
-    /**
-     * Given two Lists of integers (representing literals), produces an Optional of the
-     * new resolved list of integers, where a value being present in the Optional indicates
-     * that a resolution has occurred.
-     * @param list1 One of the two Lists of literals.
-     * @param list2 The other of the two Lists of literals.
-     * @return An Optional containing the resolved List of literals if resolution has occurred.
-     */
-    private Optional<List<Integer>> resolveTwoLiteralLists(List<Integer> list1, List<Integer> list2) {
-        List<Integer> resolvedList = new ArrayList<Integer>();
-        boolean resolved = false;
-        for (int i : list1) {
-            if (resolved || !list2.remove((Integer) (-1 * i))) {
-                resolvedList.add(i);
-            } else {
-                resolved = true;
-            }
-        }
-        if (resolved) {
-            for (int i : list2) {
-                if (!resolvedList.contains((Integer) i)) {
-                    resolvedList.add(i);
-                }
-            }
-            return Optional.of(resolvedList);
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    // TODO: document
-    private boolean clauseLiteralsEqual(Clause c1, Clause c2) {
-        if (c1.size()==c2.size()) {
-            final IntIterator itr1 = c1.literals(), itr2 = c2.literals();
-            while(itr1.hasNext()) {
-                if (itr1.next()!=itr2.next()) return false;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public int size() {
-        return reducedTrace.length;
-    }
-
-    @Override
-    public Iterator<Clause> iterator() {
-        List<Clause> trace = Arrays.asList(reducedTrace);
-        return trace.iterator();
-        /*
-        return new ClauseIterator(new IntIterator() {
-			int index = 0;
-			public boolean hasNext() { return index>=0 && index < reducedTrace.length; }
-			public int next() { 
-				if (!hasNext()) throw new NoSuchElementException();
-				return index++;
-			}
-			public void remove() { throw new UnsupportedOperationException(); } 
-		});*/
-    }
-
-    /**
-	 * Returns true if indices.min() >= 0 && indices.max() < this.size()
-	 * @requires !indices.isEmpty()
-	 * @return indices.min() >= 0 && indices.max() < this.size()
-	 */
-	private boolean valid(IntSet indices) {
-		return indices.min() >= 0 && indices.max() < reducedTrace.length;
-	}
-
-    @Override
-    public Iterator<Clause> iterator(IntSet indices) {
-        if (indices.isEmpty() || valid(indices)) {
-			return new ClauseIterator(indices.iterator());
-		}
-		throw new IndexOutOfBoundsException("invalid indices: " + indices);
-    }
-
-    @Override
-    public Iterator<Clause> reverseIterator(IntSet indices) {
-        if (indices.isEmpty() || valid(indices)) {
-			return new ClauseIterator(indices.iterator(Integer.MAX_VALUE, Integer.MIN_VALUE));
-		}
-		throw new IndexOutOfBoundsException("invalid indices: " + indices);
-    }
-
-    /**
-     * Keeps only those indices from a list of indices that correspond to clauses
-     * in the reduced trace.
-     * @param origIndices The original {@linkplain IntSet} of indices.
-     * @return A IntSet representing the updated indices.
-     */
-    private IntSet getUpdatedIndices(IntSet origIndices) {
-        IntBitSet updatedIndices = new IntBitSet(origIndices.size());
-        IntIterator origIndicesIt = origIndices.iterator();
-        while (origIndicesIt.hasNext()) {
-            int origIndex = origIndicesIt.next();
-            Clause origClause = origTrace.get(origIndex);
-            if (reducedClauseMap.containsKey(origClause)) {
-                updatedIndices.add(origIndex);
-            }
-        }
-        return updatedIndices;
-    }
-
-    @Override
-    public IntSet core() {
-        IntSet origCore = origTrace.core();
-        return getUpdatedIndices(origCore);
-    }
-
-    @Override
-    public IntSet axioms() {
-        IntSet origAxioms = origTrace.axioms();
-        return getUpdatedIndices(origAxioms);
-    }
-
-    @Override
-    public IntSet resolvents() {
-        IntSet origResolvents = origTrace.resolvents();
-        return getUpdatedIndices(origResolvents);
-    }
-
-    @Override
-    public IntSet reachable(IntSet indices) {
-        // TODO: fill this in
-        return Ints.EMPTY_SET;
-    }
-
-    @Override
-    public IntSet backwardReachable(IntSet indices) {
-        // TODO: fill this in
-        return Ints.EMPTY_SET;
-    }
-
-    @Override
-    public IntSet learnable(IntSet indices) {
-        // TODO: fill this in
-        return Ints.EMPTY_SET;
-    }
-
-    @Override
-    public IntSet directlyLearnable(IntSet indices) {
-        // TODO: fill this in
-        return Ints.EMPTY_SET;
-    }
-
-    @Override
-    public Clause get(int index) {
-        Clause currClause = origTrace.get(index);
-        // building set of literals
-        /*
-        IntIterator litIterator = currClause.literals();
-        Set<Integer> litSet = new HashSet<Integer>();
-        while (litIterator.hasNext()) {
-            litSet.add(litIterator.next());
-        }
-        */
-        return reducedClauseMap.get(currClause);
-        //return reducedClauseMap.get(litSet.hashCode());
-    }
-
+    
+    
     /**
      * A mutable implementation of the Clause interface.
      * @author Swetabh Changkakoti
@@ -632,6 +254,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             this.literals = ithClauseLits;
 			return this;
 		}
+
+        /**
+         * Adds a new antecedent clause to the ClauseView.
+         * @param newAnte The new antecedent clause to be added.
+         */
+        public void addAntecedent(Clause newAnte) {
+            this.antecedents.add(newAnte);
+        }
         
 
         @Override
