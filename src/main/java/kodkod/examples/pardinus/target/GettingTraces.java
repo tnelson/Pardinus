@@ -63,6 +63,7 @@ public class GettingTraces {
         */
 
         // additional formula for testing: 2
+
         Formula f = p.some().or(q.some());
         f.and(p.some().or(q.no()));
         f.and(q.no().or(r.some()));
@@ -70,6 +71,8 @@ public class GettingTraces {
         f.and(q.some().or(r.no()));
         f.and(q.some().or(p.no()));
         f.and(q.no().or(r.no()));
+
+
 
 
         // additional formula for testing: 3
@@ -84,6 +87,8 @@ public class GettingTraces {
         f.and(p.no().or(q.no()).or(r.some()));
 
          */
+
+
 
 
         ///////////////////////////////////////////////////
@@ -134,8 +139,8 @@ public class GettingTraces {
                 }
 
                 // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
-                IntSet assumps = new IntBitSet(4);
-                assumps.add(1);
+                IntSet assumps = new IntBitSet(5);
+                assumps.add(2);
                 // TODO: currently seems like propagation works but resolution doesn't
                 ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
                 Iterator<Clause> reducedIt = reducedTrace.iterator();
