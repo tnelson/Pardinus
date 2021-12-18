@@ -55,6 +55,10 @@ public class TraceNode extends Clause {
         this.antecedents.add(antecedent);
     }
 
+    public void resetAntecedents() {
+        this.antecedents = new ArrayList<>();
+    }
+
     @Override
     public int size() {
         return this.literals.size();
