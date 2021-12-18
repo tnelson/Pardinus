@@ -37,6 +37,8 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     private Clause[] reducedTrace;
     private final ClauseView EMPTY_CLAUSE = new ClauseView(new ArrayList<>(), new ArrayList<>());
 
+    // [[ ]] thought: what if we only used Iterator<Clause>s instead of lists of Clauses?
+
     // traverses the trace breadth-first, starting from the empty clause, running our
     // reduced trace construction algorithm.
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
@@ -288,9 +290,11 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             // bug here: the .next() pointer is being added to the list multiple times,
             // so each elem of the antecedents list refers to the same thing.
             Clause nextAnte = antecedentsIt.next();
-            System.out.println("adding anteante: " + nextAnte);
+            System.out.println(clause.hashCode() + " : adding anteante: " + nextAnte);
             antecedents.add(nextAnte);
+            System.out.println(clause.hashCode() + " : current antecedents: " + antecedents);
         }
+        System.out.println(clause.hashCode() + " : antecedents (in constructor): " + antecedents);
         return antecedents;
     }
 
@@ -436,7 +440,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     }
     
     /**
-     * A mutable implementation of the Clause interface.
+     * A mutable implementation of the Clause abstract class.
      * @author Swetabh Changkakoti
      */
     private class ClauseView extends Clause {
@@ -479,13 +483,13 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             }
             */
             //Clause currIthClauseOrNull = reducedClauseMap.get(litSet.hashCode());
-            Clause currIthClauseOrNull = reducedClauseMap.get(origIthClause);
+            Clause currIthClauseOrNull = reducedClauseMap.get(origIthClause.hashCode());
             if (currIthClauseOrNull == null) {
                 throw new Exception("Cannot access removed Clause.");
             }
             List<Clause> ithClauseAnteList = constructAntecedentsList(currIthClauseOrNull);
             IntIterator ithClauseLitsIt = currIthClauseOrNull.literals();
-            List<Integer> ithClauseLits = new ArrayList<Integer>();
+            List<Integer> ithClauseLits = new ArrayList<>();
             while (ithClauseLitsIt.hasNext()) {
                 ithClauseLits.add(ithClauseLitsIt.next());
             }
