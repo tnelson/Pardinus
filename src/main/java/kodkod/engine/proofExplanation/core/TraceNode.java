@@ -24,16 +24,20 @@ public class TraceNode extends Clause {
     }
 
     public TraceNode(Clause clause) {
+        this.antecedents = new ArrayList<>();
+        this.literals = constructLiteralsList(clause);
         // deep tree copy, building TraceNodes at the bottom first 
         // and working upwards
         Iterator<Clause> topLevelAntes = clause.antecedents();
         if (topLevelAntes.hasNext()) {
-            Clause currAnte = topLevelAntes.next();
-            // confirm that this recursion works
-            this.antecedents.add(new TraceNode(currAnte));
+            while (topLevelAntes.hasNext()) {
+                Clause currAnte = topLevelAntes.next();
+                
+                // confirm that this recursion works
+                this.antecedents.add(new TraceNode(currAnte));
+            }
         } else {
             // base case: no antecedents, just assign literals.
-            this.literals = constructLiteralsList(clause);
             this.antecedents = new ArrayList<>();
         }
     }

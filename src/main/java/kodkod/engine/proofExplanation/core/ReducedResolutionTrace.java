@@ -21,45 +21,52 @@ import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
 
 /**
+ * Current issue:
+ * I didn't understand this correctly earlier, but the ClauseView class is essentially an accessor,
+ * or a view, for the Clause currently being iterated on. Because of this, building collections of
+ * ClauseViews is ineffective, as all of them eventually refer to the same Clause. Can we replace
+ * ClauseViews with a more concrete, raw extension of the Clause class like TraceNode to prevent
+ * this issue?
+ */
+
+/**
  * An implementation of the {@linkplain ResolutionTrace} interface inspired by
  * Emina Torlak's {@linkplain LazyTrace} implementation. Acts as a proxy for the interface
  * reducing a {@linkplain ResolutionTrace} according to a set of assumption literals.
  * In particular, the assumption literals are unit-propagated on the axioms of the original
- * trace, and new resolvents are built up from that point on.
+ * trace, and new resolvents are built up from that point on. Uses the {@linkplain TraceNode}
+ * extension of the {@linkplain Clause} abstract class to store reduced clauses.
  */
 public class ReducedResolutionTrace implements ResolutionTrace {
 
-    // ensure that you can either add or remove antecedents from ClauseView (currently going with add)
-    // so that we can build the tree structure of the trace as we move down.
-
     private ResolutionTrace origTrace;
-    private Map<Integer, ClauseView> reducedClauseMap;
+    private Map<Integer, TraceNode> reducedClauseMap;
     private Clause[] reducedTrace;
-    private final ClauseView EMPTY_CLAUSE = new ClauseView(new ArrayList<>(), new ArrayList<>());
+    private final TraceNode EMPTY_CLAUSE = new TraceNode(new ArrayList<>(), new ArrayList<>());
 
-    // [[ ]] thought: what if we only used Iterator<Clause>s instead of lists of Clauses?
 
     // traverses the trace breadth-first, starting from the empty clause, running our
     // reduced trace construction algorithm.
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
         this.origTrace = origTrace;
         this.reducedClauseMap = new HashMap<>();
-        Map<Integer, ClauseView> reducedTraceMap = new HashMap<>();        
+        Map<Integer, TraceNode> reducedTreeMap = new HashMap<>();
         Queue<Pair<Clause, Optional<Integer>>> bfsQueue = new LinkedList<>();
         Set<Clause> visited = new HashSet<>();
 
+        // using reverse topological order iterator to access the final empty clause
         Iterator<Clause> reverseOrigClauseIterator = origTrace.reverseIterator();
         if (reverseOrigClauseIterator.hasNext()) {
             Pair<Clause, Optional<Integer>> root = new Pair<>(reverseOrigClauseIterator.next(), Optional.empty());
-            System.out.println("Root antecedents: " + constructAntecedentsList(root.getKey()));
             try {
-                Map<Integer, ClauseView> reducedTree = reductionProcess(root, bfsQueue, visited, reducedTraceMap, assumps);
+                Map<Integer, TraceNode> reducedTree = reductionProcess(root, bfsQueue, visited, reducedTreeMap, assumps);
                 this.reducedClauseMap = reducedTree;
             } catch (Exception e) {
-                System.err.println(e.getMessage());
+                System.err.println(e.getLocalizedMessage());
             }
         }
 
+        // fill in reducedTrace using the contents of reducedClauseMap
         Iterator<Clause> origClauseIterator = origTrace.iterator();
         this.reducedTrace = new Clause[reducedClauseMap.size() + 1];
         int i = 0;
@@ -71,7 +78,8 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             }
         }
 
-        System.out.println("Printing out reducedClauseMap values: "); // debugging
+        // printing out final stuff for debugging purposes
+        System.out.println("\nPrinting out reducedClauseMap values: "); // debugging
         for (Clause c : reducedClauseMap.values()) {
             System.out.println(c);
             System.out.println("  antes=");
@@ -83,20 +91,22 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         System.out.println("~~~~~~");
     }
 
-    // ADD STUFF THAT DOESN'T HAVE ANTECEDENTS TO THE TREE
-    // BUT STUFF IN THE QUEUE SHOULD HAVE ANTECEDENTS
+    // TODO: implement and document
 
-    // TODO: document
-    private Map<Integer, ClauseView> reductionProcess (
+    private Map<Integer, TraceNode> reductionProcess (
         Pair<Clause, Optional<Integer>> currPair, 
         Queue<Pair<Clause, Optional<Integer>>> bfsQueue, Set<Clause> visited, 
-        Map<Integer, ClauseView> reducedTraceMap, IntSet assumps) throws Exception {
+        Map<Integer, TraceNode> reducedTraceMap, IntSet assumps) throws Exception {
 
         Clause currClause = currPair.getKey();
+        int currHashCode = currClause.hashCode();
         Optional<Integer> parentHashOpt = currPair.getValue();
         List<Integer> currLiterals = constructLiteralsList(currClause);
+        TraceNode currTraceNode = new TraceNode(currLiterals, new ArrayList<>());
         boolean containsAssump = false;
-        ClauseView newParent = new ClauseView(currClause);
+        TraceNode newParent = new TraceNode(currClause);
+
+        // print statements for debugging purposes
         System.out.println("Current pair: " + currPair);
         System.out.println("Current clause, expanded: ");
         System.out.println(currClause);
@@ -117,20 +127,16 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         }
         System.out.println(" - - - - - - - ");
 
+
         // C == {} case:
         //    if C is an empty clause {}, push antecedents to queue. if no antecedents, move onto the queue.
         if (currLiterals.isEmpty()) {
             Iterator<Clause> anteIterator = currClause.antecedents();
-            ClauseView currClauseView = new ClauseView(new ArrayList<>(), constructLiteralsList(currClause));
-            int currHashCode = currClause.hashCode();
-            reducedTraceMap.put(currHashCode, currClauseView);
+            reducedTraceMap.put(currHashCode, currTraceNode);
             while (anteIterator.hasNext()) {
                 Clause ante = anteIterator.next();
-                // debug NOTE: ante is correct at this point for `ante`
-                ClauseView anteClauseView = new ClauseView(ante);
-                // debug NOTE: anteClauseView has INCORRECT antes. need to fix ClauseView constructor.
-                // TODO: fix identified bug in `constructAntecedentsList`
-                Pair<Clause, Optional<Integer>> newPair = new Pair<>(anteClauseView, Optional.of(currHashCode));
+                TraceNode anteTraceNode = new TraceNode(ante);
+                Pair<Clause, Optional<Integer>> newPair = new Pair<>(anteTraceNode, Optional.of(currHashCode));
                 bfsQueue.add(newPair);
             }
             if (bfsQueue.isEmpty()) {
@@ -153,21 +159,21 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 }
 
                 // C == -A case:
-                //    if C is -A for any assump A, throw away tree so far, throw away queue, and restart at empty clause
-                //    and push on antecedents of C
+                //    if C is -A for any assump A, throw away tree so far, throw away queue, 
+                //    and restart at empty clause and push on antecedents of C
                 if ((currLiterals.size() == 1) && (currLiterals.get(0) == (-1 * assump))) {
                     Iterator<Clause> anteIterator = currClause.antecedents();
                     Queue<Pair<Clause, Optional<Integer>>> newBfsQueue = new LinkedList<>();
                     while (anteIterator.hasNext()) {
-                        Pair<Clause, Optional<Integer>> newPair = new Pair<>(anteIterator.next(), Optional.of(currClause.hashCode()));
+                        Pair<Clause, Optional<Integer>> newPair = 
+                            new Pair<>(anteIterator.next(), Optional.of(currClause.hashCode()));
                         newBfsQueue.add(newPair);
                     }
-                    Map<Integer, ClauseView> newReducedTraceMap = new HashMap<>();
+                    Map<Integer, TraceNode> newReducedTraceMap = new HashMap<>();
                     newReducedTraceMap.put(0, EMPTY_CLAUSE);
-                    return reductionProcess(new Pair(EMPTY_CLAUSE, Optional.empty()), newBfsQueue, visited, newReducedTraceMap, assumps);
+                    return reductionProcess(
+                        new Pair(EMPTY_CLAUSE, Optional.empty()), newBfsQueue, visited, newReducedTraceMap, assumps);
                 }
-
-                // TODO: add visited check
 
                 // C is other clause case:
                 //     if C is any other clause and unitProp(C, A) is parent, remove other children from queue
@@ -177,6 +183,10 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 if (unitProppedClauseOpt.isPresent()) {
                     Clause unitProppedClause = unitProppedClauseOpt.get();
                     List<Integer> unitProppedLiterals = constructLiteralsList(unitProppedClause);
+
+                    // THIS SHOULD ONLY BE DONE IF ANTECEDENTS DON'T RESOLVE
+
+                    /*
                     // check literals equality with parent
                     if (parentHashOpt.isPresent() && (reducedTraceMap.containsKey(parentHashOpt.get()))) {
                         Integer parentHash = parentHashOpt.get();
@@ -186,6 +196,10 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                             // add to tree. remove elements of queue with same parent.
                             boolean queueContainsSiblings = true;
                             while (queueContainsSiblings) {
+                                // TODO: check the consequences of this.
+                                if (bfsQueue.isEmpty()) {
+                                    break;
+                                }
                                 Optional<Integer> nextParent = bfsQueue.peek().getValue();
                                 if (nextParent.isPresent() && nextParent.get().equals(parentHash)) {
                                     bfsQueue.poll();
@@ -195,27 +209,30 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                             }
                         }
                     }
-                    newParent = new ClauseView(unitProppedClause);
-                    // TODO: fix
+                    */
+                    newParent = new TraceNode(unitProppedLiterals, new ArrayList<>());
+                    
                     if (!visited.contains(unitProppedClause)) {
                         reducedTraceMap.put(currClause.hashCode(), newParent);
                     }
                     Iterator<Clause> anteIterator = currClause.antecedents();
                     while (anteIterator.hasNext()) {
-                        // TODO: if we're dealing with hashCodes, what should currClause be replaced with, if anything?
-                        Pair<Clause, Optional<Integer>> newPair = new Pair<>(anteIterator.next(), Optional.of(currClause.hashCode()));
+                        // DANGEROUS EDIT: adding new TraceNode of next ante instead of the ante directly
+                        Pair<Clause, Optional<Integer>> newPair =  
+                            new Pair<>(new TraceNode(anteIterator.next()), Optional.of(currClause.hashCode()));
+                        System.out.println("Adding to bfsQueue: " + newPair);
                         bfsQueue.add(newPair);
                     }
                 }
             }
-
         }
 
         if (parentHashOpt.isPresent() && !containsAssump) {
             int parentHash = parentHashOpt.get();
             if (reducedTraceMap.containsKey(parentHash)) {
-                ClauseView parentClauseView = reducedTraceMap.get(parentHash);
-                parentClauseView.addAntecedent(newParent);
+                TraceNode parentTraceNode = reducedTraceMap.get(parentHash);
+                System.out.println("adding antecedent: " + newParent + " to parent: " + parentTraceNode);
+                parentTraceNode.addAntecedent(newParent);
             } else {
                 throw new Exception("Assigned parent not found!");
             }
@@ -277,12 +294,10 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         }
         List<Clause> antecedents = this.constructAntecedentsList(clause);
 
-        // TODO: ASSUMES that antecedents have already been propagated on
-        //  - assert statement?
         return Optional.of(new ClauseView(antecedents, newLiterals));
     }
 
-    // TODO: document + re-evaluate need for this function
+    // TODO: revisit this.
     private List<Clause> constructAntecedentsList(Clause clause) {
         Iterator<Clause> antecedentsIt = clause.antecedents();
         List<Clause> antecedents = new ArrayList<>();
@@ -290,11 +305,8 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             // bug here: the .next() pointer is being added to the list multiple times,
             // so each elem of the antecedents list refers to the same thing.
             Clause nextAnte = antecedentsIt.next();
-            System.out.println(clause.hashCode() + " : adding anteante: " + nextAnte);
             antecedents.add(nextAnte);
-            System.out.println(clause.hashCode() + " : current antecedents: " + antecedents);
         }
-        System.out.println(clause.hashCode() + " : antecedents (in constructor): " + antecedents);
         return antecedents;
     }
 
