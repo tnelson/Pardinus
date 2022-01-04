@@ -51,6 +51,11 @@ public class TraceNode extends Clause {
         return lits;
     }
 
+    // EXISTS FOR DEBUGGING PURPOSES, REMOVE THIS
+    public Iterator<TraceNode> traceNodeAntes() {
+        return this.antecedents.iterator();
+    }
+
     public void addAntecedent(TraceNode antecedent) {
         this.antecedents.add(antecedent);
     }
