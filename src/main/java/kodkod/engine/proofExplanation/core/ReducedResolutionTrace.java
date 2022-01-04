@@ -44,7 +44,6 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     private Clause[] reducedTrace;
     private final TraceNode EMPTY_CLAUSE = new TraceNode(new ArrayList<>(), new ArrayList<>());
 
-
     // traverses the trace breadth-first, starting from the empty clause, running our
     // reduced trace construction algorithm.
     public ReducedResolutionTrace(ResolutionTrace origTrace, IntSet assumps) {
@@ -77,23 +76,9 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 i++;
             }
         }
-
-        // printing out final stuff for debugging purposes
-        System.out.println("\nPrinting out reducedClauseMap values: "); // debugging
-        for (Clause c : reducedClauseMap.values()) {
-            System.out.println(c);
-            System.out.println("  antes=");
-            Iterator<Clause> it2 = c.antecedents();
-            while(it2.hasNext()) {
-                System.out.println("    " + it2.next());
-            }
-        }
-        System.out.println("~~~~~~");
     }
 
-    // TODO: implement and document
-    // TODO: add visited check
-
+    // TODO: document
     private Map<Integer, TraceNode> reductionProcess (
         Pair<Clause, Optional<Integer>> currPair, 
         Queue<Pair<Clause, Optional<Integer>>> bfsQueue, Set<Integer> visited, 
@@ -106,29 +91,6 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         TraceNode currTraceNode = new TraceNode(currLiterals, new ArrayList<>());
         boolean containsAssump = false;
         TraceNode newParent = new TraceNode(currClause);
-
-        // print statements for debugging purposes
-        System.out.println("Current pair: " + currPair);
-        System.out.println("Current clause, expanded: ");
-        System.out.println(currClause + " || " + currHashCode);
-        System.out.println("  antes=");
-        Iterator<Clause> it0 = currClause.antecedents();
-        while(it0.hasNext()) {
-            System.out.println("    " + it0.next());
-        }
-        System.out.println("Current visited set: " + visited);
-        System.out.println("New bfsQueue: " + bfsQueue);
-        System.out.println("Current tree: "); // debugging
-        for (Clause c : reducedTraceMap.values()) {
-            System.out.println(c);
-            System.out.println("  antes=");
-            Iterator<Clause> it2 = c.antecedents();
-            while(it2.hasNext()) {
-                System.out.println("    " + it2.next());
-            }
-        }
-        System.out.println(" - - - - - - - ");
-
 
         // C == {} case:
         //    if C is an empty clause {}, push antecedents to queue. if no antecedents, move onto the queue.
@@ -174,7 +136,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     Map<Integer, TraceNode> newReducedTraceMap = new HashMap<>();
                     newReducedTraceMap.put(0, EMPTY_CLAUSE);
                     return reductionProcess(
-                        new Pair(EMPTY_CLAUSE, Optional.empty()), newBfsQueue, visited, newReducedTraceMap, assumps);
+                        new Pair<>(EMPTY_CLAUSE, Optional.empty()), newBfsQueue, visited, newReducedTraceMap, assumps);
                 }
 
                 // C is other clause case:
@@ -186,9 +148,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     Clause unitProppedClause = unitProppedClauseOpt.get();
                     List<Integer> unitProppedLiterals = constructLiteralsList(unitProppedClause);
 
-                    // THIS SHOULD ONLY BE DONE IF ANTECEDENTS DON'T RESOLVE
-
-                    // check literals equality with parent
+                    // check literals equality with parent (this should happen if antecedents don't resolve)
                     if (parentHashOpt.isPresent() && (reducedTraceMap.containsKey(parentHashOpt.get()))) {
                         Integer parentHash = parentHashOpt.get();
                         TraceNode parentClause = reducedTraceMap.get(parentHash);
@@ -198,7 +158,6 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                             // add to tree. remove elements of queue with same parent.
                             boolean queueContainsSiblings = true;
                             while (queueContainsSiblings) {
-                                // TODO: check the consequences of this.
                                 if (bfsQueue.isEmpty()) {
                                     break;
                                 }
@@ -226,14 +185,12 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     Iterator<Clause> anteIterator = currClause.antecedents();
                     while (anteIterator.hasNext()) {
                         Clause nextAnte = anteIterator.next();
-                        System.out.println("Hashcode of thing to add: " + nextAnte.hashCode());
+                        // TODO: not completely sure this check works
                         if (visited.contains(nextAnte.hashCode())) {
-                            System.out.println("SKIPPING!");
                             continue;
                         }
                         Pair<Clause, Optional<Integer>> newPair =  
-                            new Pair<>(nextAnte, Optional.of(currClause.hashCode()));
-                        System.out.println("Adding to bfsQueue: " + newPair);
+                            new Pair<>(nextAnte, Optional.of(currHashCode));
                         bfsQueue.add(newPair);
                     }
                 }
@@ -244,8 +201,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             int parentHash = parentHashOpt.get();
             if (reducedTraceMap.containsKey(parentHash)) {
                 TraceNode parentTraceNode = reducedTraceMap.get(parentHash);
-                System.out.println("adding antecedent: " + newParent + " to parent: " + parentTraceNode);
-                
+
                 boolean anteAlreadyPresent = false;
                 Iterator<Clause> parentAntes = parentTraceNode.antecedents();
                 while (parentAntes.hasNext()) {

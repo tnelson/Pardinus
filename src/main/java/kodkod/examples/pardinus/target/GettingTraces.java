@@ -145,6 +145,7 @@ public class GettingTraces {
                 ResolutionBasedProof ohno = (ResolutionBasedProof) sol.proof();
                 ResolutionTrace origTrace = ohno.solver.proof();
                 Iterator<Clause> coreIt = origTrace.iterator();
+                
                 System.out.println("Original trace: ");
                 while (coreIt.hasNext()) { // top level clauses
                     Clause c = coreIt.next();
@@ -158,23 +159,26 @@ public class GettingTraces {
                         System.out.println("    " + it2.next());
                     }
                 }
+                System.out.println();
 
                 // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
                 IntSet assumps = new IntBitSet(6);
-                assumps.add(5);
-                // TODO: currently seems like propagation works but resolution doesn't
+                assumps.add(2);
                 ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
                 Iterator<Clause> reducedIt = reducedTrace.iterator();
-                /*
-                System.out.println("=====\nNew Axioms:");
-                IntIterator newAxioms = reducedTrace.axioms().iterator();
-                while (newAxioms.hasNext()) {
-                    System.out.println(reducedTrace.get(newAxioms.next()));
-                }
-                System.out.println("========");
-                 */
+
+                System.out.println("Reduced trace:");
                 while (reducedIt.hasNext()) {
-                    System.out.println(reducedIt.next());
+                    Clause c = reducedIt.next();
+                    if (c == null) {
+                        continue;
+                    }
+                    System.out.println(c);
+                    System.out.println("  antes=");
+                    Iterator<Clause> it2 = c.antecedents();
+                    while(it2.hasNext()) {
+                        System.out.println("    " + it2.next());
+                    }
                 }
 
 
