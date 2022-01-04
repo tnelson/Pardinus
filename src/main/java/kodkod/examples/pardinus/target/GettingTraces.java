@@ -63,7 +63,6 @@ public class GettingTraces {
         */
 
         // additional formula for testing: 2
-
         /*
         Formula f = p.some().or(q.some());
         f.and(p.some().or(q.no()));
@@ -72,8 +71,8 @@ public class GettingTraces {
         f.and(q.some().or(r.no()));
         f.and(q.some().or(p.no()));
         f.and(q.no().or(r.no()));
-
-         */
+        */
+        
 
 
 
@@ -95,7 +94,7 @@ public class GettingTraces {
 
 
         // additional formula for testing: 3
-
+        
         Formula f = p.some().or(q.some()).or(r.some());
         f.and(p.some().or(q.no()).or(r.no()));
         f.and(p.no().or(q.some()).or(r.no()));
@@ -104,7 +103,7 @@ public class GettingTraces {
         f.and(p.some().or(q.no()).or(r.some()));
         f.and(p.some().or(q.some()).or(r.no()));
         f.and(p.no().or(q.no()).or(r.some()));
-
+        
 
 
 
@@ -163,7 +162,9 @@ public class GettingTraces {
 
                 // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
                 IntSet assumps = new IntBitSet(6);
-                assumps.add(2);
+                //assumps.add(1);
+                assumps.add(1);
+                assumps.add(5);
                 ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
                 Iterator<Clause> reducedIt = reducedTrace.iterator();
 
@@ -180,50 +181,6 @@ public class GettingTraces {
                         System.out.println("    " + it2.next());
                     }
                 }
-
-
-                // building set of clauses from unsat core
-                /*
-                IntSet coreClauseIndices = trace.core();
-                Set<Clause> coreClauses = new HashSet<>();
-                IntIterator coreClauseIterator = coreClauseIndices.iterator();
-                while (coreClauseIterator.hasNext()) {
-                    int nextClauseIndex = coreClauseIterator.next();
-                    Clause nextClause = trace.get(nextClauseIndex);
-                    coreClauses.add(nextClause);
-                }*/
-
-
-                //System.out.println(trace);
-                //System.out.println(trace.getClass());
-                /*
-                Iterator<Clause> it = reducedTrace.iterator();
-
-
-                while (it.hasNext()) { // top level clauses
-                    Clause c = it.next();
-                    if (c == null) {
-                        continue;
-                    }
-                    System.out.println(c);
-                    System.out.println("  antes=");
-                    Iterator<Clause> it2 = c.antecedents();
-                    while(it2.hasNext()) {
-                        System.out.println("    " + it2.next());
-                    }
-                }
-
-                 */
-
-                /*
-                while (coreIt.hasNext()) {
-                    Formula fmla = coreIt.next();
-                    System.out.println(fmla);
-                    BinaryFormula binFmla = (BinaryFormula) fmla;
-                    System.out.println("left = " + binFmla.left());
-                    System.out.println("right = " + binFmla.right());
-                }*/
-
             }
 
             count++;
@@ -234,15 +191,6 @@ public class GettingTraces {
 
         }
         System.out.println("total number of solutions iterated: "+count);
-
-        int[] resolveArr1 = { 1, 2, 3 };
-        int[] resolveArr2 = { -2, -3, 4 };
-        int[] resolveEx = LazyTrace.resolve(resolveArr1, true, resolveArr2, true);
-        for (int i : resolveEx) {
-            System.out.println(i);
-        }
-
-
     }
 
     /**
