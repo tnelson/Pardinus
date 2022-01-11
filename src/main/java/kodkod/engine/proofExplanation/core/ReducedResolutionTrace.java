@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import kodkod.engine.satlab.Clause;
 import kodkod.engine.satlab.ResolutionTrace;
@@ -19,15 +20,6 @@ import kodkod.util.ints.IntBitSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.Ints;
-
-/**
- * Current issue:
- * I didn't understand this correctly earlier, but the ClauseView class is essentially an accessor,
- * or a view, for the Clause currently being iterated on. Because of this, building collections of
- * ClauseViews is ineffective, as all of them eventually refer to the same Clause. Can we replace
- * ClauseViews with a more concrete, raw extension of the Clause class like TraceNode to prevent
- * this issue?
- */
 
 /**
  * An implementation of the {@linkplain ResolutionTrace} interface inspired by
@@ -76,6 +68,10 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 i++;
             }
         }
+        if (reducedClauseMap.containsKey(0)) {
+            this.reducedTrace[i] = reducedClauseMap.get(0);
+        }
+
     }
 
     // TODO: document
@@ -199,21 +195,26 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 
         if (parentHashOpt.isPresent() && !containsAssump) {
             int parentHash = parentHashOpt.get();
+            TraceNode parentTraceNode;
             if (reducedTraceMap.containsKey(parentHash)) {
-                TraceNode parentTraceNode = reducedTraceMap.get(parentHash);
-
-                boolean anteAlreadyPresent = false;
-                Iterator<Clause> parentAntes = parentTraceNode.antecedents();
-                while (parentAntes.hasNext()) {
-                    if (parentAntes.next().equals(newParent)) {
-                        anteAlreadyPresent = true;
-                    }
-                }
-                if (!anteAlreadyPresent) {
-                    parentTraceNode.addAntecedent(newParent);
-                }
+                parentTraceNode = reducedTraceMap.get(parentHash);
             } else {
-                throw new Exception("Assigned parent not found!");
+                // we only get to this case if we were previously in a C == -A case,
+                // in which case the assigned parent should be changed to the empty clause
+                assert reducedTraceMap.size() == 1;
+                parentTraceNode = reducedTraceMap.get(0);
+            }
+             
+
+            boolean anteAlreadyPresent = false;
+            Iterator<Clause> parentAntes = parentTraceNode.antecedents();
+            while (parentAntes.hasNext()) {
+                if (parentAntes.next().equals(newParent)) {
+                    anteAlreadyPresent = true;
+                }
+            }
+            if (!anteAlreadyPresent) {
+                parentTraceNode.addAntecedent(newParent);
             }
         }
 
@@ -271,12 +272,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 newLiterals.add(nextLiteral);
             }
         }
-        List<Clause> antecedents = this.constructAntecedentsList(clause);
+        List<TraceNode> antecedents = this.constructAntecedentsList(clause)
+            .stream()
+            .map(TraceNode::new)
+            .collect(Collectors.toList());
 
-        return Optional.of(new ClauseView(antecedents, newLiterals));
+        return Optional.of(new TraceNode(newLiterals, antecedents));
     }
 
-    // TODO: revisit this.
     private List<Clause> constructAntecedentsList(Clause clause) {
         Iterator<Clause> antecedentsIt = clause.antecedents();
         List<Clause> antecedents = new ArrayList<>();
@@ -289,7 +292,6 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         return antecedents;
     }
 
-    // TODO: document + re-evaluate need for this function
     private List<Integer> constructLiteralsList(Clause clause) {
         IntIterator litIt = clause.literals();
         List<Integer> lits = new ArrayList<>();
@@ -309,16 +311,6 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     public Iterator<Clause> iterator() {
         List<Clause> trace = Arrays.asList(reducedTrace);
         return trace.iterator();
-        /*
-        return new ClauseIterator(new IntIterator() {
-			int index = 0;
-			public boolean hasNext() { return index>=0 && index < reducedTrace.length; }
-			public int next() { 
-				if (!hasNext()) throw new NoSuchElementException();
-				return index++;
-			}
-			public void remove() { throw new UnsupportedOperationException(); } 
-		});*/
     }
 
     /**
@@ -332,18 +324,20 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 
     @Override
     public Iterator<Clause> iterator(IntSet indices) {
-        if (indices.isEmpty() || valid(indices)) {
+        /*if (indices.isEmpty() || valid(indices)) {
 			return new ClauseIterator(indices.iterator());
 		}
-		throw new IndexOutOfBoundsException("invalid indices: " + indices);
+		throw new IndexOutOfBoundsException("invalid indices: " + indices);*/
+        return new ArrayList<Clause>().iterator();
     }
 
     @Override
     public Iterator<Clause> reverseIterator(IntSet indices) {
-        if (indices.isEmpty() || valid(indices)) {
+        /*if (indices.isEmpty() || valid(indices)) {
 			return new ClauseIterator(indices.iterator(Integer.MAX_VALUE, Integer.MIN_VALUE));
 		}
-		throw new IndexOutOfBoundsException("invalid indices: " + indices);
+		throw new IndexOutOfBoundsException("invalid indices: " + indices);*/
+        return new ArrayList<Clause>().iterator();
     }
 
     /**
@@ -370,7 +364,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 	 * @see kodkod.engine.satlab.ResolutionTrace#reverseIterator()
 	 */
 	public Iterator<Clause> reverseIterator() { 
-		return new ClauseIterator(new IntIterator() {
+		/*return new ClauseIterator(new IntIterator() {
 			int index = reducedTrace.length - 1;
 			public boolean hasNext() { return index>=0 && index < reducedTrace.length; }
 			public int next() { 
@@ -378,7 +372,8 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 				return index--;
 			}
 			public void remove() { throw new UnsupportedOperationException(); } 
-		}); 
+		});*/
+        return new ArrayList<Clause>().iterator();
 	}
 
     @Override
@@ -430,164 +425,5 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         return Ints.EMPTY_SET;
     }
     
-    /**
-     * A mutable implementation of the Clause abstract class.
-     * @author Swetabh Changkakoti
-     */
-    private class ClauseView extends Clause {
-
-        private List<Clause> antecedents;
-        private List<Integer> literals;
-
-        protected ClauseView() {}
-
-        // TODO: document
-        ClauseView(List<Clause> antecedents, List<Integer> literals) {
-            this.antecedents = antecedents;
-            this.literals = literals;
-        }
-
-        ClauseView(Clause clause) {
-            // TODO: do we need defensive copies here?
-            this.antecedents = new ArrayList<>(constructAntecedentsList(clause));
-            this.literals = new ArrayList<>(constructLiteralsList(clause));
-        }
-
-        // TODO: change this so that it doesn't set the current index to that of 
-        //  - a clause that was erased in reduction
-        /**
-		 * Sets the state of this clause view to represent
-		 * the ith clause in the trace and returns this.
-		 * @ensures sets the state of this clause view to represent
-		 * the ith clause in the trace
-         * @throws Exception when trying to access an index that has been removed in reduction.
-		 * @return this
-		 */
-		ClauseView set(int index) throws Exception {
-            Clause origIthClause = origTrace.get(index);
-            // building set of literals
-            /*
-            IntIterator litIterator = origIthClause.literals();
-            Set<Integer> litSet = new HashSet<Integer>();
-            while (litIterator.hasNext()) {
-                litSet.add(litIterator.next());
-            }
-            */
-            //Clause currIthClauseOrNull = reducedClauseMap.get(litSet.hashCode());
-            Clause currIthClauseOrNull = reducedClauseMap.get(origIthClause.hashCode());
-            if (currIthClauseOrNull == null) {
-                throw new Exception("Cannot access removed Clause.");
-            }
-            List<Clause> ithClauseAnteList = constructAntecedentsList(currIthClauseOrNull);
-            IntIterator ithClauseLitsIt = currIthClauseOrNull.literals();
-            List<Integer> ithClauseLits = new ArrayList<>();
-            while (ithClauseLitsIt.hasNext()) {
-                ithClauseLits.add(ithClauseLitsIt.next());
-            }
-
-            this.antecedents = ithClauseAnteList;
-            this.literals = ithClauseLits;
-			return this;
-		}
-
-        /**
-         * Adds a new antecedent clause to the ClauseView.
-         * @param newAnte The new antecedent clause to be added.
-         */
-        public void addAntecedent(Clause newAnte) {
-            this.antecedents.add(newAnte);
-        }
-        
-
-        @Override
-        public int size() {
-            return this.literals.size();
-        }
-
-        @Override
-        public IntIterator literals() {
-            int n = this.literals.size();
-            int[] literalsArray = new int[n];
-            for (int i = 0; i < n; i++) {
-                literalsArray[i] = this.literals.get(i);
-            }
-            return new IntArrayIterator(literalsArray, 0, this.literals.size());
-        }
-
-        @Override
-        public int maxVariable() {
-            return StrictMath.abs(this.literals.get(this.literals.size() - 1));
-        }
-
-        @Override
-        public int[] toArray(int[] array) {
-            // TODO: REDO THIS 
-            return array;
-        }
-
-        @Override
-        public int numberOfAntecedents() {
-            return this.antecedents.size();
-        }
-
-        @Override
-        public Iterator<Clause> antecedents() {
-            // TODO: fill this in
-            return this.antecedents.iterator();
-        }
-
-    }
-
-    /**
-	 * A clause iterator wrapper for an int iterator.
-	 * @author Emina Torlak
-	 */
-	private final class ClauseIterator extends ClauseView implements Iterator<Clause> {
-		private final IntIterator itr;
-		/**
-		 * Constructs a clause iterator that will iterate over the clauses in this.trace
-		 * located at the indices given by itr.  The given iterator must return valid indices.
-		 */
-		ClauseIterator(IntIterator itr) {
-			this.itr = itr;
-		}
-		public boolean hasNext() { return itr.hasNext(); }
-		public Clause next() { 
-            try {
-                return set(itr.next()); 
-            } catch (NoSuchElementException ne) {
-                throw ne;
-            } catch (Exception e) {
-                return this.next();
-            }
-        }
-		public void remove() { throw new UnsupportedOperationException(); }
-	}
-
-    /**
-	 * An int iterator that iterates over the portion of an integer array
-	 * in the increasing order of indices.
-	 * @author Emina Torlak
-	 */
-	private static final class IntArrayIterator implements IntIterator {
-		private final int[] array;
-		private int from;
-		private final int to;	
-		/**
-		 * Constructs an int iterator that iterates over the given array,
-		 * returning the elements between from, inclusive, and to, exclusive.
-		 * @requires 0 <= from < array.length < Integer.MAX_VALUE
-		 */
-		IntArrayIterator(int[] array, int from, int to) {
-			this.array = array;
-			this.from = from;
-			this.to = to;
-		}
-		public boolean hasNext() {	return from >= 0 && from < to; }
-		public int next() {
-			if (!hasNext()) throw new NoSuchElementException();
-			return array[from++];
-		}
-		public void remove() {	throw new UnsupportedOperationException(); }	
-	}
+    
 }

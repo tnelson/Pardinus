@@ -13,6 +13,7 @@ import kodkod.instance.*;
 import kodkod.util.ints.IntBitSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
+import kodkod.util.ints.IntTreeSet;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -161,10 +162,11 @@ public class GettingTraces {
                 System.out.println();
 
                 // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
-                IntSet assumps = new IntBitSet(6);
+                IntSet assumps = new IntTreeSet();
+                assumps.add(-1);
+                //assumps.add(3);
                 //assumps.add(1);
-                assumps.add(1);
-                assumps.add(5);
+                //assumps.add(5);
                 ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
                 Iterator<Clause> reducedIt = reducedTrace.iterator();
 
