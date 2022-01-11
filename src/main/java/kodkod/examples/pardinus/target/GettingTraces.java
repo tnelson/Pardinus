@@ -163,7 +163,7 @@ public class GettingTraces {
 
                 // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
                 IntSet assumps = new IntTreeSet();
-                assumps.add(-1);
+                //assumps.add(-2);
                 //assumps.add(3);
                 //assumps.add(1);
                 //assumps.add(5);
@@ -182,6 +182,21 @@ public class GettingTraces {
                     while(it2.hasNext()) {
                         System.out.println("    " + it2.next());
                     }
+                }
+
+                System.out.println("\nReduced trace core:");
+                IntSet rtCore = reducedTrace.core();
+                for (IntIterator rtCoreIt = rtCore.iterator(); rtCoreIt.hasNext(); ) {
+                    System.out.println(origTrace.get(rtCoreIt.next()));
+                }
+
+                System.out.println("\nReduced trace iterator behavior:");
+                IntSet iteratorTestInts = new IntTreeSet();
+                iteratorTestInts.add(0);
+                iteratorTestInts.add(4);
+                iteratorTestInts.add(2);
+                for (Iterator<Clause> itTestIt = reducedTrace.reverseIterator(iteratorTestInts); itTestIt.hasNext(); ) {
+                    System.out.println(itTestIt.next());
                 }
             }
 

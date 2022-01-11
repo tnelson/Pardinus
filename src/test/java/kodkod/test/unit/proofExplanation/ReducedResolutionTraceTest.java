@@ -70,73 +70,6 @@ public class ReducedResolutionTraceTest {
         this.f = p.some().and(p.no());
     }
 
-    /*private ReducedResolutionTrace obtainReducedTrace() {
-        // Note: new "Explorer" iterator vs. Kodkod
-        Explorer<Solution> sols =  this.solver.solveAll(this.f, this.pbounds);
-        int count = 0;
-        while(sols.hasNext()) {
-            Solution sol = sols.next();
-
-            if(sol.unsat()) {
-                System.out.println(sol.outcome());
-                System.out.println(sol.stats().primaryVariables());
-                System.out.println(sol.stats().clauses());
-                // ? will this affect the proof, or just the core?
-                // lots of strategies: this one is guaranteed minimal
-                // if slow, try HybridStrategy (not guaranteed min, but good effort)
-                sol.proof().minimize(new RCEStrategy(sol.proof().log()));
-                ResolutionBasedProof ohno = (ResolutionBasedProof) sol.proof();
-                ResolutionTrace origTrace = ohno.solver.proof();
-                Iterator<Clause> coreIt = origTrace.iterator();
-                
-                System.out.println("Original trace: ");
-                while (coreIt.hasNext()) { // top level clauses
-                    Clause c = coreIt.next();
-                    if (c == null) {
-                        continue;
-                    }
-                    System.out.println(c);
-                    System.out.println("  antes=");
-                    Iterator<Clause> it2 = c.antecedents();
-                    while(it2.hasNext()) {
-                        System.out.println("    " + it2.next());
-                    }
-                }
-                System.out.println();
-
-                // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
-                IntSet assumps = new IntBitSet(6);
-                //assumps.add(1);
-                assumps.add(1);
-                assumps.add(5);
-                ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
-                Iterator<Clause> reducedIt = reducedTrace.iterator();
-
-                System.out.println("Reduced trace:");
-                while (reducedIt.hasNext()) {
-                    Clause c = reducedIt.next();
-                    if (c == null) {
-                        continue;
-                    }
-                    System.out.println(c);
-                    System.out.println("  antes=");
-                    Iterator<Clause> it2 = c.antecedents();
-                    while(it2.hasNext()) {
-                        System.out.println("    " + it2.next());
-                    }
-                }
-            }
-
-            count++;
-            if(sol.sat()) {
-                System.out.println("-------------------");
-                System.out.println(sol.instance().relationTuples());
-            }
-
-        }
-        System.out.println("total number of solutions iterated: "+count);    
-    }*/
-
     // {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
     @Before
     public void setUpSimplest() throws Exception {
@@ -202,5 +135,8 @@ public class ReducedResolutionTraceTest {
         this.f.and(p.no().or(q.no()).or(r.some()));
     }
 
+    // testing the behavior of the `core` method
+
+    
 
 }
