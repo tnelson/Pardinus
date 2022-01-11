@@ -14,6 +14,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import kodkod.engine.satlab.Clause;
@@ -72,9 +73,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 reducedTraceList.add(reducedClauseMap.get(origClause.hashCode()));
             }
         }
-        if (reducedClauseMap.containsKey(0)) {
-            reducedTraceList.add(reducedClauseMap.get(0));
-        }
+        
         this.reducedTrace = new Clause[reducedTraceList.size()];
         for (int i = 0; i < this.reducedTrace.length; i++) {
             this.reducedTrace[i] = reducedTraceList.get(i);
@@ -82,6 +81,9 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 
     }
 
+    /**
+     * Sets up this.reducedClauseMap using origTrace, given that there are no assumptions being propagated.
+     */
     private void setUpClonedClauseMap() {
         for (Iterator<Clause> origIt = origTrace.iterator(); origIt.hasNext(); ) {
             Clause clause = origIt.next();
@@ -135,10 +137,10 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     Queue<Pair<Clause, Optional<Integer>>> newBfsQueue = new LinkedList<>();
                     for (Iterator<Clause> anteIterator = currClause.antecedents(); anteIterator.hasNext(); ) {
                         newBfsQueue.add(new Pair<>(anteIterator.next(), 
-                            Optional.of(currClause.hashCode()))); // encoding current clause as parent
+                            Optional.of(currHashCode))); // encoding current clause as parent
                     }
                     Map<Integer, TraceNode> newReducedTraceMap = new HashMap<>();
-                    newReducedTraceMap.put(0, EMPTY_CLAUSE);
+                    newReducedTraceMap.put(currHashCode, EMPTY_CLAUSE);
                     return reductionProcess(
                         new Pair<>(EMPTY_CLAUSE, Optional.empty()), newBfsQueue, visited, newReducedTraceMap, assumps);
                 }
@@ -207,8 +209,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             } else {
                 // we only get to this case if we were previously in a C == -A case,
                 // in which case the assigned parent should be changed to the empty clause
-                assert reducedTraceMap.size() == 1;
+                
+                // look for empty clause and get its hashCode
                 parentTraceNode = reducedTraceMap.get(0);
+                for (TraceNode tn : reducedTraceMap.values()) {
+                    if (tn.size() == 0) {
+                        parentTraceNode = tn;
+                    }
+                }
             }
 
             boolean anteAlreadyPresent = false;

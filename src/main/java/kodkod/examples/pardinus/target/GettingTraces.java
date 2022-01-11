@@ -66,12 +66,12 @@ public class GettingTraces {
         // additional formula for testing: 2
         /*
         Formula f = p.some().or(q.some());
-        f.and(p.some().or(q.no()));
-        f.and(q.no().or(r.some()));
-        f.and(p.no().or(r.no()));
-        f.and(q.some().or(r.no()));
-        f.and(q.some().or(p.no()));
-        f.and(q.no().or(r.no()));
+        f = f.and(p.some().or(q.no()));
+        f = f.and(q.no().or(r.some()));
+        f = f.and(p.no().or(r.no()));
+        f = f.and(q.some().or(r.no()));
+        f = f.and(q.some().or(p.no()));
+        f = f.and(q.no().or(r.no()));
         */
         
 
@@ -81,29 +81,29 @@ public class GettingTraces {
 
         /*
         Formula f = p.no().or(q.no());
-        f.and(p.no().or(q.some()));
-        f.and(q.some().or(r.no()));
-        f.and(p.some().or(r.some()));
-        f.and(q.no().or(r.some()));
-        f.and(q.no().or(p.some()));
-        f.and(q.some().or(r.some()));
+        f = f.and(p.no().or(q.some()));
+        f = f.and(q.some().or(r.no()));
+        f = f.and(p.some().or(r.some()));
+        f = f.and(q.no().or(r.some()));
+        f = f.and(q.no().or(p.some()));
+        f = f.and(q.some().or(r.some()));
 
          */
 
-
-
-
-
         // additional formula for testing: 3
-        
         Formula f = p.some().or(q.some()).or(r.some());
-        f.and(p.some().or(q.no()).or(r.no()));
-        f.and(p.no().or(q.some()).or(r.no()));
-        f.and(p.no().or(q.no()).or(r.no()));
-        f.and(p.some().or(q.no()).or(r.some()));
-        f.and(p.some().or(q.no()).or(r.some()));
-        f.and(p.some().or(q.some()).or(r.no()));
-        f.and(p.no().or(q.no()).or(r.some()));
+
+        // additional formula for testing: 4
+        /*
+        Formula f = p.some().or(q.some()).or(r.some());
+        f = f.and(p.some().or(q.no()).or(r.no()));
+        f = f.and(p.no().or(q.some()).or(r.no()));
+        f = f.and(p.no().or(q.no()).or(r.no()));
+        f = f.and(p.some().or(q.no()).or(r.some()));
+        f = f.and(p.some().or(q.no()).or(r.some()));
+        f = f.and(p.some().or(q.some()).or(r.no()));
+        f = f.and(p.no().or(q.no()).or(r.some()));
+        */
         
 
 
