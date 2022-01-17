@@ -285,4 +285,33 @@ public class ReducedResolutionTraceTest {
         tearDown();
     }
 
+    @Test
+    public void coreOnThreeExampleWithPosAndNegAssumps() {
+        setUpWithThree();
+
+        for (Explorer<Solution> sols = solver.solveAll(f, pbounds); sols.hasNext(); ) {
+            Solution sol = sols.next();
+            if (sol.unsat()) {
+                sol.proof().minimize(new RCEStrategy(sol.proof().log()));
+                ResolutionBasedProof ohno = (ResolutionBasedProof) sol.proof();
+                ResolutionTrace origTrace = ohno.solver.proof();
+                IntSet assumps = new IntTreeSet();
+                assumps.add(1);
+                assumps.add(-2);
+                ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
+                IntSet reducedCore = reducedTrace.core();
+
+                IntSet expectedIndices = new IntTreeSet();
+                expectedIndices.add(5); // {-1, 2, -9}
+                expectedIndices.add(12); // {9}
+
+                assertEquals(expectedIndices, reducedCore);
+            }
+        }
+
+        tearDown();
+    }
+
+    // TODO: add more tests
+
 }

@@ -103,6 +103,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         List<Integer> currLiterals = constructLiteralsList(currClause);
         TraceNode currTraceNode = new TraceNode(currLiterals, new ArrayList<>());
         boolean containsAssump = false;
+        
         TraceNode newParent = new TraceNode(currClause);
 
         // C == {} case:
@@ -136,8 +137,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 if ((currLiterals.size() == 1) && (currLiterals.get(0) == (-1 * assump))) {
                     Queue<Pair<Clause, Optional<Integer>>> newBfsQueue = new LinkedList<>();
                     for (Iterator<Clause> anteIterator = currClause.antecedents(); anteIterator.hasNext(); ) {
-                        newBfsQueue.add(new Pair<>(anteIterator.next(), 
-                            Optional.of(currHashCode))); // encoding current clause as parent
+                        Clause nextAnte = anteIterator.next();
+                        if (checkResolvesUnderAssump(nextAnte, currClause, assump)) {
+                            newBfsQueue.add(new Pair<>(nextAnte,
+                                Optional.of(currHashCode))); // encoding current clause as parent
+                        } else {
+                            System.out.println("sibling resolution check failed between child: " 
+                                + nextAnte + " and parent: " + currClause);
+                        }
                     }
                     Map<Integer, TraceNode> newReducedTraceMap = new HashMap<>();
                     newReducedTraceMap.put(currHashCode, EMPTY_CLAUSE);
@@ -152,12 +159,14 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                 // given our prior checks, this should always be true
                 if (unitProppedClauseOpt.isPresent()) {
                     List<Integer> unitProppedLiterals = constructLiteralsList(unitProppedClauseOpt.get());
+                    newParent = new TraceNode(unitProppedLiterals, new ArrayList<>());
 
                     // check literals equality with parent (this should happen if antecedents don't resolve)
                     if (parentHashOpt.isPresent() && (reducedTraceMap.containsKey(parentHashOpt.get()))) {
                         Integer parentHash = parentHashOpt.get();
                         TraceNode parentClause = reducedTraceMap.get(parentHash);
                         List<Integer> parentLiterals = constructLiteralsList(parentClause);
+                        
                         if (unitProppedLiterals.equals(parentLiterals)) {
                             parentClause.resetAntecedents();
                             // add to tree. remove elements of queue with same parent.
@@ -176,8 +185,6 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                         }
                     }
                     
-                    newParent = new TraceNode(unitProppedLiterals, new ArrayList<>());
-
                     // this check and potential replacement ensures that if there is a duplicate 
                     // of an ante clause, then we do not have different instances in the ante and leaf positions
                     if (reducedTraceMap.containsKey(currHashCode)) {
@@ -189,16 +196,18 @@ public class ReducedResolutionTrace implements ResolutionTrace {
                     
                     for (Iterator<Clause> anteIterator = currClause.antecedents(); anteIterator.hasNext(); ) {
                         Clause nextAnte = anteIterator.next();
-                        // TODO: not completely sure this check works
+                        // not completely sure this check works
                         if (visited.contains(nextAnte.hashCode())) {
                             continue;
                         }
-                        Pair<Clause, Optional<Integer>> newPair =  
-                            new Pair<>(nextAnte, Optional.of(currHashCode));
-                        bfsQueue.add(newPair);
+                        if (checkResolvesUnderAssump(nextAnte, currClause, assump)) {
+                            Pair<Clause, Optional<Integer>> newPair =  
+                                new Pair<>(nextAnte, Optional.of(currHashCode));
+                            bfsQueue.add(newPair);
+                        }
                     }
                 }
-            }
+            } 
         }
 
         if (parentHashOpt.isPresent() && !containsAssump) {
@@ -241,6 +250,26 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             // if the bfsQueue is empty, then return the current tree
             return reducedTraceMap;
         }        
+    }
+
+    // check if a clause resolves with any of its parents antecedents under an assumption literal
+    private boolean checkResolvesUnderAssump(Clause currClause, Clause parentClause, int assump) {
+        List<Integer> currLits = constructLiteralsList(currClause);
+        if (currLits.contains(assump)) {
+            return false;
+        }
+        for (Iterator<Clause> anteIt = parentClause.antecedents(); anteIt.hasNext(); ) {
+            List<Integer> anteLits = constructLiteralsList(anteIt.next());
+            if (anteLits.contains(assump)) {
+                continue;
+            }
+            for (int lit: currLits) {
+                if (anteLits.contains(-1 * lit) && (lit != assump)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -328,7 +357,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
         return reducedTrace.length;
     }
 
-    /**
+    /** TODO: change doc
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.ResolutionTrace#core()
 	 */
@@ -377,7 +406,7 @@ public class ReducedResolutionTrace implements ResolutionTrace {
 
     /**
 	 * {@inheritDoc}
-	 * @see kodkod.engine.satlab.ResolutionTrace#core(IntSet)
+	 * @see kodkod.engine.satlab.ResolutionTrace#iterator(IntSet)
 	 */
     public Iterator<Clause> iterator(IntSet indices) {
         Iterator<Integer> idxIterator = orderedIntIterator(indices, (a, b) -> a.compareTo(b) );
@@ -398,6 +427,9 @@ public class ReducedResolutionTrace implements ResolutionTrace {
     }
 
     /**
+     * NOTE: as of now, this is ONLY meant to be used for the case:
+     *     trace.reverseIterator(trace.core())
+     * As a result, the next() method of the iterator has more processing
 	 * {@inheritDoc}
 	 * @see kodkod.engine.satlab.ResolutionTrace#reverseIterator(IntSet)
 	 */
@@ -409,12 +441,20 @@ public class ReducedResolutionTrace implements ResolutionTrace {
             }
             public Clause next() throws NoSuchElementException {
                 // NOTE: this is error-prone
-                int nextInd = idxIterator.next();
+                // the index from the original core
+                int nextInd = idxIterator.next(); 
+                int origHashCode = origTrace.get(nextInd).hashCode();
+                if (reducedClauseMap.containsKey(origHashCode)) {
+                    return reducedClauseMap.get(origHashCode);
+                } else {
+                    throw new NoSuchElementException("Index absent in original trace: " + nextInd);
+                }
+                /*
                 try {
                     return reducedTrace[nextInd];
                 } catch (IndexOutOfBoundsException ie) {
                     throw new NoSuchElementException("Index absent in reduced trace: " + nextInd);
-                }
+                }*/
             }
         };
     }

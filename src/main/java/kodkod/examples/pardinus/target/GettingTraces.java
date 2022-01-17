@@ -3,21 +3,28 @@ package kodkod.examples.pardinus.target;
 import kodkod.ast.*;
 import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
+import kodkod.engine.fol2sat.MemoryLogger;
 import kodkod.engine.fol2sat.Translation;
+import kodkod.engine.fol2sat.TranslationLog;
 import kodkod.engine.fol2sat.TranslationRecord;
+import kodkod.engine.fol2sat.Translator;
 import kodkod.engine.proofExplanation.core.CNFUnitPropagator;
 import kodkod.engine.proofExplanation.core.ReducedResolutionTrace;
+import kodkod.engine.proofExplanation.core.ReducedSATProver;
 import kodkod.engine.satlab.*;
 import kodkod.engine.ucore.RCEStrategy;
+import kodkod.engine.ucore.StrategyUtils;
 import kodkod.instance.*;
 import kodkod.util.ints.IntBitSet;
 import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.IntTreeSet;
+import kodkod.util.nodes.AnnotatedNode;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,8 +58,11 @@ public class GettingTraces {
         f = f.and(p.some().or(q.no()));
         f = f.and(p.no().or(q.some()));
         f = f.and(p.no().or(q.no()));
-        System.out.println("formula = "+f);
+
          */
+
+
+        //System.out.println("formula = "+f);
 
 
 
@@ -64,17 +74,22 @@ public class GettingTraces {
         */
 
         // additional formula for testing: 2
-        /*
+
         Formula f = p.some().or(q.some());
         f = f.and(p.some().or(q.no()));
         f = f.and(q.no().or(r.some()));
         f = f.and(p.no().or(r.no()));
-        f = f.and(q.some().or(r.no()));
+        //f = f.and(q.some().or(r.no()));
         f = f.and(q.some().or(p.no()));
-        f = f.and(q.no().or(r.no()));
-        */
-        
+        //f = f.and(q.no().or(r.no()));
 
+
+
+        /*
+        Formula f = q.no().or(r.some());
+        f = f.and(p.no().or(r.no()));
+        f = f.and(q.some().or(p.no()));
+         */
 
 
         // additional formula for testing: negation of 2
@@ -91,7 +106,7 @@ public class GettingTraces {
          */
 
         // additional formula for testing: 3
-        Formula f = p.some().or(q.some()).or(r.some());
+        //Formula f = p.some().or(q.some()).or(r.some());
 
         // additional formula for testing: 4
         /*
@@ -123,6 +138,10 @@ public class GettingTraces {
         eo.setLogTranslation(2);
         eo.setCoreGranularity(2);
         eo.setBitwidth(1); // minimum allowable
+
+        TranslationLog tlog = Translator.translate(f, pb, eo).log();
+        Formula assumpFormula = p.some();
+        //IntSet assumpLits = Translator.translate(f, pb, eo).primaryVariables(assumpFormula);
 
         PardinusSolver s = new PardinusSolver(eo);
 
@@ -161,11 +180,11 @@ public class GettingTraces {
                 }
                 System.out.println();
 
-                // TODO: this construction w/ IntBitSet doesn't allow negations of literals=
+                //System.out.println("Assumption literals: " + assumpLits);
                 IntSet assumps = new IntTreeSet();
                 //assumps.add(-2);
                 //assumps.add(3);
-                //assumps.add(1);
+                assumps.add(2);
                 //assumps.add(5);
                 ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
                 Iterator<Clause> reducedIt = reducedTrace.iterator();
@@ -184,6 +203,27 @@ public class GettingTraces {
                     }
                 }
 
+                System.out.println("Reduced core: " + reducedTrace.core());
+
+                //System.out.println("coreUnits on reducedTrace:" + StrategyUtils.coreUnits(reducedTrace));
+                
+                // TODO: fix current issue: StrategyUtils.coreUnits does not work on reducedTrace but DOES work on origTrace
+                // I think this is because trace.reverseIterator(...) is fed trace.core() as an argument. does our 
+                // ReducedResolutionTrace.reverseIterator(...) // ReducedResolutionTrace.core() interact with the original core?
+                // yes: the latter definitely does. can we make the former do the same? 
+                //     (it's a hack and not technically correct though.)
+                
+
+                ReducedSATProver rsp = new ReducedSATProver(reducedTrace);
+                // TODO: where do I get log from in main?
+                ResolutionBasedProof rbf = new ResolutionBasedProof(rsp, tlog);
+                Map<Formula, Node> fnodeMap = rbf.highLevelCore();
+                System.out.println("\nfnodeMap values: ");
+                for (Node n : fnodeMap.values()) {
+                    System.out.println(n);
+                }
+
+                /*
                 System.out.println("\nReduced trace core:");
                 IntSet rtCore = reducedTrace.core();
                 for (IntIterator rtCoreIt = rtCore.iterator(); rtCoreIt.hasNext(); ) {
@@ -197,7 +237,7 @@ public class GettingTraces {
                 iteratorTestInts.add(2);
                 for (Iterator<Clause> itTestIt = reducedTrace.reverseIterator(iteratorTestInts); itTestIt.hasNext(); ) {
                     System.out.println(itTestIt.next());
-                }
+                }*/
             }
 
             count++;

@@ -64,7 +64,8 @@ public final class ResolutionBasedProof extends Proof {
 	 * resulted in the given SATProver
 	 * @ensures this.formula' = log.formula
 	 */
-	ResolutionBasedProof(SATProver solver, TranslationLog log) {
+    // swetabhch: public
+	public ResolutionBasedProof(SATProver solver, TranslationLog log) {
 		super(log);
 		this.solver = solver;
 		this.coreFilter = null;

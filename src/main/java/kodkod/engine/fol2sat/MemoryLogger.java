@@ -52,7 +52,8 @@ import kodkod.util.nodes.Nodes;
  * @invariant Solver.solve(formula, bounds).instance() == null iff Solver.solve(originalFormula, originalBounds).instance() == null
  * @author Emina Torlak
  */
-final class MemoryLogger extends TranslationLogger {
+// swetabhch: public
+public final class MemoryLogger extends TranslationLogger {
 	private final FixedMap<Formula, BooleanValue> logMap;
 	private final AnnotatedNode<Formula> annotated;
 	private final Bounds bounds;
@@ -64,7 +65,8 @@ final class MemoryLogger extends TranslationLogger {
 	 * @ensures no this.records' 
 	 * @ensures this.log().roots() = Nodes.conjuncts(annotated)
 	 */
-	MemoryLogger(final AnnotatedNode<Formula> annotated, Bounds bounds) {
+    // swetabhch: public
+	public MemoryLogger(final AnnotatedNode<Formula> annotated, Bounds bounds) {
 		this.annotated = annotated;
 		this.bounds = bounds;
 		this.logMap = new FixedMap<Formula, BooleanValue>(Nodes.conjuncts(annotated.node()));
@@ -99,7 +101,8 @@ final class MemoryLogger extends TranslationLogger {
 	 * @see kodkod.engine.fol2sat.TranslationLogger#log()
 	 */
 	@Override
-	TranslationLog log() { return new MemoryLog(annotated,logMap,bounds); }
+    // swetabhch: public
+	public TranslationLog log() { return new MemoryLog(annotated,logMap,bounds); }
 	
 	/**
 	 * A memory-based translation log, written by a MemoryLogger.
