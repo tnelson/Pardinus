@@ -1,6 +1,7 @@
 package kodkod.examples.pardinus.target;
 
 import kodkod.ast.*;
+import kodkod.ast.operator.Multiplicity;
 import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.fol2sat.MemoryLogger;
@@ -20,12 +21,14 @@ import kodkod.util.ints.IntIterator;
 import kodkod.util.ints.IntSet;
 import kodkod.util.ints.IntTreeSet;
 import kodkod.util.nodes.AnnotatedNode;
+import kodkod.util.nodes.Nodes;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  *   EXPERIMENTAL: do not use without care
@@ -75,15 +78,16 @@ public class GettingTraces {
 
         // additional formula for testing: 2
 
-        Formula f = p.some().or(q.some());
-        f = f.and(p.some().or(q.no()));
-        f = f.and(q.no().or(r.some()));
+
+        Formula f = p.some().or(q.some()); //
+        f = f.and(p.some().or(q.no())); //
+        f = f.and(q.no().or(r.some())); //
         f = f.and(p.no().or(r.no()));
         //f = f.and(q.some().or(r.no()));
         f = f.and(q.some().or(p.no()));
         //f = f.and(q.no().or(r.no()));
 
-
+        Formula assumpF = p.no().and(r.no());
 
         /*
         Formula f = q.no().or(r.some());
@@ -109,6 +113,7 @@ public class GettingTraces {
         //Formula f = p.some().or(q.some()).or(r.some());
 
         // additional formula for testing: 4
+
         /*
         Formula f = p.some().or(q.some()).or(r.some());
         f = f.and(p.some().or(q.no()).or(r.no()));
@@ -118,9 +123,8 @@ public class GettingTraces {
         f = f.and(p.some().or(q.no()).or(r.some()));
         f = f.and(p.some().or(q.some()).or(r.no()));
         f = f.and(p.no().or(q.no()).or(r.some()));
-        */
-        
 
+         */
 
 
 
@@ -139,9 +143,37 @@ public class GettingTraces {
         eo.setCoreGranularity(2);
         eo.setBitwidth(1); // minimum allowable
 
-        TranslationLog tlog = Translator.translate(f, pb, eo).log();
-        Formula assumpFormula = p.some();
-        //IntSet assumpLits = Translator.translate(f, pb, eo).primaryVariables(assumpFormula);
+        Translation.Whole translation = Translator.translate(f, pb, eo);
+        System.out.println("Translation map: ");
+        for (Entry<Relation, IntSet> entry : translation.getPrimaryVariables().entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
+        }
+        Map<Relation, IntSet> primVars = translation.getPrimaryVariables();
+        
+        Set<Formula> assumpSet = Nodes.roots(assumpF);
+        IntSet assumpIntSet = new IntTreeSet();
+
+        for (Formula ff : assumpSet) {
+            MultiplicityFormula mf = (MultiplicityFormula) ff;
+            IntSet relIntSet = primVars.get(mf.expression());
+            if (mf.multiplicity() == Multiplicity.NO) {
+                for (IntIterator relIt = relIntSet.iterator(); relIt.hasNext(); ) {
+                    assumpIntSet.add(-1 * relIt.next());
+                }
+            }
+            if (mf.multiplicity() == Multiplicity.SOME) {
+                for (IntIterator relIt = relIntSet.iterator(); relIt.hasNext(); ) {
+                    assumpIntSet.add(relIt.next());
+                }
+            }
+        }
+
+        System.out.println("Original formula: " + f);
+        System.out.println("assumption formula: " + assumpF);
+        System.out.println("assumpIntSet: " + assumpIntSet);
+
+
+        TranslationLog tlog = translation.log();
 
         PardinusSolver s = new PardinusSolver(eo);
 
@@ -184,9 +216,10 @@ public class GettingTraces {
                 IntSet assumps = new IntTreeSet();
                 //assumps.add(-2);
                 //assumps.add(3);
+                assumps.add(1);
                 assumps.add(2);
                 //assumps.add(5);
-                ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumps);
+                ReducedResolutionTrace reducedTrace = new ReducedResolutionTrace(origTrace, assumpIntSet);
                 Iterator<Clause> reducedIt = reducedTrace.iterator();
 
                 System.out.println("Reduced trace:");
@@ -250,26 +283,9 @@ public class GettingTraces {
         System.out.println("total number of solutions iterated: "+count);
     }
 
-    /**
-     * Compute Hamming distance between target and instance given
-     * Relations not in target aren't counted.
-     *
-     * @param pb
-     * @param instance
-     * @return
-     */
-    private static int computeDist(PardinusBounds pb, Instance instance) {
-        int counter = 0;
-        for(Relation r : pb.targets().keySet()) {
-            for(Tuple t : pb.target(r)) {
-                if(!instance.tuples(r).contains(t))
-                    counter++;
-            }
-            for(Tuple t : instance.tuples(r)) {
-                if(!pb.target(r).contains(t))
-                    counter++;
-            }
-        }
-        return counter;
-    }
+    // given a formula that is a conjunction of unary formulae and a translation, obtains an IntSet
+    // representing the literals (as integers) that must all be true for the formula to hold
+    // private IntSet conjunctionToLiteralSet(Formula conjF, Translation.Whole translation) {
+
+    // }
 }

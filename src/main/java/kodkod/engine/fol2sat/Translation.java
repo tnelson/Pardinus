@@ -232,6 +232,11 @@ public abstract class Translation {
 		 * @see kodkod.engine.fol2sat.Translation#cnf()
 		 */
 		public final SATSolver cnf() { return solver; }
+
+        // swetabhch: added to make primaryVarUsage map visible
+        public final Map<Relation, IntSet> getPrimaryVariables() {
+            return primaryVarUsage;
+        }
 		
 		/**
 		 * {@inheritDoc}

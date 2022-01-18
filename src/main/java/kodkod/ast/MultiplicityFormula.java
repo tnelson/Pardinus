@@ -88,9 +88,6 @@ public final class MultiplicityFormula extends Formula {
         return multiplicity + " " + expression;
     }
 
-    // swetabhch: add negate
-    // TODO: extend negate to include one, lone
-
     /**
      * Enables negation for `some` and `no`, converting each to the other.
      */
@@ -104,18 +101,4 @@ public final class MultiplicityFormula extends Formula {
         return new MultiplicityFormula(this.multiplicity, this.expression);
     }
 
-    // swetabhch: add equals
-    @Override
-    public boolean equals(Object comp) {
-      if (!(comp instanceof MultiplicityFormula)) {
-        return false;
-      }
-
-      MultiplicityFormula compMultFmla = (MultiplicityFormula) comp;
-      boolean ansBool =  ((this.multiplicity == compMultFmla.multiplicity()) &&
-          (this.expression().equals(compMultFmla.expression())));
-      System.out.println("MultiplicityFormula equality: " + ansBool);
-      return ansBool;
-
-    }
 }
