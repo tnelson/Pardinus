@@ -162,11 +162,25 @@ public class KodkodParser extends BaseParser<Object> {
 	// of solve + eoi, cuz that's not
 	// even possible)
 
+	// FirstOf tries all args in order, succeeds on the first success
+	// Sequence tries all args in order, succeeds only if all args succeed
+
+	// invoked by the server after the problem is solved
 	public Rule StepperServe() {
-		return Sequence(Space(), FirstOf(Sequence(Solve(), Optional(FirstOf(Clear(), Exit()))),
-				Sequence(ZeroOrMore(DefNode()), Evaluate())), EOI);
+		return Sequence(
+				Space(),
+				FirstOf(
+						// a solve invocation
+						//Sequence(Solve(), Optional(FirstOf(Clear(), Exit()))),
+						Solve(),
+						Clear(),
+						Exit(),
+						// an evaluator invocation vs. last instance
+						Sequence(ZeroOrMore(DefNode()), Evaluate())),
+				EOI);
 	}
 
+	// invoked by the server initially; (solve) is part of StepperServe()
 	@Cached
 	public Rule StepperProblem() {
 		return Sequence(Space(), problem.startBuild(), Configure(), DeclareUniverse(), Optional(DeclareInts()),
