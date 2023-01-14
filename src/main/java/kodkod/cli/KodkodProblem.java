@@ -229,7 +229,7 @@ public abstract class KodkodProblem {
 	 *         p.maxSolutions = prototype.maxSolutions && no p.bounds && no
 	 *         p.asserts && p.env = new StringDefEnv()
 	 */
-	public abstract KodkodProblem clear();
+	public abstract KodkodProblem clear(KodkodOutput out);
 
 	/**
 	 * Solves this and outputs the resulting solution(s) to the given {@code out}.
@@ -530,6 +530,10 @@ public abstract class KodkodProblem {
 			throw new ActionException(solver.toString() + " is not available on this system. Searched "
 					+ System.getProperty("java.library.path"));
 		}
+	}
+	boolean setSolver(KodkodOutput out, SATFactory solver) {
+		//out.writeInfo("configuring solver");
+		return setSolver(solver);
 	}
 
 	/**
@@ -910,9 +914,10 @@ public abstract class KodkodProblem {
 			throw new ActionException("Cannot extend a non-incremental specification.");
 		}
 
-		public KodkodProblem clear() {
+		public KodkodProblem clear(KodkodOutput out) {
 			if (solver != null)
 				solver.free();
+			//out.writeInfo("clearing");
 			return new Stepper();
 		}
 
@@ -923,6 +928,7 @@ public abstract class KodkodProblem {
 			}
 			//System.err.println("solver is pardinus: "+solver.solver.getClass());
 			if (isSolved()) {
+				//out.writeInfo("stepper solving: already solved");
 				assert (this.iteration >= 0);
 				this.iteration++;
 
@@ -985,7 +991,7 @@ public abstract class KodkodProblem {
 					write(out, lastSol);
 					return this;
 				}
-			}
+			} // end if is solved
 
 			try {
 				// In case the solver is not incremental, but Stepper is being used
@@ -996,6 +1002,7 @@ public abstract class KodkodProblem {
 					this.solutions = new OneSolutionIterator(solver.solve(asserts(), bounds()));
 				}
 				this.issolved = true;
+				out.writeInfo("stepper solving: initial solve");
 				return this.solve(out, params);
 				//return new Stepper(this, solved).solve(out, params);
 			} catch (RuntimeException ex) {
@@ -1228,7 +1235,7 @@ public abstract class KodkodProblem {
 			throw new ActionException("Cannot extend a non-incremental specification.");
 		}
 
-		public KodkodProblem clear() {
+		public KodkodProblem clear(KodkodOutput out) {
 			return new Complete(this);
 		}
 
@@ -1239,7 +1246,7 @@ public abstract class KodkodProblem {
 				} else {
 					write(out, solver.solveAll(asserts(), bounds()));
 				}
-				return clear();
+				return clear(out);
 			} catch (RuntimeException ex) {
 				throw new ActionException(ex.getMessage(), ex);
 			}
@@ -1283,7 +1290,7 @@ public abstract class KodkodProblem {
 			return new Partial(this);
 		}
 
-		public final KodkodProblem clear() {
+		public final KodkodProblem clear(KodkodOutput out) {
 			if (solver != null)
 				solver.free();
 			return new Incremental(new StringDefEnv(), null, options(), maxSolutions(), null);

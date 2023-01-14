@@ -28,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -115,7 +116,6 @@ public final class KodkodServer {
 	private final boolean fastParsing;
 	private final String errorOut;
 	private final KodkodParser parser;
-	private final char[] buf = new char[1024];
 
 	public static Iterator<Solution> lastModel;
 	public static Defs<Relation> lastRDefs;
@@ -185,38 +185,48 @@ public final class KodkodServer {
 	}
 
 	/**
-	 * Parses and executes the batch of problems specified by the given input buffer.
-	 * Note: Each KodkodServer instance only ever uses one problem instance in its lifetime.
-	 * They die at the same time.
+	 * Parses and executes an EOI-terminated block. The block should contain only one EOI.
+	 *
 	 */
-	public void serve(InputBuffer batch) {
+	public void serve(String block) {
 		final KodkodProblem problem = parser.problem;
 		final Rule rule;
 
 		if (problem.isIncremental()) {
-			if (problem.isPartial()) {
-				rule = parser.RestOfIncrementalProblems();
-			} else {
-				rule = parser.IncrementalProblems();
-			}
+			throw new UnsupportedOperationException("non stepper/target-oriented problems not supported");
+//			if (problem.isPartial()) {
+//				parser.info("serving buffer: RestOfIncrementalProblems()");
+//				rule = parser.RestOfIncrementalProblems();
+//			} else {
+//				parser.info("serving buffer: IncrementalProblems()");
+//				rule = parser.IncrementalProblems();
+//			}
 		} else if (problem.isStepper()){
 			if (problem.isSolved()){
+				//parser.info("serving buffer: StepperServe");
 				rule = parser.StepperServe();
 			} else if (problem.isTargetOriented()) {
+				//parser.info("serving buffer: TargetOrientedProblem");
 				rule = parser.TargetOrientedProblem();
 			} else {
+				//parser.info("serving buffer: StepperProblem");
 				rule = parser.StepperProblem();
 			}
 		} else {
-			rule = parser.Problems();
+			throw new UnsupportedOperationException("non stepper/target-oriented problems not supported");
+			//parser.info("serving buffer: Problems()");
+			//rule = parser.Problems();
 		}
 
 		final ParsingResult<Object> result;
 		if (fastParsing) {
-			result = (new BasicParseRunner<Object>(rule)).run(batch);
+			result = (new BasicParseRunner<>(rule)).run(block);
 		} else {
-			result = (new ErrorLocatingParseRunner<Object>(rule)).run(batch);
+			result = (new ErrorLocatingParseRunner<>(rule)).run(block);
 		}
+
+		//parser.info("parsing completed; fast="+fastParsing);
+
 
 		if (!result.matched) {
 			if (result.hasErrors()) {
@@ -231,7 +241,8 @@ public final class KodkodServer {
 			}
 			if (errorOut != null) {
 				try(FileWriter fw = new FileWriter(new File(errorOut))) {
-					fw.write(InputBufferUtils.collectContent(batch));
+					//fw.write(InputBufferUtils.collectContent(batch));
+					fw.write(block);
 				} catch (IOException e) {
 					Logger.getGlobal().severe(Arrays.toString(e.getStackTrace()));
 				}
@@ -245,7 +256,11 @@ public final class KodkodServer {
 	 */
 	public void serve(File file) {
 		try(FileReader fr = new FileReader(file)) {
-			serve(read(fr));
+			String toParse = read(fr);
+			String[] toParseSplit = toParse.split(String.valueOf(Chars.EOI));
+			for(String p : toParseSplit) {
+				serve(p);
+			}
 		} catch (IOException e) {
 			Logger.getGlobal().severe(e.getMessage());
 		}
@@ -257,13 +272,21 @@ public final class KodkodServer {
 	 * the Exit command, whichever comes first.
 	 */
 	public void serve() {
-		try(InputStreamReader ir = new InputStreamReader(System.in, "UTF-8")) {
+		try(InputStreamReader ir = new InputStreamReader(System.in, StandardCharsets.UTF_8)) {
 			while(true) {
-				serve(read(ir));
+				//parser.info("top-level serve");
+				String toParse = read(ir);
+				String[] toParseSplit = toParse.split(String.valueOf(Chars.EOI));
+				for(String p : toParseSplit) {
+					//parser.info("processing: "+p);
+					serve(p);
+				}
 			}
 		} catch (IOException e) {
 			Logger.getGlobal().severe(e.getMessage());
 			Logger.getGlobal().severe(Arrays.toString(e.getStackTrace()));
+			parser.info("IOException when reading");
+			System.exit(2);
 		}
 	}
 
@@ -273,12 +296,15 @@ public final class KodkodServer {
 	 * character buffer until the reader returns -1 or until the
 	 * last character read on a given read attempt is {@link Chars#EOI},
 	 * whichever comes first.
-	 * @return an input buffer populated with the data from the given reader.
+	 * @return a String containing the result of reading from the reader to this point
 	 */
-	private InputBuffer read(Reader r) throws IOException {
+	private String read(Reader r) throws IOException {
+		final char[] buf = new char[1024];
 		BufferedReader br = new BufferedReader(r);
 		final StringBuilder str = new StringBuilder();
 		int len;
+		// br.read will not stop at EOI; it may trigger _before_ EOI, and it may keep reading past
+		// it. Thus, this call to br.read() may extract multiple command sequences at once.
 		while((len=br.read(buf))>0) {
 			str.append(buf, 0, len);
 			if (buf[len-1]==Chars.EOI)
@@ -293,15 +319,16 @@ public final class KodkodServer {
 			System.exit(0);
 		}
 
-		final char[] tmp = new char[str.length()];
-		str.getChars(0, str.length(), tmp, 0);
-		//System.err.println(str);
-		return new DefaultInputBuffer(tmp);
+		//final char[] tmp = new char[str.length()];
+		//str.getChars(0, str.length(), tmp, 0);
+		// possibly containing multiple EOI-terminated sequences
+		return str.toString();
+		//return new DefaultInputBuffer(tmp);
 	}
 
 	/** Prints version.*/
 	private static void version() {
-		System.out.println("KodkodServer version 2.0 (October 12 2012) (Forked 2019)");
+		System.out.println("KodkodServer version 3.0 (October 12 2012) (Revised for Forge 2023)");
 	}
 
 	/** Prints usage and exists with the given code. */

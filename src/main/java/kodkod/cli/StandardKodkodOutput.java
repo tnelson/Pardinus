@@ -21,6 +21,7 @@
  */
 package kodkod.cli;
 
+import java.text.NumberFormat;
 import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.logging.Logger;
@@ -292,26 +293,41 @@ public final class StandardKodkodOutput implements KodkodOutput {
 		str.append(String.format(" (%s %s)", stat, value));
 	}
 
-//	static final void printMemInfo() {
-//    	Runtime runtime = Runtime.getRuntime();
-//        NumberFormat format = NumberFormat.getInstance();
-//        StringBuilder sb = new StringBuilder();
-//        long maxMemory = runtime.maxMemory();
-//        long allocatedMemory = runtime.totalMemory();
-//        long freeMemory = runtime.freeMemory();
-//        final long mb = 1048576;
-//        sb.append("free memory (MB): ");
-//        sb.append(format.format(freeMemory / mb));
-//        sb.append("\n");
-//        sb.append("allocated memory (MB): ");
-//        sb.append(format.format(allocatedMemory / mb));
-//        sb.append("\n");
-//        sb.append("max memory (MB): ");
-//        sb.append(format.format(maxMemory / mb));
-//        sb.append("\n");
-//        sb.append("total free memory (MB): ");
-//        sb.append(format.format((freeMemory + (maxMemory - allocatedMemory)) / mb));
-//        sb.append("\n");
-//        System.out.println(sb);
-//    }
+	/**
+	 * Writes an info s-expression to the out stream. This meant to be
+	 * ignored by the caller, except for info/debugging purposes.
+	 */
+	public void writeInfo(String info) {
+		System.out.println(
+						"(info \""+
+							info.replaceAll("[()]", "")
+									.replaceAll("\"", "'")+
+						"\")");
+	}
+
+	/**
+	 * Report memory usage info to caller as an (info ...) message.
+	 */
+	void printMemInfo() {
+    	Runtime runtime = Runtime.getRuntime();
+        NumberFormat format = NumberFormat.getInstance();
+        StringBuilder sb = new StringBuilder();
+        long maxMemory = runtime.maxMemory();
+        long allocatedMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+        final long mb = 1048576;
+        sb.append("free memory MB: ");
+        sb.append(format.format(freeMemory / mb));
+        sb.append("\n");
+        sb.append("allocated memory MB: ");
+        sb.append(format.format(allocatedMemory / mb));
+        sb.append("\n");
+        sb.append("max memory MB: ");
+        sb.append(format.format(maxMemory / mb));
+        sb.append("\n");
+        sb.append("total free memory MB: ");
+        sb.append(format.format((freeMemory + (maxMemory - allocatedMemory)) / mb));
+        sb.append("\n");
+        writeInfo(sb.toString());
+    }
 }

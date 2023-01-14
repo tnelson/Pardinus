@@ -40,8 +40,9 @@ public interface KodkodOutput {
 	 * Outputs the given solution to the given problem.  The output format and
 	 * destination are implementation dependent.
 	 */
-	public abstract void writeSolution(Solution sol, KodkodProblem problem);
+	void writeSolution(Solution sol, KodkodProblem problem);
 
-    public abstract void writeUnsat(Solution sol, KodkodProblem problem);
+    void writeUnsat(Solution sol, KodkodProblem problem);
+	void writeInfo(String info);
 
  }

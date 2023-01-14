@@ -95,6 +95,15 @@ public class KodkodParser extends BaseParser<Object> {
 	KodkodProblem problem;
 
 	/**
+	 * If there is a KodkodOutput defined, write an info s-expression to it.
+	 * @param info
+	 */
+	public void info(String info) {
+		if(out != null)
+			out.writeInfo(info);
+	}
+
+	/**
 	 * Creates a parser that will populate an instance of KodkodProblem.complete()
 	 * and that will output the result of any command executios to an instance of
 	 * {@link StandardKodkodOutput}.
@@ -135,6 +144,7 @@ public class KodkodParser extends BaseParser<Object> {
 		if (problem == null)
 			System.exit(0);
 		this.problem = problem;
+		this.info("setProblem");
 		return true;
 	}
 
@@ -169,10 +179,7 @@ public class KodkodParser extends BaseParser<Object> {
 	public Rule StepperServe() {
 		return Sequence(
 				Space(),
-				FirstOf(
-						// a solve invocation
-						//Sequence(Solve(), Optional(FirstOf(Clear(), Exit()))),
-						Solve(),
+				FirstOf(Solve(),
 						Clear(),
 						Exit(),
 						// an evaluator invocation vs. last instance
@@ -180,12 +187,22 @@ public class KodkodParser extends BaseParser<Object> {
 				EOI);
 	}
 
-	// invoked by the server initially; (solve) is part of StepperServe()
+	// Invoked by the server initially; (solve) is part of StepperServe()
 	@Cached
 	public Rule StepperProblem() {
-		return Sequence(Space(), problem.startBuild(), Configure(), DeclareUniverse(), Optional(DeclareInts()),
-				ZeroOrMore(FirstOf(DeclareRelation(), DeclareVarRelation(), DefNode(), Assert())), problem.endBuild(),
-				StepperServe());
+		return Sequence(Space(),
+				        problem.startBuild(),
+				        Configure(),
+				        DeclareUniverse(),
+				        Optional(DeclareInts()),
+				        ZeroOrMore(
+								FirstOf(
+										DeclareRelation(),
+										DeclareVarRelation(),
+										DefNode(),
+										Assert())),
+				        problem.endBuild(),
+					    StepperServe());
 	}
 
 	@Cached
@@ -253,7 +270,7 @@ public class KodkodParser extends BaseParser<Object> {
 	Rule Configure() {
 		return ZeroOrMore(LPAR, CONFIG,
 				OneOrMore(":",
-						FirstOf(Sequence(Keyword("solver"), SatSolver(), problem.setSolver((SATFactory) pop())),
+						FirstOf(Sequence(Keyword("solver"), SatSolver(), problem.setSolver(out, (SATFactory) pop())),
 								Sequence(Keyword("bitwidth"), NatLiteral(), problem.setBitwidth(popInt())),
 								// Sequence(Keyword("produce-cores"), BoolLiteral(),
 								// problem.setCoreExtraction(popBool())),
@@ -487,7 +504,7 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @ensures setProblem(this.problem.clear ())
 	 **/
 	Rule Clear() {
-		return Sequence(LPAR, CLEAR, RPAR, setProblem(problem.clear()));
+		return Sequence(LPAR, CLEAR, RPAR, setProblem(problem.clear(out)));
 	}
 
 	/**
