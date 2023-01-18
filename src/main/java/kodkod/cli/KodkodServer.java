@@ -274,11 +274,9 @@ public final class KodkodServer {
 	public void serve() {
 		try(InputStreamReader ir = new InputStreamReader(System.in, StandardCharsets.UTF_8)) {
 			while(true) {
-				//parser.info("top-level serve");
 				String toParse = read(ir);
 				String[] toParseSplit = toParse.split(String.valueOf(Chars.EOI));
 				for(String p : toParseSplit) {
-					//parser.info("processing: "+p);
 					serve(p);
 				}
 			}
