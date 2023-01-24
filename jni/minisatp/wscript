@@ -21,13 +21,29 @@ def build(bld):
     INCLUDES = ['.', './minisatp'] 
     CXXFLAGS = [ '-w', '-O3', '-fPIC', '-ffloat-store']
     
+    # build for arm64
     bld.objects(source = ['minisatp/Solver.C', 'minisatp/Proof.C', 'minisatp/File.C'],
-                target = 'minisatp-core',
+                target = 'minisatp-core-arm64', arch = 'arm64',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
-      
     bld.shlib(source = 'kodkod_engine_satlab_MiniSatProver.cpp',
-              target = 'minisatprover', use = 'minisatp-core', uselib = 'JAVA',
+              target = 'minisatprover-arm64', use = 'minisatp-core-arm64', uselib = 'JAVA', arch = 'arm64',
               includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+
+    # Build for x64
+    bld.objects(source = ['minisatp/Solver.C', 'minisatp/Proof.C', 'minisatp/File.C'],
+                target = 'minisatp-core-x64', arch = 'x86_64',
+                includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+    bld.shlib(source = 'kodkod_engine_satlab_MiniSatProver.cpp',
+              target = 'minisatprover-x64', use = 'minisatp-core-x64', uselib = 'JAVA', arch = 'x86_64',
+              includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+    
+    # Build universal dylib (need to give *use* to make sure this comes last in build order, but 
+    #   also need to give the file names, not the target names above, in target. Don't conflate 
+    #   the target and use properties)
+    bld(rule='lipo -create -output ${TGT} ${SRC}',
+        use='minisatprover-arm64 minisatprover-x64',
+        target='libminisatprover.dylib',
+        source='libminisatprover-arm64.dylib libminisatprover-x64.dylib') 
 
 
 def distclean(ctx):

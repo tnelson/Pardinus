@@ -44,8 +44,12 @@ def build(bld):
               target = 'minisat-x64', use = 'minisat-core-x64', uselib = 'JAVA', arch = 'x86_64',
               includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
     
-    # Build universal dylib
-    bld(rule='lipo -create -output libminisat.dylib libminisat-x64.dylib libminisat-arm64.dylib', always=True)            
+    # Build universal dylib (need to give *source* to make sure this comes last in build order, but 
+    #   also need to give the file names, not the target names above)
+    bld(rule='lipo -create -output ${TGT} ${SRC}',
+        use='minisat-arm64 minisat-x64',
+        target='libminisat.dylib',
+        source='libminisat-arm64.dylib libminisat-x64.dylib') 
 
 def distclean(ctx):
     from waflib import Scripting
