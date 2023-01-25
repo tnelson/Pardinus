@@ -24,19 +24,38 @@ def build(bld):
     INCLUDES = ['.','./glucose-syrup'] 
     CXXFLAGS = [ '-w', '-O3', '-fPIC']
 
+    # Build x64 version
     bld.objects(source = ['glucose-syrup/utils/Options.cc', 'glucose-syrup/utils/System.cc'],
-                target = 'glucose-utils',
+                target = 'glucose-utils-x64', arch = 'x86_64',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
-    
     bld.objects(source = 'glucose-syrup/core/Solver.cc',
-                target = 'glucose-core', use = 'glucose-utils',
+                target = 'glucose-core-x64', use = 'glucose-utils-x64', arch = 'x86_64',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
-    
     bld.shlib(source = 'kodkod_engine_satlab_Glucose.cpp',
-              target = 'glucose', use = 'glucose-core', uselib = 'JAVA',
+              target = 'glucose-x64', use = 'glucose-core-x64', uselib = 'JAVA', arch = 'x86_64',
               includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
-    
+
+    # Build arm64 version
+    bld.objects(source = ['glucose-syrup/utils/Options.cc', 'glucose-syrup/utils/System.cc'],
+                target = 'glucose-utils-arm64', arch = 'arm64',
+                includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+    bld.objects(source = 'glucose-syrup/core/Solver.cc',
+                target = 'glucose-core-arm64', use = 'glucose-utils-arm64', arch = 'arm64',
+                includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+    bld.shlib(source = 'kodkod_engine_satlab_Glucose.cpp',
+              target = 'glucose-arm64', use = 'glucose-core-arm64', uselib = 'JAVA', arch = 'arm64',
+              includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+
     bld.install_files('${LIBDIR}', 'glucose-syrup/parallel/glucose-syrup', chmod=493)
+
+    # Build universal dylib (need to give *use* to make sure this comes last in build order, but 
+    #   also need to give the file names, not the target names above, in target. Don't conflate 
+    #   the target and use properties)
+    
+    bld(rule='lipo -create -output ${TGT} ${SRC}',
+        use='glucose-arm64 glucose-x64',
+        target='libglucose.dylib',
+        source='libglucose-arm64.dylib libglucose-x64.dylib') 
 
 def distclean(ctx):
     from waflib import Scripting
