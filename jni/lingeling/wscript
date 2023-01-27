@@ -23,14 +23,30 @@ def build(bld):
     CFLAGS = ['-w', '-O3', '-fPIC']
     INCLUDES = ['.']
     
+    # Build x64 
     bld.objects(source = 'code/lglib.c',
-                target = 'lglib',
-                includes = INCLUDES, cflags = CFLAGS, defines = DEFINES)
-    
+                target = 'lglib-x64', arch = 'x86_64',
+                includes = INCLUDES, cflags = CFLAGS, defines = DEFINES)    
     bld.shlib(source = 'kodkod_engine_satlab_Lingeling.c',
-              target = 'lingeling',
-              use = 'lglib', uselib = 'JAVA',
+              target = 'lingeling-x64', arch = 'x86_64',
+              use = 'lglib-x64', uselib = 'JAVA',
               includes = INCLUDES, cflags = CFLAGS, defines = DEFINES)
+
+    # Build arm64 
+    bld.objects(source = 'code/lglib.c',
+                target = 'lglib-arm64', arch = 'arm64',
+                includes = INCLUDES, cflags = CFLAGS, defines = DEFINES)    
+    bld.shlib(source = 'kodkod_engine_satlab_Lingeling.c',
+              target = 'lingeling-arm64', arch = 'arm64',
+              use = 'lglib-arm64', uselib = 'JAVA',
+              includes = INCLUDES, cflags = CFLAGS, defines = DEFINES)
+
+    # Build universal dylib
+    bld(rule='lipo -create -output ${TGT} ${SRC}',
+        use='lingeling-arm64 lingeling-x64',
+        target='liblingeling.dylib',
+        source='liblingeling-arm64.dylib liblingeling-x64.dylib') 
+
 
 def distclean(ctx):
     from waflib import Scripting
