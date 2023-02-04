@@ -79,7 +79,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 * {@link Logger#getGlobal() global logger}.
 	 * @ensures this.logger' = Logger.getGlobal()
 	 */
-	StandardKodkodOutput() {  this(Logger.getGlobal()); }
+	public StandardKodkodOutput() {  this(Logger.getGlobal()); }
 
     public void writeUnsat(Solution sol, KodkodProblem problem) {
 		if(sol.proof() != null) {

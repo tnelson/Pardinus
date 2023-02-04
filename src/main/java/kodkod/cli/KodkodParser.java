@@ -141,10 +141,10 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @ensures this.problem' = problem
 	 */
 	public boolean setProblem(KodkodProblem problem) {
+		this.info("setProblem: "+problem);
 		if (problem == null)
 			System.exit(0);
 		this.problem = problem;
-		this.info("setProblem");
 		return true;
 	}
 
@@ -166,11 +166,6 @@ public class KodkodParser extends BaseParser<Object> {
 		return OneOrMore(IncrementalProblem(), ZeroOrMore(IncrementalProblems()));
 	}
 
-	// a problem can also just be (solve), in which case we just print the next
-	// Solution.
-	// but can't be multiple solves (should just be solve + eoi, and can't be series
-	// of solve + eoi, cuz that's not
-	// even possible)
 
 	// FirstOf tries all args in order, succeeds on the first success
 	// Sequence tries all args in order, succeeds only if all args succeed

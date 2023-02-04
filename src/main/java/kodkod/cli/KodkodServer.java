@@ -40,9 +40,6 @@ import kodkod.engine.IncrementalSolver;
 
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
-import org.parboiled.buffers.DefaultInputBuffer;
-import org.parboiled.buffers.InputBuffer;
-import org.parboiled.buffers.InputBufferUtils;
 import org.parboiled.errors.ErrorUtils;
 import org.parboiled.errors.ParseError;
 import org.parboiled.parserunners.BasicParseRunner;
@@ -274,7 +271,7 @@ public final class KodkodServer {
 	public void serve() {
 		try(InputStreamReader ir = new InputStreamReader(System.in, StandardCharsets.UTF_8)) {
 			while(true) {
-				String toParse = read(ir);
+				String toParse = read(ir); // read will return a string that _ends_ with EOI
 				String[] toParseSplit = toParse.split(String.valueOf(Chars.EOI));
 				for(String p : toParseSplit) {
 					serve(p);

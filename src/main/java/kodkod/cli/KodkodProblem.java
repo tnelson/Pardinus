@@ -850,15 +850,10 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
-	// TODO: allow multiple Stepper problems.
-	// possibly by having Solve() return a new Stepper? or maybe after clear...
 
-	// AH. realization. the other problem classes have good reason to return new
-	// objects;
-	// they need to clear the bounds and asserts! However, for Stepper, we only need
-	// to return
-	// new objects when we transition to a solved stepper. A solved stepper can
-	// return itself.
+	// The other problem classes have good reason to return new objects; they need to clear the bounds and asserts.
+	// However, for Stepper, we only need to return new objects when we transition to a solved stepper.
+	// A solved stepper can return itself.
 	private static class Stepper extends KodkodProblem {
 		private PardinusSolver solver;
 		private boolean issolved = false;
@@ -928,9 +923,12 @@ public abstract class KodkodProblem {
 			}
 			//System.err.println("solver is pardinus: "+solver.solver.getClass());
 			if (isSolved()) {
-				//out.writeInfo("stepper solving: already solved");
-				assert (this.iteration >= 0);
+				out.writeInfo("stepper solving: follow-up solve. unsat=: "+unsat+"; iteration="+this.iteration);
+				// TODO: if this assertion fails, we get a cryptic error from the parser without context
+				//assert (this.iteration >= 0);
+				// The assertion is also in error. We start at iteration -1.
 				this.iteration++;
+
 
 				if (this.unsat) {
 					assert (lastSol != null);
@@ -1002,9 +1000,8 @@ public abstract class KodkodProblem {
 					this.solutions = new OneSolutionIterator(solver.solve(asserts(), bounds()));
 				}
 				this.issolved = true;
-				out.writeInfo("stepper solving: initial solve");
+				out.writeInfo("stepper solving: initial solve with params: "+params+" finished.");
 				return this.solve(out, params);
-				//return new Stepper(this, solved).solve(out, params);
 			} catch (RuntimeException ex) {
 				throw new ActionException(ex.getMessage(), ex);
 			}
