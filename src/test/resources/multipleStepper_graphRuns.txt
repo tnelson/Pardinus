@@ -25,3 +25,4 @@
 (with r2 (solve first))**EOI**
 (with r1 (solve next))**EOI**
 (with r1 (solve next))**EOI**
+(with r2 (clear))
