@@ -48,4 +48,4 @@
 (with sat-run-A (solve start))**EOI**
 (with sat-run-B (solve start))**EOI**
 (with unsat-run (solve start))**EOI**
-(with sat-run-A (solve next))**EOI**
+(with sat-run-A (solve C))**EOI**
