@@ -1,35 +1,51 @@
 package kodkod.test.cli;
 
 import kodkod.cli.KodkodParser;
-import kodkod.cli.KodkodProblem;
 import kodkod.cli.KodkodServer;
 import kodkod.cli.StandardKodkodOutput;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.parboiled.Parboiled;
-import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.ErrorLocatingParseRunner;
-import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.Chars;
-import org.parboiled.support.ParsingResult;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
+ * Basic "does not crash" tests for stepper parsing (including temporal problems)
  */
-public class TestCLI {
+@RunWith(Parameterized.class)
+public class TestCLIStepper {
 
     static final String eoiString = String.valueOf(Chars.EOI);
+    private KodkodParser parser;
+
+    @Parameterized.Parameters
+    public static List<Object[]> testFileNames() {
+        // List.of requires Java 9
+        final List<Object[]> tests = new ArrayList<>();
+        tests.add(new Object[]{"singleStepper_bridgeCrossing.txt", KodkodServer.Feature.PLAIN_STEPPER});
+        tests.add(new Object[]{"singleTemporal_lightsPuzzle.txt", KodkodServer.Feature.TEMPORAL});
+        tests.add(new Object[]{"multipleStepper_graphRuns.txt", KodkodServer.Feature.PLAIN_STEPPER});
+        return tests;
+    }
+
+    @Parameterized.Parameter
+    public String fileName;
+
+    @Parameterized.Parameter(1)
+    public KodkodServer.Feature feature;
 
     @Before
     public void setupEach() {
-
+        parser = Parboiled.createParser(KodkodParser.class, feature, new StandardKodkodOutput());
     }
 
     /**
@@ -43,14 +59,13 @@ public class TestCLI {
      */
     @Test
     public void testCLI() throws IOException {
-        // Use this, not the constructor
-        KodkodParser parser = Parboiled.createParser(KodkodParser.class, KodkodServer.Feature.PLAIN_STEPPER, new StandardKodkodOutput());
-        URL dataUrl = getClass().getClassLoader().getResource("singleStepper_bridgeCrossing.txt");
+        URL dataUrl = getClass().getClassLoader().getResource(fileName);
         File dataFile = new File(dataUrl.getPath());
         byte[] dataBytes = Files.readAllBytes(dataFile.toPath());
         String data = new String(dataBytes, StandardCharsets.UTF_8).replaceAll("\\*\\*EOI\\*\\*", eoiString);
 
         for(String block : data.split(eoiString)) {
+            //System.out.println("***** running "+block.substring(0, Math.min(30, block.length())));
             //new BasicParseRunner<>(parser.StepperStart()).run(block);
             new ErrorLocatingParseRunner<>(parser.StepperStart()).run(block);
             // For debugging (verbose)
@@ -58,5 +73,4 @@ public class TestCLI {
         }
 
     }
-
 }
