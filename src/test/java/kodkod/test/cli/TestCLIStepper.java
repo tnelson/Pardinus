@@ -37,6 +37,7 @@ public class TestCLIStepper {
         tests.add(new Object[]{"singleTemporal_lightsPuzzle.txt", KodkodServer.Feature.TEMPORAL});
         tests.add(new Object[]{"multipleStepper_graphRuns.txt", KodkodServer.Feature.PLAIN_STEPPER});
         tests.add(new Object[]{"singleStepper_unsatGraph.txt", KodkodServer.Feature.PLAIN_STEPPER});
+        tests.add(new Object[]{"multipleTemporal_graphRuns.txt", KodkodServer.Feature.TEMPORAL});
         return tests;
     }
 
