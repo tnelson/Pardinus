@@ -1008,7 +1008,6 @@ public abstract class KodkodProblem {
 				}
 				this.issolved = true;
 				out.writeInfo("stepper solving: initial solve call with params: "+params+" finished.");
-				out.writeInfo(asserts().toString());
 				return this.solve(out, params);
 			} catch (RuntimeException ex) {
 				throw new ActionException(ex.getMessage(), ex);
