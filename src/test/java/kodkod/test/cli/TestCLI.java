@@ -2,11 +2,14 @@ package kodkod.test.cli;
 
 import kodkod.cli.KodkodParser;
 import kodkod.cli.KodkodProblem;
+import kodkod.cli.KodkodServer;
 import kodkod.cli.StandardKodkodOutput;
 import org.junit.Before;
 import org.junit.Test;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.BasicParseRunner;
+import org.parboiled.parserunners.ErrorLocatingParseRunner;
+import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.Chars;
 import org.parboiled.support.ParsingResult;
 
@@ -30,28 +33,28 @@ public class TestCLI {
     }
 
     /**
-     * Old process: Problem and then Serve
+     * Wrap configuration (including assertions) and commands in (with ID ...)
+     * Terminate "(with ...)" with an EOI. Don't send EOI except after "with"
      *
-     * We EOI-terminate to say "ok, get to work"; server truncates at EOI.
-     * Do not EOI within a "with" block.
+     * Because of this protocol, it's troublesome to test via the *IntelliJ* command line specifically
+     * since ctrl-D ends the stream, rather than sending EOI.
+     *
      * @throws IOException
      */
     @Test
     public void testCLI() throws IOException {
         // Use this, not the constructor
-        KodkodParser parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.stepper(), new StandardKodkodOutput());
+        KodkodParser parser = Parboiled.createParser(KodkodParser.class, KodkodServer.Feature.PLAIN_STEPPER, new StandardKodkodOutput());
         URL dataUrl = getClass().getClassLoader().getResource("singleStepper_bridgeCrossing.txt");
         File dataFile = new File(dataUrl.getPath());
         byte[] dataBytes = Files.readAllBytes(dataFile.toPath());
         String data = new String(dataBytes, StandardCharsets.UTF_8).replaceAll("\\*\\*EOI\\*\\*", eoiString);
 
-        boolean first = true;
         for(String block : data.split(eoiString)) {
-            if(first)
-                new BasicParseRunner<>(parser.StepperProblem()).run(block);
-            else
-                new BasicParseRunner<>(parser.StepperServe()).run(block);
-            first = false;
+            //new BasicParseRunner<>(parser.StepperStart()).run(block);
+            new ErrorLocatingParseRunner<>(parser.StepperStart()).run(block);
+            // For debugging (verbose)
+            //new TracingParseRunner<>(parser.StepperStart()).run(block);
         }
 
     }

@@ -917,13 +917,16 @@ public abstract class KodkodProblem {
 		}
 
 		public KodkodProblem solve(KodkodOutput out, String params) {
+			//out.writeInfo("stepper solving; hash="+this.hashCode()+"; solved="+isSolved());
 			if(this.solver == null) {
 				// Create solver only when needed; at this point all options should be set.
 				this.solver = new PardinusSolver(super.options);
+				//out.writeInfo("stepper solver created");
 			}
+
 			//System.err.println("solver is pardinus: "+solver.solver.getClass());
 			if (isSolved()) {
-				out.writeInfo("stepper solving: follow-up solve. unsat=: "+unsat+"; iteration="+this.iteration);
+				out.writeInfo("stepper solving:  unsat="+unsat+"; iteration="+this.iteration);
 				// TODO: if this assertion fails, we get a cryptic error from the parser without context
 				//assert (this.iteration >= 0);
 				// The assertion is also in error. We start at iteration -1.
@@ -1000,7 +1003,7 @@ public abstract class KodkodProblem {
 					this.solutions = new OneSolutionIterator(solver.solve(asserts(), bounds()));
 				}
 				this.issolved = true;
-				out.writeInfo("stepper solving: initial solve with params: "+params+" finished.");
+				out.writeInfo("stepper solving: initial solve call with params: "+params+" finished.");
 				return this.solve(out, params);
 			} catch (RuntimeException ex) {
 				throw new ActionException(ex.getMessage(), ex);

@@ -96,8 +96,8 @@ import kodkod.ast.Formula;
  */
 public final class KodkodServer {
 
-	public enum MODE {STEPPER, INCREMENTAL, COMPLETE}
-	public enum FEATURE {TARGET_ORIENTED, TEMPORAL}
+	public enum Mode {STEPPER, INCREMENTAL, COMPLETE}
+	public enum Feature {TARGET_ORIENTED, TEMPORAL, PLAIN_STEPPER}
 
 	static { // set up log handling
 		final Logger global = Logger.getGlobal();
@@ -130,7 +130,7 @@ public final class KodkodServer {
 	 * report detailed parsing errors. The {@code errorOut} parameter, if not false, specifies the name of
 	 * the file to which to dump error-causing input, if any, before exiting.
 	 */
-	KodkodServer(MODE mode, Set<FEATURE> features,
+	KodkodServer(Mode mode, Set<Feature> features,
 				 boolean fastParsing, KodkodOutput out, String errorOut) {
 
 		/* Note well: PardinusSolver decides which solver to run based on options given
@@ -140,28 +140,24 @@ public final class KodkodServer {
 		   since by the time the parser runs the problem has been instantiated.
 		 */
 
-		if (features.contains(FEATURE.TARGET_ORIENTED) && !MODE.STEPPER.equals(mode)) {
+		if (features.contains(Feature.TARGET_ORIENTED) && !Mode.STEPPER.equals(mode)) {
 			System.err.println("Target orientation requires stepper mode.");
 			System.exit(1);
 		}
-		if (features.contains(FEATURE.TEMPORAL) && !MODE.STEPPER.equals(mode)) {
+		if (features.contains(Feature.TEMPORAL) && !Mode.STEPPER.equals(mode)) {
 			System.err.println("Temporal solver requires stepper mode.");
 			System.exit(1);
 		}
 
-		if (features.contains(FEATURE.TARGET_ORIENTED)) {
-			this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.targetOriented(), out);
-		} else if (features.contains(FEATURE.TEMPORAL)) {
-			this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.temporal(), out);
-		} else if (MODE.STEPPER.equals(mode)){
-			this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.stepper(), out);
-		} else if (MODE.INCREMENTAL.equals(mode)){
-		 	this.parser = Parboiled.createParser(KodkodParser.class, KodkodProblem.incremental(), out);
+		if (features.contains(Feature.TARGET_ORIENTED)) {
+			this.parser = Parboiled.createParser(KodkodParser.class, Feature.TARGET_ORIENTED, out);
+		} else if (features.contains(Feature.TEMPORAL)) {
+			this.parser = Parboiled.createParser(KodkodParser.class, Feature.TEMPORAL, out);
+		} else if (Mode.STEPPER.equals(mode)){
+			this.parser = Parboiled.createParser(KodkodParser.class, Feature.PLAIN_STEPPER, out);
 		} else {
-		 	this.parser = Parboiled.createParser(KodkodParser.class,  KodkodProblem.complete(), out);
+			throw new UnsupportedOperationException("non stepper/target-oriented/temporal problems not supported");
 		}
-		// else if (stepper)
-		// 	this.parser = Parboiled.createParser(KodkodParser.class,  KodkodProblem.stepper(), out);
 		this.fastParsing = fastParsing;
 		this.errorOut = errorOut;
 	}
@@ -177,7 +173,7 @@ public final class KodkodServer {
 	 * the file to which to dump error-causing input, if any, before exiting.
 	 */
 
-	public KodkodServer(MODE mode, Set<FEATURE> features, boolean fastParsing, String errorOut) {
+	public KodkodServer(Mode mode, Set<Feature> features, boolean fastParsing, String errorOut) {
 		this(mode, features, fastParsing, new StandardKodkodOutput(), errorOut);
 	}
 
@@ -186,11 +182,11 @@ public final class KodkodServer {
 	 *
 	 */
 	public void serve(String block) {
-		final KodkodProblem problem = parser.problem;
+		//final KodkodProblem problem = parser.currentProblem;
 		final Rule rule;
 
-		if (problem.isIncremental()) {
-			throw new UnsupportedOperationException("non stepper/target-oriented problems not supported");
+//		if (problem.isIncremental()) {
+//			throw new UnsupportedOperationException("non stepper/target-oriented/temporal problems not supported");
 //			if (problem.isPartial()) {
 //				parser.info("serving buffer: RestOfIncrementalProblems()");
 //				rule = parser.RestOfIncrementalProblems();
@@ -198,22 +194,25 @@ public final class KodkodServer {
 //				parser.info("serving buffer: IncrementalProblems()");
 //				rule = parser.IncrementalProblems();
 //			}
-		} else if (problem.isStepper()){
-			if (problem.isSolved()){
-				//parser.info("serving buffer: StepperServe");
-				rule = parser.StepperServe();
-			} else if (problem.isTargetOriented()) {
-				//parser.info("serving buffer: TargetOrientedProblem");
-				rule = parser.TargetOrientedProblem();
-			} else {
-				//parser.info("serving buffer: StepperProblem");
-				rule = parser.StepperProblem();
-			}
-		} else {
-			throw new UnsupportedOperationException("non stepper/target-oriented problems not supported");
-			//parser.info("serving buffer: Problems()");
-			//rule = parser.Problems();
-		}
+//		} else if (problem.isStepper()){
+//			if (problem.isSolved()){
+//				//parser.info("serving buffer: StepperServe");
+//				rule = parser.StepperServe();
+//			} else
+//			if (problem.isTargetOriented()) {
+//				//parser.info("serving buffer: TargetOrientedProblem");
+//				rule = parser.TargetOrientedProblem();
+//			} else {
+//				//parser.info("serving buffer: StepperProblem");
+//				rule = parser.StepperStart();
+//			}
+//		} else {
+//			throw new UnsupportedOperationException("non stepper/target-oriented/temporal problems not supported");
+//			//parser.info("serving buffer: Problems()");
+//			//rule = parser.Problems();
+//		}
+
+		rule = parser.StepperStart();
 
 		final ParsingResult<Object> result;
 		if (fastParsing) {
@@ -375,7 +374,7 @@ public final class KodkodServer {
 					usage(1);
 				} else {
 					// Can't use a stepper problem when running kodkod on a file.
-					(new KodkodServer(MODE.COMPLETE, new HashSet<>(), fastParsing, errorOut)).serve(new File(args[i]));
+					(new KodkodServer(Mode.COMPLETE, new HashSet<>(), fastParsing, errorOut)).serve(new File(args[i]));
 					System.exit(0);
 				}
 			}
@@ -385,11 +384,11 @@ public final class KodkodServer {
 			System.err.println("Incremental and stepper modes are mutually exclusive.");
 			System.exit(1);
 		}
-		MODE mode = incremental ? MODE.INCREMENTAL :
-				(stepper ? MODE.STEPPER : MODE.COMPLETE);
-		Set<FEATURE> features = new HashSet<>();
-		if(temporal) features.add(FEATURE.TEMPORAL);
-		if(targetOriented) features.add(FEATURE.TARGET_ORIENTED);
+		Mode mode = incremental ? Mode.INCREMENTAL :
+				(stepper ? Mode.STEPPER : Mode.COMPLETE);
+		Set<Feature> features = new HashSet<>();
+		if(temporal) features.add(Feature.TEMPORAL);
+		if(targetOriented) features.add(Feature.TARGET_ORIENTED);
 
 		KodkodServer server = new KodkodServer(mode, features, fastParsing, errorOut);
 		server.serve();
