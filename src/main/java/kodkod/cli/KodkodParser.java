@@ -73,6 +73,7 @@ import org.parboiled.annotations.DontLabel;
 import org.parboiled.annotations.MemoMismatches;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
+import org.parboiled.errors.ActionException;
 import org.parboiled.support.Var;
 import org.parboiled.support.DefaultValueStack;
 
@@ -189,11 +190,11 @@ public class KodkodParser extends BaseParser<Object> {
 	boolean enterProblemScope(String id) {
 		if(!problems.containsKey(id)) {
 			if(type.equals(KodkodServer.Feature.PLAIN_STEPPER))
-				problems.put(id, KodkodProblem.stepper());
+				problems.put(id, KodkodProblem.stepper(id));
 			else if(type.equals(KodkodServer.Feature.TEMPORAL))
-				problems.put(id, KodkodProblem.temporal());
+				problems.put(id, KodkodProblem.temporal(id));
 			else if(type.equals(KodkodServer.Feature.TARGET_ORIENTED))
-				problems.put(id, KodkodProblem.targetOriented());
+				problems.put(id, KodkodProblem.targetOriented(id));
 			else
 				throw new UnsupportedOperationException(type.toString());
 		}
@@ -517,7 +518,16 @@ public class KodkodParser extends BaseParser<Object> {
 		return Sequence(
 				Identifier(varPrefix),
 				currentProblem.boundForcedAtomIfNeeded(varPrefix, peekString()),
-				push(env().use(varPrefix, popString())));
+				push(lookup(env(), varPrefix, popString())));
+	}
+
+	Object lookup(StringDefEnv env, char varPrefix, String val) {
+		try {
+			return env.use(varPrefix, val);
+		} catch(ActionException ae) {
+			this.info("error: environment didn't contain: "+val);
+			throw ae;
+		}
 	}
 
 

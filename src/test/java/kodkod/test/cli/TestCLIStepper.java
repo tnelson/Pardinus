@@ -9,7 +9,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.ErrorLocatingParseRunner;
+import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.Chars;
+import org.parboiled.support.ParsingResult;
 
 import java.io.*;
 import java.net.URL;
@@ -34,6 +36,7 @@ public class TestCLIStepper {
         tests.add(new Object[]{"singleStepper_bridgeCrossing.txt", KodkodServer.Feature.PLAIN_STEPPER});
         tests.add(new Object[]{"singleTemporal_lightsPuzzle.txt", KodkodServer.Feature.TEMPORAL});
         tests.add(new Object[]{"multipleStepper_graphRuns.txt", KodkodServer.Feature.PLAIN_STEPPER});
+        tests.add(new Object[]{"singleStepper_unsatGraph.txt", KodkodServer.Feature.PLAIN_STEPPER});
         return tests;
     }
 
@@ -67,7 +70,11 @@ public class TestCLIStepper {
         for(String block : data.split(eoiString)) {
             //System.out.println("***** running "+block.substring(0, Math.min(30, block.length())));
             //new BasicParseRunner<>(parser.StepperStart()).run(block);
-            new ErrorLocatingParseRunner<>(parser.StepperStart()).run(block);
+            ParsingResult<Object> result = new ErrorLocatingParseRunner<>(parser.StepperStart()).run(block);
+
+            // KodkodServer will terminate if any parse errors occur
+            //System.out.println("matched="+result.matched +" : hasErrors()="+result.hasErrors()+" : errors="+result.parseErrors);
+
             // For debugging (verbose)
             //new TracingParseRunner<>(parser.StepperStart()).run(block);
         }

@@ -42,7 +42,7 @@ import kodkod.instance.TupleSet;
 /**
  * An implementation of the  {@link KodkodOutput} interface that writes solutions provided to it
  * to standard output, in the form of s-expressions.  Given a satisfiable
- * solution {@code s}, an instance of this class  will produce output of the form {@code (sat :model ([ri {(int+)*}]*))},
+ * solution {@code s}, an instance of this class  will produce output of the form {@code (sat :name run-name :model ([ri {(int+)*}]*))},
  * where each {@code ri} is a relation in {@code s.instance}, and {@code {(int+)*}} is an
  * s-expression representation of the tupleset {@code s.instance.tuples(ri)}.
  * Each tupleset is represented as a list of tuples, and each tuple is represented
@@ -50,7 +50,7 @@ import kodkod.instance.TupleSet;
  *
  * <p>
  * Given an unsatisfiable solution {@code s} to a problem {@code p}, this implementation will produce output of the
- * form {@code (unsat :core (fi+))}, if a core is available, or of the form {@code (unsat)}, otherwise.
+ * form {@code (unsat :name run-name :core (fi+))}, if a core is available, or of the form {@code (unsat :name run-name)}, otherwise.
  * Each {@code fi} is a formula identifier in {@code p.env.defs['f']} such that the formula
  * {@code p.env.defs['f'][fi]} is in {@code s.proof.highLevelCore().values()}.  If there are some formulas
  * that are in the core but are not defined in {@code p.env.defs['f']}, a warning message will be printed to
@@ -104,7 +104,12 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			StringDefs<Relation> xdefns = (StringDefs<Relation>) problem.env().defs('x');
 			Set<String> origAtoms = problem.env().defs('a').keys();
 			final StringBuilder str = new StringBuilder();
-			str.append("(sat :model (");
+			str.append("(sat ");
+
+			// Report run name in addition to other info
+			str.append(":name ").append(problem.id).append(" ");
+
+			str.append(":model (");
 
 			// Temporal problem will have a TemporalInstance to break down
 			// But isTemporal stops being trustworthy
@@ -134,7 +139,10 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			str.append(")"); // end of sat
 			System.out.println(str);
 		}
-		else			System.out.println("(no-more-instances)");
+		else {
+			// Was originally sat, but there are no more instances left.
+			System.out.println("(no-more-instances :name "+problem.id+")");
+		}
 	}
 
 
@@ -213,6 +221,8 @@ public final class StandardKodkodOutput implements KodkodOutput {
 		final StringBuilder str = new StringBuilder();
 		final Proof proof = sol.proof();
 		str.append("(unsat");
+		// Report run name in addition to other info
+		str.append(" :name ").append(problem.id).append(" ");
 
         if (proof != null){
             str.append(" :core ( ");

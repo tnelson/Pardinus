@@ -23,3 +23,5 @@
 (assert f:1))**EOI**
 (with r1 (solve first))**EOI**
 (with r2 (solve first))**EOI**
+(with r1 (solve next))**EOI**
+(with r1 (solve next))**EOI**

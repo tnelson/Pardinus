@@ -225,6 +225,7 @@ public final class KodkodServer {
 
 
 		if (!result.matched) {
+			parser.info("error parsing problem specification");
 			if (result.hasErrors()) {
 				final Logger logger = Logger.getGlobal();
 				for(ParseError err : result.parseErrors) {
