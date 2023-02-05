@@ -156,7 +156,8 @@ public class KodkodParser extends BaseParser<Object> {
 	public boolean setProblem(KodkodProblem problem) {
 		if (problem == null)
 			System.exit(0);
-		this.currentProblem = problem;
+		this.currentProblem = problem;            // update current problem context
+		this.problems.put(problem.id, problem);   // discard old problem for this id
 		return true;
 	}
 
