@@ -736,7 +736,7 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
-	boolean setTargetType(String target_type) {
+	boolean setTargetType(KodkodOutput out, String target_type) {
 		throw new ActionException("Cannot set target option for non-target oriented problem.");
 	}
 
@@ -1088,10 +1088,11 @@ public abstract class KodkodProblem {
 			enum FLIP {yes, no, custom};
 			FLIP flip_target = FLIP.no;
 
-			boolean setTargetType(String target_type) {
+			boolean setTargetType(KodkodOutput out, String target_type) {
 				if (initialized)
 					throw new IllegalStateException("Target type was already set");
 				this.initialized = true;
+				out.writeInfo("set target type: "+target_type);
 
 				this.target_type = target_type;
 				options().setRunTarget(true);

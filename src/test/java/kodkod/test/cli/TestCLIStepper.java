@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.errors.ParseError;
 import org.parboiled.parserunners.ErrorLocatingParseRunner;
 import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.Chars;
@@ -19,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Basic "does not crash" tests for stepper parsing (including temporal problems)
@@ -38,6 +41,7 @@ public class TestCLIStepper {
         tests.add(new Object[]{"multipleStepper_graphRuns.txt", KodkodServer.Feature.PLAIN_STEPPER});
         tests.add(new Object[]{"singleStepper_unsatGraph.txt", KodkodServer.Feature.PLAIN_STEPPER});
         tests.add(new Object[]{"multipleTemporal_graphRuns.txt", KodkodServer.Feature.TEMPORAL});
+        tests.add(new Object[]{"singleTarget_close_no.txt", KodkodServer.Feature.TARGET_ORIENTED});
         return tests;
     }
 
@@ -59,6 +63,9 @@ public class TestCLIStepper {
      * Because of this protocol, it's troublesome to test via the *IntelliJ* command line specifically
      * since ctrl-D ends the stream, rather than sending EOI.
      *
+     * There must be nothing in the stream after the last EOI.
+     * The parser is also sensitive to more general kinds of arbitrary whitespace.
+     *
      * @throws IOException
      */
     @Test
@@ -69,12 +76,17 @@ public class TestCLIStepper {
         String data = new String(dataBytes, StandardCharsets.UTF_8).replaceAll("\\*\\*EOI\\*\\*", eoiString);
 
         for(String block : data.split(eoiString)) {
-            //System.out.println("***** running "+block.substring(0, Math.min(30, block.length())));
+            System.out.println("***** running "+block.substring(0, Math.min(30, block.length())).replaceAll("[\r\n]", ""));
             //new BasicParseRunner<>(parser.StepperStart()).run(block);
             ParsingResult<Object> result = new ErrorLocatingParseRunner<>(parser.StepperStart()).run(block);
 
             // KodkodServer will terminate if any parse errors occur
-            //System.out.println("matched="+result.matched +" : hasErrors()="+result.hasErrors()+" : errors="+result.parseErrors);
+            if(!result.matched) {
+                System.out.println("matched=" + result.matched + " : hasErrors()=" + result.hasErrors() + " : errors=" + result.parseErrors);
+                for(ParseError err : result.parseErrors) {
+                    System.out.println(ErrorUtils.printParseError(err));
+                }
+            }
 
             // For debugging (verbose)
             //new TracingParseRunner<>(parser.StepperStart()).run(block);

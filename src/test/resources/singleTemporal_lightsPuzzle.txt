@@ -19,9 +19,7 @@
 (assert f:3)
 (f:4 (eventually (&& (&& (= x:Lit r:Light )))))
 (assert f:4)
-(f:5 (always (in r:succ (-> r:Int r:I
-nt
-))))
+(f:5 (always (in r:succ (-> r:Int r:Int))))
 (assert f:5)
 (f:6 (always (in r:left (-> r:Light r:Light ))))
 (assert f:6)

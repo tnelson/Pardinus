@@ -133,6 +133,7 @@ public class KodkodParser extends BaseParser<Object> {
 	public KodkodParser(KodkodServer.Feature type, KodkodOutput out) {
 		this.out = out;
 		this.type = type;
+		info("parser created for type: "+type);
 	}
 
 	/**
@@ -264,7 +265,9 @@ public class KodkodParser extends BaseParser<Object> {
 										DeclareRelation(),
 										DeclareVarRelation(),
 										DefNode(),
-										Assert())),
+										Assert(),
+										TargetOption(),
+										Target())),
 				        currentProblem.endBuild());
 	}
 
@@ -297,7 +300,7 @@ public class KodkodParser extends BaseParser<Object> {
 						Sequence(FAR_NORETARGET, target_mode.set("far")),
 						Sequence(COVER, target_mode.set("cover"))
 				),
-				currentProblem.setTargetType(target_mode.get()));
+				currentProblem.setTargetType(out, target_mode.get()));
 	}
 
 	/**
