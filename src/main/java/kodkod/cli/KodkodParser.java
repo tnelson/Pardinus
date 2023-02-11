@@ -214,6 +214,11 @@ public class KodkodParser extends BaseParser<Object> {
 		return true;
 	}
 
+	boolean ackProblemDefinition() {
+		out.writeAck(this.currentID);
+		return true;
+	}
+
 	public Rule With() {
 		return Sequence(
 				Space(),
@@ -223,10 +228,10 @@ public class KodkodParser extends BaseParser<Object> {
 				// StringLiteral() contains the trailing blank space
 				//Space(),
 				enterProblemScope(popString()),
-				FirstOf(StepperProblem(), StepperServe()),
-				enterProblemScope(""),
-				RPAR,
-				EOI
+				FirstOf(
+						Sequence(StepperProblem(), RPAR, EOI, ackProblemDefinition(), enterProblemScope("")),
+						Sequence(StepperServe(), RPAR, EOI, enterProblemScope(""))
+				)
 		);
 	}
 

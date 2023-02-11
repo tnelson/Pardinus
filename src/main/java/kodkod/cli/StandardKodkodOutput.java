@@ -316,6 +316,14 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	}
 
 	/**
+	 * Writes an acknowledgement of the problem definition. Informs the caller that the problem has been created.
+	 * The caller may wait to send (solve), etc. commands until receiving this.
+	 */
+	public void writeAck(String id) {
+		System.out.println("(ack "+id+")");
+	}
+
+	/**
 	 * Report memory usage info to caller as an (info ...) message.
 	 */
 	void printMemInfo() {
