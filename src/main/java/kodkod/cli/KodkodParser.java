@@ -678,40 +678,32 @@ public class KodkodParser extends BaseParser<Object> {
 				swap(),
 				drop());
 	}
-	boolean handleQuantConstraint(Formula inner, Quantifier quant, Decls args) {
-		Node parent = inner.quantify(quant, args);
-		for(int idx=0;idx<args.size();idx++) {
-			problem().logNodeChild(parent, idx, args.get(idx));
-		}
-		// Consider the inner formula the final argument
-		problem().logNodeChild(parent, args.size(), inner);
-		push(parent);
-		return true;
-	}
 
 	/**
 	 * @return NOT Constraint
 	 */
 	Rule NotConstraint() {
-		return Sequence(NOT, Constraint(), push(popFormula().not()));
+		return Sequence(NOT, Constraint(), handleNotConstraint(popFormula()));
 	}
 
 	// Electrum unary constraints /////////////////////////////////
 	Rule AlwaysConstraint() {
-		return Sequence(ALWAYS, Constraint(), push(popFormula().always()));
+		return Sequence(ALWAYS, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.ALWAYS, popFormula()));
 	}
 	Rule EventuallyConstraint() {
-		return Sequence(EVENTUALLY, Constraint(), push(popFormula().eventually()));
+		return Sequence(EVENTUALLY, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.EVENTUALLY, popFormula()));
 	}
 	Rule AfterConstraint() {
-		return Sequence(AFTER, Constraint(), push(popFormula().after()));
+		return Sequence(AFTER, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.AFTER, popFormula()));
 	}
-	Rule HistoricallyConstraint() { return Sequence(HISTORICALLY, Constraint(), push(popFormula().historically())); }
+	Rule HistoricallyConstraint() {
+		return Sequence(HISTORICALLY, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.HISTORICALLY, popFormula()));
+	}
 	Rule OnceConstraint() {
-		return Sequence(ONCE, Constraint(), push(popFormula().once()));
+		return Sequence(ONCE, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.ONCE, popFormula()));
 	}
 	Rule BeforeConstraint() {
-		return Sequence(BEFORE, Constraint(), push(popFormula().before()));
+		return Sequence(BEFORE, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.BEFORE, popFormula()));
 	}
 
 	
@@ -723,19 +715,10 @@ public class KodkodParser extends BaseParser<Object> {
 		return FirstOf(
 				Sequence(ACTION(args.enterFrame()), rule, args.set(new ArrayList<Formula>(4)),
 						OneOrMore(Constraint(), args.get().add(popFormula())),
-						//push(compose_temp(op, args.get())),
-						handleTemporalConstraint(op, args.get()),
+						handleNaryTemporalConstraint(op, args.get()),
 						ACTION(args.exitFrame())),
 
 				Sequence(ACTION(args.exitFrame()), NOTHING));
-	}
-	boolean handleTemporalConstraint(TemporalOperator op, List<Formula> args) {
-		Node parent = compose_temp(op, args);
-		for(int idx=0;idx<args.size();idx++) {
-			problem().logNodeChild(parent, idx, args.get(idx));
-		}
-		push(parent);
-		return true;
 	}
 
 	//////////////////////////////////////////////////////
@@ -754,14 +737,6 @@ public class KodkodParser extends BaseParser<Object> {
 						ACTION(args.exitFrame())),
 
 				Sequence(ACTION(args.exitFrame()), NOTHING));
-	}
-	boolean handleNaryConstraint(FormulaOperator op, List<Formula> args) {
-		Node parent = compose(op, args);
-		for(int idx=0;idx<args.size();idx++) {
-			problem().logNodeChild(parent, idx, args.get(idx));
-		}
-		push(parent);
-		return true;
 	}
 
 	/**
@@ -1334,6 +1309,56 @@ public class KodkodParser extends BaseParser<Object> {
 				return (StringDefEnv) val;
 		}
 		return currentProblem.env();
+	}
+
+    /* Machinery for recording sub-formula syntax locations for cores */
+
+	boolean handleNotConstraint(Formula arg) {
+		Node parent = arg.not();
+		problem().logNodeChild(parent, 0, arg);
+		push(parent);
+		return true;
+	}
+	boolean handleNaryConstraint(FormulaOperator op, List<Formula> args) {
+		Node parent = compose(op, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx));
+		}
+		push(parent);
+		return true;
+	}
+	boolean handleNaryTemporalConstraint(TemporalOperator op, List<Formula> args) {
+		Node parent = compose_temp(op, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx));
+		}
+		push(parent);
+		return true;
+	}
+	boolean handleUnaryTemporalConstraint(TemporalOperator op, Formula arg) {
+		Node parent;
+		switch(op) {
+			case ALWAYS: parent = arg.always(); break;
+			case EVENTUALLY: parent = arg.eventually(); break;
+			case ONCE: parent = arg.once(); break;
+			case HISTORICALLY: parent = arg.historically(); break;
+			case AFTER: parent = arg.after(); break;
+			case BEFORE: parent = arg.before(); break;
+			default: throw new IllegalArgumentException("operator was not a unary formula operator: "+op);
+		}
+		problem().logNodeChild(parent, 0, arg);
+		push(parent);
+		return true;
+	}
+	boolean handleQuantConstraint(Formula inner, Quantifier quant, Decls args) {
+		Node parent = inner.quantify(quant, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx));
+		}
+		// Consider the inner formula the final argument
+		problem().logNodeChild(parent, args.size(), inner);
+		push(parent);
+		return true;
 	}
 }
 
