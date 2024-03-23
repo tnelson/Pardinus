@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
@@ -1403,6 +1404,36 @@ public abstract class KodkodProblem {
 //		}
 //	}
 
+	///////////////////////////////////////////////////////
+	// Machinery to track source location of child formulas
+	///////////////////////////////////////////////////////
+
+	/** record class to hold a mapping from parent Node to child Nodes
+	 */
+    static class ParentIndex {
+		final Node parent;
+		final int index;
+		ParentIndex(Node parent, int index) { this.parent = parent; this.index = index; }
+		@Override public String toString() { return "("+parent+","+index+")"; }
+		@Override public int hashCode() { return Objects.hash(parent, index); }
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			ParentIndex that = (ParentIndex) o;
+			return index == that.index && Objects.equals(parent, that.parent);
+		}
+	}
+	Map<Node, ParentIndex> parentIndexes = new HashMap<>();
+	public void logNodeChild(Node parent, int index, Node child) {
+		// Rely on structurally-identical children NOT being referentially equal.
+		if(parentIndexes.containsKey(child))
+			throw new IllegalStateException("child formula already mapped by parentIndexes: "+child);
+		System.out.println("Logging: "+parent+","+index+" <--- "+child);
+		parentIndexes.put(child, new ParentIndex(parent, index));
+	}
+
+
 } // end of KodkodProblem
 
 /*
@@ -1453,4 +1484,5 @@ class OneSolutionIterator implements Explorer<Solution> {
 	public Solution next() {
 		return s;
 	}
+
 }

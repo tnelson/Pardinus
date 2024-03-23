@@ -672,8 +672,21 @@ public class KodkodParser extends BaseParser<Object> {
 	@Cached
 	/** @return quantRule VarDecls Constraint */
 	Rule QuantConstraint(Rule quantRule, Quantifier quant) {
-		return Sequence(quantRule, VarDecls(), Constraint(), push(popFormula().quantify(quant, popDecls())), swap(),
+		return Sequence(quantRule, VarDecls(), Constraint(),
+				//push(popFormula().quantify(quant, popDecls())),
+				handleQuantConstraint(popFormula(), quant, popDecls()),
+				swap(),
 				drop());
+	}
+	boolean handleQuantConstraint(Formula inner, Quantifier quant, Decls args) {
+		Node parent = inner.quantify(quant, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx));
+		}
+		// Consider the inner formula the final argument
+		problem().logNodeChild(parent, args.size(), inner);
+		push(parent);
+		return true;
 	}
 
 	/**
@@ -709,10 +722,20 @@ public class KodkodParser extends BaseParser<Object> {
 
 		return FirstOf(
 				Sequence(ACTION(args.enterFrame()), rule, args.set(new ArrayList<Formula>(4)),
-						OneOrMore(Constraint(), args.get().add(popFormula())), push(compose_temp(op, args.get())),
+						OneOrMore(Constraint(), args.get().add(popFormula())),
+						//push(compose_temp(op, args.get())),
+						handleTemporalConstraint(op, args.get()),
 						ACTION(args.exitFrame())),
 
 				Sequence(ACTION(args.exitFrame()), NOTHING));
+	}
+	boolean handleTemporalConstraint(TemporalOperator op, List<Formula> args) {
+		Node parent = compose_temp(op, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx));
+		}
+		push(parent);
+		return true;
 	}
 
 	//////////////////////////////////////////////////////
@@ -726,12 +749,20 @@ public class KodkodParser extends BaseParser<Object> {
 
 		return FirstOf(
 				Sequence(ACTION(args.enterFrame()), opRule, args.set(new ArrayList<Formula>(4)),
-						OneOrMore(Constraint(), args.get().add(popFormula())), push(compose(op, args.get())),
+						OneOrMore(Constraint(), args.get().add(popFormula())),
+						handleNaryConstraint(op, args.get()),
 						ACTION(args.exitFrame())),
 
 				Sequence(ACTION(args.exitFrame()), NOTHING));
 	}
-
+	boolean handleNaryConstraint(FormulaOperator op, List<Formula> args) {
+		Node parent = compose(op, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx));
+		}
+		push(parent);
+		return true;
+	}
 
 	/**
 	 * @return ACYCLIC Use('r')

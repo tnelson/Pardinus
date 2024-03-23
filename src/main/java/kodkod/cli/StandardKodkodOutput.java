@@ -233,7 +233,13 @@ public final class StandardKodkodOutput implements KodkodOutput {
 				} else {
                 	// If core granularity is high, Kodkod may produce
 					//  formulas that don't correspond to top-level constraints
-					str.append(form);
+					if(problem.parentIndexes.containsKey(form)) {
+						// Pass trail of subfmla indexes back
+						str.append(buildPathToTop(problem, defs, form));
+					} else {
+						// Last resort
+						str.append(form);
+					}
 				}
                 str.append("\" ");
             }
@@ -245,6 +251,23 @@ public final class StandardKodkodOutput implements KodkodOutput {
 		str.append(")");
         System.out.println(str.toString());
     }
+
+	String buildPathToTop(KodkodProblem problem, StringDefs<Formula> defs, Node n) {
+		// Base case: this is a top-level formula; we have an ID for it
+		if(n instanceof Formula && defs.canReverse((Formula)n)) {
+			return "f:" + defs.reverse((Formula)n);
+		}
+		// Error case: not a top-level formula, but we have no parent recorded
+		if(!problem.parentIndexes.containsKey(n)) {
+			System.err.println("Error finding: "+n);
+			for(Node key: problem.parentIndexes.keySet())
+				System.err.println("  Known: " + key);
+			throw new IllegalStateException("No child-index information for subformula: "+n);
+		}
+		// Recursive case: construct another layer of child index
+		KodkodProblem.ParentIndex pi = problem.parentIndexes.get(n);
+		return buildPathToTop(problem, defs, pi.parent)+","+pi.index;
+	}
     // ...
 // }
 		// final Set<Node> core;
