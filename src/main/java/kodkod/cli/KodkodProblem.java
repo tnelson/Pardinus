@@ -1429,7 +1429,8 @@ public abstract class KodkodProblem {
 		// Rely on structurally-identical children NOT being referentially equal.
 		if(parentIndexes.containsKey(child))
 			throw new IllegalStateException("child formula already mapped by parentIndexes: "+child);
-		System.out.println("Logging: "+parent+","+index+" <--- "+child);
+		// For debugging only
+		//System.out.println("Logging: "+parent+","+index+" <--- "+child);
 		parentIndexes.put(child, new ParentIndex(parent, index));
 	}
 
