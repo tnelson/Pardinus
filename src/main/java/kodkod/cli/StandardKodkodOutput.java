@@ -22,7 +22,6 @@
 package kodkod.cli;
 
 import java.text.NumberFormat;
-import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -228,19 +227,11 @@ public final class StandardKodkodOutput implements KodkodOutput {
             str.append(" :core ( ");
             for (Node form : proof.highLevelCore().values()) {
                 str.append("\"");
-                if(form instanceof Formula && defs.canReverse((Formula)form)) {
-					str.append("f:"+defs.reverse((Formula) form));
-				} else {
-                	// If core granularity is high, Kodkod may produce
-					//  formulas that don't correspond to top-level constraints
-					if(problem.parentIndexes.containsKey(form)) {
-						// Pass trail of subfmla indexes back
-						str.append(buildPathToTop(problem, defs, form));
-					} else {
-						// Last resort
-						str.append(form);
-					}
-				}
+				String result = buildPathToTop(problem, defs, form);
+				if(result == null)
+					str.append(form);
+				else
+					str.append(result);
                 str.append("\" ");
             }
             str.append(")");
@@ -252,21 +243,30 @@ public final class StandardKodkodOutput implements KodkodOutput {
         System.out.println(str.toString());
     }
 
-	String buildPathToTop(KodkodProblem problem, StringDefs<Formula> defs, Node n) {
+	String buildPathToTop(KodkodProblem problem, StringDefs<Formula> defs, Node f) {
 		// Base case: this is a top-level formula; we have an ID for it
-		if(n instanceof Formula && defs.canReverse((Formula)n)) {
-			return "f:" + defs.reverse((Formula)n);
+		if(f instanceof Formula && defs.canReverse((Formula)f)) {
+			return "f:" + defs.reverse((Formula)f);
 		}
-		// Error case: not a top-level formula, but we have no parent recorded
-		if(!problem.parentIndexes.containsKey(n)) {
-			System.err.println("Error finding: "+n);
-			for(Node key: problem.parentIndexes.keySet())
-				System.err.println("  Known: " + key);
-			throw new IllegalStateException("No child-index information for subformula: "+n);
+
+		// What starting points do we have recorded for this formula?
+		List<List<Node>> starts = new ArrayList<>(1);
+		for(List<Node> keyWrapper : problem.parentIndexes.keySet()) {
+			if(keyWrapper.get(0) == f) starts.add(keyWrapper);
+		}
+		// Fallback case: no starting points present, not a base case
+		if(starts.isEmpty()) return null;
+
+		if(starts.size() > 1) {
+			writeInfo("Error finding unique start for: "+f);
+			for(List<Node> key: starts)
+				writeInfo("  Start option: " + key);
+			// Fail, but fall back.
+			return null;
 		}
 		// Recursive case: construct another layer of child index
-		KodkodProblem.ParentIndex pi = problem.parentIndexes.get(n);
-		return buildPathToTop(problem, defs, pi.parent)+","+pi.index;
+		KodkodProblem.ParentIndex pi = problem.parentIndexes.get(starts.get(0));
+		return buildPathToTop(problem, defs, pi.parent.get(0))+","+pi.index;
 	}
     // ...
 // }

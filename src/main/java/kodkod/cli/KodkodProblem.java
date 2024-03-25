@@ -33,7 +33,6 @@ import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.Translation;
-import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.ucore.RCEStrategy;
@@ -1407,13 +1406,18 @@ public abstract class KodkodProblem {
 	///////////////////////////////////////////////////////
 	// Machinery to track source location of child formulas
 	///////////////////////////////////////////////////////
-
-	/** record class to hold a mapping from parent Node to child Nodes
+	/** Record class to hold a mapping from parent Formula to child Formula.
+	 *  Because "and(and(a, b))" produces and(a,b) we need to wrap to disambiguate.
 	 */
     static class ParentIndex {
-		final Node parent;
+		final List<? extends Node> parent; // invar: size() = 1
 		final int index;
-		ParentIndex(Node parent, int index) { this.parent = parent; this.index = index; }
+		ParentIndex(List<? extends Node> parent, int index) {
+			if(parent == null || parent.size() != 1)
+				throw new IllegalArgumentException("To be wrapped, formula list must be a singleton list.");
+			this.parent = parent;
+			this.index = index;
+		}
 		@Override public String toString() { return "("+parent+","+index+")"; }
 		@Override public int hashCode() { return Objects.hash(parent, index); }
 		@Override
@@ -1424,14 +1428,23 @@ public abstract class KodkodProblem {
 			return index == that.index && Objects.equals(parent, that.parent);
 		}
 	}
-	Map<Node, ParentIndex> parentIndexes = new HashMap<>();
-	public void logNodeChild(Node parent, int index, Node child) {
+	Map<List<Node>, ParentIndex> parentIndexes = new HashMap<>();
+	public void logNodeChild(Formula parent, int index, Node child, KodkodOutput out) {
 		// Rely on structurally-identical children NOT being referentially equal.
-		if(parentIndexes.containsKey(child))
-			throw new IllegalStateException("child formula already mapped by parentIndexes: "+child);
+		// However, Kodkod will optimize; e.g.: "and(and(a, b))" is built as and(a,b).
+		// We cannot simply skip these, because the caller needs to rely on the structure
+		// of the formula passed being represented in the child path. Therefore, if parent == child,
+		// allow the duplication; we're wrapping per reference anyway.
+
 		// For debugging only
-		//System.out.println("Logging: "+parent+","+index+" <--- "+child);
-		parentIndexes.put(child, new ParentIndex(parent, index));
+		//System.out.println("Logging: "+child+"("+child.hashCode()+") ---> "+parent+","+index);
+		//System.out.println("Logging: "+child+" ---> "+parent+","+index);
+
+		List<Formula> parentWrapper = new ArrayList<>(1);
+		List<Node> childWrapper = new ArrayList<>(1);
+		parentWrapper.add(parent);
+		childWrapper.add(child);
+		parentIndexes.put(childWrapper, new ParentIndex(parentWrapper, index));
 	}
 
 

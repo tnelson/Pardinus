@@ -1314,29 +1314,29 @@ public class KodkodParser extends BaseParser<Object> {
     /* Machinery for recording sub-formula syntax locations for cores */
 
 	boolean handleNotConstraint(Formula arg) {
-		Node parent = arg.not();
-		problem().logNodeChild(parent, 0, arg);
+		Formula parent = arg.not();
+		problem().logNodeChild(parent, 0, arg, out);
 		push(parent);
 		return true;
 	}
 	boolean handleNaryConstraint(FormulaOperator op, List<Formula> args) {
-		Node parent = compose(op, args);
+		Formula parent = compose(op, args);
 		for(int idx=0;idx<args.size();idx++) {
-			problem().logNodeChild(parent, idx, args.get(idx));
+			problem().logNodeChild(parent, idx, args.get(idx), out);
 		}
 		push(parent);
 		return true;
 	}
 	boolean handleNaryTemporalConstraint(TemporalOperator op, List<Formula> args) {
-		Node parent = compose_temp(op, args);
+		Formula parent = compose_temp(op, args);
 		for(int idx=0;idx<args.size();idx++) {
-			problem().logNodeChild(parent, idx, args.get(idx));
+			problem().logNodeChild(parent, idx, args.get(idx), out);
 		}
 		push(parent);
 		return true;
 	}
 	boolean handleUnaryTemporalConstraint(TemporalOperator op, Formula arg) {
-		Node parent;
+		Formula parent;
 		switch(op) {
 			case ALWAYS: parent = arg.always(); break;
 			case EVENTUALLY: parent = arg.eventually(); break;
@@ -1346,17 +1346,17 @@ public class KodkodParser extends BaseParser<Object> {
 			case BEFORE: parent = arg.before(); break;
 			default: throw new IllegalArgumentException("operator was not a unary formula operator: "+op);
 		}
-		problem().logNodeChild(parent, 0, arg);
+		problem().logNodeChild(parent, 0, arg, out);
 		push(parent);
 		return true;
 	}
 	boolean handleQuantConstraint(Formula inner, Quantifier quant, Decls args) {
-		Node parent = inner.quantify(quant, args);
+		Formula parent = inner.quantify(quant, args);
 		for(int idx=0;idx<args.size();idx++) {
-			problem().logNodeChild(parent, idx, args.get(idx));
+			problem().logNodeChild(parent, idx, args.get(idx), out);
 		}
 		// Consider the inner formula the final argument
-		problem().logNodeChild(parent, args.size(), inner);
+		problem().logNodeChild(parent, args.size(), inner, out);
 		push(parent);
 		return true;
 	}
