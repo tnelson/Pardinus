@@ -1320,6 +1320,16 @@ public class KodkodParser extends BaseParser<Object> {
 		return true;
 	}
 	boolean handleNaryConstraint(FormulaOperator op, List<Formula> args) {
+		// Prevent Kodkod from optimizing out "and" when registering top-level formulas.
+		// (Wrapping indexes to enforce uniqueness isn't helpful for situations like
+		// (&& (some ...)) at the top level, since the mapping records (some ...)
+		// as a top-level formula.
+		if(FormulaOperator.AND.equals(op) && args.size() == 1) {
+			args.add(Formula.TRUE);
+		}
+		else if(FormulaOperator.OR.equals(op) && args.size() == 1) {
+			args.add(Formula.FALSE);
+		}
 		Formula parent = compose(op, args);
 		for(int idx=0;idx<args.size();idx++) {
 			problem().logNodeChild(parent, idx, args.get(idx), out);

@@ -226,6 +226,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
         if (proof != null){
             str.append(" :core ( ");
             for (Node form : proof.highLevelCore().values()) {
+				//System.err.println(form);
                 str.append("\"");
 				String result = buildPathToTop(problem, defs, form);
 				if(result == null)
@@ -246,6 +247,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	String buildPathToTop(KodkodProblem problem, StringDefs<Formula> defs, Node f) {
 		// Base case: this is a top-level formula; we have an ID for it
 		if(f instanceof Formula && defs.canReverse((Formula)f)) {
+			//writeInfo("Top-level: "+f);
 			return "f:" + defs.reverse((Formula)f);
 		}
 
@@ -256,7 +258,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 		}
 		// Fallback case: no starting points present, not a base case
 		if(starts.isEmpty()) return null;
-
+		//writeInfo("Starts: "+starts);
 		if(starts.size() > 1) {
 			writeInfo("Error finding unique start for: "+f);
 			for(List<Node> key: starts)
