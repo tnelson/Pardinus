@@ -27,12 +27,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import kodkod.ast.Formula;
+import kodkod.ast.Node;
 import kodkod.ast.Relation;
 import kodkod.engine.*;
 import kodkod.engine.config.ExtendedOptions;
 import kodkod.engine.config.Options;
 import kodkod.engine.fol2sat.Translation;
-import kodkod.engine.fol2sat.UnboundLeafException;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.engine.satlab.TargetSATSolver;
 import kodkod.engine.ucore.RCEStrategy;
@@ -117,6 +117,8 @@ public abstract class KodkodProblem {
 	private final List<Formula> asserts;
 	private PardinusBounds bounds;
 
+	final String id;
+
 	/**
 	 * Creates a partial problem with the given state.
 	 * 
@@ -124,7 +126,7 @@ public abstract class KodkodProblem {
 	 * @ensures this.bounds' = bounds && no this.asserts' && this.env' = env &&
 	 *          this.options' = options && this.maxSolutions' = maxSolutions
 	 */
-	private KodkodProblem(StringDefEnv env, PardinusBounds bounds, ExtendedOptions options, long maxSolutions) {
+	private KodkodProblem(StringDefEnv env, PardinusBounds bounds, ExtendedOptions options, long maxSolutions, String id) {
 		this.env = env;
 		this.bounds = bounds;
 		this.options = options;
@@ -139,6 +141,7 @@ public abstract class KodkodProblem {
 		// this.options.setSymmetryBreaking(20);
 		this.asserts = new ArrayList<>();
 		this.maxSolutions = maxSolutions;
+		this.id = id;
 	}
 
 	/**
@@ -146,8 +149,8 @@ public abstract class KodkodProblem {
 	 * 
 	 * @ensures this(new DefEnv(), null, KodkodFactory.baseOptions(), 1)
 	 */
-	private KodkodProblem() {
-		this(new StringDefEnv(), null, KodkodFactory.baseOptions(), 1);
+	private KodkodProblem(String id) {
+		this(new StringDefEnv(), null, KodkodFactory.baseOptions(), 1, id);
 	}
 
 	/**
@@ -160,9 +163,9 @@ public abstract class KodkodProblem {
 	 *         p.options = KodkodFactory.baseOptions() && no p.bounds && no
 	 *         p.asserts && p.env = new StringDefEnv() && p.maxSolutions = 1
 	 */
-	public static KodkodProblem complete() {
-		return new KodkodProblem.Complete();
-	}
+	//public static KodkodProblem complete() {
+//		return new KodkodProblem.Complete();
+//	}
 
 	/**
 	 * Returns an empty {@link KodkodProblem} that can be used to construct the
@@ -174,32 +177,32 @@ public abstract class KodkodProblem {
 	 *         p.options = KodkodFactory.baseOptions() && no p.bounds && no
 	 *         p.asserts && p.env = new StringDefEnv() && p.maxSolutions = 1
 	 */
-	public static KodkodProblem incremental() {
-		return new KodkodProblem.Incremental();
-	}
+//	public static KodkodProblem incremental() {
+//		return new KodkodProblem.Incremental();
+//	}
 
 	/**
 	 * Returns a new Stepper problem!
 	 */
-	public static KodkodProblem stepper() {
+	public static KodkodProblem stepper(String id) {
 		//System.exit(200);
 		//System.out.println("stepper:"+Logger.getGlobal());
 		//System.err.println("stepper:"+Logger.getGlobal());
-		return new KodkodProblem.Stepper();
+		return new KodkodProblem.Stepper(id);
 	}
 
 	/**
 	 * Returns a new Target Oriented problem
 	 */
-	public static KodkodProblem targetOriented() {
-		return new KodkodProblem.Stepper.TargetOriented();
+	public static KodkodProblem targetOriented(String id) {
+		return new KodkodProblem.Stepper.TargetOriented(id);
 	}
 
 	/**
 	 * Returns a new Target Oriented problem!
 	 */
-	public static KodkodProblem temporal() {
-		return new KodkodProblem.Stepper.Temporal();
+	public static KodkodProblem temporal(String id) {
+		return new KodkodProblem.Stepper.Temporal(id);
 	}
 
 	/**
@@ -733,7 +736,7 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
-	boolean setTargetType(String target_type) {
+	boolean setTargetType(KodkodOutput out, String target_type) {
 		throw new ActionException("Cannot set target option for non-target oriented problem.");
 	}
 
@@ -850,15 +853,10 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
-	// TODO: allow multiple Stepper problems.
-	// possibly by having Solve() return a new Stepper? or maybe after clear...
 
-	// AH. realization. the other problem classes have good reason to return new
-	// objects;
-	// they need to clear the bounds and asserts! However, for Stepper, we only need
-	// to return
-	// new objects when we transition to a solved stepper. A solved stepper can
-	// return itself.
+	// The other problem classes have good reason to return new objects; they need to clear the bounds and asserts.
+	// However, for Stepper, we only need to return new objects when we transition to a solved stepper.
+	// A solved stepper can return itself.
 	private static class Stepper extends KodkodProblem {
 		private PardinusSolver solver;
 		private boolean issolved = false;
@@ -871,15 +869,16 @@ public abstract class KodkodProblem {
 		// Used to print new solutions from the first solved model.
 		private Explorer<Solution> solutions;
 
-		Stepper() {
+		Stepper(String id) {
 			// Do not create the solver yet. Options have yet to be set!
 			//this.solver = new PardinusSolver(super.options);
+			super(id);
 			super.maxSolutions = -1; // maxSolutions has no meaning for Steppers.
 		}
 
 		// makes a solved stepper with the given solutions.
-		private Stepper(Stepper prototype, Explorer<Solution> solutions) {
-			super(prototype.env(), null, null, -1);
+		private Stepper(Stepper prototype, Explorer<Solution> solutions, String id) {
+			super(prototype.env(), null, null, -1, id);
 			assert (solutions != null);
 			this.solver = null;
 			this.issolved = true;
@@ -917,20 +916,26 @@ public abstract class KodkodProblem {
 		public KodkodProblem clear(KodkodOutput out) {
 			if (solver != null)
 				solver.free();
-			//out.writeInfo("clearing");
-			return new Stepper();
+			out.writeInfo("closing solver state for <"+this.id+">");
+			return new Stepper(this.id);
 		}
 
 		public KodkodProblem solve(KodkodOutput out, String params) {
+			//out.writeInfo("stepper solving; hash="+this.hashCode()+"; solved="+isSolved());
 			if(this.solver == null) {
 				// Create solver only when needed; at this point all options should be set.
 				this.solver = new PardinusSolver(super.options);
+				//out.writeInfo("stepper solver created");
 			}
+
 			//System.err.println("solver is pardinus: "+solver.solver.getClass());
 			if (isSolved()) {
-				//out.writeInfo("stepper solving: already solved");
-				assert (this.iteration >= 0);
+				out.writeInfo("stepper solving:  unsat="+unsat+"; iteration="+this.iteration);
+				// TODO: if this assertion fails, we get a cryptic error from the parser without context
+				//assert (this.iteration >= 0);
+				// The assertion is also in error. We start at iteration -1.
 				this.iteration++;
+
 
 				if (this.unsat) {
 					assert (lastSol != null);
@@ -1002,9 +1007,8 @@ public abstract class KodkodProblem {
 					this.solutions = new OneSolutionIterator(solver.solve(asserts(), bounds()));
 				}
 				this.issolved = true;
-				out.writeInfo("stepper solving: initial solve");
+				out.writeInfo("stepper solving: initial solve call with params: "+params+" finished.");
 				return this.solve(out, params);
-				//return new Stepper(this, solved).solve(out, params);
 			} catch (RuntimeException ex) {
 				throw new ActionException(ex.getMessage(), ex);
 			}
@@ -1084,10 +1088,11 @@ public abstract class KodkodProblem {
 			enum FLIP {yes, no, custom};
 			FLIP flip_target = FLIP.no;
 
-			boolean setTargetType(String target_type) {
+			boolean setTargetType(KodkodOutput out, String target_type) {
 				if (initialized)
 					throw new IllegalStateException("Target type was already set");
 				this.initialized = true;
+				out.writeInfo("set target type: "+target_type);
 
 				this.target_type = target_type;
 				options().setRunTarget(true);
@@ -1148,8 +1153,8 @@ public abstract class KodkodProblem {
 				return true;
 			}
 
-			TargetOriented() {
-				super();
+			TargetOriented(String id) {
+				super(id);
 				initialized = false;
 
 				// Unnecessary?
@@ -1182,8 +1187,8 @@ public abstract class KodkodProblem {
 
 		private static final class Temporal extends Stepper {
 
-			Temporal() {
-				super();
+			Temporal(String id) {
+				super(id);
 				// trace lengths configured at parse time
 				options().setRunTemporal(true);
 
@@ -1198,131 +1203,131 @@ public abstract class KodkodProblem {
 		}
 	}
 
-/**
-	 * Implements a complete specification of a Kodkod problem.
-	 * 
-	 * @author Emina Torlak
-	 */
-	private static final class Complete extends KodkodProblem {
-		private final Solver solver;
+///**
+//	 * Implements a complete specification of a Kodkod problem.
+//	 *
+//	 * @author Emina Torlak
+//	 */
+//	private static final class Complete extends KodkodProblem {
+//		private final Solver solver;
+//
+//		Complete() {
+//			this.solver = new Solver(super.options);
+//		}
+//
+//		Complete(Complete prototype) {
+//			super(new StringDefEnv(), null, prototype.options(), prototype.maxSolutions());
+//			this.solver = prototype.solver;
+//		}
+//
+//		public boolean isIncremental() {
+//			return false;
+//		}
+//
+//		public boolean isPartial() {
+//			return false;
+//		}
+//
+//		public boolean isStepper() {
+//			return false;
+//		}
+//
+//		public boolean isTargetOriented() {
+//			return false;
+//		}
+//
+//		public KodkodProblem extend() {
+//			throw new ActionException("Cannot extend a non-incremental specification.");
+//		}
+//
+//		public KodkodProblem clear(KodkodOutput out) {
+//			return new Complete(this);
+//		}
+//
+//		public KodkodProblem solve(KodkodOutput out, String paramsIgnored) {
+//			try {
+//				if (maxSolutions() == 1) {
+//					write(out, solver.solve(asserts(), bounds()));
+//				} else {
+//					write(out, solver.solveAll(asserts(), bounds()));
+//				}
+//				return clear(out);
+//			} catch (RuntimeException ex) {
+//				throw new ActionException(ex.getMessage(), ex);
+//			}
+//		}
+//	}
 
-		Complete() {
-			this.solver = new Solver(super.options);
-		}
-
-		Complete(Complete prototype) {
-			super(new StringDefEnv(), null, prototype.options(), prototype.maxSolutions());
-			this.solver = prototype.solver;
-		}
-
-		public boolean isIncremental() {
-			return false;
-		}
-
-		public boolean isPartial() {
-			return false;
-		}
-
-		public boolean isStepper() {
-			return false;
-		}
-
-		public boolean isTargetOriented() {
-			return false;
-		}
-
-		public KodkodProblem extend() {
-			throw new ActionException("Cannot extend a non-incremental specification.");
-		}
-
-		public KodkodProblem clear(KodkodOutput out) {
-			return new Complete(this);
-		}
-
-		public KodkodProblem solve(KodkodOutput out, String paramsIgnored) {
-			try {
-				if (maxSolutions() == 1) {
-					write(out, solver.solve(asserts(), bounds()));
-				} else {
-					write(out, solver.solveAll(asserts(), bounds()));
-				}
-				return clear(out);
-			} catch (RuntimeException ex) {
-				throw new ActionException(ex.getMessage(), ex);
-			}
-		}
-	}
-
-	/**
-	 * Enforces options configuration restrictions for incremental specifications.
-	 * 
-	 * @author Emina Torlak
-	 */
-	private static class Incremental extends KodkodProblem {
-		IncrementalSolver solver = null;
-
-		Incremental() {
-		}
-
-		Incremental(StringDefEnv env, PardinusBounds bounds, ExtendedOptions options, long maxSolutions,
-				IncrementalSolver solver) {
-			super(env, bounds, options, maxSolutions);
-			this.solver = solver;
-		}
-
-		public final boolean isIncremental() {
-			return true;
-		}
-
-		public boolean isPartial() {
-			return false;
-		}
-
-		public boolean isStepper() {
-			return false;
-		}
-
-		public boolean isTargetOriented() {
-			return false;
-		}
-
-		public final KodkodProblem extend() {
-			return new Partial(this);
-		}
-
-		public final KodkodProblem clear(KodkodOutput out) {
-			if (solver != null)
-				solver.free();
-			return new Incremental(new StringDefEnv(), null, options(), maxSolutions(), null);
-		}
-
-		public final KodkodProblem solve(KodkodOutput out, String paramsIgnored) {
-			try {
-				if (solver == null)
-					solver = IncrementalSolver.solver(options());
-				write(out, solver.solve(asserts(), bounds()));
-				KodkodServer.lastModel = null;
-				return extend();
-			} catch (RuntimeException ex) {
-				throw new ActionException(ex.getMessage(), ex);
-			}
-		}
-
-		boolean setCoreExtraction(boolean enable) {
-			if (enable)
-				throw new ActionException("Minimal unsat core extraction is not provided for incremental problems.");
-			return super.setCoreExtraction(enable);
-		}
-
-		// Changed for Pardinus
-		boolean setSolver(SATFactory solver) {
-			if (!solver.incremental())
-				throw new ActionException(
-						"Cannot use a non-incremental SAT solver (" + solver + ") for incremental solving.");
-			return super.setSolver(solver);
-		}
-
-	}
+//	/**
+//	 * Enforces options configuration restrictions for incremental specifications.
+//	 *
+//	 * @author Emina Torlak
+//	 */
+//	private static class Incremental extends KodkodProblem {
+//		IncrementalSolver solver = null;
+//
+//		Incremental() {
+//		}
+//
+//		Incremental(StringDefEnv env, PardinusBounds bounds, ExtendedOptions options, long maxSolutions,
+//				IncrementalSolver solver) {
+//			super(env, bounds, options, maxSolutions);
+//			this.solver = solver;
+//		}
+//
+//		public final boolean isIncremental() {
+//			return true;
+//		}
+//
+//		public boolean isPartial() {
+//			return false;
+//		}
+//
+//		public boolean isStepper() {
+//			return false;
+//		}
+//
+//		public boolean isTargetOriented() {
+//			return false;
+//		}
+//
+//		public final KodkodProblem extend() {
+//			return new Partial(this);
+//		}
+//
+//		public final KodkodProblem clear(KodkodOutput out) {
+//			if (solver != null)
+//				solver.free();
+//			return new Incremental(new StringDefEnv(), null, options(), maxSolutions(), null);
+//		}
+//
+//		public final KodkodProblem solve(KodkodOutput out, String paramsIgnored) {
+//			try {
+//				if (solver == null)
+//					solver = IncrementalSolver.solver(options());
+//				write(out, solver.solve(asserts(), bounds()));
+//				KodkodServer.lastModel = null;
+//				return extend();
+//			} catch (RuntimeException ex) {
+//				throw new ActionException(ex.getMessage(), ex);
+//			}
+//		}
+//
+//		boolean setCoreExtraction(boolean enable) {
+//			if (enable)
+//				throw new ActionException("Minimal unsat core extraction is not provided for incremental problems.");
+//			return super.setCoreExtraction(enable);
+//		}
+//
+//		// Changed for Pardinus
+//		boolean setSolver(SATFactory solver) {
+//			if (!solver.incremental())
+//				throw new ActionException(
+//						"Cannot use a non-incremental SAT solver (" + solver + ") for incremental solving.");
+//			return super.setSolver(solver);
+//		}
+//
+//	}
 
 //	/**
 //	 * Disables methods not supported for partial problem specifications.
@@ -1343,61 +1348,107 @@ public abstract class KodkodProblem {
 //		boolean declareInts(List<Integer> ints) { throw new ActionException(cannot("re-declare integer atoms in the universe of")); }
 //	}
 
-	/**
-	 * Disables methods not supported for partial problem specifications.
-	 * 
-	 * @author Emina Torlak
+//	/**
+//	 * Disables methods not supported for partial problem specifications.
+//	 *
+//	 * @author Emina Torlak
+//	 */
+//	private static final class Partial extends KodkodProblem.Incremental {
+//		private final Bounds complete;
+//
+//		Partial(KodkodProblem.Incremental prev) {
+//			super(prev.env(), new PardinusBounds(prev.bounds().universe()), prev.options(), prev.maxSolutions(),
+//					prev.solver);
+//			this.complete = prev.allBounds();
+//		}
+//
+//		public final boolean isPartial() {
+//			return true;
+//		}
+//
+//		public boolean isStepper() {
+//			return false;
+//		}
+//
+//		public final Bounds allBounds() {
+//			return complete;
+//		}
+//
+//		void declaredRelation(Relation r, TupleSet lower, TupleSet upper) {
+//			complete.bound(r, lower, upper);
+//		}
+//
+//		// void declaredVarRelation(Relation x, TupleSet lower, TupleSet upper) {
+//		// complete.bound(x, lower, upper); }
+//
+//		private final String cannot(String msg) {
+//			return "Cannot " + msg + " of an incremental problem.  Use (clear) to start specifying a new problem.";
+//		}
+//
+//		boolean setBitwidth(int bitwidth) {
+//			throw new ActionException(cannot("re-configure bitwidth"));
+//		}
+//
+//		// Changed for Pardinus
+//		boolean setSolver(SATFactory solver) {
+//			throw new ActionException(cannot("re-configure the solver"));
+//		}
+//
+//		boolean setCoreExtraction(boolean enable) {
+//			throw new ActionException(cannot("re-configure the core extraction behavior"));
+//		}
+//
+//		boolean declareInts(List<Integer> ints) {
+//			throw new ActionException(cannot("re-declare integer atoms in the universe of"));
+//		}
+//	}
+
+	///////////////////////////////////////////////////////
+	// Machinery to track source location of child formulas
+	///////////////////////////////////////////////////////
+	/** Record class to hold a mapping from parent Formula to child Formula.
+	 *  Because "and(and(a, b))" produces and(a,b) we need to wrap to disambiguate.
 	 */
-	private static final class Partial extends KodkodProblem.Incremental {
-		private final Bounds complete;
-
-		Partial(KodkodProblem.Incremental prev) {
-			super(prev.env(), new PardinusBounds(prev.bounds().universe()), prev.options(), prev.maxSolutions(),
-					prev.solver);
-			this.complete = prev.allBounds();
+    static class ParentIndex {
+		final List<? extends Node> parent; // invar: size() = 1
+		final int index;
+		ParentIndex(List<? extends Node> parent, int index) {
+			if(parent == null || parent.size() != 1)
+				throw new IllegalArgumentException("To be wrapped, formula list must be a singleton list.");
+			this.parent = parent;
+			this.index = index;
 		}
-
-		public final boolean isPartial() {
-			return true;
-		}
-
-		public boolean isStepper() {
-			return false;
-		}
-
-		public final Bounds allBounds() {
-			return complete;
-		}
-
-		void declaredRelation(Relation r, TupleSet lower, TupleSet upper) {
-			complete.bound(r, lower, upper);
-		}
-
-		// void declaredVarRelation(Relation x, TupleSet lower, TupleSet upper) {
-		// complete.bound(x, lower, upper); }
-
-		private final String cannot(String msg) {
-			return "Cannot " + msg + " of an incremental problem.  Use (clear) to start specifying a new problem.";
-		}
-
-		boolean setBitwidth(int bitwidth) {
-			throw new ActionException(cannot("re-configure bitwidth"));
-		}
-
-		// Changed for Pardinus
-		boolean setSolver(SATFactory solver) {
-			throw new ActionException(cannot("re-configure the solver"));
-		}
-
-		boolean setCoreExtraction(boolean enable) {
-			throw new ActionException(cannot("re-configure the core extraction behavior"));
-		}
-
-		boolean declareInts(List<Integer> ints) {
-			throw new ActionException(cannot("re-declare integer atoms in the universe of"));
+		@Override public String toString() { return "("+parent+","+index+")"; }
+		@Override public int hashCode() { return Objects.hash(parent, index); }
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			ParentIndex that = (ParentIndex) o;
+			return index == that.index && Objects.equals(parent, that.parent);
 		}
 	}
-}
+	Map<List<Node>, ParentIndex> parentIndexes = new HashMap<>();
+	public void logNodeChild(Formula parent, int index, Node child, KodkodOutput out) {
+		// Rely on structurally-identical children NOT being referentially equal.
+		// However, Kodkod will optimize; e.g.: "and(and(a, b))" is built as and(a,b).
+		// We cannot simply skip these, because the caller needs to rely on the structure
+		// of the formula passed being represented in the child path. Therefore, if parent == child,
+		// allow the duplication; we're wrapping per reference anyway.
+
+		// For debugging only
+		//System.out.println("Logging: "+child+"("+child.hashCode()+") ---> "+parent+","+index);
+		//System.out.println("Logging: "+child+" ---> "+parent+","+index);
+
+		List<Formula> parentWrapper = new ArrayList<>(1);
+		List<Node> childWrapper = new ArrayList<>(1);
+		parentWrapper.add(parent);
+		childWrapper.add(child);
+		parentIndexes.put(childWrapper, new ParentIndex(parentWrapper, index));
+	}
+
+
+} // end of KodkodProblem
 
 /*
   Explorer to cover situation where only one solution can be enumerated
@@ -1447,4 +1498,5 @@ class OneSolutionIterator implements Explorer<Solution> {
 	public Solution next() {
 		return s;
 	}
+
 }

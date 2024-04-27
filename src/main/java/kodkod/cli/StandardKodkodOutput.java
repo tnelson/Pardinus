@@ -22,7 +22,6 @@
 package kodkod.cli;
 
 import java.text.NumberFormat;
-import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -42,7 +41,7 @@ import kodkod.instance.TupleSet;
 /**
  * An implementation of the  {@link KodkodOutput} interface that writes solutions provided to it
  * to standard output, in the form of s-expressions.  Given a satisfiable
- * solution {@code s}, an instance of this class  will produce output of the form {@code (sat :model ([ri {(int+)*}]*))},
+ * solution {@code s}, an instance of this class  will produce output of the form {@code (sat :name run-name :model ([ri {(int+)*}]*))},
  * where each {@code ri} is a relation in {@code s.instance}, and {@code {(int+)*}} is an
  * s-expression representation of the tupleset {@code s.instance.tuples(ri)}.
  * Each tupleset is represented as a list of tuples, and each tuple is represented
@@ -50,7 +49,7 @@ import kodkod.instance.TupleSet;
  *
  * <p>
  * Given an unsatisfiable solution {@code s} to a problem {@code p}, this implementation will produce output of the
- * form {@code (unsat :core (fi+))}, if a core is available, or of the form {@code (unsat)}, otherwise.
+ * form {@code (unsat :name run-name :core (fi+))}, if a core is available, or of the form {@code (unsat :name run-name)}, otherwise.
  * Each {@code fi} is a formula identifier in {@code p.env.defs['f']} such that the formula
  * {@code p.env.defs['f'][fi]} is in {@code s.proof.highLevelCore().values()}.  If there are some formulas
  * that are in the core but are not defined in {@code p.env.defs['f']}, a warning message will be printed to
@@ -79,7 +78,7 @@ public final class StandardKodkodOutput implements KodkodOutput {
 	 * {@link Logger#getGlobal() global logger}.
 	 * @ensures this.logger' = Logger.getGlobal()
 	 */
-	StandardKodkodOutput() {  this(Logger.getGlobal()); }
+	public StandardKodkodOutput() {  this(Logger.getGlobal()); }
 
     public void writeUnsat(Solution sol, KodkodProblem problem) {
 		if(sol.proof() != null) {
@@ -104,7 +103,12 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			StringDefs<Relation> xdefns = (StringDefs<Relation>) problem.env().defs('x');
 			Set<String> origAtoms = problem.env().defs('a').keys();
 			final StringBuilder str = new StringBuilder();
-			str.append("(sat :model (");
+			str.append("(sat ");
+
+			// Report run name in addition to other info
+			str.append(":name ").append(problem.id).append(" ");
+
+			str.append(":model (");
 
 			// Temporal problem will have a TemporalInstance to break down
 			// But isTemporal stops being trustworthy
@@ -134,7 +138,10 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			str.append(")"); // end of sat
 			System.out.println(str);
 		}
-		else			System.out.println("(no-more-instances)");
+		else {
+			// Was originally sat, but there are no more instances left.
+			System.out.println("(no-more-instances :name "+problem.id+")");
+		}
 	}
 
 
@@ -213,18 +220,19 @@ public final class StandardKodkodOutput implements KodkodOutput {
 		final StringBuilder str = new StringBuilder();
 		final Proof proof = sol.proof();
 		str.append("(unsat");
+		// Report run name in addition to other info
+		str.append(" :name ").append(problem.id).append(" ");
 
         if (proof != null){
             str.append(" :core ( ");
             for (Node form : proof.highLevelCore().values()) {
+				//System.err.println(form);
                 str.append("\"");
-                if(form instanceof Formula && defs.canReverse((Formula)form)) {
-					str.append("f:"+defs.reverse((Formula) form));
-				} else {
-                	// If core granularity is high, Kodkod may produce
-					//  formulas that don't correspond to top-level constraints
+				String result = buildPathToTop(problem, defs, form);
+				if(result == null)
 					str.append(form);
-				}
+				else
+					str.append(result);
                 str.append("\" ");
             }
             str.append(")");
@@ -235,6 +243,33 @@ public final class StandardKodkodOutput implements KodkodOutput {
 		str.append(")");
         System.out.println(str.toString());
     }
+
+	String buildPathToTop(KodkodProblem problem, StringDefs<Formula> defs, Node f) {
+		// Base case: this is a top-level formula; we have an ID for it
+		if(f instanceof Formula && defs.canReverse((Formula)f)) {
+			//writeInfo("Top-level: "+f);
+			return "f:" + defs.reverse((Formula)f);
+		}
+
+		// What starting points do we have recorded for this formula?
+		List<List<Node>> starts = new ArrayList<>(1);
+		for(List<Node> keyWrapper : problem.parentIndexes.keySet()) {
+			if(keyWrapper.get(0) == f) starts.add(keyWrapper);
+		}
+		// Fallback case: no starting points present, not a base case
+		if(starts.isEmpty()) return null;
+		//writeInfo("Starts: "+starts);
+		if(starts.size() > 1) {
+			writeInfo("Error finding unique start for: "+f);
+			for(List<Node> key: starts)
+				writeInfo("  Start option: " + key);
+			// Fail, but fall back.
+			return null;
+		}
+		// Recursive case: construct another layer of child index
+		KodkodProblem.ParentIndex pi = problem.parentIndexes.get(starts.get(0));
+		return buildPathToTop(problem, defs, pi.parent.get(0))+","+pi.index;
+	}
     // ...
 // }
 		// final Set<Node> core;
@@ -303,6 +338,14 @@ public final class StandardKodkodOutput implements KodkodOutput {
 							info.replaceAll("[()]", "")
 									.replaceAll("\"", "'")+
 						"\")");
+	}
+
+	/**
+	 * Writes an acknowledgement of the problem definition. Informs the caller that the problem has been created.
+	 * The caller may wait to send (solve), etc. commands until receiving this.
+	 */
+	public void writeAck(String id) {
+		System.out.println("(ack "+id+")");
 	}
 
 	/**

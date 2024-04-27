@@ -44,5 +44,6 @@ public interface KodkodOutput {
 
     void writeUnsat(Solution sol, KodkodProblem problem);
 	void writeInfo(String info);
+	void writeAck(String id);
 
  }

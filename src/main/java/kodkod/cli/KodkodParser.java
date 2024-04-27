@@ -40,11 +40,9 @@ import static kodkod.cli.KodkodFactory.tuple;
 import static kodkod.cli.KodkodFactory.union;
 import static kodkod.cli.KodkodFactory.valueOf;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
-import kodkod.ast.TempExpression;
 import kodkod.ast.Decl;
 import kodkod.ast.Decls;
 import kodkod.ast.Expression;
@@ -64,7 +62,6 @@ import kodkod.ast.operator.Multiplicity;
 import kodkod.ast.operator.Quantifier;
 import kodkod.ast.operator.TemporalOperator;
 import kodkod.engine.config.Options;
-import kodkod.engine.config.TargetOptions;
 import kodkod.engine.satlab.SATFactory;
 import kodkod.instance.Tuple;
 import kodkod.instance.TupleSet;
@@ -76,6 +73,7 @@ import org.parboiled.annotations.DontLabel;
 import org.parboiled.annotations.MemoMismatches;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
+import org.parboiled.errors.ActionException;
 import org.parboiled.support.Var;
 import org.parboiled.support.DefaultValueStack;
 
@@ -92,7 +90,24 @@ import org.parboiled.support.DefaultValueStack;
  */
 public class KodkodParser extends BaseParser<Object> {
 	final KodkodOutput out;
-	KodkodProblem problem;
+
+	/**
+	 * Current problem being configured or invoked
+	 */
+	KodkodProblem currentProblem;
+	/**
+	 * ID of current problem
+	 */
+	String currentID = "";
+	/**
+	 * Index of all problems that are available
+	 */
+	Map<String, KodkodProblem> problems = new HashMap<>();
+	/**
+	 * All KodkodProblems created by this parser instance will have a specific type
+	 */
+	final KodkodServer.Feature type;
+
 
 	/**
 	 * If there is a KodkodOutput defined, write an info s-expression to it.
@@ -104,22 +119,21 @@ public class KodkodParser extends BaseParser<Object> {
 	}
 
 	/**
-	 * Creates a parser that will populate an instance of KodkodProblem.complete()
-	 * and that will output the result of any command executios to an instance of
+	 * Creates a parser that will output the result of any command executions to an instance of
 	 * {@link StandardKodkodOutput}.
 	 */
-	public KodkodParser() {
-		this(KodkodProblem.complete(), new StandardKodkodOutput());
+	public KodkodParser(KodkodServer.Feature type) {
+		this(type, new StandardKodkodOutput());
 	}
 
 	/**
-	 * Creates a {@link KodkodParser} that will populate the given Kodkod problem
-	 * and that will output the result of any command executions to the given
-	 * solution output.
+	 * Creates a {@link KodkodParser} that will output the result of any command executions to
+	 * the given {@link KodkodOutput} object.
 	 */
-	public KodkodParser(KodkodProblem problem, KodkodOutput out) {
-		this.problem = problem;
+	public KodkodParser(KodkodServer.Feature type, KodkodOutput out) {
 		this.out = out;
+		this.type = type;
+		info("parser created for type: "+type);
 	}
 
 	/**
@@ -128,7 +142,7 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @return this.problem
 	 */
 	public KodkodProblem problem() {
-		return problem;
+		return currentProblem;
 	}
 
 	/**
@@ -143,8 +157,8 @@ public class KodkodParser extends BaseParser<Object> {
 	public boolean setProblem(KodkodProblem problem) {
 		if (problem == null)
 			System.exit(0);
-		this.problem = problem;
-		this.info("setProblem");
+		this.currentProblem = problem;            // update current problem context
+		this.problems.put(problem.id, problem);   // discard old problem for this id
 		return true;
 	}
 
@@ -166,32 +180,88 @@ public class KodkodParser extends BaseParser<Object> {
 		return OneOrMore(IncrementalProblem(), ZeroOrMore(IncrementalProblems()));
 	}
 
-	// a problem can also just be (solve), in which case we just print the next
-	// Solution.
-	// but can't be multiple solves (should just be solve + eoi, and can't be series
-	// of solve + eoi, cuz that's not
-	// even possible)
+
+	public Rule StepperStart() {
+		return Sequence(
+				Space(),
+				//FirstOf(With(), StepperProblem(), StepperServe())
+				With()
+		);
+	}
+
+	boolean enterProblemScope(String id) {
+		if(!problems.containsKey(id)) {
+			if(type.equals(KodkodServer.Feature.PLAIN_STEPPER))
+				problems.put(id, KodkodProblem.stepper(id));
+			else if(type.equals(KodkodServer.Feature.TEMPORAL))
+				problems.put(id, KodkodProblem.temporal(id));
+			else if(type.equals(KodkodServer.Feature.TARGET_ORIENTED))
+				problems.put(id, KodkodProblem.targetOriented(id));
+			else
+				throw new UnsupportedOperationException(type.toString());
+		}
+		this.info("entering scope: <"+id+">; type="+type+"; problem hash="+problems.get(id).hashCode());
+		this.currentID = id;
+		setProblem(problems.get(id));
+		return true;
+	}
+
+	boolean checkCurrentProblemIsInitialized() {
+		if(problem() == null || problem().asserts() == null || problem().bounds() == null) {
+			this.info("problem not initialized: <"+this.currentID+">");
+			throw new IllegalStateException("problem (id="+currentID+") not initialized");
+		}
+		return true;
+	}
+
+	boolean ackProblemDefinition() {
+		out.writeAck(this.currentID);
+		return true;
+	}
+
+	public Rule With() {
+		return Sequence(
+				Space(),
+				LPAR,
+				WITH,
+				StringLiteral(),
+				// StringLiteral() contains the trailing blank space
+				//Space(),
+				enterProblemScope(popString()),
+				FirstOf(
+						Sequence(StepperProblem(), RPAR, EOI, ackProblemDefinition(), enterProblemScope("")),
+						Sequence(StepperServe(), RPAR, EOI, enterProblemScope(""))
+				)
+		);
+	}
+
 
 	// FirstOf tries all args in order, succeeds on the first success
 	// Sequence tries all args in order, succeeds only if all args succeed
 
-	// invoked by the server after the problem is solved
+	/**
+	 * A stepper problem command. Uses current problem.
+	 * @throws IllegalStateException If current problem hasn't been initialized
+	 */
 	public Rule StepperServe() {
 		return Sequence(
+				checkCurrentProblemIsInitialized(),
 				Space(),
 				FirstOf(Solve(),
 						Clear(),
 						Exit(),
 						// an evaluator invocation vs. last instance
-						Sequence(ZeroOrMore(DefNode()), Evaluate())),
-				EOI);
+						Sequence(ZeroOrMore(DefNode()), Evaluate()))
+				);
 	}
 
-	// Invoked by the server initially; (solve) is part of StepperServe()
+	/**
+	 *  A stepper problem definition. Does _not_ include (solve), etc. Uses current problem.
+ 	 */
 	@Cached
 	public Rule StepperProblem() {
 		return Sequence(Space(),
-				        problem.startBuild(),
+				        currentProblem.startBuild(),
 				        Configure(),
 				        DeclareUniverse(),
 				        Optional(DeclareInts()),
@@ -200,17 +270,18 @@ public class KodkodParser extends BaseParser<Object> {
 										DeclareRelation(),
 										DeclareVarRelation(),
 										DefNode(),
-										Assert())),
-				        problem.endBuild(),
-					    StepperServe());
+										Assert(),
+										TargetOption(),
+										Target())),
+				        currentProblem.endBuild());
 	}
 
 	@Cached
 	public Rule TargetOrientedProblem() {
-		return Sequence(Space(), problem.startBuild(), Configure(), DeclareUniverse(), Optional(DeclareInts()),
+		return Sequence(Space(), currentProblem.startBuild(), Configure(), DeclareUniverse(), Optional(DeclareInts()),
 				ZeroOrMore(FirstOf(DeclareRelation(), DeclareVarRelation(), DefNode(), Assert(), Target(),
 						TargetOption())),
-				problem.endBuild(), StepperServe());
+				currentProblem.endBuild(), StepperServe());
 	}
 
 	public Rule Target() {
@@ -218,7 +289,7 @@ public class KodkodParser extends BaseParser<Object> {
 		final Var<TupleSet> tuple = new Var<>();
 		return Sequence(LPAR, String("target"), Space(), Use('r'), rels.set(new ArrayList<Relation>(4)),
 				rels.get().add(popRelation()), ZeroOrMore(Use('r'), rels.get().add(popRelation())), LBRK, TupleSet(),
-				tuple.set(popTupleSet()), RBRK, RPAR, problem.setTarget(rels.get(), tuple.get()));
+				tuple.set(popTupleSet()), RBRK, RPAR, currentProblem.setTarget(rels.get(), tuple.get()));
 	}
 
 	public Rule TargetOption() {
@@ -234,7 +305,7 @@ public class KodkodParser extends BaseParser<Object> {
 						Sequence(FAR_NORETARGET, target_mode.set("far")),
 						Sequence(COVER, target_mode.set("cover"))
 				),
-				problem.setTargetType(target_mode.get()));
+				currentProblem.setTargetType(out, target_mode.get()));
 	}
 
 	/**
@@ -242,9 +313,9 @@ public class KodkodParser extends BaseParser<Object> {
 	 */
 	@Cached
 	public Rule Problem() {
-		return Sequence(Space(), Optional(Exit()), problem.startBuild(), Configure(), DeclareUniverse(),
+		return Sequence(Space(), Optional(Exit()), currentProblem.startBuild(), Configure(), DeclareUniverse(),
 				Optional(DeclareInts()),
-				ZeroOrMore(FirstOf(DeclareRelation(), DeclareVarRelation(), DefNode(), Assert())), problem.endBuild(),
+				ZeroOrMore(FirstOf(DeclareRelation(), DeclareVarRelation(), DefNode(), Assert())), currentProblem.endBuild(),
 				Serve());
 	}
 
@@ -253,8 +324,8 @@ public class KodkodParser extends BaseParser<Object> {
 	 */
 	@Cached
 	public Rule IncrementalProblem() {
-		return Sequence(Space(), problem.startBuild(),
-				ZeroOrMore(FirstOf(DeclareRelation(), DeclareVarRelation(), DefNode(), Assert())), problem.endBuild(),
+		return Sequence(Space(), currentProblem.startBuild(),
+				ZeroOrMore(FirstOf(DeclareRelation(), DeclareVarRelation(), DefNode(), Assert())), currentProblem.endBuild(),
 				Serve());
 	}
 
@@ -270,19 +341,19 @@ public class KodkodParser extends BaseParser<Object> {
 	Rule Configure() {
 		return ZeroOrMore(LPAR, CONFIG,
 				OneOrMore(":",
-						FirstOf(Sequence(Keyword("solver"), SatSolver(), problem.setSolver(out, (SATFactory) pop())),
-								Sequence(Keyword("bitwidth"), NatLiteral(), problem.setBitwidth(popInt())),
+						FirstOf(Sequence(Keyword("solver"), SatSolver(), currentProblem.setSolver(out, (SATFactory) pop())),
+								Sequence(Keyword("bitwidth"), NatLiteral(), currentProblem.setBitwidth(popInt())),
 								// Sequence(Keyword("produce-cores"), BoolLiteral(),
 								// problem.setCoreExtraction(popBool())),
-								Sequence(Keyword("log-trans"), NatLiteral(), problem.setLogTranslation(popInt())),
-								Sequence(Keyword("core-gran"), NatLiteral(), problem.setCoreGranularity(popInt())),
-								Sequence(Keyword("core-minimization"), StringLiteral(), problem.setCoreMinimization(popString())),
-								Sequence(Keyword("verbosity"), NatLiteral(), problem.setVerbosity(level(popInt()))),
-								Sequence(Keyword("sb"), NatLiteral(), problem.setSB(popInt())),
-								Sequence(Keyword("max-trace-length"), NatLiteral(), problem.setMaxTraceLength(popInt())),
-								Sequence(Keyword("min-trace-length"), NatLiteral(), problem.setMinTraceLength(popInt())),
-								Sequence(Keyword("skolem-depth"), IntLiteral(), problem.setSkolemDepth(popInt())),
-								Sequence(Keyword("max-solutions"), NatLiteral(), problem.setMaxSolutions(popInt())))),
+								Sequence(Keyword("log-trans"), NatLiteral(), currentProblem.setLogTranslation(popInt())),
+								Sequence(Keyword("core-gran"), NatLiteral(), currentProblem.setCoreGranularity(popInt())),
+								Sequence(Keyword("core-minimization"), StringLiteral(), currentProblem.setCoreMinimization(popString())),
+								Sequence(Keyword("verbosity"), NatLiteral(), currentProblem.setVerbosity(level(popInt()))),
+								Sequence(Keyword("sb"), NatLiteral(), currentProblem.setSB(popInt())),
+								Sequence(Keyword("max-trace-length"), NatLiteral(), currentProblem.setMaxTraceLength(popInt())),
+								Sequence(Keyword("min-trace-length"), NatLiteral(), currentProblem.setMinTraceLength(popInt())),
+								Sequence(Keyword("skolem-depth"), IntLiteral(), currentProblem.setSkolemDepth(popInt())),
+								Sequence(Keyword("max-solutions"), NatLiteral(), currentProblem.setMaxSolutions(popInt())))),
 				RPAR);
 	}
 
@@ -313,7 +384,7 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @return LPAR UNIV NatLiteral RPAR
 	 */
 	Rule DeclareUniverse() {
-		return Sequence(LPAR, UNIV, NatLiteral(), problem.declareUniverse(popInt()), RPAR);
+		return Sequence(LPAR, UNIV, NatLiteral(), currentProblem.declareUniverse(popInt()), RPAR);
 	}
 
 	/**
@@ -323,7 +394,7 @@ public class KodkodParser extends BaseParser<Object> {
 		final Var<List<Integer>> ints = new Var<>();
 		return Sequence(LPAR, INTS, LBRK, ints.set(new ArrayList<Integer>(16)),
 				OneOrMore(LPAR, IntLiteral(), ints.get().add(popInt()), NatLiteral(), ints.get().add(popInt()), RPAR),
-				RBRK, RPAR, problem.declareInts(ints.get()));
+				RBRK, RPAR, currentProblem.declareInts(ints.get()));
 	}
 
 	/**
@@ -338,7 +409,7 @@ public class KodkodParser extends BaseParser<Object> {
 				FirstOf(Sequence(DOUBLECOLON, upper.set(lower.get()), TupleSet(),
 						upper.set(upper.isSet() ? union(upper.get(), popTupleSet()) : popTupleSet())),
 						Sequence(EMPTY, upper.set(lower.get()))),
-				RBRK, RPAR, problem.declareRelations(names.get(), lower.get(), upper.get()));
+				RBRK, RPAR, currentProblem.declareRelations(names.get(), lower.get(), upper.get()));
 	}
 
 	/**
@@ -353,7 +424,7 @@ public class KodkodParser extends BaseParser<Object> {
 				FirstOf(Sequence(DOUBLECOLON, upper.set(lower.get()), TupleSet(),
 						upper.set(upper.isSet() ? union(upper.get(), popTupleSet()) : popTupleSet())),
 						Sequence(EMPTY, upper.set(lower.get()))),
-				RBRK, RPAR, problem.declareVarRelations(names.get(), lower.get(), upper.get()));
+				RBRK, RPAR, currentProblem.declareVarRelations(names.get(), lower.get(), upper.get()));
 	}
 
 	// -------------------------------------------------------------------------
@@ -366,9 +437,9 @@ public class KodkodParser extends BaseParser<Object> {
 	 */
 
 	Rule TupleSet() {
-		return FirstOf(Sequence(Use('r'), push(valueOf(popRelation(), problem.allBounds()))),
-				Sequence(Use('x'), push(valueOf(popRelation(), problem.allBounds()))),
-				Sequence(ExprLiteral(), push(valueOf(popExpr(), problem.allBounds()))), TupleSetEnum(), TupleSetExpr());
+		return FirstOf(Sequence(Use('r'), push(valueOf(popRelation(), currentProblem.allBounds()))),
+				Sequence(Use('x'), push(valueOf(popRelation(), currentProblem.allBounds()))),
+				Sequence(ExprLiteral(), push(valueOf(popExpr(), currentProblem.allBounds()))), TupleSetEnum(), TupleSetExpr());
 	}
 
 	/**
@@ -408,7 +479,7 @@ public class KodkodParser extends BaseParser<Object> {
 										Sequence(HASH, Tuple(), swap(), ts.set(area(popTuple(), popTuple()))),
 										Sequence(ts.set(setOf(popTuple())),
 												ZeroOrMore(Tuple(), add(ts.get(), popTuple()))))),
-						Sequence(EMPTY, ts.set(valueOf(Expression.NONE, problem.allBounds())))),
+						Sequence(EMPTY, ts.set(valueOf(Expression.NONE, currentProblem.allBounds())))),
 				RWING, push(ts.get()));
 	}
 
@@ -419,7 +490,7 @@ public class KodkodParser extends BaseParser<Object> {
 	Rule Tuple() {
 		final Var<List<Integer>> t = new Var<List<Integer>>();
 		return Sequence(LPAR, t.set(new ArrayList<Integer>(4)), OneOrMore(NatLiteral(), t.get().add(popInt())), RPAR,
-				push(tuple(problem.allBounds().universe().factory(), t.get())));
+				push(tuple(currentProblem.allBounds().universe().factory(), t.get())));
 	}
 
 	// -------------------------------------------------------------------------
@@ -455,8 +526,17 @@ public class KodkodParser extends BaseParser<Object> {
 	Rule Use(char varPrefix) {
 		return Sequence(
 				Identifier(varPrefix),
-				problem.boundForcedAtomIfNeeded(varPrefix, peekString()),
-				push(env().use(varPrefix, popString())));
+				currentProblem.boundForcedAtomIfNeeded(varPrefix, peekString()),
+				push(lookup(env(), varPrefix, popString())));
+	}
+
+	Object lookup(StringDefEnv env, char varPrefix, String val) {
+		try {
+			return env.use(varPrefix, val);
+		} catch(ActionException ae) {
+			this.info("error: environment didn't contain: "+val);
+			throw ae;
+		}
 	}
 
 
@@ -468,7 +548,7 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @return LPAR ASSERT Use('f')+ RPAR
 	 */
 	Rule Assert() {
-		return Sequence(LPAR, ASSERT, OneOrMore(Use('f'), problem.assertFormula(popFormula())), RPAR);
+		return Sequence(LPAR, ASSERT, OneOrMore(Use('f'), currentProblem.assertFormula(popFormula())), RPAR);
 	}
 
 	/**
@@ -476,9 +556,9 @@ public class KodkodParser extends BaseParser<Object> {
 	 */
 	Rule Evaluate() {
 		return Sequence(LPAR, EVALUATE, FirstOf(
-				Sequence(Use('e'), problem.evaluate(popExpr())),
-				Sequence(Use('i'), problem.evaluate(popIntExpr())),
-				Sequence(Use('f'), problem.evaluate(popFormula()))),
+				Sequence(Use('e'), currentProblem.evaluate(popExpr())),
+				Sequence(Use('i'), currentProblem.evaluate(popIntExpr())),
+				Sequence(Use('f'), currentProblem.evaluate(popFormula()))),
 				RPAR);
 	}
 
@@ -496,7 +576,7 @@ public class KodkodParser extends BaseParser<Object> {
 	Rule Solve() {
 		//return Sequence(LPAR, SOLVE, RPAR, setProblem(problem.solve(out)));
 		return Sequence(LPAR, SOLVE, Optional(StringLiteral()), RPAR,
-				setProblem(problem.solve(out, getContext().getValueStack().isEmpty() ? "" : popString())));
+				setProblem(currentProblem.solve(out, getContext().getValueStack().isEmpty() ? "" : popString())));
 	}
 
 	/**
@@ -504,7 +584,7 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @ensures setProblem(this.problem.clear ())
 	 **/
 	Rule Clear() {
-		return Sequence(LPAR, CLEAR, RPAR, setProblem(problem.clear(out)));
+		return Sequence(LPAR, CLEAR, RPAR, setProblem(currentProblem.clear(out)));
 	}
 
 	/**
@@ -592,7 +672,10 @@ public class KodkodParser extends BaseParser<Object> {
 	@Cached
 	/** @return quantRule VarDecls Constraint */
 	Rule QuantConstraint(Rule quantRule, Quantifier quant) {
-		return Sequence(quantRule, VarDecls(), Constraint(), push(popFormula().quantify(quant, popDecls())), swap(),
+		return Sequence(quantRule, VarDecls(), Constraint(),
+				//push(popFormula().quantify(quant, popDecls())),
+				handleQuantConstraint(popFormula(), quant, popDecls()),
+				swap(),
 				drop());
 	}
 
@@ -600,25 +683,27 @@ public class KodkodParser extends BaseParser<Object> {
 	 * @return NOT Constraint
 	 */
 	Rule NotConstraint() {
-		return Sequence(NOT, Constraint(), push(popFormula().not()));
+		return Sequence(NOT, Constraint(), handleNotConstraint(popFormula()));
 	}
 
 	// Electrum unary constraints /////////////////////////////////
 	Rule AlwaysConstraint() {
-		return Sequence(ALWAYS, Constraint(), push(popFormula().always()));
+		return Sequence(ALWAYS, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.ALWAYS, popFormula()));
 	}
 	Rule EventuallyConstraint() {
-		return Sequence(EVENTUALLY, Constraint(), push(popFormula().eventually()));
+		return Sequence(EVENTUALLY, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.EVENTUALLY, popFormula()));
 	}
 	Rule AfterConstraint() {
-		return Sequence(AFTER, Constraint(), push(popFormula().after()));
+		return Sequence(AFTER, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.AFTER, popFormula()));
 	}
-	Rule HistoricallyConstraint() { return Sequence(HISTORICALLY, Constraint(), push(popFormula().historically())); }
+	Rule HistoricallyConstraint() {
+		return Sequence(HISTORICALLY, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.HISTORICALLY, popFormula()));
+	}
 	Rule OnceConstraint() {
-		return Sequence(ONCE, Constraint(), push(popFormula().once()));
+		return Sequence(ONCE, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.ONCE, popFormula()));
 	}
 	Rule BeforeConstraint() {
-		return Sequence(BEFORE, Constraint(), push(popFormula().before()));
+		return Sequence(BEFORE, Constraint(), handleUnaryTemporalConstraint(TemporalOperator.BEFORE, popFormula()));
 	}
 
 	
@@ -629,7 +714,8 @@ public class KodkodParser extends BaseParser<Object> {
 
 		return FirstOf(
 				Sequence(ACTION(args.enterFrame()), rule, args.set(new ArrayList<Formula>(4)),
-						OneOrMore(Constraint(), args.get().add(popFormula())), push(compose_temp(op, args.get())),
+						OneOrMore(Constraint(), args.get().add(popFormula())),
+						handleNaryTemporalConstraint(op, args.get()),
 						ACTION(args.exitFrame())),
 
 				Sequence(ACTION(args.exitFrame()), NOTHING));
@@ -646,12 +732,12 @@ public class KodkodParser extends BaseParser<Object> {
 
 		return FirstOf(
 				Sequence(ACTION(args.enterFrame()), opRule, args.set(new ArrayList<Formula>(4)),
-						OneOrMore(Constraint(), args.get().add(popFormula())), push(compose(op, args.get())),
+						OneOrMore(Constraint(), args.get().add(popFormula())),
+						handleNaryConstraint(op, args.get()),
 						ACTION(args.exitFrame())),
 
 				Sequence(ACTION(args.exitFrame()), NOTHING));
 	}
-
 
 	/**
 	 * @return ACYCLIC Use('r')
@@ -997,6 +1083,7 @@ public class KodkodParser extends BaseParser<Object> {
 	final Rule EVALUATE = Keyword("evaluate");
 	final Rule SOLVE = Keyword("solve");
 	final Rule CLEAR = Keyword("clear");
+	final Rule WITH = Keyword("with");
 	final Rule EXIT = Keyword("exit");
 
 	final Rule UNIV = Keyword("univ");
@@ -1115,7 +1202,7 @@ public class KodkodParser extends BaseParser<Object> {
 	}
 
 	Rule NotSpace() {
-		return NoneOf(" \n\t()[]{}");
+		return NoneOf(" \n\r\t()[]{}");
 	}
 
 	Rule FilePathChar() {
@@ -1221,7 +1308,67 @@ public class KodkodParser extends BaseParser<Object> {
 			if (val instanceof StringDefEnv)
 				return (StringDefEnv) val;
 		}
-		return problem.env();
+		return currentProblem.env();
+	}
+
+    /* Machinery for recording sub-formula syntax locations for cores */
+
+	boolean handleNotConstraint(Formula arg) {
+		Formula parent = arg.not();
+		problem().logNodeChild(parent, 0, arg, out);
+		push(parent);
+		return true;
+	}
+	boolean handleNaryConstraint(FormulaOperator op, List<Formula> args) {
+		// Prevent Kodkod from optimizing out "and" when registering top-level formulas.
+		// (Wrapping indexes to enforce uniqueness isn't helpful for situations like
+		// (&& (some ...)) at the top level, since the mapping records (some ...)
+		// as a top-level formula.
+		if(FormulaOperator.AND.equals(op) && args.size() == 1) {
+			args.add(Formula.TRUE);
+		}
+		else if(FormulaOperator.OR.equals(op) && args.size() == 1) {
+			args.add(Formula.FALSE);
+		}
+		Formula parent = compose(op, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx), out);
+		}
+		push(parent);
+		return true;
+	}
+	boolean handleNaryTemporalConstraint(TemporalOperator op, List<Formula> args) {
+		Formula parent = compose_temp(op, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx), out);
+		}
+		push(parent);
+		return true;
+	}
+	boolean handleUnaryTemporalConstraint(TemporalOperator op, Formula arg) {
+		Formula parent;
+		switch(op) {
+			case ALWAYS: parent = arg.always(); break;
+			case EVENTUALLY: parent = arg.eventually(); break;
+			case ONCE: parent = arg.once(); break;
+			case HISTORICALLY: parent = arg.historically(); break;
+			case AFTER: parent = arg.after(); break;
+			case BEFORE: parent = arg.before(); break;
+			default: throw new IllegalArgumentException("operator was not a unary formula operator: "+op);
+		}
+		problem().logNodeChild(parent, 0, arg, out);
+		push(parent);
+		return true;
+	}
+	boolean handleQuantConstraint(Formula inner, Quantifier quant, Decls args) {
+		Formula parent = inner.quantify(quant, args);
+		for(int idx=0;idx<args.size();idx++) {
+			problem().logNodeChild(parent, idx, args.get(idx), out);
+		}
+		// Consider the inner formula the final argument
+		problem().logNodeChild(parent, args.size(), inner, out);
+		push(parent);
+		return true;
 	}
 }
 
