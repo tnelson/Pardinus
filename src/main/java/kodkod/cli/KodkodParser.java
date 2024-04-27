@@ -370,6 +370,7 @@ public class KodkodParser extends BaseParser<Object> {
 				Sequence(Keyword("SAT4J"), push(SATFactory.DefaultSAT4J)),
 				Sequence(Keyword("TargetSATSolver"), push(SATFactory.PMaxSAT4J)),
 				Sequence(Keyword("PMaxSAT4J"), push(SATFactory.PMaxSAT4J)),
+				Sequence(Keyword("electrod"), push(SATFactory.electrod("-t","NuSMV"))),
 				Sequence(Sequence(FilePathLiteral(), Space()),
 						push(SATFactory.externalFactory(popString(), "customSolver.temp", false, false)))); // Removed
 																											// for

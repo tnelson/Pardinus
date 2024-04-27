@@ -528,6 +528,11 @@ public abstract class KodkodProblem {
 	boolean setSolver(SATFactory solver) {
 		if (SATFactory.available(solver)) {
 			options.setSolver(solver);
+			// TODO FOR PROTOTYPING ONLY
+			//  (Electrod factory will always have unbounded = true)
+			if(solver.unbounded()) {
+				options.setRunUnbounded(true);
+			}
 			return true;
 		} else {
 			throw new ActionException(solver.toString() + " is not available on this system. Searched "
