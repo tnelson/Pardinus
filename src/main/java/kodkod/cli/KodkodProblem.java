@@ -488,6 +488,15 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
+	boolean setPreventOverflow(boolean value) {
+		try {
+			options.setNoOverflow(value);
+		} catch (IllegalArgumentException ex) {
+			throw new ActionException(ex.getMessage(), ex); // wrap
+		}
+		return true;
+	}
+
 	boolean setSkolemDepth(int sd) {
 		try {
 			options.setSkolemDepth(sd);

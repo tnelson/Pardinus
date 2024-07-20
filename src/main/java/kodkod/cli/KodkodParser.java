@@ -353,6 +353,7 @@ public class KodkodParser extends BaseParser<Object> {
 								Sequence(Keyword("max-trace-length"), NatLiteral(), currentProblem.setMaxTraceLength(popInt())),
 								Sequence(Keyword("min-trace-length"), NatLiteral(), currentProblem.setMinTraceLength(popInt())),
 								Sequence(Keyword("skolem-depth"), IntLiteral(), currentProblem.setSkolemDepth(popInt())),
+								Sequence(Keyword("no-overflow"), BoolLiteral(), currentProblem.setPreventOverflow(popBool())),
 								Sequence(Keyword("max-solutions"), NatLiteral(), currentProblem.setMaxSolutions(popInt())))),
 				RPAR);
 	}
