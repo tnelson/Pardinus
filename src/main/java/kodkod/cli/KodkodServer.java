@@ -230,6 +230,7 @@ public final class KodkodServer {
 				final Logger logger = Logger.getGlobal();
 				for(ParseError err : result.parseErrors) {
 					logger.severe(ErrorUtils.printParseError(err));
+					parser.info(ErrorUtils.printParseError(err));
 				}
 			} else {
 				Logger.getGlobal().severe(	"Error in the input problem.  "+
