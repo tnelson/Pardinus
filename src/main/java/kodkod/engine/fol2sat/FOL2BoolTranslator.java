@@ -697,18 +697,25 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		BooleanValue ret = lookup(binFormula);
 		if (ret!=null) return ret;
 
-		final BooleanValue left = binFormula.left().accept(this);
-		final BooleanValue right = binFormula.right().accept(this);
 		final FormulaOperator op = binFormula.op();
 		final BooleanFactory f = interpreter.factory();
 
-		switch(op) {
-		case AND		: ret = f.and(left, right); break;
-		case OR			: ret = f.or(left, right); break;
-		case IMPLIES	: ret = f.implies(left, right); break;
-		case IFF		: ret = f.iff(left, right); break;
-		default : 
-			throw new IllegalArgumentException("Unknown operator: " + op);
+		if (op == FormulaOperator.IMPLIES) {
+			env.negate(); // for overflow-prevention context
+			final BooleanValue left = binFormula.left().accept(this);
+			env.negate(); // reset overflow-prevention context
+			final BooleanValue right = binFormula.right().accept(this);
+			ret = f.implies(left, right);
+		} else {
+			final BooleanValue left = binFormula.left().accept(this);
+			final BooleanValue right = binFormula.right().accept(this);
+			switch(op) {
+				case AND                : ret = f.and(left, right); break;
+				case OR                 : ret = f.or(left, right); break;
+				case IFF                : ret = f.iff(left, right); break;
+				default :
+					throw new IllegalArgumentException("Unknown operator: " + op);
+			}
 		}
 		return cache(binFormula, ret);
 	}
