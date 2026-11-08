@@ -3,6 +3,7 @@
 
 import shutil
 import subprocess
+import sys
 
 def options(opt):
     opt.load('compiler_cxx')
@@ -20,14 +21,16 @@ def build(bld):
     DEFINES = ['__STDC_LIMIT_MACROS', '__STDC_FORMAT_MACROS']
     INCLUDES = ['.', './minisatp'] 
     CXXFLAGS = [ '-w', '-O3', '-fPIC', '-ffloat-store']
-    
+    # Static link libstdc++ and libgcc for portability across Linux systems
+    LINKFLAGS = [] if sys.platform == 'darwin' else ['-static-libstdc++', '-static-libgcc']
+
     bld.objects(source = ['minisatp/Solver.C', 'minisatp/Proof.C', 'minisatp/File.C'],
                 target = 'minisatp-core',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
       
     bld.shlib(source = 'kodkod_engine_satlab_MiniSatProver.cpp',
               target = 'minisatprover', use = 'minisatp-core', uselib = 'JAVA',
-              includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+              includes = INCLUDES, cxxflags = CXXFLAGS, linkflags = LINKFLAGS, defines = DEFINES)
 
 
 def distclean(ctx):

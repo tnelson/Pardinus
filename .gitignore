@@ -26,3 +26,16 @@ hs_err_pid*
 
 # External solver temporary file
 customSolver.temp
+
+/jni/output/
+.waf3-*/
+/jni/glucose/glucose-syrup/
+/jni/glucose/glucose-syrup.tgz
+/jni/lingeling/code/
+/jni/lingeling/lingeling-*.zip
+/jni/minisat/minisat/
+/jni/minisatp/minisatp/
+/jni/plingeling/code/
+/jni/plingeling/plingeling-*.zip
+/jni/electrod/electrod/
+__pycache__/

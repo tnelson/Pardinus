@@ -3,6 +3,7 @@
 
 import shutil
 import subprocess
+import sys
 
 def options(opt):
     opt.load('compiler_cxx')
@@ -21,7 +22,9 @@ def build(bld):
     DEFINES = ['__STDC_LIMIT_MACROS', '__STDC_FORMAT_MACROS']
     INCLUDES = ['.','./minisat'] 
     CXXFLAGS = [ '-w', '-O3', '-fPIC']
-    
+    # Static link libstdc++ and libgcc for portability across Linux systems
+    LINKFLAGS = [] if sys.platform == 'darwin' else ['-static-libstdc++', '-static-libgcc']
+
     bld.objects(source = ['minisat/minisat/utils/Options.cc', 'minisat/minisat/utils/System.cc'],
                 target = 'minisat-utils',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
@@ -30,9 +33,12 @@ def build(bld):
                 target = 'minisat-core', use = 'minisat-utils',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
     
-    bld.shlib(source = 'kodkod_engine_satlab_MiniSat.cpp',
+    # Build JNI shared library exposing both kodkod_engine_satlab_MiniSat_* and
+    # org_alloytools_solvers_natv_minisat_MiniSat_* symbols so either Java package works.
+    bld.shlib(source = ['kodkod_engine_satlab_MiniSat.cpp',
+                        'org_alloytools_solvers_natv_minisat_MiniSat.cpp'],
               target = 'minisat', use = 'minisat-core', uselib = 'JAVA',
-              includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
+              includes = INCLUDES, cxxflags = CXXFLAGS, linkflags = LINKFLAGS, defines = DEFINES)
             
 def distclean(ctx):
     from waflib import Scripting

@@ -1,8 +1,18 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
+import os, shutil
 
-solvers = ['minisat', 'minisatp', 'glucose', 'lingeling', 'plingeling', 'electrod']
+# Core SAT solvers to build by default (Linux x86_64 JNI libs)
+solvers = ['minisat', 'minisatp', 'glucose', 'lingeling', 'plingeling']
+
+# Include electrod only when explicitly requested and when opam is available.
+if os.environ.get('WITH_ELECTROD', '0') == '1':
+    from shutil import which
+    if which('opam'):
+        solvers.append('electrod')
+    else:
+        print('Skipping electrod: opam not found (set WITH_ELECTROD=1 and install opam to include)')
 
 def options(opt):
     opt.recurse(solvers)

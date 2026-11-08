@@ -1,0 +1,5 @@
+waf        sha256  93909bca823a675f9f40af7c65b24887c3a3c0efdf411ff1978ba827194bdeb0  waf-2.0.24
+glucose    sha256  8dba2a417fd9f1170f1b7d14547688ee12c92a980e0b009e85aec1a5a4a0052f  glucose/glucose-syrup.tgz
+lingeling  sha256  9d1fc5d5804fdc41cb3b8cb2dedabbd3fb27e639b3b1f57e157153665828fb81  lingeling/lingeling-ayv-86bf266-140429.zip
+minisat    git     14c78206cd12d1d36b7e042fa758747c135670a4                          minisat/minisat
+minisatp   git     7377e0bccf8bafcb4f3c4dcf108e51cdb3faa7de                          minisatp/minisatp
