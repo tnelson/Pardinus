@@ -25,11 +25,14 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import kodkod.ast.BinaryFormula;
 import kodkod.ast.Expression;
 import kodkod.ast.Node;
 import kodkod.ast.Variable;
+import kodkod.ast.operator.FormulaOperator;
 import kodkod.engine.bool.BooleanConstant;
 import kodkod.engine.bool.BooleanMatrix;
+import kodkod.util.collections.IdentityHashSet;
 import kodkod.util.nodes.AnnotatedNode;
 
 
@@ -45,22 +48,29 @@ import kodkod.util.nodes.AnnotatedNode;
  */
 final class FOL2BoolCache {
 	private final Map<Node,Record> cache;
-	
+	// Used if overflow-prevention is enabled. If so, caching needs to be polarity-aware.
+	private final Map<Node,Record> negatedCache;
+
 	/**
 	 * Constructs a new translation cache for the given annotated node.
-	 * @ensures this.node' = annotated.node 
+	 * @ensures this.node' = annotated.node
 	 */
-	FOL2BoolCache(AnnotatedNode<? extends Node> annotated) {
-		final CacheCollector collector = new CacheCollector(annotated.sharedNodes());
+	FOL2BoolCache(AnnotatedNode<? extends Node> annotated, boolean overflowPrevention) {
+		final CacheCollector collector = new CacheCollector(
+				overflowPrevention ? new IdentityHashSet<Node>(annotated.sharedNodes()) : annotated.sharedNodes(),
+				overflowPrevention);
 		annotated.node().accept(collector);
 
 		this.cache = new IdentityHashMap<Node, Record>(collector.cache().size());
+		this.negatedCache = overflowPrevention ? new IdentityHashMap<Node, Record>(collector.cache().size()) : this.cache;
 		for(Map.Entry<Node, Set<Variable>> e :  collector.cache().entrySet()) {
 			Set<Variable> freeVars = e.getValue();
 			if (freeVars.isEmpty())
 				this.cache.put(e.getKey(), new NoVarRecord());
-			else 
+			else
 				this.cache.put(e.getKey(), new MultiVarRecord(freeVars));
+			if (overflowPrevention)
+				this.negatedCache.put(e.getKey(), freeVars.isEmpty() ? new NoVarRecord() : new MultiVarRecord(freeVars));
 		}
 	}
 
@@ -74,7 +84,7 @@ final class FOL2BoolCache {
 	 */
 	@SuppressWarnings("unchecked")
 	<T> T lookup(Node node, Environment<BooleanMatrix, Expression> env) { // [AM]
-		final Record info = cache.get(node);
+		final Record info = (env.isNegated() ? negatedCache : cache).get(node);
 		return info==null ? null : (T) info.get(env);
 	}
 	
@@ -88,7 +98,7 @@ final class FOL2BoolCache {
 	 * @return translation
 	 */
 	final <T> T cache(Node node, T translation, Environment<BooleanMatrix, Expression> env) { // [AM]
-		final Record info = cache.get(node);
+		final Record info = (env.isNegated() ? negatedCache : cache).get(node);
 		if (info != null) {
 			info.set(translation, env);
 		}
@@ -105,13 +115,28 @@ final class FOL2BoolCache {
 	 */
 	private static final class CacheCollector extends FreeVariableCollector {
 
+		private final boolean cacheIffOperands;
+
 		/**
 		 * Constructs a new cache collector.
 		 */
-		protected CacheCollector(Set<Node> cached) {
+		protected CacheCollector(Set<Node> cached, boolean cacheIffOperands) {
 			super(cached);
+			this.cacheIffOperands = cacheIffOperands;
 		}
-		
+
+		// If overflow-prevention is enabled, IFF desugars to a conjunction of implications. Because 
+		// those translations happen differently for both polarities, we need the cache in the negative 
+		// case as well to avoid blowup on chained IFF. 
+		@Override
+		public Set<Variable> visit(BinaryFormula binFormula) {
+			if (cacheIffOperands && binFormula.op() == FormulaOperator.IFF) {
+				cached.add(binFormula.left());
+				cached.add(binFormula.right());
+			}
+			return super.visit(binFormula);
+		}
+
 		/**
 		 * Returns this.cache.  This method should be called *after* the
 		 * visitor has been applied to this.root.

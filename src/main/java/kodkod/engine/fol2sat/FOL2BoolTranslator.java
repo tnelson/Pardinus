@@ -107,7 +107,7 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	 **/
 	@SuppressWarnings("unchecked")
 	static final <T> T translate(AnnotatedNode<? extends Node> annotated, LeafInterpreter interpreter) {
-		final FOL2BoolCache cache = new FOL2BoolCache(annotated);
+		final FOL2BoolCache cache = new FOL2BoolCache(annotated, interpreter.factory().noOverflow());
 		final FOL2BoolTranslator translator = new FOL2BoolTranslator(cache, interpreter) {};
 		return (T) annotated.node().accept(translator);
 	}
@@ -123,7 +123,7 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	 * @throws UnboundLeafException  annotated.node refers to an undeclared variable 
 	 **/
 	static final BooleanAccumulator translate(final AnnotatedNode<Formula> annotated, LeafInterpreter interpreter, final TranslationLogger logger) {
-		final FOL2BoolCache cache = new FOL2BoolCache(annotated);
+		final FOL2BoolCache cache = new FOL2BoolCache(annotated, interpreter.factory().noOverflow());
 		final FOL2BoolTranslator translator = new FOL2BoolTranslator(cache, interpreter) {
 			BooleanValue cache(Formula formula, BooleanValue translation) {
 				logger.log(formula, translation, super.env);
@@ -150,7 +150,7 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	 * @throws UnboundLeafException  annotated.node refers to a variable that neither declared nor bound in env
 	 **/
 	static final BooleanMatrix approximate(AnnotatedNode<Expression> annotated, LeafInterpreter interpreter, Environment<BooleanMatrix, Expression> env) {
-		final FOL2BoolTranslator approximator = new FOL2BoolTranslator(new FOL2BoolCache(annotated), interpreter, env) {
+		final FOL2BoolTranslator approximator = new FOL2BoolTranslator(new FOL2BoolCache(annotated, interpreter.factory().noOverflow()), interpreter, env) {
 			public final BooleanMatrix visit(BinaryExpression binExpr) {
 				final BooleanMatrix ret = lookup(binExpr); 
 				if (ret!=null) return ret;
@@ -706,6 +706,16 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 			env.negate(); // reset overflow-prevention context
 			final BooleanValue right = binFormula.right().accept(this);
 			ret = f.implies(left, right);
+		} else if (op == FormulaOperator.IFF && f.noOverflow()) {
+			// If overflow-prevention is enabled, desugar IFF to a conjunction of 2 implications. 
+			// Then flip the polarity of each conjunct's LHS. 
+			final BooleanValue leftAsGiven = binFormula.left().accept(this);
+			final BooleanValue rightAsGiven = binFormula.right().accept(this);
+			env.negate(); // for overflow-prevention context
+			final BooleanValue leftFlipped = binFormula.left().accept(this);
+			final BooleanValue rightFlipped = binFormula.right().accept(this);
+			env.negate(); // reset overflow-prevention context
+			ret = f.and(f.implies(leftFlipped, rightAsGiven), f.implies(rightFlipped, leftAsGiven));
 		} else {
 			final BooleanValue left = binFormula.left().accept(this);
 			final BooleanValue right = binFormula.right().accept(this);
