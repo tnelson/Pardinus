@@ -32,6 +32,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * An implementation of a wrapper for an external SAT solver, 
@@ -51,6 +52,14 @@ final public class ExternalSolver implements SATSolver {
 	private volatile Boolean sat;
 	private volatile int vars, clauses;
 
+    // How much of a solver's stderr to keep for error messages.
+	private static final int STDERR_TAIL_CHARS = 2000;
+	// The solver runs in this directory. 
+	private final File workDir;
+	// Temporary file to use. 
+	private final File inTempFile;
+
+
 	/**
 	 * Constructs an ExternalSolver that will execute the specified binary
 	 * with the given options on the {@code inTemp} file.  The {@code inTemp} file 
@@ -60,9 +69,15 @@ final public class ExternalSolver implements SATSolver {
 	 * files should be deleted when they are no longer needed by this solver.
 	 */
 	ExternalSolver(String executable, String inTemp, boolean deleteTemp, String... options) {
+		// To make sure relative paths in solver scripts work, the solver runs in its own directory.
+		this.workDir = new File(executable).getAbsoluteFile().getParentFile();
+		// The temporary file location is relative to the solver location.
+		final File tempFile = new File(inTemp);
+		this.inTempFile = tempFile.isAbsolute() ? tempFile : new File(workDir, inTemp);
+
 		RandomAccessFile file = null;
 		try {
-			file = new RandomAccessFile(inTemp, "rw");
+			file = new RandomAccessFile(inTempFile, "rw");
 			file.setLength(0);
 		} catch (FileNotFoundException e) {
 			throw new SATAbortedException(e);
@@ -158,7 +173,7 @@ final public class ExternalSolver implements SATSolver {
 	public synchronized void free() {
 		close(cnf);
 		if (deleteTemp) {
-			(new File(inTemp)).delete();
+			inTempFile.delete();
 		}
 	}
 
@@ -207,6 +222,8 @@ final public class ExternalSolver implements SATSolver {
 			flush();
 			Process p = null;
 			BufferedReader out = null;
+			Thread errThread = null;
+			final StringBuilder errTail = new StringBuilder();
 			try {
 				cnf.seek(0);
 				cnf.writeBytes("p cnf " + vars + " " + clauses);
@@ -216,8 +233,9 @@ final public class ExternalSolver implements SATSolver {
 				command[0] = executable;
 				System.arraycopy(options, 0, command, 1, options.length);
 				command[command.length-1] = inTemp;
-				p = Runtime.getRuntime().exec(command);
-				new Thread(drain(p.getErrorStream())).start();
+				p = Runtime.getRuntime().exec(command, null, workDir);
+				errThread = new Thread(drain(p.getErrorStream(), errTail));
+				errThread.start();
 				out = outputReader(p);
 				String line = null;
 //				System.out.println("("+out.read()+")");
@@ -237,7 +255,8 @@ final public class ExternalSolver implements SATSolver {
 									continue;
 								} 
 							}
-							throw new SATAbortedException("Invalid " + executable + " output. Line: " + line);
+							throw new SATAbortedException("Invalid " + executable + " output. Line: " + line + "."
+									+ details(p, errThread, errTail));
 						} else if (tokens[0].compareToIgnoreCase("v")==0) {
 							int last = tlength-1;
 							for(int i = 1; i < last; i++) {
@@ -250,12 +269,17 @@ final public class ExternalSolver implements SATSolver {
 					}
 				}
 				if (sat==null) {
-					throw new SATAbortedException("Invalid " + executable + " output: no line specifying the outcome.");
+					throw new SATAbortedException("Invalid " + executable + " output: no line specifying the outcome."
+							+ details(p, errThread, errTail));
 				}
 			} catch (IOException e) {
-				throw new SATAbortedException(e);
+				if (p == null) {
+					throw new SATAbortedException("The solver couldn't be run: " + executable + ": " + e.getMessage(), e);
+				}
+				throw new SATAbortedException(e.toString() + details(p, errThread, errTail), e);
 			} catch (NumberFormatException e) {
-				throw new SATAbortedException("Invalid "+ executable +" output: encountered a non-integer variable token.", e);
+				throw new SATAbortedException("Invalid "+ executable +" output: encountered a non-integer variable token."
+						+ details(p, errThread, errTail), e);
 			} finally {
 				close(cnf);
 				close(out);
@@ -268,7 +292,7 @@ final public class ExternalSolver implements SATSolver {
 	 * Returns a runnable that drains the specified input stream.
 	 * @return a runnable that drains the specified input stream.
 	 */
-	private static Runnable drain(final InputStream input) { 
+	private static Runnable drain(final InputStream input, final StringBuilder tail) {
 		return new Runnable() {
 			public void run() {
 				try {
@@ -276,6 +300,13 @@ final public class ExternalSolver implements SATSolver {
 					while(true) {
 						int n=input.read(buffer);
 						if (n<0) break;
+						// Keep the tail of the solver's error, if any, for error messages.
+						synchronized (tail) {
+							tail.append(new String(buffer, 0, n));
+							if (tail.length() > STDERR_TAIL_CHARS) {
+								tail.delete(0, tail.length() - STDERR_TAIL_CHARS);
+							}
+						}
 					}
 				} catch (IOException ex) {
 				} finally {
@@ -283,6 +314,27 @@ final public class ExternalSolver implements SATSolver {
 				}
 			}
 		};
+	}
+
+	// Obtain the exit code and (tail of) stderr of the solver, for error messages. 
+	private static String details(Process p, Thread errThread, StringBuilder errTail) {
+		final StringBuilder s = new StringBuilder();
+		try {
+			if (p.waitFor(2, TimeUnit.SECONDS)) {
+				s.append(" Exit code ").append(p.exitValue()).append('.');
+			}
+			if (errThread != null) {
+				errThread.join(2000);
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		final String err;
+		synchronized (errTail) {
+			err = errTail.toString().trim();
+		}
+		s.append(err.isEmpty() ? " No error output." : " Solver error output:\n" + err);
+		return s.toString();
 	}
 
 	/**

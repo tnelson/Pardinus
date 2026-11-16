@@ -53,18 +53,37 @@ public abstract class SATFactory {
 	 * are available for use on this system.
 	 */
 	public static final boolean available(SATFactory factory) {
+		try {
+			checkAvailable(factory);
+			return true;
+		} catch (SATAbortedException e) {
+			return false;
+		}
+	}
+
+	// Enriched version of available(). Throws a SATAbortedException with info on failure.
+	public static final void checkAvailable(SATFactory factory) {
 		SATSolver solver = null;
+		final boolean sat;
 		try {
 			solver = factory.instance();
 			solver.addVariables(1);
 			solver.addClause(new int[]{1});
-			return solver.solve();
-		} catch (RuntimeException|UnsatisfiedLinkError t) {	
-			return false;
+			sat = solver.solve();
+		} catch (SATAbortedException e) {
+			throw new SATAbortedException("Solver " + factory + " aborted on a 1-variable test."
+					+ e.getMessage(), e);
+		} catch (RuntimeException|UnsatisfiedLinkError t) {
+			throw new SATAbortedException("Solver " + factory + " is not available (" + t
+					+ "). Java library path was: " + System.getProperty("java.library.path"), t);
 		} finally {
 			if (solver!=null) {
 				solver.free();
 			}
+		}
+		if (!sat) {
+			throw new SATAbortedException("Solver " + factory
+					+ " reported one-variable sat test problem as unsat.");
 		}
 	}
 	

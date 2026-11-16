@@ -535,13 +535,11 @@ public abstract class KodkodProblem {
 	 * @ensures this.options.solver' = solver Changed for Pardinus
 	 */
 	boolean setSolver(SATFactory solver) {
-		if (SATFactory.available(solver)) {
-			options.setSolver(solver);
-			return true;
-		} else {
-			throw new ActionException(solver.toString() + " is not available on this system. Searched "
-					+ System.getProperty("java.library.path"));
-		}
+		// Propagate the SATAbortedException if this check fails, so that Pardinus 
+		// reports it rather than ActionException, which the parser backtracks on.  
+		SATFactory.checkAvailable(solver);
+		options.setSolver(solver);
+		return true;
 	}
 	boolean setSolver(KodkodOutput out, SATFactory solver) {
 		//out.writeInfo("configuring solver");
