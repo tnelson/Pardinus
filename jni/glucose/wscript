@@ -13,9 +13,8 @@ def configure(conf):
     conf.check_jni_headers()
     sourceclean(conf)
     root = conf.path.abspath()
-    subprocess.check_call(['wget', 'http://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup.tgz', '--directory-prefix', root])
-    subprocess.check_call(['tar', '-xzf', root + '/glucose-syrup.tgz', '-C', root])
-    subprocess.check_call(['patch', '-p0', '-d', root + '/glucose-syrup/core/', '-i', root + '/Solver.patch'])
+    # Glucose 4.2.1 (github audemard/glucose, MIT). The commit is given in sources.lock.
+    subprocess.check_call(['git', 'clone', 'https://github.com/audemard/glucose.git', root + '/glucose-syrup'])
     status = subprocess.call('cd ' +root +'/glucose-syrup/parallel/' + ' && make', shell=True)
     if status != 0:
         print('WARNING: the glucose-syrup executable did not build (exit status %d); continuing, since only the JNI library is needed' % status)
@@ -32,7 +31,7 @@ def build(bld):
                 target = 'glucose-utils',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
     
-    bld.objects(source = 'glucose-syrup/core/Solver.cc',
+    bld.objects(source = ['glucose-syrup/core/Solver.cc', 'glucose-syrup/core/lcm.cc'],
                 target = 'glucose-core', use = 'glucose-utils',
                 includes = INCLUDES, cxxflags = CXXFLAGS, defines = DEFINES)
     

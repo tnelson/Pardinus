@@ -69,11 +69,9 @@ prepare_sources() {
       verify_sources "$solver" "$BUILD"
       ;;
     glucose)
-      rm -rf "$dir/glucose-syrup" "$dir/glucose-syrup.tgz"
-      run_logged "$solver-fetch" wget http://www.labri.fr/perso/lsimon/downloads/softwares/glucose-syrup.tgz --directory-prefix "$dir"
+      rm -rf "$dir/glucose-syrup"
+      run_logged "$solver-clone" git clone -q https://github.com/audemard/glucose.git "$dir/glucose-syrup"
       verify_sources "$solver" "$BUILD"
-      tar -xzf "$dir/glucose-syrup.tgz" -C "$dir"
-      patch -s -p0 -d "$dir/glucose-syrup/core" -i "$dir/Solver.patch"
       ;;
     lingeling)
       rm -rf "$dir/code"
@@ -100,9 +98,9 @@ compile_solver() {
         kodkod_engine_satlab_MiniSatProver.cpp minisatp/Solver.C minisatp/Proof.C minisatp/File.C
       ;;
     glucose)
-      run_logged "$solver-build" "$TRIPLE-clang++" "${common[@]}" "${cxx[@]}" -include sys/time.h -I. -I./glucose-syrup -o "$lib.dll" \
+      run_logged "$solver-build" "$TRIPLE-clang++" "${common[@]}" "${cxx[@]}" -include sys/time.h -Dputc_unlocked=_putc_nolock -I. -I./glucose-syrup -o "$lib.dll" \
         kodkod_engine_satlab_Glucose.cpp \
-        glucose-syrup/utils/Options.cc glucose-syrup/utils/System.cc glucose-syrup/core/Solver.cc
+        glucose-syrup/utils/Options.cc glucose-syrup/utils/System.cc glucose-syrup/core/Solver.cc glucose-syrup/core/lcm.cc
       ;;
     lingeling)
       run_logged "$solver-build" "$TRIPLE-clang" "${common[@]}" -include lingeling-compat.h \
