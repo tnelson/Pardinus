@@ -359,6 +359,16 @@ public class KodkodParser extends BaseParser<Object> {
 	}
 
 	/**
+	 * A custom solver's CNF filename. We use a run name (if available) to disambiguate 
+	 * between runs that might be alternatingly queried for instances.
+	 */
+	String customSolverTempName() {
+		final String run = (currentProblem == null || currentProblem.id == null) ? "run"
+				: currentProblem.id.replaceAll("[^A-Za-z0-9_-]", "_");
+		return "customSolver-" + run + ".temp";
+	}
+
+	/**
 	 * @return MiniSatProver | MiniSat | Glucose | Lingeling | SAT4J
 	 */
 	@SuppressSubnodes
@@ -371,10 +381,9 @@ public class KodkodParser extends BaseParser<Object> {
 				Sequence(Keyword("SAT4J"), push(SATFactory.DefaultSAT4J)),
 				Sequence(Keyword("TargetSATSolver"), push(SATFactory.PMaxSAT4J)),
 				Sequence(Keyword("PMaxSAT4J"), push(SATFactory.PMaxSAT4J)),
+				// Custom solvers can be incremental, but note ExternalSolver fully re-runs every time.
 				Sequence(Sequence(FilePathLiteral(), Space()),
-						push(SATFactory.externalFactory(popString(), "customSolver.temp", false, false)))); // Removed
-																											// for
-																											// Pardinus
+						push(SATFactory.externalFactory(popString(), customSolverTempName(), true, false))));
 	}
 
 	// -------------------------------------------------------------------------

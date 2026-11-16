@@ -22,13 +22,16 @@
 package kodkod.engine.satlab;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -41,13 +44,10 @@ import java.util.concurrent.TimeUnit;
  */
 // [HASLab] public
 final public class ExternalSolver implements SATSolver {
-	private final StringBuilder buffer;
-	private final int capacity = 8192;
 	private final boolean deleteTemp;
 	private final String inTemp;
 	public final String executable; // [HASLab]
 	public final String[] options; // [HASLab]
-	private final RandomAccessFile cnf;
 	private final BitSet solution;
 	private volatile Boolean sat;
 	private volatile int vars, clauses;
@@ -58,6 +58,8 @@ final public class ExternalSolver implements SATSolver {
 	private final File workDir;
 	// Temporary file to use. 
 	private final File inTempFile;
+	// DIMACS representation of all clauses added so far (used to re-write the CNF file for solvers)
+	private final StringBuilder buffer;
 
 
 	/**
@@ -67,6 +69,8 @@ final public class ExternalSolver implements SATSolver {
 	 * {@link #addClause(int[])} method.  The solver is assumed to write its output 
 	 * to standard out.  The {@code deleteTemp} flag indicates whether the temporary 
 	 * files should be deleted when they are no longer needed by this solver.
+	 * 
+	 * If {@code deleteTemp} is true, the file is deleted when solve() returns or throws.
 	 */
 	ExternalSolver(String executable, String inTemp, boolean deleteTemp, String... options) {
 		// To make sure relative paths in solver scripts work, the solver runs in its own directory.
@@ -75,24 +79,8 @@ final public class ExternalSolver implements SATSolver {
 		final File tempFile = new File(inTemp);
 		this.inTempFile = tempFile.isAbsolute() ? tempFile : new File(workDir, inTemp);
 
-		RandomAccessFile file = null;
-		try {
-			file = new RandomAccessFile(inTempFile, "rw");
-			file.setLength(0);
-		} catch (FileNotFoundException e) {
-			throw new SATAbortedException(e);
-		} catch (IOException e) {
-			close(file);
-			throw new SATAbortedException(e);
-		}
 		this.deleteTemp = deleteTemp;
-		this.cnf = file;
-		// get enough space into the buffer for the cnf header, which will be written last
 		this.buffer = new StringBuilder();
-		for(int i = headerLength(); i > 0; i--) {
-			buffer.append(" ");
-		}
-		buffer.append("\n");
 		this.sat = null;
 		this.solution = new BitSet();
 		this.vars = 0;
@@ -119,26 +107,14 @@ final public class ExternalSolver implements SATSolver {
 	}
 
 	/**
-	 * Returns the length, in characters, of the longest possible header
-	 * for a cnf file: p cnf Integer.MAX_VALUE Integer.MAX_VALUE
-	 * @return the length, in characters, of the longest possible header
-	 * for a cnf file: p cnf Integer.MAX_VALUE Integer.MAX_VALUE
+	 * Writes DIMACS problem to file, replacing any contents that are already there.
 	 */
-	private static final int headerLength() {
-		return String.valueOf(Integer.MAX_VALUE).length()*2 + 8;
-	}
-
-	/**
-	 * Flushes the contents of the string buffer to the cnf file.
-	 */
-	private final void flush(){ 
-		try {
-			cnf.writeBytes(buffer.toString());
+	private final void writeCnf() throws SATAbortedException {
+		try (Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(inTempFile), StandardCharsets.ISO_8859_1))) {
+			w.write("p cnf " + vars + " " + clauses + "\n");
+			w.append(buffer);
 		} catch (IOException e) {
-			close(cnf);
-			throw new SATAbortedException(e);
-		} finally {
-			buffer.setLength(0);
+			throw new SATAbortedException("Could not write to custom solver's input file: " + e.getMessage(), e);
 		}
 	}
 
@@ -147,9 +123,10 @@ final public class ExternalSolver implements SATSolver {
 	 * @see kodkod.engine.satlab.SATSolver#addClause(int[])
 	 */
 	public boolean addClause(int[] lits) {
-		clauses++;
-		if (buffer.length()>capacity) 
-			flush();
+		clauses++;		
+		// For now, adding a new clause will throw away the previous SAT result, forcing 
+		// a re-run (although not a re-translation).
+		if (sat == Boolean.TRUE) sat = null;
 		for(int lit: lits) {
 			buffer.append(lit);
 			buffer.append(" ");
@@ -171,10 +148,9 @@ final public class ExternalSolver implements SATSolver {
 	 * @see kodkod.engine.satlab.SATSolver#free()
 	 */
 	public synchronized void free() {
-		close(cnf);
-		if (deleteTemp) {
-			inTempFile.delete();
-		}
+		// Assuming solve() is finished, there is no file to delete here.
+		buffer.setLength(0);
+		buffer.trimToSize();
 	}
 
 
@@ -219,59 +195,18 @@ final public class ExternalSolver implements SATSolver {
 	 */
 	public boolean solve() throws SATAbortedException {
 		if (sat==null) {
-			flush();
 			Process p = null;
-			BufferedReader out = null;
 			Thread errThread = null;
 			final StringBuilder errTail = new StringBuilder();
 			try {
-				cnf.seek(0);
-				cnf.writeBytes("p cnf " + vars + " " + clauses);
-				cnf.close();
-
-				final String[] command = new String[options.length+2];
-				command[0] = executable;
-				System.arraycopy(options, 0, command, 1, options.length);
-				command[command.length-1] = inTemp;
-				p = Runtime.getRuntime().exec(command, null, workDir);
+				writeCnf();
+				solution.clear();
+				p = startSolver();
 				errThread = new Thread(drain(p.getErrorStream(), errTail));
+				// Don't let a solver that hangs after answering keep this thread occupied.
+				errThread.setDaemon(true);
 				errThread.start();
-				out = outputReader(p);
-				String line = null;
-//				System.out.println("("+out.read()+")");
-				while((line = out.readLine()) != null) {
-//					System.out.println("2.0");
-					String[] tokens = line.split("\\s");
-					int tlength = tokens.length;
-//					System.out.println("2.1");
-					if (tlength>0) {
-						if (tokens[0].compareToIgnoreCase("s")==0) {
-							if (tlength==2) {
-								if (tokens[1].compareToIgnoreCase("SATISFIABLE")==0) {
-									sat = Boolean.TRUE;
-									continue;
-								} else if (tokens[1].compareToIgnoreCase("UNSATISFIABLE")==0) {
-									sat = Boolean.FALSE;
-									continue;
-								} 
-							}
-							throw new SATAbortedException("Invalid " + executable + " output. Line: " + line + "."
-									+ details(p, errThread, errTail));
-						} else if (tokens[0].compareToIgnoreCase("v")==0) {
-							int last = tlength-1;
-							for(int i = 1; i < last; i++) {
-								updateSolution(Integer.parseInt(tokens[i]));
-							}
-							int lit = Integer.parseInt(tokens[last]);
-							if (lit!=0) updateSolution(lit);
-							else if (sat!=null) break;
-						} // not a solution line or a variable line, so ignore it.
-					}
-				}
-				if (sat==null) {
-					throw new SATAbortedException("Invalid " + executable + " output: no line specifying the outcome."
-							+ details(p, errThread, errTail));
-				}
+				readResult(p, errThread, errTail);
 			} catch (IOException e) {
 				if (p == null) {
 					throw new SATAbortedException("The solver couldn't be run: " + executable + ": " + e.getMessage(), e);
@@ -281,13 +216,102 @@ final public class ExternalSolver implements SATSolver {
 				throw new SATAbortedException("Invalid "+ executable +" output: encountered a non-integer variable token."
 						+ details(p, errThread, errTail), e);
 			} finally {
-				close(cnf);
-				close(out);
+				stopSolver(p);
+				deleteCnf();
 			}
 		}
 		return sat;
 	}
+
+	/**
+	 * Start the custom solver. 
+	 */
+	private Process startSolver() throws IOException {
+		final String[] command = new String[options.length+2];
+		// The solver runs in workDir. (Avoid double-applying relative path.)
+		command[0] = new File(executable).getAbsolutePath();
+		System.arraycopy(options, 0, command, 1, options.length);
+		command[command.length-1] = inTemp;
+		return Runtime.getRuntime().exec(command, null, workDir);
+	}
+
+	/**
+	 * Read the solver's output into this.sat and this.solution.
+	 */
+	private void readResult(Process p, Thread errThread, StringBuilder errTail) throws IOException {
+		try (BufferedReader out = outputReader(p)) {
+			String line = null;
+			while((line = out.readLine()) != null) {
+				String[] tokens = line.split("\\s");
+				int tlength = tokens.length;
+				if (tlength>0) {
+					if (tokens[0].compareToIgnoreCase("s")==0) {
+						if (tlength==2) {
+							if (tokens[1].compareToIgnoreCase("SATISFIABLE")==0) {
+								sat = Boolean.TRUE;
+								continue;
+							} else if (tokens[1].compareToIgnoreCase("UNSATISFIABLE")==0) {
+								sat = Boolean.FALSE;
+								// Stop here; no need to wait for the solver to stop.
+								break;
+							}
+						}
+						throw new SATAbortedException("Invalid " + executable + " output. Line: " + line + "."
+								+ details(p, errThread, errTail));
+					} else if (tokens[0].compareToIgnoreCase("v")==0) {
+						int last = tlength-1;
+						for(int i = 1; i < last; i++) {
+							updateSolution(Integer.parseInt(tokens[i]));
+						}
+						int lit = Integer.parseInt(tokens[last]);
+						if (lit!=0) updateSolution(lit);
+						else if (sat!=null) break;
+					} // not a solution line or a variable line, so ignore it.
+				}
+			}
+			if (sat==null) {
+				throw new SATAbortedException("Invalid " + executable + " output: no line specifying the outcome."
+						+ details(p, errThread, errTail));
+			}
+		}
+	}
+
+	/**
+	 * Best effort: give the solver some time to exit, then force it to stop.
+	 */
+	private static void stopSolver(Process p) {
+		// Note TODO: only the process that _Java_ creates is stopped. Engines that that 
+		// process calls may persist.
+		if (p != null) {
+			try {
+				if (!p.waitFor(2, TimeUnit.SECONDS)) {
+					p.destroyForcibly();
+					p.waitFor(1, TimeUnit.SECONDS);
+				}
+			} catch (InterruptedException e) {
+				p.destroyForcibly();
+				Thread.currentThread().interrupt();
+			}
+		}
+	}
+
+	/**
+	 * Deletes the custom-solvers temporary input file, if any.
+	 */
+	private void deleteCnf() {
+		// Warning (usually for Windows) if deleting the file fails.
+		if (deleteTemp && !inTempFile.delete() && inTempFile.exists()) {
+			writeWarning("Could not delete custom-solver input file " + inTempFile.getAbsolutePath());
+		}
+	}
 	
+	/**
+	 * Report a recoverable problem to the client. 
+	 */
+	private static void writeWarning(String msg) {
+		System.out.println("(warning \"" + msg.replaceAll("[()]", "").replace("\\", "\\\\").replace("\"", "\\\"") + "\")");
+	}
+
 	/**
 	 * Returns a runnable that drains the specified input stream.
 	 * @return a runnable that drains the specified input stream.
@@ -340,15 +364,9 @@ final public class ExternalSolver implements SATSolver {
 	/**
 	 * Returns a reader for reading the output of the given process.
 	 * @return a reader for reading the output of the given process.
-	 * @throws IOException
 	 */
-	private BufferedReader outputReader(Process p) throws IOException {
-		try {
-			return new BufferedReader(new InputStreamReader(p.getInputStream(), "ISO-8859-1"));
-		} catch (IOException e) {
-			close(p.getInputStream());
-			throw e;
-		}
+	private BufferedReader outputReader(Process p) {
+		return new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.ISO_8859_1));
 	}
 
 	/**

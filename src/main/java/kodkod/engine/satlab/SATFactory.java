@@ -323,10 +323,10 @@ public abstract class SATFactory {
 	 * will be called with the specified options, and it is expected to write properly formatted
 	 * output to standard out.  If the {@code cnf} string is non-null,  it will be 
 	 * used as the file name for generated CNF files by all solver instances that the factory generates.  
-	 * If {@code cnf} null, each solver instance will use an automatically generated temporary file, which 
-	 * will be deleted when the solver instance is garbage-collected. The {@code cnf} file, if provided, is not 
-	 * automatically deleted; it is the caller's responsibility to  delete it when no longer needed.  
-	 * External solvers are never incremental.
+	 * If {@code cnf} null, each solver instance will use an automatically generated temporary file.
+	 * 
+	 * The file is written again at each solve() invocation and deleted when it ends.
+	 *
 	 * @return  SATFactory that produces SATSolver wrappers for the specified external
 	 * SAT solver
 	 */
@@ -337,7 +337,7 @@ public abstract class SATFactory {
 			@Override
 			public SATSolver instance() {
 				if (cnf != null) {
-					return new ExternalSolver(executable, cnf, false, options);
+					return new ExternalSolver(executable, cnf, true, options);
 				} else {
 					try {
 						return new ExternalSolver(executable, 
