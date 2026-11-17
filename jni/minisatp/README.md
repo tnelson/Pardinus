@@ -6,4 +6,4 @@ This is a version of MiniSat-p which has been frozen and modified to fix some is
 
 ## Local changes
 
-...
+* `Proof.C`, `File.C`: temporary proof log files are removed when the process ends. Previously, these had been removed only on process exit, which means that killing the solver process could leave (sometimes quite large) orphan files. 

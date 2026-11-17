@@ -57,6 +57,11 @@ verify_sources() {
           echo "  $solver: $path already at pinned commit ${value:0:8}"
         fi
         ;;
+      vendored)
+        # If vendored (e.g., minisatp) value records last upstream commit.
+        [ -d "$BUILD/$path" ] || die "$solver: vendored source $path is missing"
+        echo "  $solver: vendored copy at $path (upstream ${value:0:8})"
+        ;;
       *) die "sources.lock: unknown kind '$kind' for $name" ;;
     esac
   done < "$LOCK"

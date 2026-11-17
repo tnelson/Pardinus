@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
-import shutil
-import subprocess
 import sys
 
 def options(opt):
@@ -13,9 +11,6 @@ def configure(conf):
     conf.load('compiler_cxx')
     conf.load('java')
     conf.check_jni_headers()
-    MINISAT = conf.path.abspath() + '/minisatp'
-    shutil.rmtree(MINISAT, True)
-    subprocess.check_call(['git', 'clone', 'https://github.com/emina/minisatp.git', MINISAT])
  
 def build(bld):
     DEFINES = ['__STDC_LIMIT_MACROS', '__STDC_FORMAT_MACROS']
@@ -36,7 +31,6 @@ def build(bld):
 def distclean(ctx):
     from waflib import Scripting
     Scripting.distclean(ctx)
-    shutil.rmtree(ctx.path.abspath() + '/minisatp', True)
     
 
     

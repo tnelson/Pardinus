@@ -45,11 +45,21 @@ public:
         for(;;){
             name = tempnam(NULL, NULL);     // (gcc complains about this... stupid gcc...)
             assert(name != NULL);
-            fp.open(name, "wx+");
+            // Modified for Forge: 't' = temporary file.
+            // on Windows the file is deleted when its last handle closes.
+            fp.open(name, "wx+t");
             if (fp.null())
                 xfree(name);
             else{
+#ifdef MINGW
+                // Fallback: remember the file at exit time. Normally the file is deleted then.
                 files.push(name);
+#else
+                // Unlink the file now. It will be usable for now, and then the OS will reclaim it. 
+                // If the unlink fails, the above destructor will catch it. 
+                if (remove(name) != 0)
+                    files.push(name);
+#endif
                 return name;
             }
         }

@@ -64,8 +64,7 @@ prepare_sources() {
       verify_sources "$solver" "$BUILD"
       ;;
     minisatp)
-      rm -rf "$dir/minisatp"
-      run_logged "$solver-clone" git clone -q https://github.com/emina/minisatp.git "$dir/minisatp"
+      # We keep a copy of minisatp locally; nothing to fetch in this case.
       verify_sources "$solver" "$BUILD"
       ;;
     glucose)

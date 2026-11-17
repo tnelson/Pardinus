@@ -20,6 +20,8 @@ void File::open(cchar* name, cchar* mode_)
     bool    has_a = strchr(mode_, 'a') != NULL;
     bool    has_p = strchr(mode_, '+') != NULL;
     bool    has_x = strchr(mode_, 'x') != NULL;
+    // Modified for Forge: 't' requests a temporary file (see TempFiles::open in Proof.C).
+    bool    has_t = strchr(mode_, 't') != NULL;
     assert(!(has_r && has_w));
     assert(has_r || has_w || has_a);
 
@@ -32,7 +34,11 @@ void File::open(cchar* name, cchar* mode_)
     if (has_w)  mask |= O_TRUNC;
     if (has_x)  mask |= O_EXCL;
 
+    // Windows build (non-MINGW is unsupported).
 	#ifdef MINGW
+	// Modified for Forge: _O_TEMPORARY ---> FILE_FLAG_DELETE_ON_CLOSE.
+    // Windows deletes the file when the last handle closes / the process terminates.
+	if (has_t) mask |= _O_TEMPORARY;
 	fd = open64(name, mask|O_RANDOM|O_BINARY, S_IRUSR|S_IWUSR);
 	#else
 	fd = open64(name, mask, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
