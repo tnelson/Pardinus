@@ -8,107 +8,9 @@ BUILD=/tmp/build
 LOGS=/tmp/logs
 LOCK="$WORK/sources.lock"
 
-die() { echo "ERROR: $*" >&2; exit 1; }
-
-run_logged() {
-  local name="$1"; shift
-  mkdir -p "$LOGS"
-  if ! "$@" >"$LOGS/$name.log" 2>&1; then
-    echo "FAILED: $* (last lines of $LOGS/$name.log):" >&2
-    tail -n 40 "$LOGS/$name.log" >&2
-    exit 1
-  fi
-}
-
-lock_value() {
-  local want_name="$1" want_kind="$2" name kind value path
-  while read -r name kind value path; do
-    case "$name" in ''|'#'*) continue ;; esac
-    if [ "$name" = "$want_name" ] && [ "$kind" = "$want_kind" ]; then
-      echo "$value"
-      return 0
-    fi
-  done < "$LOCK"
-}
-
-verify_sources() {
-  local solver="$1" name kind value path have found=0
-  while read -r name kind value path; do
-    case "$name" in ''|'#'*) continue ;; esac
-    [ "$name" = "$solver" ] || continue
-    found=1
-    case "$kind" in
-      sha256)
-        [ -f "$BUILD/$path" ] || die "$solver: expected fetched file $path is missing"
-        have="$(sha256sum "$BUILD/$path" | cut -d' ' -f1)"
-        if [ "$have" != "$value" ]; then
-          die "$solver: $path has sha256 $have but sources.lock pins $value (upstream changed, or a bad download)"
-        fi
-        echo "  $solver: $path matches pinned sha256"
-        ;;
-      git)
-        [ -d "$BUILD/$path/.git" ] || die "$solver: expected git checkout at $path is missing"
-        have="$(git -C "$BUILD/$path" rev-parse HEAD)"
-        if [ "$have" != "$value" ]; then
-          git -C "$BUILD/$path" checkout --quiet --detach "$value" \
-            || die "$solver: cannot check out pinned commit $value in $path"
-          echo "  $solver: upstream HEAD was ${have:0:8}; pinned checkout to ${value:0:8}"
-        else
-          echo "  $solver: $path already at pinned commit ${value:0:8}"
-        fi
-        ;;
-      vendored)
-        # If vendored (e.g., minisatp) value records last upstream commit.
-        [ -d "$BUILD/$path" ] || die "$solver: vendored source $path is missing"
-        echo "  $solver: vendored copy at $path (upstream ${value:0:8})"
-        ;;
-      *) die "sources.lock: unknown kind '$kind' for $name" ;;
-    esac
-  done < "$LOCK"
-  [ "$found" = 1 ] || die "sources.lock has no entry for $solver"
-}
-
-install_wget_shim() {
-  local shim_dir="$1"
-  mkdir -p "$shim_dir"
-  cat > "$shim_dir/wget" <<'SHIM'
-#!/usr/bin/env bash
-url=""; dir="."
-args=("$@")
-for ((i = 0; i < ${#args[@]}; i++)); do
-  case "${args[$i]}" in
-    http://*|https://*) url="${args[$i]}" ;;
-    --directory-prefix) dir="${args[$((i + 1))]}" ;;
-    --directory-prefix=*) dir="${args[$i]#*=}" ;;
-  esac
-done
-name="$(basename "$url")"
-root="${WORK:-/work}"
-want="$(awk -v n="$name" '$2 == "sha256" && $4 ~ ("/" n "$") { print $3 }' "$root/sources.lock")"
-vend="$root/vendor/$name"
-if [ -n "$url" ] && [ -f "$vend" ]; then
-  have="$(sha256sum "$vend" | cut -d' ' -f1)"
-  if [ -z "$want" ] || [ "$want" != "$have" ]; then
-    echo "wget shim: ERROR: vendored $name does not match sources.lock; refusing to fall back to the network" >&2
-    exit 1
-  fi
-  echo "wget shim: using vendored copy of $name (sha256 verified)" >&2
-  cp "$vend" "$dir/$name"
-  exit 0
-fi
-/usr/bin/wget "$@" || exit $?
-if [ -n "$url" ] && [ -n "$want" ]; then
-  have="$(sha256sum "$dir/$name" | cut -d' ' -f1)"
-  if [ "$have" != "$want" ]; then
-    echo "wget shim: ERROR: downloaded $name has sha256 $have but sources.lock pins $want" >&2
-    rm -f "$dir/$name"
-    exit 1
-  fi
-  echo "wget shim: downloaded $name matches the pinned sha256" >&2
-fi
-SHIM
-  chmod +x "$shim_dir/wget"
-}
+# Load shared helpers
+SCRIPT_DIR="$WORK"
+. "$WORK/lib-common.sh"
 
 check_tools() {
   local t missing=""
@@ -116,20 +18,6 @@ check_tools() {
     command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
   done
   [ -z "$missing" ] || die "missing tools in this image:$missing (run build-linux.sh, which builds docker/Dockerfile.builder)"
-}
-
-prepare_waf() {
-  local want have
-  want="$(lock_value waf sha256)"
-  [ -n "$want" ] || die "sources.lock has no waf entry"
-  if [ -f "$WORK/waf" ] && [ "$(sha256sum "$WORK/waf" | cut -d' ' -f1)" = "$want" ]; then
-    cp "$WORK/waf" /tmp/waf
-  else
-    run_logged waf-download curl -fsSL https://waf.io/waf-2.0.24 -o /tmp/waf
-  fi
-  have="$(sha256sum /tmp/waf | cut -d' ' -f1)"
-  [ "$have" = "$want" ] || die "waf has sha256 $have but sources.lock pins $want"
-  chmod +x /tmp/waf
 }
 
 build_solver() {
@@ -143,7 +31,7 @@ build_solver() {
   cd "$BUILD/$solver"
   run_logged "$solver-configure" python3 /tmp/waf configure
   cd "$BUILD"
-  verify_sources "$solver"
+  verify_sources "$solver" "$BUILD"
   cd "$BUILD/$solver"
   run_logged "$solver-build" python3 /tmp/waf build -j "$(nproc)"
 
@@ -203,8 +91,9 @@ main() {
 
   mkdir -p "$BUILD" "$OUT"
   rm -f "$OUT"/*.so "$OUT/MANIFEST.txt"
-  prepare_waf
+  prepare_waf /tmp/waf
   install_wget_shim /tmp/shim
+  export PARDINUS_JNI_DIR="$WORK"
   export PATH="/tmp/shim:$PATH"
 
   local solver
