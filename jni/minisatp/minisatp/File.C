@@ -38,7 +38,8 @@ void File::open(cchar* name, cchar* mode_)
 	#ifdef MINGW
 	// Modified for Forge: _O_TEMPORARY ---> FILE_FLAG_DELETE_ON_CLOSE.
     // Windows deletes the file when the last handle closes / the process terminates.
-	if (has_t) mask |= _O_TEMPORARY;
+	// Added: _O_NOINHERIT prevents child processes, if any, from keeping the file open.
+	if (has_t) mask |= _O_TEMPORARY | _O_NOINHERIT;
 	fd = open64(name, mask|O_RANDOM|O_BINARY, S_IRUSR|S_IWUSR);
 	#else
 	fd = open64(name, mask, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
