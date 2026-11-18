@@ -225,6 +225,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				// [HASLab] proper decomposed clone
 				final Bounds newBounds = bounds instanceof PardinusBounds?((PardinusBounds) bounds).clone():bounds.clone();
 				final List<Formula> changes = new ArrayList<Formula>();
+				final List<Formula> fixed = new ArrayList<Formula>();
 
 				// [HASLab] when integrated consider the amalgamated problem to generate the formula,
 				// otherwise already fixed relations will be ignored in symmetry breaking
@@ -243,6 +244,11 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 							newBounds.boundExactly(rmodel, bounds.lowerBound(r));	
 							changes.add(r.eq(rmodel).not());
 						}
+					} else {
+						// Mention this relation so that symmetry-breaking keeps it. 
+						// The solution was trivial, but we still want the full set 
+						// of non-isomorphic instances. 
+						fixed.add(r.in(r));
 					}
 				}
 
@@ -251,7 +257,7 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				// transl.bounds, and that newBounds is a superset of transl.bounds.
 				// as a result, finding the next instance, if any, for transl.formula.and(Formula.or(changes)) 
 				// with respect to newBounds is equivalent to finding the next instance of Formula.or(changes) alone.
-				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes);
+				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes).and(Formula.and(fixed));
 				
 				final long startTransl = System.currentTimeMillis();
 				translation = Translator.translate(formula, newBounds, transl.options());
