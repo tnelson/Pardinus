@@ -316,6 +316,10 @@ public final class StandardKodkodOutput implements KodkodOutput {
 			writeStat("time-solving", Long.max(st, 0), str);
 			writeStat("time-building", Long.max(pt, 0), str);
 			if (sol.unsat()) writeStat("time-core", Long.max(ct, 0), str);
+			writeStat("fol2bool-cache-hits", stats.fol2boolCacheHits(), str);
+			writeStat("fol2bool-cache-peak-entries", stats.fol2boolCachePeakEntries(), str);
+			writeStat("fol2bool-cache-largest-record", stats.fol2boolCacheLargestRecord(), str);
+			writeStat("fol2bool-cache-resets", stats.fol2boolCacheResets(), str);
 
 			str.append(")");
 		}

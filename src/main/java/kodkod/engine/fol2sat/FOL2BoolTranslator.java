@@ -75,6 +75,7 @@ import kodkod.engine.bool.BooleanConstant;
 import kodkod.engine.bool.BooleanFactory;
 import kodkod.engine.bool.BooleanMatrix;
 import kodkod.engine.bool.BooleanValue;
+import kodkod.engine.config.Options;
 import kodkod.engine.bool.Dimensions;
 import kodkod.engine.bool.Int;
 import kodkod.engine.bool.Operator;
@@ -106,10 +107,14 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	 * @throws UnboundLeafException  annotated.node refers to an undeclared variable 
 	 **/
 	@SuppressWarnings("unchecked")
-	static final <T> T translate(AnnotatedNode<? extends Node> annotated, LeafInterpreter interpreter) {
-		final FOL2BoolCache cache = new FOL2BoolCache(annotated, interpreter.factory().noOverflow());
+	static final <T> T translate(AnnotatedNode<? extends Node> annotated, LeafInterpreter interpreter, Translation.CacheStats stats, int recordLimit) {
+		final FOL2BoolCache cache = new FOL2BoolCache(annotated, interpreter.factory().noOverflow(), stats, recordLimit);
 		final FOL2BoolTranslator translator = new FOL2BoolTranslator(cache, interpreter) {};
 		return (T) annotated.node().accept(translator);
+	}
+
+	static final <T> T translate(AnnotatedNode<? extends Node> annotated, LeafInterpreter interpreter) {
+		return translate(annotated, interpreter, new Translation.CacheStats(), Options.DEFAULT_FOL2BOOL_CACHE_RECORD_LIMIT);
 	}
 
 	/**
@@ -122,8 +127,8 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	 * @throws HigherOrderDeclException  annotated.node contains a higher order declaration
 	 * @throws UnboundLeafException  annotated.node refers to an undeclared variable 
 	 **/
-	static final BooleanAccumulator translate(final AnnotatedNode<Formula> annotated, LeafInterpreter interpreter, final TranslationLogger logger) {
-		final FOL2BoolCache cache = new FOL2BoolCache(annotated, interpreter.factory().noOverflow());
+	static final BooleanAccumulator translate(final AnnotatedNode<Formula> annotated, LeafInterpreter interpreter, final TranslationLogger logger, Translation.CacheStats stats, int recordLimit) {
+		final FOL2BoolCache cache = new FOL2BoolCache(annotated, interpreter.factory().noOverflow(), stats, recordLimit);
 		final FOL2BoolTranslator translator = new FOL2BoolTranslator(cache, interpreter) {
 			BooleanValue cache(Formula formula, BooleanValue translation) {
 				logger.log(formula, translation, super.env);
@@ -150,7 +155,7 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 	 * @throws UnboundLeafException  annotated.node refers to a variable that neither declared nor bound in env
 	 **/
 	static final BooleanMatrix approximate(AnnotatedNode<Expression> annotated, LeafInterpreter interpreter, Environment<BooleanMatrix, Expression> env) {
-		final FOL2BoolTranslator approximator = new FOL2BoolTranslator(new FOL2BoolCache(annotated, interpreter.factory().noOverflow()), interpreter, env) {
+		final FOL2BoolTranslator approximator = new FOL2BoolTranslator(new FOL2BoolCache(annotated, interpreter.factory().noOverflow(), new Translation.CacheStats(), Options.DEFAULT_FOL2BOOL_CACHE_RECORD_LIMIT), interpreter, env) {
 			public final BooleanMatrix visit(BinaryExpression binExpr) {
 				final BooleanMatrix ret = lookup(binExpr); 
 				if (ret!=null) return ret;

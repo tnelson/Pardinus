@@ -63,6 +63,10 @@ public class Options implements Cloneable, BoundedOptions {
 	private int sharing = 3;
 	private boolean noOverflow = false; // [AM]
 	private int skolemDepth = 0;
+	// Bound on the number of translations that the FOL2BoolCache keeps per node. 
+	// (One will be used per grounding of the node's free variables.)
+	public static final int DEFAULT_FOL2BOOL_CACHE_RECORD_LIMIT = 16_384;
+	private int fol2boolCacheRecordLimit = DEFAULT_FOL2BOOL_CACHE_RECORD_LIMIT;
 	private int logTranslation = 0;
 	private int coreGranularity = 0;
 
@@ -133,6 +137,7 @@ public class Options implements Cloneable, BoundedOptions {
 		this.setSkolemDepth(options.skolemDepth());
 		this.setLogTranslation(options.logTranslation());
 		this.setCoreGranularity(options.coreGranularity());		
+		this.setFol2boolCacheRecordLimit(options.fol2boolCacheRecordLimit());
 	}
 	
 //	/**
@@ -326,6 +331,23 @@ public class Options implements Cloneable, BoundedOptions {
 	public void setSkolemDepth(int skolemDepth) {
 		this.skolemDepth = skolemDepth;
 	}
+
+	/**
+	 * The most translations that the FOL2bool cache keeps for a single node.
+	 * @return this.fol2boolCacheRecordLimit
+	 */
+	public int fol2boolCacheRecordLimit() {
+		return fol2boolCacheRecordLimit;
+	}
+
+	/**
+	 * Sets the per-node cache bound.
+	 * @throws IllegalArgumentException  limit < 1
+	 */
+	public void setFol2boolCacheRecordLimit(int limit) {
+		checkRange(limit, 1, Integer.MAX_VALUE);
+		this.fol2boolCacheRecordLimit = limit;
+	}
 	
 	/**
 	 * {@inheritDoc}
@@ -384,6 +406,7 @@ public class Options implements Cloneable, BoundedOptions {
 		c.setLogTranslation(logTranslation);
 		c.setCoreGranularity(coreGranularity);
 		c.setNoOverflow(noOverflow); // [AM]
+		c.setFol2boolCacheRecordLimit(fol2boolCacheRecordLimit);
 		return c;
 	}
 	
@@ -414,6 +437,8 @@ public class Options implements Cloneable, BoundedOptions {
 		b.append(coreGranularity);
 		b.append("\n noOverflow: "); // [AM]
         b.append(noOverflow);
+		b.append("\n fol2boolCacheRecordLimit: ");
+		b.append(fol2boolCacheRecordLimit);
         return b.toString();
 	}
 	

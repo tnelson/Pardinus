@@ -38,6 +38,8 @@ public final class Statistics {
 	// [HASLab] remove final
 	private int vars, pVars, clauses;
 	private long translation, solving; 
+	// Statistics for the fol2bool cache. For temporal problems, these sum over all trace lengths. 
+	private int fol2boolCacheHits, fol2boolCachePeakEntries, fol2boolCacheLargestRecord, fol2boolCacheResets;
 	
 	/**
 	 * Constructs a new Statistics object using the provided values.
@@ -57,6 +59,7 @@ public final class Statistics {
 	Statistics(Translation translation, long translationTime, long solvingTime) { 
 		this(translation.numPrimaryVariables(), translation.cnf().numberOfVariables(), 
 				translation.cnf().numberOfClauses(), translationTime, solvingTime);
+		addCacheStats(translation.cacheStats());
 	}
 	
 	// [HASLab]
@@ -66,7 +69,24 @@ public final class Statistics {
 		this.clauses += translation.cnf().numberOfClauses();
 		this.translation += translationTime;
 		this.solving += solvingTime;
+		addCacheStats(translation.cacheStats());
 	}
+
+	private void addCacheStats(Translation.CacheStats c) {
+		fol2boolCacheHits += c.hits();
+		fol2boolCacheResets += c.resets();
+		fol2boolCachePeakEntries = Math.max(fol2boolCachePeakEntries, c.peakEntries());
+		fol2boolCacheLargestRecord = Math.max(fol2boolCacheLargestRecord, c.largestRecord());
+	}
+
+	/** @see Translation.CacheStats#hits() */
+	public int fol2boolCacheHits() { return fol2boolCacheHits; }
+	/** @see Translation.CacheStats#peakEntries() */
+	public int fol2boolCachePeakEntries() { return fol2boolCachePeakEntries; }
+	/** @see Translation.CacheStats#largestRecord() */
+	public int fol2boolCacheLargestRecord() { return fol2boolCacheLargestRecord; }
+	/** @see Translation.CacheStats#resets() */
+	public int fol2boolCacheResets() { return fol2boolCacheResets; }
 	
 	/**
 	 * Returns the number of variables needed 

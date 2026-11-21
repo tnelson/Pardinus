@@ -380,6 +380,7 @@ public final class Translator {
 	private final Options options;
 	private final boolean logging;
 	private final boolean incremental;
+	private final Translation.CacheStats cacheStats = new Translation.CacheStats(); 
 	
 	/**
 	 * Constructs a Translator for the given formula, bounds, options and incremental flag.
@@ -464,7 +465,9 @@ public final class Translator {
 		// eliminate top-level predicates, and also by skolemizing.  Then translate the optimize
 		// formula and bounds to a circuit, augment the circuit with a symmetry breaking predicate 
 		// that eliminates any remaining symmetries, and translate everything to CNF.
-		return toBoolean(optimizeFormulaAndBounds(actualAnnotated, breaker), breaker);
+		final Translation transl = toBoolean(optimizeFormulaAndBounds(actualAnnotated, breaker), breaker);
+		transl.cacheStats = cacheStats;
+		return transl;
 	}
 	
 	/**
@@ -604,7 +607,7 @@ public final class Translator {
 		if (logging) {
 			assert !incremental;
 			final TranslationLogger logger = options.logTranslation()==1 ? new MemoryLogger(annotated, bounds) : new FileLogger(annotated, bounds);
-			final BooleanAccumulator circuit = FOL2BoolTranslator.translate(annotated, interpreter, logger);
+			final BooleanAccumulator circuit = FOL2BoolTranslator.translate(annotated, interpreter, logger, cacheStats, options.fol2boolCacheRecordLimit());
 			final TranslationLog log = logger.log();
 			if (circuit.isShortCircuited()) { 
 				return trivial(circuit.op().shortCircuit(), log, annotated.relations());
@@ -614,7 +617,7 @@ public final class Translator {
 			circuit.add(breaker.generateSBP(interpreter, options));
 			return toCNF((BooleanFormula)factory.accumulate(circuit), interpreter, log);
 		} else {
-			final BooleanValue circuit = (BooleanValue)FOL2BoolTranslator.translate(annotated, interpreter);
+			final BooleanValue circuit = (BooleanValue)FOL2BoolTranslator.translate(annotated, interpreter, cacheStats, options.fol2boolCacheRecordLimit());
 			BooleanValue sbp = breaker.generateSBP(interpreter, options); // [HASLab] for Electrod we need symmetries even when trivial
 			if (circuit.op()==Operator.CONST) { 
 				options.reporter().debug("trivial boolean circuit: "+circuit);

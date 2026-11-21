@@ -21,7 +21,10 @@
  */
 package kodkod.engine.fol2sat;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +33,7 @@ import kodkod.ast.Expression;
 import kodkod.ast.Node;
 import kodkod.ast.Variable;
 import kodkod.ast.operator.FormulaOperator;
-import kodkod.engine.bool.BooleanConstant;
+import kodkod.ast.operator.Quantifier;
 import kodkod.engine.bool.BooleanMatrix;
 import kodkod.util.collections.IdentityHashSet;
 import kodkod.util.nodes.AnnotatedNode;
@@ -50,12 +53,14 @@ final class FOL2BoolCache {
 	private final Map<Node,Record> cache;
 	// Used if overflow-prevention is enabled. If so, caching needs to be polarity-aware.
 	private final Map<Node,Record> negatedCache;
+	private final Translation.CacheStats stats;
 
 	/**
 	 * Constructs a new translation cache for the given annotated node.
 	 * @ensures this.node' = annotated.node
 	 */
-	FOL2BoolCache(AnnotatedNode<? extends Node> annotated, boolean overflowPrevention) {
+	FOL2BoolCache(AnnotatedNode<? extends Node> annotated, boolean overflowPrevention, Translation.CacheStats stats, int recordLimit) {
+		this.stats = stats;
 		final CacheCollector collector = new CacheCollector(
 				overflowPrevention ? new IdentityHashSet<Node>(annotated.sharedNodes()) : annotated.sharedNodes(),
 				overflowPrevention);
@@ -68,9 +73,9 @@ final class FOL2BoolCache {
 			if (freeVars.isEmpty())
 				this.cache.put(e.getKey(), new NoVarRecord());
 			else
-				this.cache.put(e.getKey(), new MultiVarRecord(freeVars));
+				this.cache.put(e.getKey(), new MultiVarRecord(freeVars, overflowPrevention, recordLimit));
 			if (overflowPrevention)
-				this.negatedCache.put(e.getKey(), freeVars.isEmpty() ? new NoVarRecord() : new MultiVarRecord(freeVars));
+				this.negatedCache.put(e.getKey(), freeVars.isEmpty() ? new NoVarRecord() : new MultiVarRecord(freeVars, overflowPrevention, recordLimit));
 		}
 	}
 
@@ -85,7 +90,9 @@ final class FOL2BoolCache {
 	@SuppressWarnings("unchecked")
 	<T> T lookup(Node node, Environment<BooleanMatrix, Expression> env) { // [AM]
 		final Record info = (env.isNegated() ? negatedCache : cache).get(node);
-		return info==null ? null : (T) info.get(env);
+		final T ret = info==null ? null : (T) info.get(env);
+		if (ret != null) stats.hits++;
+		return ret;
 	}
 	
 	/**
@@ -100,7 +107,9 @@ final class FOL2BoolCache {
 	final <T> T cache(Node node, T translation, Environment<BooleanMatrix, Expression> env) { // [AM]
 		final Record info = (env.isNegated() ? negatedCache : cache).get(node);
 		if (info != null) {
+			final int before = info.size();
 			info.set(translation, env);
+			stats.recordResized(before, info.size());
 		}
 		return translation;
 	}
@@ -147,18 +156,33 @@ final class FOL2BoolCache {
 		}
 		
 		/**
-		 * We record the set of free variables for the given node if the node is shared,
-		 * or if it has free variables, none of which is the most recently declared variable.
-		 * @ensures node in sharedNodes || 
+		 * TN: before changing this for Forge, the following sentences were true: 
+		 * "We record the set of free variables for the given node if the node is shared,
+		 * or if it has free variables, none of which is the most recently declared variable."
+		 * 
+		 * This method is a pre-walk before translation happens; it records which nodes are 
+		 * assigned a cache record: the free-variable sets become eventual keys. The goal is 
+		 * for a cached node's translation to be used for bindings to variables it does not 
+		 * mention. For example, for subformulas of F in {@code all x: A | all y: B | all z: C | F}:
+		 *   P(x)        is translated once per x. 
+		 *   P(y)        is translated once per y. 
+		 *   P(z)        is translated once per z. 
+		 *   P(x, z)     is translated once per (x, z).
+		 *   P(x, y, z)  isn't cached, because all variables are mentioned.
+		 *
+		 * @ensures node in sharedNodes ||
 		 *          ((node.^(~children) in (QuantifiedFormula + Comprehension)) &&
-		 *           (some varsInScope.top() => !freeVars.contains(varsInScope.top()))) => 
-		 *            this.cache' = this.cache ++ node->varsInScope,
+		 *           (some v: varsInScope | !freeVars.contains(v))) =>
+		 *            this.cache' = this.cache ++ node->freeVars,
 		 *            this.cache' = this.cache
 		 * @return freeVars
 		 */
 		@Override
 		protected final Set<Variable> cache(Node node, Set<Variable> freeVars) {
-			if (cached.contains(node) || !varsInScope.empty() && !freeVars.contains(varsInScope.peek())) {
+			boolean cacheIt = cached.contains(node);
+			for (Variable v : varsInScope)
+				cacheIt = cacheIt || !freeVars.contains(v);
+			if (cacheIt) {
 				cache.put(node, reduce(freeVars));
 			}
 			return freeVars;
@@ -203,14 +227,22 @@ final class FOL2BoolCache {
 		 *             tupleIndex = env.lookup(v).iterator().next().index() }
 		 */
 		abstract void set(Object transl, Environment<BooleanMatrix, Expression> env);  // [AM]
+
+		/** How many instantiated translations are held by this record */
+		abstract int size();
 	}
 	
 	/**
 	 * A TranslationInfo for a node with one or more free variables. 
+	 * 
+	 * Keep translations per *tuple of free-variable bindings*. The cache is cleared when
+	 * it fills up. 
 	 */
 	private static final class MultiVarRecord extends Record {
+		final int recordLimit; 
+		final boolean withKinds; // used if overflow prevention is on
 		final Variable[] vars;
-		final int[] tuples;
+		final Map<List<Integer>, Object> translations = new HashMap<List<Integer>, Object>();
 		
 		/**
 		 * Constructs a translation unit for a node which
@@ -218,53 +250,79 @@ final class FOL2BoolCache {
 		 * @ensures this.freeVariables' = vars &&
 		 *          no this.translation' 
 		 */
-		MultiVarRecord(Set<Variable> freeVariables) {
+		MultiVarRecord(Set<Variable> freeVariables, boolean withKinds, int recordLimit) {
 			this.vars = freeVariables.toArray(new Variable[freeVariables.size()]);
-			this.tuples = new int[freeVariables.size()];
+			this.withKinds = withKinds;
+			this.recordLimit = recordLimit;
+		}
+		
+		/**
+		 * The cache key is a list of current values for all of this node's free variables. 
+		 * If overflow prevention is enabled, also store a bit flag in each cache component 
+		 * that indicates whether the variable is quantified some/all.
+		 * 
+		 * E.g. for P(x, z), when {x = a0, z = c1}, the key is [a0, c1].
+		 */
+		private List<Integer> key(Environment<BooleanMatrix, Expression> env) {
+			final Integer[] tuples = new Integer[vars.length];
+			for(int i = 0; i < vars.length; i++) {
+				tuples[i] = env.lookup(vars[i]).iterator().next().index();
+				if (withKinds) tuples[i] = 2 * tuples[i] + (enteredAsAll(env, vars[i]) ? 1 : 0);
+			}
+			return Arrays.asList(tuples);
+		}
+		
+		/** 
+		 * Was v's quantifier "all"? This matters for overflow prevention, because then 
+		   polarity needs to be tracked by the cache. 
+		 */
+		private static boolean enteredAsAll(Environment<BooleanMatrix, Expression> env, Variable v) {
+			while (!env.isEmpty() && env.variable() != v) env = env.parent();
+			return env.envType() == Quantifier.ALL;
 		}
 		
 		/**
 		 * @see kodkod.engine.fol2sat.FOL2BoolCache.Record#get(kodkod.engine.fol2sat.Environment)
 		 */
 		Object get(Environment<BooleanMatrix, Expression> e) {  // [AM]
-			if (translation==null) return null;
-			for(int i = 0; i < vars.length; i++) {
-				if (e.lookup(vars[i]).get(tuples[i])!=BooleanConstant.TRUE)
-					return null;
-			}
-			return translation;
+			return translations.isEmpty() ? null : translations.get(key(e));
 		}
 		
 		/**
 		 * @see kodkod.engine.fol2sat.FOL2BoolCache.Record#set(java.lang.Object, kodkod.engine.fol2sat.Environment)
 		 */
 		void set(Object transl, Environment<BooleanMatrix, Expression> env) {  // [AM]
-			translation = transl;
-			for(int i = 0; i < vars.length; i++) {
-				final BooleanMatrix varVal = env.lookup(vars[i]);
-				tuples[i] = varVal.iterator().next().index();
-				if (transl==varVal) { 
-					translation = varVal.clone();
+			// Recall that this object is specialized to one node. 
+			// Moreover, transl is of type BooleanValue | BooleanMatrix | Int. 
+			// BooleanMatrix is mutable, and in practice is mutated only for env.lookup(v) 
+			// for some variable v as Pardinus walks over all possible atoms that could 
+			// be bound to v.
+			
+			// Store transl as this node's translation for the values of its free variables
+			// under env. If transl is the exact BooleanMatrix for some variable, we make 
+			// a copy to freeze the value due to the mutation above. 
+			Object stored = transl;
+			for (Variable v : vars) {
+				// env.lookup(v) returns a BooleanMatrix 
+				if (transl == env.lookup(v)) {
+					stored = ((BooleanMatrix) transl).clone();
+					break;
 				}
 			}
+			if (translations.size() >= recordLimit) {
+				translations.clear();
+			}
+			translations.put(key(env), stored);
 		}
+
+		
+		int size() { return translations.size(); }
 		
 		/**
 		 * @see java.lang.Object#toString()
 		 */
 		public String toString() {
-			final StringBuilder b = new StringBuilder("{");
-			b.append(String.valueOf(translation));
-			for(int i = 0; i < vars.length; i++)
-			{			
-				b.append(" (");
-				b.append(vars[i]);
-				b.append(", ");
-				b.append(tuples[i]);
-				b.append(")");
-			}
-			b.append("}");
-			return b.toString();
+			return Arrays.toString(vars) + translations;
 		}
 	}
 	
@@ -286,6 +344,8 @@ final class FOL2BoolCache {
 		void set(Object transl, Environment<BooleanMatrix, Expression> env) {  // [AM]
 			translation = transl;
 		}
+		
+		int size() { return translation == null ? 0 : 1; }
 		
 		/**
 		 * @see java.lang.Object#toString()

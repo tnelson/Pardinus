@@ -497,6 +497,15 @@ public abstract class KodkodProblem {
 		return true;
 	}
 
+	boolean setFol2boolCacheRecordLimit(int limit) {
+		try {
+			options.setFol2boolCacheRecordLimit(limit);
+		} catch (IllegalArgumentException ex) {
+			throw new ActionException(ex.getMessage(), ex); // wrap
+		}
+		return true;
+	}
+
 	boolean setSkolemDepth(int sd) {
 		try {
 			options.setSkolemDepth(sd);

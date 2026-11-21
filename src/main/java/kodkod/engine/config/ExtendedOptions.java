@@ -267,6 +267,7 @@ public class ExtendedOptions extends Options implements BoundedOptions,
 		c.setLogTranslation(logTranslation());
 		c.setCoreGranularity(coreGranularity());
 		c.setNoOverflow(noOverflow()); // [AM]
+		c.setFol2boolCacheRecordLimit(fol2boolCacheRecordLimit());
 		c.run_decomposed = run_decomposed;
 		c.run_temporal = run_temporal;
 		c.run_target = run_target;

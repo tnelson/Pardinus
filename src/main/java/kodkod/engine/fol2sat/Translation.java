@@ -68,6 +68,7 @@ public abstract class Translation {
 
 	private final Bounds bounds;
 	private final Options options;
+	CacheStats cacheStats = new CacheStats(); 
 	
 	/**
 	 * Creates a translation using the given bounds and options.   
@@ -91,6 +92,31 @@ public abstract class Translation {
 	 * @return this.options 
 	 */
 	public final Options options() { return options; }
+
+	public final CacheStats cacheStats() { return cacheStats; }
+
+	/**
+	 * Statistics for a FOL to boolean translation cache. 
+	 */
+	public static final class CacheStats {
+		int hits, entries, peakEntries, largestRecord, resets;
+
+		/** The number of times the cache contained a requested node's translation */
+		public int hits() { return hits; }
+		/** The max number of translations held over the life of the cache. */
+		public int peakEntries() { return peakEntries; }
+		/** The max number of translations held *for a single node* over the life of the cache.  */
+		public int largestRecord() { return largestRecord; }
+		/** The number of times a node's cache was emptied due to reaching max size. */
+		public int resets() { return resets; }
+
+		void recordResized(int before, int after) {
+			if (after < before) resets++;
+			entries += after - before;
+			peakEntries = Math.max(peakEntries, entries);
+			largestRecord = Math.max(largestRecord, after);
+		}
+	}
 	
 	/** 
 	 * Returns the set of primary variables that represent
