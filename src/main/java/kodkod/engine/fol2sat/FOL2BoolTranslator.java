@@ -747,9 +747,10 @@ abstract class FOL2BoolTranslator implements ReturnVisitor<BooleanMatrix, Boolea
 		if (ret != null)
 		    return ret;
 		env.negate();
-		ret = cache(not, interpreter.factory().not(not.formula().accept(this)));
+		ret = interpreter.factory().not(not.formula().accept(this));
 		env.negate();
-		return ret;
+		// Cache after restoring the polarity flipped to process child formula. 
+		return cache(not, ret);
 	}
 
 	/**
