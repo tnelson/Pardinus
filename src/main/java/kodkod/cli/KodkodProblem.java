@@ -406,7 +406,7 @@ public abstract class KodkodProblem {
 	 * @return true
 	 */
 	final boolean startBuild() {
-		buildTimeMillis = System.currentTimeMillis();
+		buildTimeMillis = System.nanoTime() / 1000000;
 		return true;
 	}
 
@@ -419,7 +419,7 @@ public abstract class KodkodProblem {
 	 * @return true
 	 */
 	final boolean endBuild() {
-		buildTimeMillis = System.currentTimeMillis() - buildTimeMillis;
+		buildTimeMillis = System.nanoTime() / 1000000 - buildTimeMillis;
 		return true;
 	}
 
@@ -807,9 +807,9 @@ public abstract class KodkodProblem {
 	 */
 	final void write(KodkodOutput out, Solution sol) {
 		if (sol.proof() != null) { // core extraction was enabled
-			coreTimeMillis = System.currentTimeMillis();
+			coreTimeMillis = System.nanoTime() / 1000000;
 			sol.proof().minimize(new RCEStrategy(sol.proof().log()));
-			coreTimeMillis = System.currentTimeMillis() - coreTimeMillis;
+			coreTimeMillis = System.nanoTime() / 1000000 - coreTimeMillis;
 		}
 		out.writeSolution(sol, this);
 	}

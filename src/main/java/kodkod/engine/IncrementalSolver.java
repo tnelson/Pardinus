@@ -168,9 +168,9 @@ public final class IncrementalSolver implements BoundedSolver<Bounds,Options> {
 		
 		final Solution solution;
 		try {			
-			final long startTransl = System.currentTimeMillis();
+			final long startTransl = System.nanoTime() / 1000000;
 			translation = translation==null ? Translator.translateIncremental(f, b, options) : Translator.translateIncremental(f, b, translation);
-			final long endTransl = System.currentTimeMillis();
+			final long endTransl = System.nanoTime() / 1000000;
 			
 			if (translation.trivial()) {
 				final Statistics stats = new Statistics(translation, endTransl - startTransl, 0);
@@ -183,9 +183,9 @@ public final class IncrementalSolver implements BoundedSolver<Bounds,Options> {
 				final SATSolver cnf = translation.cnf();
 				
 				translation.options().reporter().solvingCNF(0, translation.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
-				final long startSolve = System.currentTimeMillis();
+				final long startSolve = System.nanoTime() / 1000000;
 				final boolean sat = cnf.solve();
-				final long endSolve = System.currentTimeMillis();
+				final long endSolve = System.nanoTime() / 1000000;
 
 				final Statistics stats = new Statistics(translation, endTransl - startTransl, endSolve - startSolve);
 				if (sat) {

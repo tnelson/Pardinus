@@ -109,9 +109,9 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");			
 
 			this.opt = options;
-			this.translTime = System.currentTimeMillis();
+			this.translTime = System.nanoTime() / 1000000;
 			this.translation = Translator.translate(formula, bounds, options);
-			this.translTime = System.currentTimeMillis() - translTime;
+			this.translTime = System.nanoTime() / 1000000 - translTime;
 			this.trivial = 0;
 		}
 		
@@ -175,9 +175,9 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 			}
 			opt.reporter().solvingCNF(0, transl.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
 			
-			final long startSolve = System.currentTimeMillis();
+			final long startSolve = System.nanoTime() / 1000000;
 			final boolean isSat = cnf.solve();
-			final long endSolve = System.currentTimeMillis();
+			final long endSolve = System.nanoTime() / 1000000;
 
 			int primaryVars = transl.numPrimaryVariables();
 
@@ -259,9 +259,9 @@ public class ExtendedSolver extends AbstractKodkodSolver<PardinusBounds,Extended
 				// with respect to newBounds is equivalent to finding the next instance of Formula.or(changes) alone.
 				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes).and(Formula.and(fixed));
 				
-				final long startTransl = System.currentTimeMillis();
+				final long startTransl = System.nanoTime() / 1000000;
 				translation = Translator.translate(formula, newBounds, transl.options());
-				translTime += System.currentTimeMillis() - startTransl;
+				translTime += System.nanoTime() / 1000000 - startTransl;
 			} 
 			return sol;
 		}

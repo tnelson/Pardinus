@@ -126,11 +126,11 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 	 */
 	public Solution solve(Formula formula, Bounds bounds) throws HigherOrderDeclException, UnboundLeafException, AbortedException {
 		
-		final long startTransl = System.currentTimeMillis();
+		final long startTransl = System.nanoTime() / 1000000;
 		
 		try {			
 			final Translation.Whole translation = Translator.translate(formula, bounds, options());
-			final long endTransl = System.currentTimeMillis();
+			final long endTransl = System.nanoTime() / 1000000;
 			
 			if (translation.trivial())
 				return trivial(translation, endTransl - startTransl);
@@ -138,9 +138,9 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 			final SATSolver cnf = translation.cnf();
 			
 			options().reporter().solvingCNF(0, translation.numPrimaryVariables(), cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
-			final long startSolve = System.currentTimeMillis();
+			final long startSolve = System.nanoTime() / 1000000;
 			final boolean isSat = cnf.solve();
-			final long endSolve = System.currentTimeMillis();
+			final long endSolve = System.nanoTime() / 1000000;
 
 			final Statistics stats = new Statistics(translation, endTransl - startTransl, endSolve - startSolve);
 			return isSat ? sat(translation, stats) : unsat(translation, stats);
@@ -270,9 +270,9 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 		 * Constructs a solution iterator for the given formula, bounds, and options.
 		 */
 		SolutionIterator(Formula formula, Bounds bounds, Options options) {
-			this.translTime = System.currentTimeMillis();
+			this.translTime = System.nanoTime() / 1000000;
 			this.translation = Translator.translate(formula, bounds, options);
-			this.translTime = System.currentTimeMillis() - translTime;
+			this.translTime = System.nanoTime() / 1000000 - translTime;
 			this.trivial = 0;
 		}
 		
@@ -318,9 +318,9 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 			
 			transl.options().reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses()); // [HASLab]
 			
-			final long startSolve = System.currentTimeMillis();
+			final long startSolve = System.nanoTime() / 1000000;
 			final boolean isSat = cnf.solve();
-			final long endSolve = System.currentTimeMillis();
+			final long endSolve = System.nanoTime() / 1000000;
 
 			final Statistics stats = new Statistics(transl, translTime, endSolve - startSolve);
 			final Solution sol;
@@ -386,9 +386,9 @@ public abstract class AbstractKodkodSolver<B extends Bounds, O extends Options> 
 				// with respect to newBounds is equivalent to finding the next instance of Formula.or(changes) alone.
 				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes);
 				
-				final long startTransl = System.currentTimeMillis();
+				final long startTransl = System.nanoTime() / 1000000;
 				translation = Translator.translate(formula, newBounds, transl.options());
-				translTime += System.currentTimeMillis() - startTransl;
+				translTime += System.nanoTime() / 1000000 - startTransl;
 			} 
 			return sol;
 		}

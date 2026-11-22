@@ -126,17 +126,17 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			UnboundLeafException, AbortedException {
 		assert !options.unbounded();
 		try {
-			long startTransl = System.currentTimeMillis();
+			long startTransl = System.nanoTime() / 1000000;
 			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
 			Formula extformula = tmptrans.translate();
-			long endTransl = System.currentTimeMillis();
+			long endTransl = System.nanoTime() / 1000000;
 			long transTime = endTransl - startTransl;
 			boolean isSat = false;
 			long solveTime = 0;
 			Translation.Whole translation = null;
 			int traceLength = options.minTraceLength()-1;
 			PardinusBounds extbounds = null;
-			startTransl = System.currentTimeMillis();
+			startTransl = System.nanoTime() / 1000000;
 			// increase while UNSAT and below max
 			do {
 				traceLength++;
@@ -146,7 +146,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 					translation.log().logTempTranslation(tmptrans.tempTransLog);
 			} while (translation.trivial() && traceLength < options.maxTraceLength());
 
-			endTransl = System.currentTimeMillis();
+			endTransl = System.nanoTime() / 1000000;
 			transTime += endTransl - startTransl;
 
 			if (translation.trivial() && traceLength == options.maxTraceLength())
@@ -156,9 +156,9 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 			options.reporter().solvingCNF(traceLength, translation.numPrimaryVariables(), cnf.numberOfVariables(),
 					cnf.numberOfClauses());
-			long startSolve = System.currentTimeMillis();
+			long startSolve = System.nanoTime() / 1000000;
 			isSat = cnf.solve();
-			long endSolve = System.currentTimeMillis();
+			long endSolve = System.nanoTime() / 1000000;
 			solveTime = endSolve - startSolve;
 			final Statistics stats = new Statistics(translation, transTime, solveTime);
 
@@ -166,20 +166,20 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				traceLength++;
 				extbounds = tmptrans.expand(traceLength);
 				Formula exp_reforms = tmptrans.translate();
-				startTransl = System.currentTimeMillis();
+				startTransl = System.nanoTime() / 1000000;
 				translation = Translator.translate(exp_reforms, extbounds, options);
 				if (options.logTranslation() > 0)
 					translation.log().logTempTranslation(tmptrans.tempTransLog);
-				endTransl = System.currentTimeMillis();
+				endTransl = System.nanoTime() / 1000000;
 				transTime = endTransl - startTransl;
 
 				cnf = translation.cnf();
 
 				options.reporter().solvingCNF(traceLength, translation.numPrimaryVariables(), cnf.numberOfVariables(),
 						cnf.numberOfClauses());
-				startSolve = System.currentTimeMillis();
+				startSolve = System.nanoTime() / 1000000;
 				isSat = cnf.solve();
-				endSolve = System.currentTimeMillis();
+				endSolve = System.nanoTime() / 1000000;
 				solveTime = endSolve - startSolve;
 
 				stats.update(translation, transTime, solveTime);
@@ -296,7 +296,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 		SolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			assert !options.unbounded();
-			this.translTime = System.currentTimeMillis();
+			this.translTime = System.nanoTime() / 1000000;
 			this.current_trace = options.minTraceLength()-1;
 			this.originalBounds = bounds;
 			this.originalFormula = formula;
@@ -311,7 +311,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 					this.translation.log().logTempTranslation(tmptrans.tempTransLog);
 			} while (this.translation.trivial() && current_trace <= options.maxTraceLength());
 
-			this.translTime = System.currentTimeMillis() - translTime;
+			this.translTime = System.nanoTime() / 1000000 - translTime;
 			this.trivial = 0;
 			this.opt = options;
 		}
@@ -594,11 +594,11 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				tmptrans = new TemporalTranslator(originalFormula, originalBounds, opt);
 				extbounds = tmptrans.expand(current_trace);
 				Formula exp_reforms = tmptrans.translate();
-				long translStart = System.currentTimeMillis();
+				long translStart = System.nanoTime() / 1000000;
 				translation = Translator.translate(exp_reforms, extbounds, opt);
 				if (opt.logTranslation() > 0)
 					translation.log().logTempTranslation(tmptrans.tempTransLog);
-				long translEnd = System.currentTimeMillis();
+				long translEnd = System.nanoTime() / 1000000;
 				translTime += translEnd - translStart;
 
 				for (IterationStep inst : previousSols) {
@@ -630,11 +630,11 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 					tmptrans = new TemporalTranslator(originalFormula, originalBounds, opt);
 					extbounds = tmptrans.expand(current_trace);
 					Formula exp_reforms = tmptrans.translate();
-					long translStart = System.currentTimeMillis();
+					long translStart = System.nanoTime() / 1000000;
 					translation = Translator.translate(exp_reforms, extbounds, opt);
 					if (opt.logTranslation() > 0)
 						translation.log().logTempTranslation(tmptrans.tempTransLog);
-					long translEnd = System.currentTimeMillis();
+					long translEnd = System.nanoTime() / 1000000;
 					translTime = translEnd - translStart;
 
 					for (IterationStep inst : previousSols) {
@@ -651,9 +651,9 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				
 				transl.options().reporter().solvingCNF(current_trace, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
-				final long startSolve = System.currentTimeMillis();
+				final long startSolve = System.nanoTime() / 1000000;
 				isSat = cnf.solve();
-				final long endSolve = System.currentTimeMillis();
+				final long endSolve = System.nanoTime() / 1000000;
 				solveTime = endSolve - startSolve;
 				
 				stats.update(transl, translTime, solveTime);
@@ -727,11 +727,11 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				TemporalBoundsExpander.extend(tmptrans.bounds, extbounds, state < 0 ? 0 : state, current_trace,
 						previousSol);
 				Formula exp_reforms = tmptrans.translate();
-				long translStart = System.currentTimeMillis();
+				long translStart = System.nanoTime() / 1000000;
 				translation = Translator.translate(exp_reforms, extbounds, opt);
 				if (opt.logTranslation() > 0)
 					translation.log().logTempTranslation(tmptrans.tempTransLog);
-				long translEnd = System.currentTimeMillis();
+				long translEnd = System.nanoTime() / 1000000;
 				translTime += translEnd - translStart;
 
 				transl = translation;
@@ -741,9 +741,9 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 				transl.options().reporter().solvingCNF(current_trace, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
-				final long startSolve = System.currentTimeMillis();
+				final long startSolve = System.nanoTime() / 1000000;
 				isSat = cnf.solve();
-				final long endSolve = System.currentTimeMillis();
+				final long endSolve = System.nanoTime() / 1000000;
 				solveTime += endSolve - startSolve;
 
 				if (!isSat)
@@ -830,9 +830,9 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 				// instance of Formula.or(changes) alone.
 				final Formula formula = changes.isEmpty() ? Formula.FALSE : Formula.or(changes);
 
-				final long startTransl = System.currentTimeMillis();
+				final long startTransl = System.nanoTime() / 1000000;
 				translation = Translator.translate(formula, newBounds, transl.options());
-				translTime += System.currentTimeMillis() - startTransl;
+				translTime += System.nanoTime() / 1000000 - startTransl;
 			}
 			return sol;
 		}
@@ -855,7 +855,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 		TSolutionIterator(Formula formula, PardinusBounds bounds, ExtendedOptions options) { // [HASLab]
 			if (!options.configOptions().solver().maxsat())
 				throw new IllegalArgumentException("A max sat solver is required for target-oriented solving.");
-			this.translTime = System.currentTimeMillis();
+			this.translTime = System.nanoTime() / 1000000;
 			this.originalBounds = bounds;
 			TemporalTranslator tmptrans = new TemporalTranslator(formula, bounds, options);
 			extbounds = tmptrans.expand(1);
@@ -863,7 +863,7 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			this.translation = Translator.translate(extformula, extbounds, options);
 			if (options.logTranslation() > 0)
 				this.translation.log().logTempTranslation(tmptrans.tempTransLog);
-			this.translTime = System.currentTimeMillis() - translTime;
+			this.translTime = System.nanoTime() / 1000000 - translTime;
 			this.opt = options;
 		}
 
@@ -923,9 +923,9 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 			SATSolver cnf = null;
 			while (!isSat && traceLength <= opt.maxTraceLength()) {
 				if (traceLength > 1) {
-					long translStart = System.currentTimeMillis();
+					long translStart = System.nanoTime() / 1000000;
 					translation = Translator.translate(extformula, extbounds, opt);
-					long translEnd = System.currentTimeMillis();
+					long translEnd = System.nanoTime() / 1000000;
 					translTime += translEnd - translStart;
 				}
 				transl = translation;
@@ -1000,9 +1000,9 @@ implements KodkodSolver<PardinusBounds, ExtendedOptions>, TemporalSolver<Extende
 
 				opt.reporter().solvingCNF(0, primaryVars, cnf.numberOfVariables(), cnf.numberOfClauses());
 
-				final long startSolve = System.currentTimeMillis();
+				final long startSolve = System.nanoTime() / 1000000;
 				isSat = cnf.solve();
-				final long endSolve = System.currentTimeMillis();
+				final long endSolve = System.nanoTime() / 1000000;
 				solveTime += endSolve - startSolve;
 			}
 			final Statistics stats = new Statistics(transl, translTime, solveTime);
