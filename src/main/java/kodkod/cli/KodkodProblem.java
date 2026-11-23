@@ -112,6 +112,8 @@ import static kodkod.cli.KodkodFactory.tuple;
  */
 public abstract class KodkodProblem {
 	private long buildTimeMillis = -1, coreTimeMillis = -1, maxSolutions = 1;
+	// Deliberately separate from buildTimeMillis
+	private long buildStartMillis = -1;
 	protected ExtendedOptions options; // allow subclasses to manipulate
 	private final StringDefEnv env;
 	private final List<Formula> asserts;
@@ -406,7 +408,7 @@ public abstract class KodkodProblem {
 	 * @return true
 	 */
 	final boolean startBuild() {
-		buildTimeMillis = System.nanoTime() / 1000000;
+		buildStartMillis = System.nanoTime() / 1000000;
 		return true;
 	}
 
@@ -419,7 +421,7 @@ public abstract class KodkodProblem {
 	 * @return true
 	 */
 	final boolean endBuild() {
-		buildTimeMillis = System.nanoTime() / 1000000 - buildTimeMillis;
+		buildTimeMillis = System.nanoTime() / 1000000 - buildStartMillis;
 		return true;
 	}
 
